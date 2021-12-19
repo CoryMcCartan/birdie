@@ -1,0 +1,116 @@
+% packages
+\hypersetup{hidelinks}
+\usepackage{placeins}
+\usepackage[format=plain,
+            labelfont={bf,it},
+            textfont=it]{caption}
+\setlength{\captionmargin}{0.3in}
+\usepackage{mathtools}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{cancel}
+\usepackage[italicdiff]{physics}
+\usepackage{tocloft}
+\usepackage{dsfont}
+\usepackage{thmtools}
+\usepackage{apxproof}
+\usepackage{graphicx}
+\usepackage{booktabs}
+
+\usepackage{tikz}
+\usetikzlibrary{bayesnet}
+
+% paper-specific
+\renewcommand{\vec}{\mathrm{vec}}
+\newcommand{\proj}{\mathrm{proj}}
+
+% generic
+\theoremstyle{plain}
+\newtheoremrep{prop}{Proposition}[section]
+\newtheoremrep{claim}[prop]{Claim}
+\newtheoremrep{corollary}{Corollary}[prop]
+\newtheoremrep{theorem}[prop]{Theorem}
+\newtheoremrep{lemma}[prop]{Lemma}
+\newtheorem{assump}{Assumption}
+\renewcommand\theassump{A\arabic{assump}}
+
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
+
+\newcommand{\m}[1]{\begin{pmatrix}#1\end{pmatrix}}  % a matrix or vector
+\newcommand{\sm}[1]{\begin{psmallmatrix}#1\end{psmallmatrix}}
+\newcommand{\f}[1]{\frac{\StrBefore{#1}{/}}{\StrBehind{#1}{/}}} % easier fractions
+\renewcommand{\sf}[1]{\tfrac{\StrBefore{#1}{/}}{\StrBehind{#1}{/}}}
+\newcommand{\half}{\frac{1}{2}}
+\newcommand{\thalf}{\tfrac{1}{2}}
+\newcommand{\third}{\frac{1}{3}}
+\newcommand{\quarter}{\frac{1}{4}}
+
+\newcommand{\eps}{\varepsilon}
+\newcommand{\clos}[1]{\overline{#1}}
+\newcommand{\conj}[1]{\overline{#1}}
+\newcommand{\dfeq}{\coloneqq}
+
+\let\sp\undefined
+\DeclareMathOperator{\id}{id}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+\DeclareMathOperator{\E}{\mathbb{E}}
+\let\Pr\undefined
+\DeclareMathOperator{\Pr}{\mathbb{P}}
+\newcommand{\indep}{\mathbin{\perp\!\!\!\!\!\:\perp}}
+\newcommand{\gvn}{\;\middle|\;}
+\newcommand{\R}{\ensuremath{\mathcal{R}}}
+\newcommand{\F}{\ensuremath{\mathcal{F}}}
+\newcommand{\B}{\ensuremath{\mathcal{B}}}
+\newcommand{\ind}{\mathds{1}}
+\newcommand{\iid}{\mathrel{\stackrel{iid}{\sim}}}
+\newcommand{\rv}{random variable}
+\newcommand{\rvs}{random variables}
+\newcommand{\iidt}{independent and identically distributed}
+\newcommand{\cvp}{\xrightarrow{\:p\,}}
+\newcommand{\cvw}{\xrightarrow{\,w\,}}
+\newcommand{\cvd}{\xrightarrow{\,d\,}}
+\newcommand{\cvas}{\xrightarrow{\;\!a.s.\:\!}}
+\newcommand{\cvlp}[1]{\xrightarrow{\;\!L^{#1}\,\!}}
+
+\DeclareMathOperator{\Var}{\mathbb{V}}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\Corr}{Corr}
+\DeclareMathOperator{\Unif}{Unif}
+\DeclareMathOperator{\Expo}{Expo}
+\DeclareMathOperator{\Cauchy}{Cauchy}
+\DeclareMathOperator{\logit}{logit}
+\newcommand{\Inv}{\mathrm{Inv-}}
+\newcommand{\Pois}{\mathrm{Pois}\qty}
+\newcommand{\Beta}{\mathrm{Beta}\qty}
+\newcommand{\Categorical}{\mathrm{Cat}}
+\newcommand{\Dirichlet}{\mathrm{Dir}\qty}
+\newcommand{\Gam}{\mathrm{Gamma}\qty}
+\newcommand{\Wei}{\mathrm{Wei}\qty}
+\newcommand{\Hyper}{\mathrm{HGeom}\qty}
+\newcommand{\Binom}{\mathrm{Bin}\qty}
+\newcommand{\NBinom}{\mathrm{NBin}\qty}
+\newcommand{\Multinom}{\mathrm{Multinom}\qty}
+\newcommand{\Bern}{\mathrm{Bern}\qty}
+\newcommand{\Bernoulli}{\mathrm{Bernoulli}\qty}
+\newcommand{\Norm}{\mathcal{N}\qty}
+\newcommand{\MVNorm}[1][]{\mathcal{N}_{#1}\qty}
+\DeclareMathOperator{\Student}{Student-\mathit{t}}
+
+\DeclarePairedDelimiter\br{\langle}{\rangle}
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+\DeclarePairedDelimiter\round{\lceil}{\rfloor}
+\DeclarePairedDelimiter\set{\{}{\}}
+
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\diag}{diag}
+\providecommand{\norm}[1]{\lVert#1\rVert}
+
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cR}{\mathcal{R}}
+\newcommand{\cG}{\mathcal{G}}
+\newcommand{\cZ}{\mathcal{Z}}
+\newcommand{\cX}{\mathcal{X}}
+\newcommand{\cY}{\mathcal{Y}}

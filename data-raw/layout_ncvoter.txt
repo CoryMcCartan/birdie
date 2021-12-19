@@ -1,0 +1,233 @@
+/***********************************************************************************
+* name:     layout_ncvoter.txt
+* purpose:  Contains all legally available voter specific information. Personally 
+*           identifying information (PII) such as birth date and drivers license are
+*           not included. Voter registrations with a voter_status_desc of 'Removed' 
+*           are omitted whenever the most recent last voted date is greater than 10 years.
+*           This is a weekly point-in-time snapshot current per file date and time.
+* updated:  09/07/2021
+* format:   tab delimited
+* instructions: 
+*            1) extract using a file archiving and compression program (eg. WinZip)
+*            2) can be linked to ncvhis file by ncid
+***********************************************************************************/
+
+------------------------------------------------------------------------------------
+name                    data type          description
+------------------------------------------------------------------------------------
+county_id               int                County identification number 
+county_desc             varchar(15)        County name
+voter_reg_num           char(12)           Voter registration number (unique to county)
+status_cd               char(2)            Registration status code
+voter_status_desc       varchar(25)        Registration status description
+reason_cd               varchar(2)         Registration status reason code
+voter_status_reason_desc varchar(60)       Registration status reason description
+absent_ind              char(1)            NOT USED
+name_prefx_cd           char(4)            NOT USED
+last_name               varchar(25)        Voter last name 
+first_name              varchar(20)        Voter first name
+middle_name             varchar(20)        Voter middle name
+name_suffix_lbl         char(3)            Voter suffix name (JR, III, etc.) 
+res_street_address      varvarchar(65)     Residential street address
+res_city_desc           varchar(60)        Residential city name
+state_cd                varchar(2)         Residential address state code 
+zip_code                char(9)            Residential address zip code
+mail_addr1              varchar(40)        Mailing address line 1
+mail_addr2              varchar(40)        Mailing address line 2
+mail_addr3              varchar(40)        Mailing address line 3
+mail_addr4              varchar(40)        Mailing address line 4
+mail_city               varchar(3)0        Mailing address city name
+mail_state              varchar(2)         Mailing address city code
+mail_zipcode            char(9)            Mailing address zip code
+full_phone_number       varchar(12)        Full phone number including area code
+race_code               char(3)            Race code
+ethnic_code             char(3)            Ethnicity code
+party_cd                char(3)            Regisered party code
+gender_code             char(1)            Gender/sex code
+birth_age               int                Age
+birth_state             varchar(2)         Birth state
+drivers_lic             char(1)            Drivers license (Y/N)
+registr_dt              char(10)           Registration date
+precinct_abbrv          varchar(6)         Precinct abbreviation
+precinct_desc           varchar(60)        Precinct name
+municipality_abbrv      varchar(6)         Municipality jurisdiction abbreviation
+municipality_desc       varchar(60)        Municipality jurisdiction name
+ward_abbrv              varchar(6)         Ward jurisdiction abbreviation
+ward_desc               varchar(60)        Ward jurisdiction name
+cong_dist_abbrv         varchar(6)         Congressional district abbreviation
+super_court_abbrv       varchar(6)         Superior court jurisdiction abbreviation
+judic_dist_abbrv        varchar(6)         Judicial district abbreviation
+nc_senate_abbrv         varchar(6)         NC Senate jurisdiction abbreviation
+nc_house_abbrv          varchar(6)         NC House jurisdiction abbreviation
+county_commiss_abbrv    varchar(6)         County commisioner jurisdiction abbreviation
+county_commiss_desc     varchar(60)        County commisioner jurisdiction name
+township_abbrv          varchar(6)         Township jurisdiction abbreviation
+township_desc           varchar(60)        Township jurisdiction name
+school_dist_abbrv       varchar(6)         School district abbreviation
+school_dist_desc        varchar(60)        School district name
+fire_dist_abbrv         varchar(6)         Fire district abbreviation
+fire_dist_desc          varchar(60)        Fir district name 
+water_dist_abbrv        varchar(6)         Water district abbreviation
+water_dist_desc         varchar(60)        Water district name
+sewer_dist_abbrv        varchar(6)         Sewer district abbreviation
+sewer_dist_desc         varchar(60)        Sewer district name
+sanit_dist_abbrv        varchar(6)         Sanitation district abbreviation
+sanit_dist_desc         varchar(60)        Sanitation district name
+rescue_dist_abbrv       varchar(6)         Rescue district abbreviation
+rescue_dist_desc        varchar(60)        Rescue district name
+munic_dist_abbrv        varchar(6)         Municpal district abbreviation
+munic_dist_desc         varchar(60)        Municipal district name
+dist_1_abbrv            varchar(6)         Presecutorial district abbreviation
+dist_1_desc             varchar(60)        Presecutorial district name
+dist_2_abbrv            varchar(6)         NOT USED
+dist_2_desc             varchar(60)        NOT USED
+confidential_ind        char(1)            Confidential indicator (by General Statute certain data is confidential for this record)
+birth_year              char(4)            Year of birth
+ncid                    char(12)           North Carolina identification (NCID) number
+vtd_abbrv               varchar(6)         Voter tabulation district abbreviation
+vtd_desc                varchar(60)        Voter tabulation district name
+------------------------------------------------------------------------------------
+
+
+/* ****************************************************************************
+Status codes
+status             description
+*******************************************************************************
+A                  ACTIVE
+D                  DENIED
+I                  INACTIVE
+R                  REMOVED
+S                  TEMPORARY (APPLICABLE TO MILITARY AND OVERSEAS)
+**************************************************************************** */
+
+
+/* ****************************************************************************
+Race codes
+race               description
+*******************************************************************************
+A                  ASIAN
+B                  BLACK or AFRICAN AMERICAN
+I                  AMERICAN INDIAN or ALASKA NATIVE
+M                  TWO or MORE RACES 
+O                  OTHER
+P                  NATIVE HAWAIIAN or PACIFIC ISLANDER
+U                  UNDESIGNATED
+W                  WHITE
+**************************************************************************** */
+
+
+/* ****************************************************************************
+Ethnic codes
+ethnicity          description
+*******************************************************************************
+HL                 HISPANIC or LATINO
+NL                 NOT HISPANIC or NOT LATINO
+UN                 UNDESIGNATED
+**************************************************************************** */
+
+
+/* ****************************************************************************
+County identification number codes
+county             county_id  
+*******************************************************************************
+ALAMANCE            1
+ALEXANDER           2
+ALLEGHANY           3
+ANSON               4
+ASHE                5
+AVERY               6
+BEAUFORT            7
+BERTIE              8
+BLADEN              9
+BRUNSWICK          10
+BUNCOMBE           11
+BURKE              12
+CABARRUS           13
+CALDWELL           14
+CAMDEN             15
+CARTERET           16
+CASWELL            17
+CATAWBA            18
+CHATHAM            19
+CHEROKEE           20
+CHOWAN             21
+CLAY               22
+CLEVELAND          23
+COLUMBUS           24
+CRAVEN             25
+CUMBERLAND         26
+CURRITUCK          27
+DARE               28
+DAVIDSON           29
+DAVIE              30
+DUPLIN             31
+DURHAM             32
+EDGECOMBE          33
+FORSYTH            34
+FRANKLIN           35
+GASTON             36
+GATES              37
+GRAHAM             38
+GRANVILLE          39
+GREENE             40
+GUILFORD           41
+HALIFAX            42
+HARNETT            43
+HAYWOOD            44
+HENDERSON          45
+HERTFORD           46
+HOKE               47
+HYDE               48
+IREDELL            49
+JACKSON            50
+JOHNSTON           51
+JONES              52
+LEE                53
+LENOIR             54
+LINCOLN            55
+MACON              56
+MADISON            57
+MARTIN             58
+MCDOWELL           59
+MECKLENBURG        60
+MITCHELL           61
+MONTGOMERY         62
+MOORE              63
+NASH               64
+NEWHANOVER         65
+NORTHAMPTON        66
+ONSLOW             67
+ORANGE             68
+PAMLICO            69
+PASQUOTANK         70
+PENDER             71
+PERQUIMANS         72
+PERSON             73
+PITT               74
+POLK               75
+RANDOLPH           76
+RICHMOND           77
+ROBESON            78
+ROCKINGHAM         79
+ROWAN              80
+RUTHERFORD         81
+SAMPSON            82
+SCOTLAND           83
+STANLY             84
+STOKES             85
+SURRY              86
+SWAIN              87
+TRANSYLVANIA       88
+TYRRELL            89
+UNION              90
+VANCE              91
+WAKE               92
+WARREN             93
+WASHINGTON         94
+WATAUGA            95
+WAYNE              96
+WILKES             97
+WILSON             98
+YADKIN             99
+YANCEY             00
+***************************************************************************** */
