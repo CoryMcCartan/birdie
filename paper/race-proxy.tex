@@ -315,7 +315,13 @@ The least squares estimator is
   \widehat{\bbeta(g,x,w)} \ = \ \left(\Pi(g,w)^\top\Pi(g,w)\right)^{-1} \Pi(g,w)^\top \widehat{\Lambda(g,x,w)}
 \end{equation}
 where $\widehat{\Lambda(g,x,w)}$ is the corresponding sample
-proportion. This is identifiable so long as $L_S > K$.
+proportion. This is identifiable so long as $L_S > K$.  The racial
+disparity estimate is given by,
+\begin{equation}
+  \Pr(Y_i = y \mid R_i = r) \ = \ \sum_{w \in \cW} \sum_{x \in \cX}
+  \sum_{g \in \cG} \Pr(Y_i = y \mid X_i = x, W_i = w)
+  \widehat{\bbeta_r(g,x,w)} \Pr(G_i = g, W_i = w \mid R_i = r)
+\end{equation}
     
 \pdfbookmark[1]{References}{References}
 \spacingset{1.5}
