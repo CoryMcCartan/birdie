@@ -55,6 +55,8 @@ pdfstartview=FitH, breaklinks=true, urlbordercolor={0 1 0}, citebordercolor={0 0
 
 % === some special symbols
 \newcommand{\qed}{\hfill \ensuremath{\Box}}
+\newcommand{\iid}{\stackrel{i.i.d.}{\sim}}
+\newcommand{\indep}{\stackrel{indep.}{\sim}}
 \newcommand{\ind}{\mbox{$\perp\!\!\!\perp$}}
 \newcommand{\nind}{\mbox{$\not\perp\!\!\!\perp$}}
 \def\independenT#1#2{\mathrel{\rlap{$#1#2$}\mkern2mu{#1#2}}}
@@ -264,7 +266,8 @@ Not Observed}
 \item $U_i$: unobserved confounders 
 \end{itemize}
 
-Identification:
+\subsection{Identification}
+
 \begin{align*}
   & \Pr(Y_i = y, G_i = g, S_i = s, X_i = x, W_i = w) \\
   \ = \ &  \sum_{r \in \cR} \Pr(Y_i = y, G_i = g, S_i = s, X_i = x, W_i = w\mid 
@@ -321,6 +324,75 @@ disparity estimate is given by,
   \Pr(Y_i = y \mid R_i = r) \ = \ \sum_{w \in \cW} \sum_{x \in \cX}
   \sum_{g \in \cG} \Pr(Y_i = y \mid X_i = x, W_i = w)
   \widehat{\bbeta_r(g,x,w)} \Pr(G_i = g, W_i = w \mid R_i = r)
+\end{equation}
+
+\subsection{Bayesian model}
+
+\begin{align}
+  X_i \mid W_i =w, G_i = g,  R_i = r \ \sim & \ \text{Discrete}(\xi_r(g,w))  \\
+  W_i, G_i \mid R_i  = r \ \sim & \ \text{Discrete}(\delta_r) \\
+  S_i \mid R_i = r \ \sim & \ \text{Discrete}(\zeta_r)  \\
+  R_i \ \indep & \ \text{Discrete}(\phi) \\
+  \xi_r(g,w) \ \indep  & \ \Dir(\alpha_r)
+\end{align}
+where $\phi, \zeta_r, \delta_r$ are obtained from the census and other
+data sets.  The joint posterior
+\begin{align}
+  & P(R, \xi \mid X, W, G, S) \\
+  \propto \ & \prod_{i=1}^N P(X_i \mid W_i, G_i,
+  R_i, \xi_{R_i})P(W_i, G_i \mid R_i) P(S_i \mid R_i) P(R_i) \prod_{r
+              \in \cR} P(\xi_r) \\
+  \propto \ & \prod_{r \in \cR} \prod_{i=1}^N  \left[\phi_r \prod_{s \in \cS}
+              \zeta_{rs}^{\mathbf{1}\{S_i = s\}} \prod_{g \in \cG} \prod_{w \in \cW}
+             \left[ \left(\prod_{x \in \cX} \xi_{rx}(g,w)^{\mathbf{1}\{X_i = x\}}\right)
+              \delta_{rgw}\right]^{\mathbf{1}\{G_i = g, W_i =
+              w\}} \right]^{\mathbf{1}\{R_i = r\}} \\
+  & \quad \times \prod_{r \in \cR} \prod_{x \in \cX} \prod_{g \in \cG}
+    \prod_{w \in \cW}\xi_{rx}(g,w)^{\alpha_{rx}-1} \\
+  = \ &  \prod_{r \in \cR} \prod_{x \in \cX} \prod_{g \in \cG}
+    \prod_{w \in \cW}\xi_{rx}(g,w)^{\sum_{i=1}^N \mathbf{1}\{G_i = g,
+        W_i = w, X_i = x, R_i = r\} + \alpha_{rx}-1} \times \prod_{r
+        \in \cR} \phi_r^{\sum_{i=1}^N \mathbf{1}\{R_i = r\}} \\
+  & \times \prod_{r \in \cR} \prod_{g \in \cG}
+    \prod_{w \in \cW}\delta_{rgw}^{\sum_{i=1}^N \mathbf{1}\{G_i = g,
+        W_i = w, R_i = r\}} \times \prod_{r  \in \cR} \prod_{s \in \cS}
+    \zeta_{rs}^{\sum_{i=1}^N \mathbf{1}\{S_i = s, R_i = r\}}
+\end{align}
+Integrating out $\xi$ gives
+\begin{align}
+  &  P(R \mid X, W, G, S) \\
+\propto  & \prod_{r \in \cR} \prod_{g \in \cG}
+    \prod_{w \in \cW} \frac{\prod_{x \in \cX}\Gamma(\sum_{i=1}^N \mathbf{1}\{G_i =
+           g, X_i = x,  W_i = w, R_i = r\} + \alpha_{rx})}{\Gamma(\sum_{i=1}^N
+           \mathbf{1}\{G_i = g,
+           W_i = w, R_i = r\} + \sum_{x\in\cX} \alpha_{rx})} \times \prod_{r
+        \in \cR} \phi_r^{\sum_{i=1}^n \mathbf{1}\{R_i = r\}} \\
+  & \times \prod_{r \in \cR} \prod_{g \in \cG}
+    \prod_{w \in \cW}\delta_{rgw}^{\sum_{i=1}^N \mathbf{1}\{G_i = g,
+        W_i = w, R_i = r\}} \times \prod_{r  \in \cR} \prod_{s \in \cS}
+    \zeta_{rs}^{\sum_{i=1}^N \mathbf{1}\{S_i = s, R_i = r\}}
+\end{align}
+Using the fact that $\Gamma(x+y)=x^y\Gamma(x)$ for $y \in \{0,1\}$, we
+have,
+\begin{align}
+  & \Pr(R_i = r \mid R_{-i}, G_i = g, S_i = s, X_i = x, W_i = w) \\
+  \propto \ &
+              \frac{n_r^{-i}(g,x,w)+\alpha_{rx}}{m_r^{-i}(g,w)+\sum_{x
+              \in \cX}\alpha_{rx}} \times \phi_r \times \delta_{rgw}
+              \times \zeta_{rs}
+\end{align}
+where
+$n_r^{-i}(g,x,w) = \sum_{i^\prime\ne i} \mathbf{1}\{G_{i^\prime} = g,
+X_{i^\prime} = x, W_{i^\prime} = w, R_{i^\prime} = r\}$ and
+$m_r^{-i}(g,w)=\sum_{i^\prime\ne i} \mathbf{1}\{G_{i^\prime} = g,
+W_{i^\prime} = w, R_{i^\prime} = r\}$.  We can use the Gibbs sampler
+to approximate the posterior by keeping track of $n_r^{-i}(g,w)$ and
+$m_r^{-i}(g,w)$.
+
+\subsection{Calibration}
+
+\begin{equation}
+  Y_i \ \ind \ \pi(G_i, S_i, w) \mid X_i = x, W_i = w
 \end{equation}
     
 \pdfbookmark[1]{References}{References}
