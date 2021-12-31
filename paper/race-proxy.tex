@@ -1,0 +1,403 @@
+\documentclass[11pt]{article}
+
+%% === margins ===
+\addtolength{\hoffset}{-0.8in} \addtolength{\voffset}{-0.8in}
+\addtolength{\textwidth}{1.6in} \addtolength{\textheight}{1.6in}
+
+%% JASA format with 12pt, spacingset = 1.83
+%\addtolength{\hoffset}{-0.3in} \addtolength{\voffset}{-1.2in}
+%\addtolength{\textwidth}{.6in} \addtolength{\textheight}{2.1in}
+%\pdfminorversion=4
+
+
+%% === basic packages ===
+\usepackage{latexsym,multirow}
+\usepackage{amssymb,amsmath, bm}
+\usepackage{cancel}
+\usepackage{graphicx}
+\usepackage{booktabs}
+
+\usepackage{enumerate}
+
+%% === tikz ===
+\usepackage{tikz}
+\usetikzlibrary{bayesnet}
+
+%% === bibliography packages ===
+\usepackage{natbib}
+\bibliographystyle{pa}
+%% === hyperref options ===
+% \usepackage{color}
+\usepackage[pdftex, bookmarksopen=true, bookmarksnumbered=true,
+pdfstartview=FitH, breaklinks=true, urlbordercolor={0 1 0}, citebordercolor={0 0 1}]{hyperref}
+\usepackage{colortbl}
+\usepackage{subcaption}
+
+% === dcolumn package ===
+\usepackage{dcolumn}
+\newcolumntype{.}{D{.}{.}{-1}}
+\newcolumntype{d}[1]{D{.}{.}{#1}}
+% === theorem package ===
+\usepackage{theorem}
+\theoremstyle{plain}
+\theoremheaderfont{\scshape}
+\newtheorem{assumption}{Assumption}
+\newtheorem{example}{Example}
+\newtheorem{definition}{Definition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{property}{Property}
+\newtheorem{proposition}{Proposition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{remark}{Remark}
+\newtheorem{defi}{Definition}
+\newtheorem{thm}{Theorem}
+\newtheorem{lemma}{Lemma}
+
+% === some special symbols
+\newcommand{\qed}{\hfill \ensuremath{\Box}}
+\newcommand{\iid}{\stackrel{i.i.d.}{\sim}}
+\newcommand{\indep}{\stackrel{indep.}{\sim}}
+\newcommand{\ind}{\mbox{$\perp\!\!\!\perp$}}
+\newcommand{\nind}{\mbox{$\not\perp\!\!\!\perp$}}
+\def\independenT#1#2{\mathrel{\rlap{$#1#2$}\mkern2mu{#1#2}}}
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\diag}{diag}
+\providecommand{\norm}[1]{\lVert#1\rVert}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+
+% ==== rotating package ===
+\usepackage{rotating}
+
+% ==== dotted lines in tables ===
+%\usepackage{arydshln}
+
+% == spacing between sections and subsections
+\usepackage[compact]{titlesec}
+%\usepackage{times}
+
+\allowdisplaybreaks
+
+\newcommand\spacingset[1]{\renewcommand{\baselinestretch}%
+  {#1}\small\normalsize}
+
+\let\S\relax % to avoid spurious warnings
+\DeclareRobustCommand{\S}{%
+  \ifmmode
+    \mathsection
+  \else
+    \textsection~%
+  \fi
+}
+% === versions control ===
+\usepackage{versions}
+%\excludeversion{real}
+%\includeversion{synth}
+\excludeversion{synth}
+\includeversion{real}
+\graphicspath{{figs/}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% === submission
+\newcommand{\blind}{0}
+
+\def\letas{\mathrel{\mathop{=}\limits^{\triangle}}}
+
+\newcommand*{\QEDB}{\hfill\ensuremath{\square}}
+
+\newcommand{\bone}{\mathbf{1}}
+\newcommand{\red}{\color{red}}
+\newcommand{\blue}{\color{blue}}
+\newcommand{\Beta}{\text{Beta}}
+\newcommand{\Binomial}{\text{Binomial}}
+\newcommand{\Bern}{\text{Bern}}
+\newcommand{\Expo}{\text{Expo}}
+\newcommand{\Pois}{\text{Pois}}
+\newcommand{\Unif}{\text{Unif}}
+\newcommand{\Gammad}{\text{Gamma}}
+\newcommand{\Dir}{\text{Dirichlet}}
+\newcommand{\logit}{\text{logit}}
+\newcommand{\expit}{\text{expit}}
+\newcommand{\mexpit}{\text{mexpit}}
+
+\newcommand{\pr}{\text{pr}}
+\newcommand{\var}{\textnormal{var}}
+\newcommand{\cov}{\textnormal{cov}}
+\newcommand{\sumN}{\sum_{i=1}^N}
+
+\newcommand{\bZ}{\bm{Z}}
+\newcommand{\bD}{\bm{D}}
+\newcommand{\bz}{\bm{z}}
+\newcommand{\bd}{\bm{d}}
+\newcommand{\oD}{\overline{D}}
+\newcommand{\oY}{\overline{Y}}
+\newcommand{\wD}{\widehat{D}}
+\newcommand{\wY}{\widehat{Y}}
+
+\newcommand{\wtphi}{\widetilde{\bm{\phi}}}
+
+\newcommand{\bW}{\bm{W}}
+\newcommand{\bw}{\bm{w}}
+\newcommand{\cW}{\mathcal{W}}
+\newcommand{\bS}{\bm{S}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cR}{\mathcal{R}}
+\newcommand{\cG}{\mathcal{G}}
+\newcommand{\bs}{\bm{s}}
+\newcommand{\bY}{\bm{Y}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\bx}{\mathbf{x}}
+\newcommand{\bX}{\mathbf{X}}
+\newcommand{\cX}{\mathcal{X}}
+\newcommand{\cY}{\mathcal{Y}}
+\newcommand{\bI}{\mathbf{I}}
+\newcommand{\bM}{\mathbf{M}}
+\newcommand{\bP}{\mathbf{P}}
+\newcommand{\bQ}{\mathbf{Q}}
+\newcommand{\bV}{\mathbf{V}}
+\newcommand{\bU}{\mathbf{U}}
+
+\newcommand{\ATE}{\textsf{ATE}}
+\newcommand{\bepsilon}{\bm{\epsilon}}
+\newcommand{\bbeta}{\bm{\beta}}
+\newcommand{\balpha}{\bm{\alpha}}
+\newcommand{\bphi}{\bm{\phi}}
+\newcommand{\btheta}{\bm{\theta}}
+\newcommand{\bgamma}{\bm{\gamma}}
+
+\begin{document} 
+
+\newcommand{\tit}{Unbiased Estimation of Racial Disparity when Race is
+Not Observed}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\spacingset{1.25}
+
+\if0\blind
+
+{\title{{\bf\tit}\thanks{}}
+
+  \author{}
+
+
+  \date{\today
+}
+
+\maketitle
+
+}\fi
+
+
+\if1\blind
+\title{\bf \tit}
+
+
+\maketitle
+\fi
+
+\pdfbookmark[1]{Title Page}{Title Page}
+
+\thispagestyle{empty}
+\setcounter{page}{0}
+         
+\begin{abstract}
+  
+
+ \medskip
+ \noindent {\bf Keywords:} 
+
+\end{abstract}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\clearpage
+%\spacingset{1.83}
+\spacingset{1.5}
+
+\section{Introduction}
+
+\section{The Proposed Methodology}
+
+\begin{figure}[t]
+  \begin{center}
+    \tikzstyle{main node}=[circle,draw,font=\sffamily\Large\bfseries]
+    \tikzstyle{sub node}=[circle,draw,dashed,font=\sffamily\Large\bfseries]
+    \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=3cm,thick]
+      
+      \node[sub node] (1) {$R$};
+      \node[main node] (7) [left of=1] {$S$}; 
+      \node[main node] (2) [below of=1] {$G$}; 
+      \node[main node] (4) [right of=1] {$X$}; 
+      \node[main node] (3) [below of=4] {$W$}; 
+      \node[main node] (5) [right of=4] {$Y$}; 
+      \node[sub node] (6) [below right =1.5cm and .8cm of 2] {$U$}; 
+      
+      \path[every node/.style={font=\sffamily\small}]
+      (1) edge node  {} (2) 
+      (1) edge node  {} (3) 
+      (1) edge node  {} (4) 
+      (1) edge node  {} (7) 
+      (2) edge node  {} (3) 
+      (2) edge node  {} (4) 
+      (3) edge node  {} (4) 
+      (3) edge node  {} (5) 
+      (4) edge node  {} (5) 
+      (6) edge node  {} (2) 
+      (6) edge node  {} (3) 
+      (6) edge node  {} (4); 
+    \end{tikzpicture}
+  \end{center}
+  \caption{DAG}
+\end{figure}
+
+\begin{itemize}
+\item $R_i \in \cR= \{1,2,\ldots,K\}$: race
+\item $Y_i \in \cY = \{1, 2, \ldots, L_Y\}$: outcome variable (categorical)
+\item $W_i \in \cW$: $K_{W}$-dimensional vector of input variables for which
+  the population data are available (e.g., income, family structure)
+\item $X_i \in \cX$: $K_{X}$-dimensional vector of input variables for which
+  the population data are not available
+\item $S_i \in \cS = \{1, 2, \ldots, L_S\}$: surnames
+\item $G_i \in \cG = \{1, 2, \dots, L_G\}$: residence geolocation
+\item $U_i$: unobserved confounders 
+\end{itemize}
+
+\subsection{Identification}
+
+\begin{align*}
+  & \Pr(Y_i = y, G_i = g, S_i = s, X_i = x, W_i = w) \\
+  \ = \ &  \sum_{r \in \cR} \Pr(Y_i = y, G_i = g, S_i = s, X_i = x, W_i = w\mid 
+          R_i = r) \Pr(R_i = r) \\
+  \ = \ &  \sum_{r \in \cR} \Pr(Y_i = y, G_i = g, W_i = w, X_i = x \mid 
+          R_i = r) \Pr(S_i = s \mid R_i = r)\Pr(R_i = r) \\
+  \ = \ &  \sum_{r \in \cR} \Pr(Y_i = y \mid W_i = w, X_i = x) \Pr(G_i 
+          = g, W_i = w, X_i = x \mid R_i = r)\Pr(S_i = s \mid R_i = r)\Pr(R_i = r) \\
+  \ = \ &  \Pr(Y_i = y \mid W_i = w, X_i = x) \sum_{r \in \cR} \Pr(X_i
+           = x \mid G_i = g, W_i = w, R_i = r)\pi_r(g,s,w) 
+\end{align*}
+where
+$\pi_r(g,s,w) = \Pr(G_i = g, W_i = w \mid R_i = r)\Pr(S_i = s \mid R_i
+= r)\Pr(R_i = r)$.  This implies,
+\begin{equation*}
+  \Pr(G_i = g, S_i = s, X_i = x, W_i = w) \ = \ \sum_{r \in \cR} \Pr(X_i
+  = x \mid G_i = g, W_i = w, R_i = r)\pi_r(g,s,w) 
+\end{equation*}
+Define
+\begin{align}
+  \bbeta(g,x,w) \ = & \ \begin{pmatrix}
+    \Pr(X_i = x \mid G_i = g, W_i = w, R_i = 1) \\
+    \Pr(X_i = x \mid G_i = g, W_i = w, R_i = 2) \\
+    \vdots \\
+    \Pr(X_i = x \mid G_i = g, W_i = w, R_i = K)     
+  \end{pmatrix},
+  \\
+  \Pi(g,w) \ =  & \ \begin{pmatrix}
+    \pi_1(g,1,w) & \pi_2(g,1,w) & \cdots & \pi_K(g,1,w) \\ 
+    \pi_1(g,2,w) & \pi_2(g,2,w) & \cdots & \pi_K(g,2,w) \\
+    \vdots & \vdots & \ddots & \vdots \\
+    \pi_1(g,L_S,w) & \pi_2(g,L_S,w) & \cdots & \pi_K(g,L_S,w) \\
+  \end{pmatrix},
+  \\
+  \Lambda(g,x,w) \ = & \ \begin{pmatrix}
+    \Pr(G_i = g, S_i = 1, X_i = x, W_i = w) \\
+    \Pr(G_i = g, S_i = 2, X_i = x, W_i = w) \\
+    \vdots \\
+   \Pr(G_i = g, S_i = L_S, X_i = x, W_i = w) ) \\
+  \end{pmatrix}
+\end{align}
+Then, the identification equation is given by,
+\begin{equation}
+  \Lambda(g,x,w) \ = \ \Pi(g,w) \bbeta(g,x,w)
+\end{equation}
+The least squares estimator is
+\begin{equation}
+  \widehat{\bbeta(g,x,w)} \ = \ \left(\Pi(g,w)^\top\Pi(g,w)\right)^{-1} \Pi(g,w)^\top \widehat{\Lambda(g,x,w)}
+\end{equation}
+where $\widehat{\Lambda(g,x,w)}$ is the corresponding sample
+proportion. This is identifiable so long as $L_S > K$.  The racial
+disparity estimate is given by,
+\begin{equation}
+  \Pr(Y_i = y \mid R_i = r) \ = \ \sum_{w \in \cW} \sum_{x \in \cX}
+  \sum_{g \in \cG} \Pr(Y_i = y \mid X_i = x, W_i = w)
+  \widehat{\bbeta_r(g,x,w)} \Pr(G_i = g, W_i = w \mid R_i = r)
+\end{equation}
+
+\subsection{Bayesian model}
+
+\begin{align}
+  X_i \mid W_i =w, G_i = g,  R_i = r \ \sim & \ \text{Discrete}(\xi_r(g,w))  \\
+  W_i, G_i \mid R_i  = r \ \sim & \ \text{Discrete}(\delta_r) \\
+  S_i \mid R_i = r \ \sim & \ \text{Discrete}(\zeta_r)  \\
+  R_i \ \indep & \ \text{Discrete}(\phi) \\
+  \xi_r(g,w) \ \indep  & \ \Dir(\alpha_r)
+\end{align}
+where $\phi, \zeta_r, \delta_r$ are obtained from the census and other
+data sets.  The joint posterior
+\begin{align}
+  & P(R, \xi \mid X, W, G, S) \\
+  \propto \ & \prod_{i=1}^N P(X_i \mid W_i, G_i,
+  R_i, \xi_{R_i})P(W_i, G_i \mid R_i) P(S_i \mid R_i) P(R_i) \prod_{r
+              \in \cR} P(\xi_r) \\
+  \propto \ & \prod_{r \in \cR} \prod_{i=1}^N  \left[\phi_r \prod_{s \in \cS}
+              \zeta_{rs}^{\mathbf{1}\{S_i = s\}} \prod_{g \in \cG} \prod_{w \in \cW}
+             \left[ \left(\prod_{x \in \cX} \xi_{rx}(g,w)^{\mathbf{1}\{X_i = x\}}\right)
+              \delta_{rgw}\right]^{\mathbf{1}\{G_i = g, W_i =
+              w\}} \right]^{\mathbf{1}\{R_i = r\}} \\
+  & \quad \times \prod_{r \in \cR} \prod_{x \in \cX} \prod_{g \in \cG}
+    \prod_{w \in \cW}\xi_{rx}(g,w)^{\alpha_{rx}-1} \\
+  = \ &  \prod_{r \in \cR} \prod_{x \in \cX} \prod_{g \in \cG}
+    \prod_{w \in \cW}\xi_{rx}(g,w)^{\sum_{i=1}^N \mathbf{1}\{G_i = g,
+        W_i = w, X_i = x, R_i = r\} + \alpha_{rx}-1} \times \prod_{r
+        \in \cR} \phi_r^{\sum_{i=1}^N \mathbf{1}\{R_i = r\}} \\
+  & \times \prod_{r \in \cR} \prod_{g \in \cG}
+    \prod_{w \in \cW}\delta_{rgw}^{\sum_{i=1}^N \mathbf{1}\{G_i = g,
+        W_i = w, R_i = r\}} \times \prod_{r  \in \cR} \prod_{s \in \cS}
+    \zeta_{rs}^{\sum_{i=1}^N \mathbf{1}\{S_i = s, R_i = r\}}
+\end{align}
+Integrating out $\xi$ gives
+\begin{align}
+  &  P(R \mid X, W, G, S) \\
+\propto  & \prod_{r \in \cR} \prod_{g \in \cG}
+    \prod_{w \in \cW} \frac{\prod_{x \in \cX}\Gamma(\sum_{i=1}^N \mathbf{1}\{G_i =
+           g, X_i = x,  W_i = w, R_i = r\} + \alpha_{rx})}{\Gamma(\sum_{i=1}^N
+           \mathbf{1}\{G_i = g,
+           W_i = w, R_i = r\} + \sum_{x\in\cX} \alpha_{rx})} \times \prod_{r
+        \in \cR} \phi_r^{\sum_{i=1}^n \mathbf{1}\{R_i = r\}} \\
+  & \times \prod_{r \in \cR} \prod_{g \in \cG}
+    \prod_{w \in \cW}\delta_{rgw}^{\sum_{i=1}^N \mathbf{1}\{G_i = g,
+        W_i = w, R_i = r\}} \times \prod_{r  \in \cR} \prod_{s \in \cS}
+    \zeta_{rs}^{\sum_{i=1}^N \mathbf{1}\{S_i = s, R_i = r\}}
+\end{align}
+Using the fact that $\Gamma(x+y)=x^y\Gamma(x)$ for $y \in \{0,1\}$, we
+have,
+\begin{align}
+  & \Pr(R_i = r \mid R_{-i}, G_i = g, S_i = s, X_i = x, W_i = w) \\
+  \propto \ &
+              \frac{n_r^{-i}(g,x,w)+\alpha_{rx}}{m_r^{-i}(g,w)+\sum_{x
+              \in \cX}\alpha_{rx}} \times \phi_r \times \delta_{rgw}
+              \times \zeta_{rs}
+\end{align}
+where
+$n_r^{-i}(g,x,w) = \sum_{i^\prime\ne i} \mathbf{1}\{G_{i^\prime} = g,
+X_{i^\prime} = x, W_{i^\prime} = w, R_{i^\prime} = r\}$ and
+$m_r^{-i}(g,w)=\sum_{i^\prime\ne i} \mathbf{1}\{G_{i^\prime} = g,
+W_{i^\prime} = w, R_{i^\prime} = r\}$.  We can use the Gibbs sampler
+to approximate the posterior by keeping track of $n_r^{-i}(g,w)$ and
+$m_r^{-i}(g,w)$.
+
+\subsection{Calibration}
+
+\begin{equation}
+  Y_i \ \ind \ \pi(G_i, S_i, w) \mid X_i = x, W_i = w
+\end{equation}
+    
+\pdfbookmark[1]{References}{References}
+\spacingset{1.5}
+\bibliography{my,imai}
+
+\end{document}
+
