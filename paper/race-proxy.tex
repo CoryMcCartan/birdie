@@ -12,7 +12,7 @@
 
 %% === basic packages ===
 \usepackage{latexsym,multirow}
-\usepackage{amssymb,amsmath, bm}
+\usepackage{amssymb,amsmath,bm,mathtools,physics}
 \usepackage{cancel}
 \usepackage{graphicx}
 \usepackage{booktabs}
@@ -55,7 +55,7 @@ pdfstartview=FitH, breaklinks=true, urlbordercolor={0 1 0}, citebordercolor={0 0
 
 % === some special symbols
 \newcommand{\qed}{\hfill \ensuremath{\Box}}
-\newcommand{\iid}{\stackrel{i.i.d.}{\sim}}
+\newcommand{\iid}{\mathrel{\stackrel{iid}{\sim}}}
 \newcommand{\indep}{\stackrel{indep.}{\sim}}
 \newcommand{\ind}{\mbox{$\perp\!\!\!\perp$}}
 \newcommand{\nind}{\mbox{$\not\perp\!\!\!\perp$}}
@@ -117,13 +117,14 @@ pdfstartview=FitH, breaklinks=true, urlbordercolor={0 1 0}, citebordercolor={0 0
 \newcommand{\Pois}{\text{Pois}}
 \newcommand{\Unif}{\text{Unif}}
 \newcommand{\Gammad}{\text{Gamma}}
-\newcommand{\Dir}{\text{Dirichlet}}
+\newcommand{\Dir}{\mathrm{Dir}}
+\newcommand{\Cat}{\mathrm{Cat}}
 \newcommand{\logit}{\text{logit}}
 \newcommand{\expit}{\text{expit}}
 \newcommand{\mexpit}{\text{mexpit}}
 
 \newcommand{\pr}{\text{pr}}
-\newcommand{\var}{\textnormal{var}}
+\renewcommand{\var}{\textnormal{var}}
 \newcommand{\cov}{\textnormal{cov}}
 \newcommand{\sumN}{\sum_{i=1}^N}
 
@@ -167,7 +168,7 @@ pdfstartview=FitH, breaklinks=true, urlbordercolor={0 1 0}, citebordercolor={0 0
 \newcommand{\btheta}{\bm{\theta}}
 \newcommand{\bgamma}{\bm{\gamma}}
 
-\begin{document} 
+\begin{document}
 
 \newcommand{\tit}{Unbiased Estimation of Racial Disparity when Race is
 Not Observed}
@@ -202,12 +203,12 @@ Not Observed}
 
 \thispagestyle{empty}
 \setcounter{page}{0}
-         
+
 \begin{abstract}
-  
+
 
  \medskip
- \noindent {\bf Keywords:} 
+ \noindent {\bf Keywords:}
 
 \end{abstract}
 
@@ -227,28 +228,28 @@ Not Observed}
     \tikzstyle{main node}=[circle,draw,font=\sffamily\Large\bfseries]
     \tikzstyle{sub node}=[circle,draw,dashed,font=\sffamily\Large\bfseries]
     \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=3cm,thick]
-      
+
       \node[sub node] (1) {$R$};
-      \node[main node] (7) [left of=1] {$S$}; 
-      \node[main node] (2) [below of=1] {$G$}; 
-      \node[main node] (4) [right of=1] {$X$}; 
-      \node[main node] (3) [below of=4] {$W$}; 
-      \node[main node] (5) [right of=4] {$Y$}; 
-      \node[sub node] (6) [below right =1.5cm and .8cm of 2] {$U$}; 
-      
+      \node[main node] (7) [left of=1] {$S$};
+      \node[main node] (2) [below of=1] {$G$};
+      \node[main node] (4) [right of=1] {$X$};
+      \node[main node] (3) [below of=4] {$W$};
+      \node[main node] (5) [right of=4] {$Y$};
+      \node[sub node] (6) [below right =1.5cm and .8cm of 2] {$U$};
+
       \path[every node/.style={font=\sffamily\small}]
-      (1) edge node  {} (2) 
-      (1) edge node  {} (3) 
-      (1) edge node  {} (4) 
-      (1) edge node  {} (7) 
-      (2) edge node  {} (3) 
-      (2) edge node  {} (4) 
-      (3) edge node  {} (4) 
-      (3) edge node  {} (5) 
-      (4) edge node  {} (5) 
-      (6) edge node  {} (2) 
-      (6) edge node  {} (3) 
-      (6) edge node  {} (4); 
+      (1) edge node  {} (2)
+      (1) edge node  {} (3)
+      (1) edge node  {} (4)
+      (1) edge node  {} (7)
+      (2) edge node  {} (3)
+      (2) edge node  {} (4)
+      (3) edge node  {} (4)
+      (3) edge node  {} (5)
+      (4) edge node  {} (5)
+      (6) edge node  {} (2)
+      (6) edge node  {} (3)
+      (6) edge node  {} (4);
     \end{tikzpicture}
   \end{center}
   \caption{DAG}
@@ -263,28 +264,28 @@ Not Observed}
   the population data are not available
 \item $S_i \in \cS = \{1, 2, \ldots, L_S\}$: surnames
 \item $G_i \in \cG = \{1, 2, \dots, L_G\}$: residence geolocation
-\item $U_i$: unobserved confounders 
+\item $U_i$: unobserved confounders
 \end{itemize}
 
 \subsection{Identification}
 
 \begin{align*}
   & \Pr(Y_i = y, G_i = g, S_i = s, X_i = x, W_i = w) \\
-  \ = \ &  \sum_{r \in \cR} \Pr(Y_i = y, G_i = g, S_i = s, X_i = x, W_i = w\mid 
+  \ = \ &  \sum_{r \in \cR} \Pr(Y_i = y, G_i = g, S_i = s, X_i = x, W_i = w\mid
           R_i = r) \Pr(R_i = r) \\
-  \ = \ &  \sum_{r \in \cR} \Pr(Y_i = y, G_i = g, W_i = w, X_i = x \mid 
+  \ = \ &  \sum_{r \in \cR} \Pr(Y_i = y, G_i = g, W_i = w, X_i = x \mid
           R_i = r) \Pr(S_i = s \mid R_i = r)\Pr(R_i = r) \\
-  \ = \ &  \sum_{r \in \cR} \Pr(Y_i = y \mid W_i = w, X_i = x) \Pr(G_i 
+  \ = \ &  \sum_{r \in \cR} \Pr(Y_i = y \mid W_i = w, X_i = x) \Pr(G_i
           = g, W_i = w, X_i = x \mid R_i = r)\Pr(S_i = s \mid R_i = r)\Pr(R_i = r) \\
   \ = \ &  \Pr(Y_i = y \mid W_i = w, X_i = x) \sum_{r \in \cR} \Pr(X_i
-           = x \mid G_i = g, W_i = w, R_i = r)\pi_r(g,s,w) 
+           = x \mid G_i = g, W_i = w, R_i = r)\pi_r(g,s,w)
 \end{align*}
 where
 $\pi_r(g,s,w) = \Pr(G_i = g, W_i = w \mid R_i = r)\Pr(S_i = s \mid R_i
 = r)\Pr(R_i = r)$.  This implies,
 \begin{equation*}
   \Pr(G_i = g, S_i = s, X_i = x, W_i = w) \ = \ \sum_{r \in \cR} \Pr(X_i
-  = x \mid G_i = g, W_i = w, R_i = r)\pi_r(g,s,w) 
+  = x \mid G_i = g, W_i = w, R_i = r)\pi_r(g,s,w)
 \end{equation*}
 Define
 \begin{align}
@@ -292,11 +293,11 @@ Define
     \Pr(X_i = x \mid G_i = g, W_i = w, R_i = 1) \\
     \Pr(X_i = x \mid G_i = g, W_i = w, R_i = 2) \\
     \vdots \\
-    \Pr(X_i = x \mid G_i = g, W_i = w, R_i = K)     
+    \Pr(X_i = x \mid G_i = g, W_i = w, R_i = K)
   \end{pmatrix},
   \\
   \Pi(g,w) \ =  & \ \begin{pmatrix}
-    \pi_1(g,1,w) & \pi_2(g,1,w) & \cdots & \pi_K(g,1,w) \\ 
+    \pi_1(g,1,w) & \pi_2(g,1,w) & \cdots & \pi_K(g,1,w) \\
     \pi_1(g,2,w) & \pi_2(g,2,w) & \cdots & \pi_K(g,2,w) \\
     \vdots & \vdots & \ddots & \vdots \\
     \pi_1(g,L_S,w) & \pi_2(g,L_S,w) & \cdots & \pi_K(g,L_S,w) \\
@@ -329,48 +330,48 @@ disparity estimate is given by,
 \subsection{Bayesian model}
 
 \begin{align}
-  X_i \mid W_i =w, G_i = g,  R_i = r \ \sim & \ \text{Discrete}(\xi_r(g,w))  \\
-  W_i, G_i \mid R_i  = r \ \sim & \ \text{Discrete}(\delta_r) \\
-  S_i \mid R_i = r \ \sim & \ \text{Discrete}(\zeta_r)  \\
-  R_i \ \indep & \ \text{Discrete}(\phi) \\
-  \xi_r(g,w) \ \indep  & \ \Dir(\alpha_r)
+  X_i \mid W_i =w, G_i = g,  R_i = r \ &\sim \ \Cat(\vb p_{X|r}(g,w))  \\
+  W_i, G_i \mid R_i  = r \ &\sim \ \Cat(\vb p_{WG|r}) \\
+  S_i \mid R_i = r \ &\sim \ \Cat(\vb p_{S|r})  \\
+  R_i \ &\iid \ \Cat(\vb p_r) \\
+  \vb p_{X|r}(g,w) \ &\iid \ \Dir(\vb\alpha_{X|r})
 \end{align}
-where $\phi, \zeta_r, \delta_r$ are obtained from the census and other
+where $\vb p_{WG|r}, \vb p_{S|r}, \vb p_r$ are obtained from the census and other
 data sets.  The joint posterior
 \begin{align}
-  & P(R, \xi \mid X, W, G, S) \\
-  \propto \ & \prod_{i=1}^N P(X_i \mid W_i, G_i,
-  R_i, \xi_{R_i})P(W_i, G_i \mid R_i) P(S_i \mid R_i) P(R_i) \prod_{r
-              \in \cR} P(\xi_r) \\
-  \propto \ & \prod_{r \in \cR} \prod_{i=1}^N  \left[\phi_r \prod_{s \in \cS}
-              \zeta_{rs}^{\mathbf{1}\{S_i = s\}} \prod_{g \in \cG} \prod_{w \in \cW}
-             \left[ \left(\prod_{x \in \cX} \xi_{rx}(g,w)^{\mathbf{1}\{X_i = x\}}\right)
-              \delta_{rgw}\right]^{\mathbf{1}\{G_i = g, W_i =
+  & \Pr(R, \vb p_{X|r} \mid X, W, G, S) \\
+  \propto \ & \prod_{i=1}^N \Pr(X_i \mid W_i, G_i,
+  R_i, \vb p_{X|R_i}(G_i, W_i))\Pr(W_i, G_i \mid R_i) \Pr(S_i \mid R_i) \Pr(R_i) \prod_{r
+              \in \cR} P(\vb p_{X|r}) \\
+  \propto \ & \prod_{r \in \cR} \prod_{i=1}^N  \left[p_r \prod_{s \in \cS}
+              \vb p_{s|r}^{\mathbf{1}\{S_i = s\}} \prod_{g \in \cG} \prod_{w \in \cW}
+             \left[ \left(\prod_{x \in \cX} p_{x|r}(g,w)^{\mathbf{1}\{X_i = x\}}\right)
+              p_{wg|r}\right]^{\mathbf{1}\{G_i = g, W_i =
               w\}} \right]^{\mathbf{1}\{R_i = r\}} \\
   & \quad \times \prod_{r \in \cR} \prod_{x \in \cX} \prod_{g \in \cG}
-    \prod_{w \in \cW}\xi_{rx}(g,w)^{\alpha_{rx}-1} \\
+    \prod_{w \in \cW} p_{x|r}(g,w)^{\alpha_{rx}-1} \\
   = \ &  \prod_{r \in \cR} \prod_{x \in \cX} \prod_{g \in \cG}
-    \prod_{w \in \cW}\xi_{rx}(g,w)^{\sum_{i=1}^N \mathbf{1}\{G_i = g,
+    \prod_{w \in \cW} p_{x|r}(g,w)^{\sum_{i=1}^N \mathbf{1}\{G_i = g,
         W_i = w, X_i = x, R_i = r\} + \alpha_{rx}-1} \times \prod_{r
-        \in \cR} \phi_r^{\sum_{i=1}^N \mathbf{1}\{R_i = r\}} \\
+        \in \cR} p_r^{\sum_{i=1}^N \mathbf{1}\{R_i = r\}} \\
   & \times \prod_{r \in \cR} \prod_{g \in \cG}
-    \prod_{w \in \cW}\delta_{rgw}^{\sum_{i=1}^N \mathbf{1}\{G_i = g,
+    \prod_{w \in \cW}p_{wg|r}^{\sum_{i=1}^N \mathbf{1}\{G_i = g,
         W_i = w, R_i = r\}} \times \prod_{r  \in \cR} \prod_{s \in \cS}
-    \zeta_{rs}^{\sum_{i=1}^N \mathbf{1}\{S_i = s, R_i = r\}}
+    p_{s|r}^{\sum_{i=1}^N \mathbf{1}\{S_i = s, R_i = r\}}
 \end{align}
-Integrating out $\xi$ gives
+Integrating out $\vb p_{X|r}$ gives
 \begin{align}
-  &  P(R \mid X, W, G, S) \\
+  &  \Pr(R \mid X, W, G, S) \\
 \propto  & \prod_{r \in \cR} \prod_{g \in \cG}
     \prod_{w \in \cW} \frac{\prod_{x \in \cX}\Gamma(\sum_{i=1}^N \mathbf{1}\{G_i =
            g, X_i = x,  W_i = w, R_i = r\} + \alpha_{rx})}{\Gamma(\sum_{i=1}^N
            \mathbf{1}\{G_i = g,
            W_i = w, R_i = r\} + \sum_{x\in\cX} \alpha_{rx})} \times \prod_{r
-        \in \cR} \phi_r^{\sum_{i=1}^n \mathbf{1}\{R_i = r\}} \\
+        \in \cR} p_r^{\sum_{i=1}^n \mathbf{1}\{R_i = r\}} \\
   & \times \prod_{r \in \cR} \prod_{g \in \cG}
-    \prod_{w \in \cW}\delta_{rgw}^{\sum_{i=1}^N \mathbf{1}\{G_i = g,
+    \prod_{w \in \cW}p_{wg|r}^{\sum_{i=1}^N \mathbf{1}\{G_i = g,
         W_i = w, R_i = r\}} \times \prod_{r  \in \cR} \prod_{s \in \cS}
-    \zeta_{rs}^{\sum_{i=1}^N \mathbf{1}\{S_i = s, R_i = r\}}
+    \vb p_{s|r}^{\sum_{i=1}^N \mathbf{1}\{S_i = s, R_i = r\}}
 \end{align}
 Using the fact that $\Gamma(x+y)=x^y\Gamma(x)$ for $y \in \{0,1\}$, we
 have,
@@ -378,8 +379,8 @@ have,
   & \Pr(R_i = r \mid R_{-i}, G_i = g, S_i = s, X_i = x, W_i = w) \\
   \propto \ &
               \frac{n_r^{-i}(g,x,w)+\alpha_{rx}}{m_r^{-i}(g,w)+\sum_{x
-              \in \cX}\alpha_{rx}} \times \phi_r \times \delta_{rgw}
-              \times \zeta_{rs}
+              \in \cX}\alpha_{rx}} \times p_r \times p_{wg|r}
+              \times p_{s|r}
 \end{align}
 where
 $n_r^{-i}(g,x,w) = \sum_{i^\prime\ne i} \mathbf{1}\{G_{i^\prime} = g,
@@ -394,7 +395,7 @@ $m_r^{-i}(g,w)$.
 \begin{equation}
   Y_i \ \ind \ \pi(G_i, S_i, w) \mid X_i = x, W_i = w
 \end{equation}
-    
+
 \pdfbookmark[1]{References}{References}
 \spacingset{1.5}
 \bibliography{my,imai}
