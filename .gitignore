@@ -5,6 +5,8 @@
 data-raw/*.csv
 data-raw/*/
 
+man/
+
 *.swp
 *.bak
 *.tmp
