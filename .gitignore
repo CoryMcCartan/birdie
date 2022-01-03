@@ -1,8 +1,10 @@
 .DS_Store
 .Rhistory
 .Rproj.user
+
 data-raw/*.csv
 data-raw/*/
+
 *.swp
 *.bak
 *.tmp
@@ -12,3 +14,5 @@ data-raw/*/
 *.log
 *.pdf
 *.tex
+*.o
+*.so
