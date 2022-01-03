@@ -1,14 +1,19 @@
-Package: race-proxy
+Package: raceproxy
 Title: Racial Predictions From Proxy Information
 Version: 0.0.0.9000
 Authors@R: c(
     person("Cory", "McCartan", role=c("aut", "cre"), email="cmccartan@g.harvard.edu"),
-    person("Kosuke", "Imai", role=c("aut", "cre"), email="imai@harvard.edu")
+    person("Kosuke", "Imai", role="aut", email="imai@harvard.edu")
     )
 Description: Racial Predictions From Proxy Information
 Imports: 
-    rlang,
-    Rcpp
+    rlang (>= 0.1.2),
+    Rcpp,
+    cli,
+    tidyselect
+Suggests: 
+    roxygen2,
+    zipWRUext2
 LinkingTo: 
     Rcpp,
     RcppArmadillo
