@@ -10,7 +10,8 @@ Imports:
     rlang (>= 0.1.2),
     Rcpp,
     cli,
-    tidyselect
+    tidyselect,
+    dplyr
 Suggests: 
     roxygen2,
     zipWRUext2
