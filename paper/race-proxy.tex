@@ -395,6 +395,20 @@ $m_r^{-i}(g,w)$.
 \begin{equation}
   Y_i \ \ind \ \pi(G_i, S_i, w) \mid X_i = x, W_i = w
 \end{equation}
+For each $x$ and $w$, we use
+\begin{equation}
+\hat{\omega} \ = \  \argmin_\omega \mathcal{D}(\omega, \omega^\ast)
+\end{equation}
+subject to
+\begin{align}
+  \omega \ \ge \ 0, \quad \sum_{r=1}^K \omega_{ir} \ = \ 1 & \\
+  \frac{1}{\sum_{i: X_i = x, W_i =w} \mathbf{1}\{Y_i = y\}} \sum_{i:
+  X_i  = x, W_i =w} 
+  \mathbf{1}\{Y_i = y\} \omega \ = \ & \frac{1}{n_{xw}} \sum_{i: X_i = x, W_i =w} \mathbf{1}\{Y_i = y\}
+\end{align}
+for each $y$ where $\mathcal{D}$ is a suitable distance measure and
+$\omega^\ast$ is the posterior estimate of
+$\Pr(R_i \mid G_i, S_i, X_i, W_i)$.
 
 \pdfbookmark[1]{References}{References}
 \spacingset{1.5}
