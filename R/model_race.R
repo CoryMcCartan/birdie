@@ -27,7 +27,7 @@
 model_race = function(X, S, G, W=NULL, data=NULL, p_rs=NULL, p_rwg=NULL,
                       p_r=c(white=0.626, black=0.222, hisp=0.098, asian=0.032, other=0.022),
                       alpha=1,
-                      sm = NULL,
+                      gibbs=TRUE, stan=TRUE,
                       iter=100, thin=1, verbose=FALSE) {
     check_arg = function(x) {
         x_quo = enquo(x)
@@ -156,17 +156,26 @@ model_race = function(X, S, G, W=NULL, data=NULL, p_rs=NULL, p_rwg=NULL,
         as.numeric(glmnet::glmnet(p_rs, t(p_xs[4, ]), lambda=0, lower.limits=0, intercept=FALSE)$beta)
     ) %*% diag(p_r))
 
-    m_gibbs = gibbs_race(iter, thin,
-                         X_vec, S_vec, G_vec,
-                         log(p_sr), log(p_wgr), log(p_r),
-                         matrix(alpha, length(p_r), nlevels(X_vec)),
-                         verbose)
-
-    out = list(gibbs=m_gibbs, baseline=m_baseline,
+    out = list(baseline=m_baseline,
          lsq=P_xr_est1, nnls=P_xr_est2,
          base_surn=m_baseline_surn)
 
-    if (!is.null(sm)) {
+    if (gibbs) {
+        out$gibbs = gibbs_race(iter, thin,
+                               X_vec, S_vec, G_vec,
+                               log(p_sr), log(p_wgr), log(p_r),
+                               matrix(alpha, length(p_r), nlevels(X_vec)),
+                               verbose)
+    }
+
+
+    if (stan) {
+        #tally_df = tibble(X=X_vec, S=S_vec, GZ=G_vec) %>%
+        #    count(S, GZ)
+        #print(tally_df)
+        #print(nrow(data))
+        #stop("temp")
+
         stan_data = list(
             N = length(X_vec),
             n_x = nlevels(X_vec),
@@ -185,10 +194,17 @@ model_race = function(X, S, G, W=NULL, data=NULL, p_rs=NULL, p_rwg=NULL,
 
             n_prior_obs = alpha[1]
         )
-        #out$stan = sampling(sm, stan_data, chains=1, pars="p_xrgz", iter=1000)
-        out$stan = optimizing(sm, stan_data, verbose=verbose,
-                              draws=iter, importance_resampling=TRUE,
-                              tol_grad=1e-6, tol_param=1e-5)
+        #out$stan = rstan::sampling(stanmodels$model_distr, stan_data,
+        #                           chains=1, pars="p_xr", iter=500, warmup=400)
+        out$stan = rstan::vb(stanmodels$model_distr, stan_data,
+                             pars="p_xr", algorithm="meanfield",
+                             eta=1, adapt_engaged=FALSE,
+                             grad_samples=2, eval_elbo=50,
+                             importance_resampling=FALSE)
+        #out$stan = rstan::optimizing(stanmodels$model_distr, stan_data,
+        #                             verbose=verbose,
+        #                             #draws=iter, importance_resampling=TRUE,
+        #                             tol_grad=1e-6, tol_param=1e-5, init_alpha=1)
     }
 
     out
@@ -239,7 +255,7 @@ census_zip_table = function(G, G_name, p_r) {
 
 
 #' @export
-rake = function(est, row, col) {
+rake = function(est, row=rowSums(est), col=colSums(est)) {
     for (i in 1:5) {
         est = est %*% diag(col / colSums(est))
         est = diag(row / rowSums(est)) %*% est

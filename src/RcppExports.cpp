@@ -3,6 +3,7 @@
 
 #include "raceproxy_types.h"
 #include <RcppArmadillo.h>
+#include <RcppEigen.h>
 #include <Rcpp.h>
 
 using namespace Rcpp;
@@ -33,8 +34,11 @@ BEGIN_RCPP
 END_RCPP
 }
 
+RcppExport SEXP _rcpp_module_boot_stan_fit4model_distr_mod();
+
 static const R_CallMethodDef CallEntries[] = {
     {"_raceproxy_gibbs_race", (DL_FUNC) &_raceproxy_gibbs_race, 10},
+    {"_rcpp_module_boot_stan_fit4model_distr_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4model_distr_mod, 0},
     {NULL, NULL, 0}
 };
 
