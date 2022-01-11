@@ -24,22 +24,20 @@ data {
 
     // prior
     real<lower=0> n_prior_obs;
-    real<lower=0> prior_gzr_scale;
 }
 
 transformed data {
-    vector[n_r] lpr_base[N];
+    simplex[n_r] pr_base[N];
     vector[n_x] alpha = p_x * n_prior_obs;
 
     for (i in 1:N) {
-        lpr_base[i] = lp_sr[S[i]]' + lp_gzr[GZ[i]]' + lp_r;
-        lpr_base[i] -= log_sum_exp(lpr_base[i]);
+        vector[n_r] tmp = lp_sr[S[i]]' + lp_gzr[GZ[i]]' + lp_r;
+        pr_base[i] = exp(tmp - log_sum_exp(tmp));
     }
 }
 
 parameters {
     simplex[n_x] p_xrgz_raw[n_gz, n_r];
-    vector[n_r-1] p_gzr_adj[n_gz];
 }
 
 transformed parameters {
@@ -55,17 +53,13 @@ transformed parameters {
 
 model {
     for (i in 1:N) {
-        //vector[n_x] pr_x = p_xrgz[GZ[i]] * exp(append_row(p_gzr_adj[GZ[i]], 0.0) + lpr_base[i]);
-        //pr_x /= sum(pr_x);
-        //X[i] ~ categorical(pr_x);
-        X[i] ~ categorical(p_xrgz[GZ[i]] * exp(lpr_base[i]));
+        X[i] ~ categorical(p_xrgz[GZ[i]] * pr_base[i]);
     }
 
     for (i in 1:n_gz) {
         for (r in 1:n_r) {
             p_xrgz_raw[i, r] ~ dirichlet(alpha);
         }
-        p_gzr_adj[i] ~ normal(0, prior_gzr_scale);
     }
 }
 

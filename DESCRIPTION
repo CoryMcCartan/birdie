@@ -11,6 +11,7 @@ Imports:
     dplyr,
     glue,
     methods,
+    wru,
     Rcpp (>= 0.12.0),
     RcppParallel (>= 5.0.1),
     readr,
