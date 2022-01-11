@@ -2,34 +2,11 @@ library(tidyverse)
 library(here)
 library(zipWRUext2)
 library(lpSolve)
+devtools::load_all(".")
 
 if (!file.exists(voterfile <- here("data/nc_voters.rds"))) {
-    url = "https://s3.amazonaws.com/dl.ncsbe.gov/data/ncvoter31.zip"
-    zipfile = "data/ncvoter31.zip"
-    download.file(url, here(zipfile))
-    unzip(here(zipfile), exdir=here("data"))
-    rawfile = here("data/ncvoter31.txt")
-
-    voters_raw = read_tsv(rawfile, show_col_types=F,
-                          col_types=cols(birth_age="i", birth_year="i", .default="c"))
-
-    race_codes = c(A="asian", B="black", I="other", M="other", O="other",
-                   P="other", W="white")
-    party_codes = c(UNA="ind", DEM="dem", REP="rep", LIB="lib")
-
-    voters = voters_raw %>%
-        filter(race_code != "U", ethnic_code != "UN") %>%
-        mutate(race = as_factor(if_else(ethnic_code == "HL", "hisp",
-                                        race_codes[race_code])),
-               gender = as_factor(gender_code),
-               party = as_factor(party_codes[party_cd]),
-               lic = drivers_lic == "Y") %>%
-        select(last_name:middle_name, suffix=name_suffix_lbl, zip=zip_code,
-               race, gender, party, lic)
-
+    voters = make_nc_df("Orange")
     write_rds(voters, voterfile, compress="gz")
-    unlink(zipfile)
-    unlink(rawfile)
 } else {
     voters = read_rds(voterfile)
 }

@@ -344,7 +344,7 @@ data sets.  The joint posterior
   R_i, \vb p_{X|R_i}(G_i, W_i))\Pr(W_i, G_i \mid R_i) \Pr(S_i \mid R_i) \Pr(R_i) \prod_{r
               \in \cR} P(\vb p_{X|r}) \\
   \propto \ & \prod_{r \in \cR} \prod_{i=1}^N  \left[p_r \prod_{s \in \cS}
-              \vb p_{s|r}^{\mathbf{1}\{S_i = s\}} \prod_{g \in \cG} \prod_{w \in \cW}
+             p_{s|r}^{\mathbf{1}\{S_i = s\}} \prod_{g \in \cG} \prod_{w \in \cW}
              \left[ \left(\prod_{x \in \cX} p_{x|r}(g,w)^{\mathbf{1}\{X_i = x\}}\right)
               p_{wg|r}\right]^{\mathbf{1}\{G_i = g, W_i =
               w\}} \right]^{\mathbf{1}\{R_i = r\}} \\
@@ -403,7 +403,7 @@ subject to
 \begin{align}
   \omega \ \ge \ 0, \quad \sum_{r=1}^K \omega_{ir} \ = \ 1 & \\
   \frac{1}{\sum_{i: X_i = x, W_i =w} \mathbf{1}\{Y_i = y\}} \sum_{i:
-  X_i  = x, W_i =w} 
+  X_i  = x, W_i =w}
   \mathbf{1}\{Y_i = y\} \omega \ = \ & \frac{1}{n_{xw}} \sum_{i: X_i = x, W_i =w} \mathbf{1}\{Y_i = y\}
 \end{align}
 for each $y$ where $\mathcal{D}$ is a suitable distance measure and

@@ -10,14 +10,19 @@ Imports:
     rlang (>= 0.1.2),
     Rcpp,
     cli,
+    glue,
+    readr,
+    withr,
     tidyselect,
     dplyr
 Suggests: 
     roxygen2,
-    zipWRUext2
+    zipWRUext2,
+    tigris
 LinkingTo: 
     Rcpp,
-    RcppArmadillo
+    RcppArmadillo,
+    cli
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
