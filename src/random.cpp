@@ -5,14 +5,14 @@ uvec rcat(int n, const vec probs) {
     return as<uvec>(sample(m, n, TRUE, wrap(probs)));
 }
 
-
 int rcatp(vec probs, double u) {
     int m = probs.size();
-    probs = cumsum(probs);
-    u *= probs[m - 1];
     int j;
-    for (j = 0; j < m; j++)
-        if (probs[j] > u) break;
+    for (j = 1; j < m; j++) probs[j] += probs[j - 1];
+    u *= probs[m - 1];
+    for (j = 0; j < m; j++) {
+        if (probs[j] >= u) break;
+    }
 
     return j + 1;
 }
