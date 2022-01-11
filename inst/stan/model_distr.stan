@@ -3,19 +3,6 @@
 // Cory McCartan, Janurary 2022
 ////////////////////////////////////////
 
-/*
-functions {
-    real partial_sum(array[] int X_slice, int start, int end,
-                     array[] matrix p_xrgz, array[] simplex pr_base) {
-        real lp = 0.0;
-        for (i in start:end) {
-            lp += categorical_lpmf(x_slice, p_xrgz[GZ[i]] * pr_base[i]);
-        }
-        return lp;
-    }
-}
-*/
-
 data {
     int N; // individuals
     int n_x; // X
@@ -29,31 +16,33 @@ data {
     int<lower=1, upper=n_gz> GZ[N];
 
     // probabilities from data and Census
-    matrix<lower=0>[n_s, n_r] p_sr; // p(S | R)
-    matrix<lower=0>[n_gz, n_r] p_gzr; // p(G,Z | R)
-    vector<lower=0>[n_r] p_r; // p(R)
-    vector<lower=0>[n_gz] p_gz; // p(G)
+    matrix[n_s, n_r] lp_sr; // p(S | R)
+    matrix[n_gz, n_r] lp_gzr; // p(G,Z | R)
+    vector[n_r] lp_r; // p(R)
+    simplex[n_gz] p_gz; // p(G)
+    simplex[n_x] p_x; // p(X)
 
     // prior
     real<lower=0> n_prior_obs;
+    real<lower=0> prior_gzr_scale;
 }
 
 transformed data {
-    simplex[n_r] pr_base[N];
-    vector[n_x] alpha = rep_vector(n_prior_obs, n_x);
+    vector[n_r] lpr_base[N];
+    vector[n_x] alpha = p_x * n_prior_obs;
 
     for (i in 1:N) {
-        pr_base[i] = p_sr[S[i]]' .* p_gzr[GZ[i]]' .* p_r;
-        pr_base[i] /= sum(pr_base[i]);
+        lpr_base[i] = lp_sr[S[i]]' + lp_gzr[GZ[i]]' + lp_r;
+        lpr_base[i] -= log_sum_exp(lpr_base[i]);
     }
 }
 
 parameters {
     simplex[n_x] p_xrgz_raw[n_gz, n_r];
+    vector[n_r-1] p_gzr_adj[n_gz];
 }
 
 transformed parameters {
-    // prep
     matrix[n_x, n_r] p_xrgz[n_gz];
     for (i in 1:n_gz) {
         for (r in 1:n_r) {
@@ -65,17 +54,18 @@ transformed parameters {
 }
 
 model {
-    // log posterior
     for (i in 1:N) {
-        X[i] ~ categorical(p_xrgz[GZ[i]] * pr_base[i]);
+        //vector[n_x] pr_x = p_xrgz[GZ[i]] * exp(append_row(p_gzr_adj[GZ[i]], 0.0) + lpr_base[i]);
+        //pr_x /= sum(pr_x);
+        //X[i] ~ categorical(pr_x);
+        X[i] ~ categorical(p_xrgz[GZ[i]] * exp(lpr_base[i]));
     }
-    //int grainsize = 1;
-    //target += reduce_sum(partial_sum, X, grainsize, p_xrgz, pr_base);
 
     for (i in 1:n_gz) {
         for (r in 1:n_r) {
             p_xrgz_raw[i, r] ~ dirichlet(alpha);
         }
+        p_gzr_adj[i] ~ normal(0, prior_gzr_scale);
     }
 }
 
