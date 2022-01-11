@@ -1,3 +1,6 @@
+# UTILITIES for studying NC
+
+
 make_nc_df = function(county="Dare") {
     rlang::check_installed("tigris", "NC voter data")
     counties = tigris::fips_codes$county[tigris::fips_codes$state == "NC"]
@@ -32,4 +35,60 @@ make_nc_df = function(county="Dare") {
     unlink(rawfile)
 
     voters
+}
+
+
+calc_joints = function(p_xr, voters, fit, warmup = 1:100) {
+    xr = list(true = p_xr)
+
+    xr$base_surn = map(rownames(p_xr), ~ colMeans(fit$base_surn * (voters$party == .))) %>%
+        do.call(rbind, .) %>%
+        `rownames<-`(rownames(p_xr))
+
+    xr$base = map(rownames(p_xr), ~ colMeans(fit$baseline * (voters$party == .))) %>%
+        do.call(rbind, .) %>%
+        `rownames<-`(rownames(p_xr))
+
+    if ("gibbs" %in% names(fit)) {
+        xr$gibbs = map(1:5, function(race) {
+            map_dbl(rownames(p_xr), ~ mean((fit$gibbs[, -warmup] == race) * (voters$party == .)))
+        }) %>%
+            do.call(cbind, .) %>%
+            `rownames<-`(rownames(p_xr)) %>%
+            `colnames<-`(colnames(p_xr))
+    }
+
+    if ("stan" %in% names(fit)) {
+        if (class(fit$stan) == "stanfit") {
+            draws = rstan::extract(fit$stan, "p_xr")$p_xr
+            xr$stan = (colMeans(draws) %*% diag(p_r)) %>%
+                `rownames<-`(rownames(p_xr)) %>%
+                `colnames<-`(colnames(p_xr))
+            xr$stan_low = apply(draws, 2:3, \(x) quantile(x, 0.05)) %*% diag(p_r)
+            xr$stan_high = apply(draws, 2:3, \(x) quantile(x, 0.95)) %*% diag(p_r)
+            coverage = mean((p_xr > xr$stan_low) & (p_xr < xr$stan_high))
+            cli_inform("Average width: {round(mean(xr$stan_high - xr$stan_low), 3)}")
+            cli_inform("Empirical coverage: {scales::percent(coverage)}")
+        } else {
+            xr$stan =  matrix(nrow=length(p_x), ncol=length(p_r))
+            for (j in 1:length(p_r)) {
+                for (k in 1:length(p_x)) {
+                    xr$stan[k, j] = fit$stan$par[str_glue("p_xr[{k},{j}]")]
+                }
+            }
+            xr$stan = (xr$stan %*% diag(p_r)) %>%
+                `rownames<-`(rownames(p_xr)) %>%
+                `colnames<-`(colnames(p_xr))
+        }
+    }
+
+    xr
+}
+
+print_cond = function(x, title=NULL) {
+    p_r = parent.frame()$p_r
+    out = 100 * x %*% diag(1 / p_r)
+    colnames(out) = names(p_r)
+    if (!is.null(title)) cat(toupper(title), "\n")
+    print(round(out))
 }
