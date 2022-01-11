@@ -7,6 +7,7 @@
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom dplyr tibble as_tibble %>% mutate filter select
 #' @importFrom Rcpp sourceCpp
+#' @importFrom rstan sampling
 #' @useDynLib raceproxy, .registration = TRUE
 ## usethis namespace: end
 NULL

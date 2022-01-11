@@ -3,6 +3,19 @@
 // Cory McCartan, Janurary 2022
 ////////////////////////////////////////
 
+/*
+functions {
+    real partial_sum(array[] int X_slice, int start, int end,
+                     array[] matrix p_xrgz, array[] simplex pr_base) {
+        real lp = 0.0;
+        for (i in start:end) {
+            lp += categorical_lpmf(x_slice, p_xrgz[GZ[i]] * pr_base[i]);
+        }
+        return lp;
+    }
+}
+*/
+
 data {
     int N; // individuals
     int n_x; // X
@@ -56,6 +69,8 @@ model {
     for (i in 1:N) {
         X[i] ~ categorical(p_xrgz[GZ[i]] * pr_base[i]);
     }
+    //int grainsize = 1;
+    //target += reduce_sum(partial_sum, X, grainsize, p_xrgz, pr_base);
 
     for (i in 1:n_gz) {
         for (r in 1:n_r) {
