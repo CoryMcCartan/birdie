@@ -17,6 +17,7 @@
 #'   Defaults to a table from the 2020 decennial census.
 #' @param p_r a vector containing the marginal probabilities for each value of
 #'   `R`. Defaults to the demographics of North Carolina.
+#' @param regularize if `TRUE`, regularize the `S|R` and `G,Z|R` tables
 #' @param alpha the number of pseudo-observations in each `X` category
 #' @param gibbs if `TRUE`, run the Gibbs sampler
 #' @param stan if `TRUE`, run the matrix-based Stan model
@@ -29,7 +30,7 @@
 #' @export
 model_race = function(X, S, G, W=NULL, data=NULL, p_rs=NULL, p_rgz=NULL,
                       p_r=c(white=0.626, black=0.222, hisp=0.098, asian=0.032, other=0.022),
-                      alpha=1,
+                      regularize=TRUE, alpha=7,
                       gibbs=TRUE, stan=TRUE, stan_method=c("vb", "opt", "hmc"),
                       iter=100, thin=1, verbose=FALSE) {
     check_arg = function(x) {
@@ -73,7 +74,7 @@ model_race = function(X, S, G, W=NULL, data=NULL, p_rs=NULL, p_rgz=NULL,
     ## Parse and check input probabilities ----------------
     if (missing(p_rs)) {
         S_vec = as.character(S_vec)
-        p_rs = census_surname_table(S_vec, as_name(enquo(S)), p_r)
+        p_rs = census_surname_table(S_vec, as_name(enquo(S)), p_r, regularize)
         S_vec[!S_vec %in% p_rs[[1]]] = "<generic>"
         S_vec = factor(S_vec, levels=p_rs[[1]])
     } else {
@@ -91,7 +92,7 @@ model_race = function(X, S, G, W=NULL, data=NULL, p_rs=NULL, p_rgz=NULL,
     }
 
     if (missing(p_rgz)) {
-        p_rgz = census_zip_table(G_vec, as_name(enquo(G)), p_r)
+        p_rgz = census_zip_table(G_vec, as_name(enquo(G)), p_r, regularize)
     } else {
         if (!is.data.frame(p_rs)) cli_abort("{.arg p_rgz} must be a data frame.")
         if (!all(colnames(GW) %in% colnames(p_rgz)))
@@ -155,9 +156,9 @@ est_stan = function(X, S, G, p_sr, p_gzr, p_r, alpha, method, iter, verbose) {
         lp_gzr = log(p_gzr),
         lp_r = log(p_r),
         p_gz = prop.table(table(G)),
+        p_x = prop.table(table(X)),
 
-        n_prior_obs = alpha[1],
-        prior_gzr_scale = 0.001#0.7
+        n_prior_obs = alpha[1]
     )
 
     if (method == "opt") {
@@ -167,6 +168,7 @@ est_stan = function(X, S, G, p_sr, p_gzr, p_r, alpha, method, iter, verbose) {
                           tol_grad=1e-6, tol_param=1e-5, init_alpha=1)
     } else if (method == "vb") {
         rstan::vb(stanmodels$model_distr, stan_data,
+                  init=0,
                   pars="p_xr", algorithm="meanfield",
                   eta=1, adapt_engaged=FALSE,
                   grad_samples=2, eval_elbo=50,

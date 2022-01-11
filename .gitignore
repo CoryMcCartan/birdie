@@ -18,3 +18,4 @@ man/
 *.tex
 *.o
 *.so
+*.html

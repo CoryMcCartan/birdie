@@ -1,6 +1,7 @@
 ---
 title: Proxy Race Estimation in North Carolina
 date: January 11, 2022
+output: distill::distill_article
 ---
 
 ```{r setup, include=F}
@@ -16,10 +17,9 @@ devtools::load_all(here("."))
 ```{r prep}
 if (!interactive()) {
     voterfile <- here("data/nc_voters.rds")
-    voters = read_rds(voterfile) %>%
-        select(-starts_with("pred."))
+    voters = read_rds(voterfile) 
 } else {
-    voters = make_nc_df("Hoke") # try Duplin, Hoke, Robeson, Durham, Orange, Wake (largest)
+    voters = make_nc_df("Robeson") # try Duplin, Hoke, Robeson, Durham, Orange, Wake (largest)
 }
 
 # tables
@@ -30,10 +30,11 @@ p_r = colSums(p_xr)
 
 # Fitting the model
 
-```{r fit, message=F}
+```{r fit, message=F, warning=F}
 fit = model_race(party, last_name, zip, data=voters, p_r=p_r,
-                 gibbs=T, stan=T, stan_method="vb",
-                 iter=300,  verbose=TRUE)
+                 regularize=F, alpha=10,
+                 gibbs=T, stan=T, stan_method="vb", 
+                 iter=300, verbose=TRUE)
 xr = calc_joints(p_xr, voters, fit)
 ```
 
@@ -42,7 +43,8 @@ xr = calc_joints(p_xr, voters, fit)
 I_dem = voters$party == "dem"
 I_white = voters$race == "white"
 pr_white = fit$baseline[, "white"]
-summary(glm(I_dem ~ I_white + pr_white, family=binomial()))
+summary(glm(I_dem ~ I_white + pr_white, family=binomial()))$coefficients %>%
+     knitr::kable()
 ```
 
 # Evaluating the methods
@@ -63,7 +65,8 @@ eval_joints(p_xr, "tv",
             lsq_raked = rake(fit$lsq, p_x, p_r),
             nnls = fit$nnls,
             nnls_raked = rake(fit$nnls, p_x, p_r),
-            stan = xr$stan)
+            stan = xr$stan) %>%
+     knitr::kable()
 ```
 
 
@@ -84,7 +87,7 @@ Are the errors in $p(X, R)$ correlated between the methods?
 
 ```{r errors}
 # where is the improvement coming from / are the errors correlated
-cor(as.numeric(p_xr_gibbs - p_xr), as.numeric(p_xr_stan - p_xr))
-cor(as.numeric(p_xr_gibbs - p_xr_base), as.numeric(p_xr_stan - p_xr_base))
-cor(as.numeric(rake(fit$nnls, p_x, p_r) - p_xr_base), as.numeric(p_xr_stan - p_xr_base))
+cor(as.numeric(xr$gibbs - xr$true), as.numeric(xr$stan - xr$true))
+cor(as.numeric(xr$gibbs - xr$base), as.numeric(xr$stan - xr$base))
+cor(as.numeric(rake(fit$nnls, p_x, p_r) - xr$base), as.numeric(xr$stan - xr$base))
 ```
