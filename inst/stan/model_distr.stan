@@ -65,7 +65,12 @@ model {
 
 generated quantities {
     matrix[n_x, n_r] p_xr = rep_matrix(0, n_x, n_r);
+    vector[n_r] p_r[N];
     for (i in 1:n_gz) {
         p_xr += p_gz[i] * p_xrgz[i];
+    }
+    for (i in 1:N) {
+        vector[n_r] tmp = pr_base[i] .* p_xrgz[GZ[i]][X[i]]';
+        p_r[i] = tmp / sum(tmp);
     }
 }
