@@ -22,10 +22,12 @@ make_nc_df = function(county="Dare") {
 
     voters = voters_raw %>%
         filter(race_code != "U", ethnic_code != "UN") %>%
-        mutate(race = as_factor(if_else(ethnic_code == "HL", "hisp",
-                                        race_codes[race_code])),
+        mutate(race = factor(if_else(ethnic_code == "HL", "hisp",
+                                     race_codes[race_code]),
+                             levels=c("white", "black", "hisp", "asian", "other")),
                gender = as_factor(gender_code),
-               party = as_factor(party_codes[party_cd]),
+               party = factor(party_codes[party_cd],
+                              levels=c("dem", "ind", "rep", "lib")),
                lic = drivers_lic == "Y") %>%
         select(last_name:middle_name, suffix=name_suffix_lbl, zip=zip_code,
                race, gender, party, lic) %>%

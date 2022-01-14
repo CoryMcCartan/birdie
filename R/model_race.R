@@ -103,7 +103,7 @@ model_race = function(X, S, G, W=NULL, data=NULL, p_rs=NULL, p_rgz=NULL,
             cli_abort("Some {.arg G}/{.arg W} combinations are missing from {.arg p_rgz}.")
     }
     p_g = prop.table(table(G_vec))
-    p_gzr <<- as.matrix(p_rgz[, -1])
+    p_gzr = as.matrix(p_rgz[, -1])
     for (i in seq_along(p_r)) {
         p_gzr[, i] = p_gzr[, i] * p_g
         p_gzr[, i] = p_gzr[, i] / sum(p_gzr[, i])
@@ -169,13 +169,13 @@ est_stan = function(X, S, G, p_sr, p_gzr, p_r, alpha, method, iter, verbose) {
     } else if (method == "vb") {
         rstan::vb(stanmodels$model_distr, stan_data,
                   init=0,
-                  pars="p_xr", algorithm="meanfield",
+                  pars=c("p_xr", "p_r"), algorithm="meanfield",
                   eta=1, adapt_engaged=FALSE,
                   grad_samples=2, eval_elbo=50,
-                  iter=1e3, importance_resampling=FALSE)
+                  iter=700, importance_resampling=FALSE)
     } else {
-        rstan::sampling(stanmodels$model_distr, stan_data,
-                        chains=1, pars="p_xr", iter=300+iter, warmup=300)
+        rstan::sampling(stanmodels$model_distr, stan_data, pars=c("p_xr", p_r),
+                        chains=1, iter=300+iter, warmup=300)
     }
 }
 
@@ -227,4 +227,18 @@ est_leastsq = function(X, S, p_sr, p_r) {
 
     list(lsq = P_xr_lsq,
          nnls = P_xr_nnls)
+}
+
+
+eval_log_score = function(..., eps=1e-9) {
+    log_score = function(m, eps=1e-9) {
+        R_vec = as.integer(voters$race)
+        mean(log(map_dbl(seq_len(nrow(voters)), \(i) m[i, R_vec[i]] + eps)))
+    }
+
+    scores = rlang::list2(...) %>%
+        vapply(log_score, numeric(1), eps) %>%
+        sort(decreasing=TRUE)
+    tibble(method = names(scores),
+           log_score = scores)
 }

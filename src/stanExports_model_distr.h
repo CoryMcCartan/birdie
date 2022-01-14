@@ -33,7 +33,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_model_distr");
-    reader.add_event(73, 71, "end", "model_model_distr");
+    reader.add_event(78, 76, "end", "model_model_distr");
     return reader;
 }
 #include <stan_meta_header.hpp>
@@ -435,6 +435,7 @@ public:
         names__.push_back("p_xrgz_raw");
         names__.push_back("p_xrgz");
         names__.push_back("p_xr");
+        names__.push_back("p_r");
     }
     void get_dims(std::vector<std::vector<size_t> >& dimss__) const {
         dimss__.resize(0);
@@ -451,6 +452,10 @@ public:
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back(n_x);
+        dims__.push_back(n_r);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(N);
         dims__.push_back(n_r);
         dimss__.push_back(dims__);
     }
@@ -544,11 +549,33 @@ public:
             stan::math::initialize(p_xr, DUMMY_VAR__);
             stan::math::fill(p_xr, DUMMY_VAR__);
             stan::math::assign(p_xr,rep_matrix(0, n_x, n_r));
-            // generated quantities statements
             current_statement_begin__ = 68;
+            validate_non_negative_index("p_r", "n_r", n_r);
+            validate_non_negative_index("p_r", "N", N);
+            std::vector<Eigen::Matrix<double, Eigen::Dynamic, 1> > p_r(N, Eigen::Matrix<double, Eigen::Dynamic, 1>(n_r));
+            stan::math::initialize(p_r, DUMMY_VAR__);
+            stan::math::fill(p_r, DUMMY_VAR__);
+            // generated quantities statements
+            current_statement_begin__ = 69;
             for (int i = 1; i <= n_gz; ++i) {
-                current_statement_begin__ = 69;
+                current_statement_begin__ = 70;
                 stan::math::assign(p_xr, add(p_xr, multiply(get_base1(p_gz, i, "p_gz", 1), get_base1(p_xrgz, i, "p_xrgz", 1))));
+            }
+            current_statement_begin__ = 72;
+            for (int i = 1; i <= N; ++i) {
+                {
+                current_statement_begin__ = 73;
+                validate_non_negative_index("tmp", "n_r", n_r);
+                Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> tmp(n_r);
+                stan::math::initialize(tmp, DUMMY_VAR__);
+                stan::math::fill(tmp, DUMMY_VAR__);
+                stan::math::assign(tmp,elt_multiply(get_base1(pr_base, i, "pr_base", 1), transpose(get_base1(get_base1(p_xrgz, get_base1(GZ, i, "GZ", 1), "p_xrgz", 1), get_base1(X, i, "X", 1), "p_xrgz", 2))));
+                current_statement_begin__ = 74;
+                stan::model::assign(p_r, 
+                            stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
+                            divide(tmp, sum(tmp)), 
+                            "assigning variable p_r");
+                }
             }
             // validate, write generated quantities
             current_statement_begin__ = 67;
@@ -557,6 +584,18 @@ public:
             for (size_t j_2__ = 0; j_2__ < p_xr_j_2_max__; ++j_2__) {
                 for (size_t j_1__ = 0; j_1__ < p_xr_j_1_max__; ++j_1__) {
                     vars__.push_back(p_xr(j_1__, j_2__));
+                }
+            }
+            current_statement_begin__ = 68;
+            size_t p_r_i_0_max__ = N;
+            for (size_t i_0__ = 0; i_0__ < p_r_i_0_max__; ++i_0__) {
+                stan::math::check_simplex(function__, "p_r[i_0__]", p_r[i_0__]);
+            }
+            size_t p_r_j_1_max__ = n_r;
+            size_t p_r_k_0_max__ = N;
+            for (size_t j_1__ = 0; j_1__ < p_r_j_1_max__; ++j_1__) {
+                for (size_t k_0__ = 0; k_0__ < p_r_k_0_max__; ++k_0__) {
+                    vars__.push_back(p_r[k_0__](j_1__));
                 }
             }
         } catch (const std::exception& e) {
@@ -626,6 +665,15 @@ public:
                 param_names__.push_back(param_name_stream__.str());
             }
         }
+        size_t p_r_j_1_max__ = n_r;
+        size_t p_r_k_0_max__ = N;
+        for (size_t j_1__ = 0; j_1__ < p_r_j_1_max__; ++j_1__) {
+            for (size_t k_0__ = 0; k_0__ < p_r_k_0_max__; ++k_0__) {
+                param_name_stream__.str(std::string());
+                param_name_stream__ << "p_r" << '.' << k_0__ + 1 << '.' << j_1__ + 1;
+                param_names__.push_back(param_name_stream__.str());
+            }
+        }
     }
     void unconstrained_param_names(std::vector<std::string>& param_names__,
                                    bool include_tparams__ = true,
@@ -665,6 +713,15 @@ public:
             for (size_t j_1__ = 0; j_1__ < p_xr_j_1_max__; ++j_1__) {
                 param_name_stream__.str(std::string());
                 param_name_stream__ << "p_xr" << '.' << j_1__ + 1 << '.' << j_2__ + 1;
+                param_names__.push_back(param_name_stream__.str());
+            }
+        }
+        size_t p_r_j_1_max__ = (n_r - 1);
+        size_t p_r_k_0_max__ = N;
+        for (size_t j_1__ = 0; j_1__ < p_r_j_1_max__; ++j_1__) {
+            for (size_t k_0__ = 0; k_0__ < p_r_k_0_max__; ++k_0__) {
+                param_name_stream__.str(std::string());
+                param_name_stream__ << "p_r" << '.' << k_0__ + 1 << '.' << j_1__ + 1;
                 param_names__.push_back(param_name_stream__.str());
             }
         }
