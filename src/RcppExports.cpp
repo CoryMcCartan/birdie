@@ -14,31 +14,33 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // gibbs_race
-umat gibbs_race(int iter, int thin, const uvec& X, const uvec& S, const uvec& GZ, const mat& lp_sr, const mat& lp_wgr, const vec& lp_r, const mat& alpha, int verbosity);
-RcppExport SEXP _raceproxy_gibbs_race(SEXP iterSEXP, SEXP thinSEXP, SEXP XSEXP, SEXP SSEXP, SEXP GZSEXP, SEXP lp_srSEXP, SEXP lp_wgrSEXP, SEXP lp_rSEXP, SEXP alphaSEXP, SEXP verbositySEXP) {
+mat gibbs_race(int iter, int warmup, const uvec& X, const uvec& S, const uvec& GZ, const mat& M_sr, const mat& N_gzr, const mat& alpha_sr, const mat& beta_gzr, int verbosity);
+RcppExport SEXP _raceproxy_gibbs_race(SEXP iterSEXP, SEXP warmupSEXP, SEXP XSEXP, SEXP SSEXP, SEXP GZSEXP, SEXP M_srSEXP, SEXP N_gzrSEXP, SEXP alpha_srSEXP, SEXP beta_gzrSEXP, SEXP verbositySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type iter(iterSEXP);
-    Rcpp::traits::input_parameter< int >::type thin(thinSEXP);
+    Rcpp::traits::input_parameter< int >::type warmup(warmupSEXP);
     Rcpp::traits::input_parameter< const uvec& >::type X(XSEXP);
     Rcpp::traits::input_parameter< const uvec& >::type S(SSEXP);
     Rcpp::traits::input_parameter< const uvec& >::type GZ(GZSEXP);
-    Rcpp::traits::input_parameter< const mat& >::type lp_sr(lp_srSEXP);
-    Rcpp::traits::input_parameter< const mat& >::type lp_wgr(lp_wgrSEXP);
-    Rcpp::traits::input_parameter< const vec& >::type lp_r(lp_rSEXP);
-    Rcpp::traits::input_parameter< const mat& >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< const mat& >::type M_sr(M_srSEXP);
+    Rcpp::traits::input_parameter< const mat& >::type N_gzr(N_gzrSEXP);
+    Rcpp::traits::input_parameter< const mat& >::type alpha_sr(alpha_srSEXP);
+    Rcpp::traits::input_parameter< const mat& >::type beta_gzr(beta_gzrSEXP);
     Rcpp::traits::input_parameter< int >::type verbosity(verbositySEXP);
-    rcpp_result_gen = Rcpp::wrap(gibbs_race(iter, thin, X, S, GZ, lp_sr, lp_wgr, lp_r, alpha, verbosity));
+    rcpp_result_gen = Rcpp::wrap(gibbs_race(iter, warmup, X, S, GZ, M_sr, N_gzr, alpha_sr, beta_gzr, verbosity));
     return rcpp_result_gen;
 END_RCPP
 }
 
-RcppExport SEXP _rcpp_module_boot_stan_fit4model_distr_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4simple_additive_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4simple_nonparam_mod();
 
 static const R_CallMethodDef CallEntries[] = {
     {"_raceproxy_gibbs_race", (DL_FUNC) &_raceproxy_gibbs_race, 10},
-    {"_rcpp_module_boot_stan_fit4model_distr_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4model_distr_mod, 0},
+    {"_rcpp_module_boot_stan_fit4simple_additive_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4simple_additive_mod, 0},
+    {"_rcpp_module_boot_stan_fit4simple_nonparam_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4simple_nonparam_mod, 0},
     {NULL, NULL, 0}
 };
 

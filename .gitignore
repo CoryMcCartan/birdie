@@ -7,6 +7,8 @@ data-raw/*/
 
 man/
 
+*.rds
+
 *.swp
 *.bak
 *.tmp

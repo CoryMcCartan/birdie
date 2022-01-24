@@ -1,6 +1,6 @@
 
 # Helper function to make an R|S table
-census_surname_table = function(S, S_name, p_r, regularize=TRUE) {
+census_surname_table = function(S, S_name, p_r, regularize=TRUE, counts=FALSE) {
     if (length(p_r) != 5)
         cli_abort(c("Number of racial categories doesn't match the Census table.",
                     "i"="Categories should be White, Black, Hispanic, Asian, and other."))
@@ -14,13 +14,22 @@ census_surname_table = function(S, S_name, p_r, regularize=TRUE) {
     x = rbind(x, list(surname="<generic>", surname.match="ALL OTHER NAMES",
                       p_whi=p_r[1], p_bla=p_r[2], p_his=p_r[3], p_asi=p_r[4], p_oth=p_r[5]))
 
-    if (regularize) {
+    if (regularize | counts) {
         names_d = read_csv(here("data/Names_2010Census.csv"), show_col_types=F) %>%
             select(surname.match=name, count)
+    }
+
+    if (regularize) {
         x = left_join(x, names_d, by="surname.match") %>%
             mutate(count = dplyr::coalesce(count, 50))
         m = (0.2 + as.matrix(x[, 3:7]) * x$count) / (x$count + 1)
         x[, 3:7] = m
+        x$count = NULL
+    }
+    if (counts) {
+        x = left_join(x, names_d, by="surname.match") %>%
+            mutate(count = dplyr::coalesce(count, 50))
+        x[, 3:7] = as.matrix(x[, 3:7]) * (x$count + regularize)
         x$count = NULL
     }
 
@@ -30,7 +39,7 @@ census_surname_table = function(S, S_name, p_r, regularize=TRUE) {
 }
 
 # Helper function to make an R|G table
-census_zip_table = function(G, G_name, p_r, regularize=TRUE) {
+census_zip_table = function(G, G_name, p_r, regularize=TRUE, count=FALSE) {
     if (!rlang::is_installed("zipWRUext2"))
         cli_abort(c("{.pkg zipWRUext2} must be installed to use ZIP code information automatically.",
                     ">"=' {.code devtools::install_github("https://github.com/jcuriel-unc/zipWRUext",
@@ -48,7 +57,8 @@ census_zip_table = function(G, G_name, p_r, regularize=TRUE) {
     x = x[match_idx, ]
     alpha = if (regularize) c(3.1, 0.6, 0.8, 0.3, 0.2) else rep(0, 5)
     for (i in seq_along(p_r)) {
-        x[, 2+i] = (x[, 2+i] + alpha[i]) / (x[, 2] + sum(alpha))
+        denom = if (count) 1 else (x[, 2] + sum(alpha))
+        x[, 2+i] = (x[, 2+i] + alpha[i]) / denom
     }
     x = x[, -2]
     colnames(x) = c(G_name, "white", "black", "hisp", "asian", "other")
