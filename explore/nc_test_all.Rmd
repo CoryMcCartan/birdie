@@ -51,7 +51,7 @@ if (!interactive()) {
     voters = read_rds(voterfile) 
 } else {
     # try Duplin, Hoke, Robeson, Durham, Orange, Wake (largest)
-    voters = make_nc_df("Hoke")
+    voters = make_nc_df("Wake")
 }
 
 # tables
@@ -88,9 +88,10 @@ $\Pr(X, R)$, based on the identifying equation above. For each method,
 `calc_joints()` computes the implied estimate of $\Pr(X, R)$.
 
 ```{r fit, message=F, warning=F, results="hide"}
-fit = model_race(party, last_name, zip, data=voters, p_r=p_r,
-                 regularize=F, alpha=10,
-                 gibbs=T, stan=T, stan_method="vb", 
+fit = model_race(party, last_name, zip, Z=c(age, gender), data=voters, p_r=p_r,
+                 regularize=F, alpha=3,
+                 methods=c("bis", "bisg", "nonparam", "additive"),
+                 stan_method="vb", 
                  iter=400, verbose=TRUE)
 xr = calc_joints(p_xr, voters, fit)
 ```
@@ -117,9 +118,10 @@ First, by visual inspection, the above model ("Stan") is closer to the true
 joint distribution than the naive imputations.
 
 ```{r peek, results="hold"}
+print_cond(xr$bisg, "bisg")
 print_cond(xr$true, "true")
-print_cond(xr$base, "naive bayes")
-print_cond(xr$stan, "stan")
+print_cond(xr$nonparam, "nonparam")
+print_cond(xr$additive, "additive")
 ```
 
 We gain a more comprehensive picture by computing the total variation (TV)
@@ -138,15 +140,17 @@ and the $X$-margin is already extremely close to correct.
 
 ```{r eval}
 eval_joints(xr$true, "tv",
-            naive_name = xr$base_surn,
-            naive = xr$base,
-            gibbs = xr$gibbs,
-            gibbs_raked = rake(xr$gibbs, p_x, p_r),
-            lsq = fit$lsq,
-            lsq_raked = rake(fit$lsq, p_x, p_r),
-            nnls = fit$nnls,
-            nnls_raked = rake(fit$nnls, p_x, p_r),
-            stan = xr$stan) %>%
+            bis = xr$bis,
+            bisg = xr$bisg,
+            #gibbs = xr$gibbs,
+            #gibbs_raked = rake(xr$gibbs, p_x, p_r),
+            #lsq = fit$lsq,
+            #lsq_raked = rake(fit$lsq, p_x, p_r),
+            #nnls = fit$nnls,
+            #nnls_raked = rake(fit$nnls, p_x, p_r),
+            #additive_raked = rake(xr$additive, p_x, p_r),
+            nonparam = xr$nonparam,
+            additive = xr$additive) %>%
      knitr::kable()
 ```
 

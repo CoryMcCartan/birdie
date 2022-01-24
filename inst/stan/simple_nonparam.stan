@@ -1,5 +1,5 @@
 ////////////////////////////////////////
-// GIBBS SAMPLER FOR RACE IMPUTATION
+// NONPARAMETRIC MODEL FOR RACE IMPUTATION
 // Cory McCartan, Janurary 2022
 ////////////////////////////////////////
 
@@ -8,35 +8,19 @@ data {
     int n_x; // X
     int n_r; // races
     int n_gz; // G/Z combinations
-    int n_s; // names
 
     // observed data
     int<lower=1, upper=n_x> X[N];
-    int<lower=1, upper=n_s> S[N];
     int<lower=1, upper=n_gz> GZ[N];
-
-    // probabilities from data and Census
-    matrix[n_s, n_r] lp_sr; // p(S | R)
-    matrix[n_gz, n_r] lp_gzr; // p(G,Z | R)
-    vector[n_r] lp_r; // p(R)
-    simplex[n_gz] p_gz; // p(G)
-    simplex[n_x] p_x; // p(X)
+    simplex[n_r] pr_base[N];
+    simplex[n_gz] p_gz; // p(G, Z)
 
     // prior
     real<lower=0> n_prior_obs;
 }
 
-transformed data {
-    simplex[n_r] pr_base[N];
-    vector[n_x] alpha = p_x * n_prior_obs;
-
-    for (i in 1:N) {
-        vector[n_r] tmp = lp_sr[S[i]]' + lp_gzr[GZ[i]]' + lp_r;
-        pr_base[i] = exp(tmp - log_sum_exp(tmp));
-    }
-}
-
 parameters {
+    vector<lower=0>[n_x] alpha;
     simplex[n_x] p_xrgz_raw[n_gz, n_r];
 }
 
@@ -61,16 +45,12 @@ model {
             p_xrgz_raw[i, r] ~ dirichlet(alpha);
         }
     }
+    alpha ~ gamma(1.5, 1.5 / n_prior_obs);
 }
 
 generated quantities {
     matrix[n_x, n_r] p_xr = rep_matrix(0, n_x, n_r);
-    vector[n_r] p_r[N];
     for (i in 1:n_gz) {
         p_xr += p_gz[i] * p_xrgz[i];
-    }
-    for (i in 1:N) {
-        vector[n_r] tmp = pr_base[i] .* p_xrgz[GZ[i]][X[i]]';
-        p_r[i] = tmp / sum(tmp);
     }
 }
