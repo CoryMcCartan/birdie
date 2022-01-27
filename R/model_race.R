@@ -158,7 +158,7 @@ model_race = function(X, S, G, Z=NULL, data=NULL, p_rs=NULL, p_rgz=NULL,
     }
 
     # TODO remove
-    d <<- list(X=X_vec, GZ=GZ_vec, pr_base=pr_base)
+    d <<- list(X=X_vec, GZ=GZ_vec, GZ_mat=GZ_mat, GZ_var=GZ_var, pr_base=pr_base)
 
     if ("nonparam" %in% methods) {
         out$nonparam = est_nonparam(X_vec, GZ_vec, pr_base, alpha[1],

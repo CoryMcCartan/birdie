@@ -89,39 +89,38 @@ $\Pr(X, R)$, based on the identifying equation above. For each method,
 
 ```{r fit, message=F, warning=F, results="hide"}
 fit = model_race(party, last_name, zip, Z=c(age, gender), data=voters, p_r=p_r,
-                 regularize=F, alpha=3,
-                 methods=c("bis", "bisg", "nonparam", "additive"),
+                 regularize=T, alpha=3,
+                 methods=c("bis", "bisg"),
                  stan_method="vb", 
                  iter=400, verbose=TRUE)
+
+{
+fit$pyro = est_additive_pyro(d$X, d$GZ_mat, d$GZ_var, d$pr_base,
+                             iter=5000, lr=0.005, subsamp=2048, 
+                             smooth=300, tol=0.01,
+                             reload=TRUE)
+plot(fit$pyro$loss, type='l', ylim=c(min(c(0, fit$pyro$loss)), max(fit$pyro$loss)))
+lines(seq_along(fit$pyro$slope)*100, fit$pyro$slope, col='red')
+}
 xr = calc_joints(p_xr, voters, fit)
-```
-
-Before we evaluate each method, it's worth checking that some kind of fancy
-adjustment is in fact necessary. We can do so by seeing how much correlation
-between race and party remains after conditioning on the naively-imputed race.
-Unfortunately, there's quite a bit, indicating that the location-surname
-imputations are missing some key sources of association between party and race.
-Without further adjustment, we can expect estimates of $X\mid R$ to be off.
-
-```{r confounding}
-# evaluate confounding
-I_dem = voters$party == "dem"
-I_white = voters$race == "white"
-pr_white = fit$baseline[, "white"]
-summary(glm(I_dem ~ I_white + pr_white, family=binomial()))$coefficients %>%
-     knitr::kable()
+eval_joints(xr$true, "tv",
+            bis = xr$bis,
+            bisg = xr$bisg,
+            nonparam = xr$nonparam,
+            additive = xr$additive,
+            pyro = xr$pyro)
 ```
 
 # Evaluating the methods
 
-First, by visual inspection, the above model ("Stan") is closer to the true
-joint distribution than the naive imputations.
+First, by visual inspection, the above model is closer to the true joint
+distribution than the naive imputations.
 
 ```{r peek, results="hold"}
 print_cond(xr$bisg, "bisg")
 print_cond(xr$true, "true")
-print_cond(xr$nonparam, "nonparam")
 print_cond(xr$additive, "additive")
+print_cond(xr$pyro, "pyro")
 ```
 
 We gain a more comprehensive picture by computing the total variation (TV)
@@ -135,22 +134,16 @@ iterative proportional fitting) so that the margins match the known sample
 marginal distribution $\Pr(X)$ and the assumed $\Pr(R)$ (here, we use the true
 $\Pr(R)$; in some applications $\Pr(R)$ may be unknown). As we can see, raking
 generally improves the quality of the estimate. Raking is not useful for the
-model explored here ("Stan"), since that model estimates $\Pr(X|R)$ directly,
-and the $X$-margin is already extremely close to correct.
+model explored here, since that model estimates $\Pr(X|R)$ directly, and the
+$X$-margin is already extremely close to correct.
 
 ```{r eval}
 eval_joints(xr$true, "tv",
             bis = xr$bis,
             bisg = xr$bisg,
-            #gibbs = xr$gibbs,
-            #gibbs_raked = rake(xr$gibbs, p_x, p_r),
-            #lsq = fit$lsq,
-            #lsq_raked = rake(fit$lsq, p_x, p_r),
-            #nnls = fit$nnls,
-            #nnls_raked = rake(fit$nnls, p_x, p_r),
-            #additive_raked = rake(xr$additive, p_x, p_r),
             nonparam = xr$nonparam,
-            additive = xr$additive) %>%
+            pyro = xr$pyro) %>%
+            #additive = xr$additive) %>%
      knitr::kable()
 ```
 

@@ -49,19 +49,19 @@ calc_joints = function(p_xr, voters, fit, warmup = 1:100) {
     xr = list(true = p_xr)
 
     if ("bis" %in% names(fit)) {
-        xr$bis = map(rownames(p_xr), ~ colMeans(fit$bis * (voters$party == .))) %>%
+        xr$bis = purrr::map(rownames(p_xr), ~ colMeans(fit$bis * (voters$party == .))) %>%
             do.call(rbind, .) %>%
             `rownames<-`(rownames(p_xr))
     }
 
     if ("bisg" %in% names(fit)) {
-        xr$bisg = map(rownames(p_xr), ~ colMeans(fit$bisg * (voters$party == .))) %>%
+        xr$bisg = purrr::map(rownames(p_xr), ~ colMeans(fit$bisg * (voters$party == .))) %>%
             do.call(rbind, .) %>%
             `rownames<-`(rownames(p_xr))
     }
 
     if ("gibbs" %in% names(fit)) {
-        xr$gibbs = map(rownames(p_xr), ~ colMeans(fit$gibbs * (voters$party == .))) %>%
+        xr$gibbs = purrr::map(rownames(p_xr), ~ colMeans(fit$gibbs * (voters$party == .))) %>%
             do.call(rbind, .) %>%
             `rownames<-`(rownames(p_xr))
         #xr$gibbs = map(1:5, function(race) {
@@ -81,6 +81,7 @@ calc_joints = function(p_xr, voters, fit, warmup = 1:100) {
             xr$nonparam_low = apply(draws, 2:3, \(x) quantile(x, 0.05)) %*% diag(p_r)
             xr$nonparam_high = apply(draws, 2:3, \(x) quantile(x, 0.95)) %*% diag(p_r)
             coverage = mean((p_xr > xr$nonparam_low) & (p_xr < xr$nonparam_high))
+            cli_inform("NONPARAM:")
             cli_inform("Average width: {round(mean(xr$nonparam_high - xr$nonparam_low), 3)}")
             cli_inform("Empirical coverage: {scales::percent(coverage)}")
         } else {
@@ -105,6 +106,7 @@ calc_joints = function(p_xr, voters, fit, warmup = 1:100) {
             xr$additive_low = apply(draws, 2:3, \(x) quantile(x, 0.05)) %*% diag(p_r)
             xr$additive_high = apply(draws, 2:3, \(x) quantile(x, 0.95)) %*% diag(p_r)
             coverage = mean((p_xr > xr$additive_low) & (p_xr < xr$additive_high))
+            cli_inform("ADDITIVE:")
             cli_inform("Average width: {round(mean(xr$additive_high - xr$additive_low), 3)}")
             cli_inform("Empirical coverage: {scales::percent(coverage)}")
         } else {
@@ -118,6 +120,18 @@ calc_joints = function(p_xr, voters, fit, warmup = 1:100) {
                 `rownames<-`(rownames(p_xr)) %>%
                 `colnames<-`(colnames(p_xr))
         }
+    }
+
+    if ("pyro" %in% names(fit)) {
+        xr$pyro = (fit$pyro$p_xr %*% diag(p_r)) %>%
+            `rownames<-`(rownames(p_xr)) %>%
+            `colnames<-`(colnames(p_xr))
+        xr$pyro_low = (fit$pyro$p_xr_low %*% diag(p_r))
+        xr$pyro_high = (fit$pyro$p_xr_high %*% diag(p_r))
+        coverage = mean((p_xr > xr$pyro_low) & (p_xr < xr$pyro_high))
+        cli_inform("PYRO:")
+        cli_inform("Average width: {round(mean(xr$pyro_high - xr$pyro_low), 3)}")
+        cli_inform("Empirical coverage: {scales::percent(coverage)}")
     }
 
     xr
@@ -201,7 +215,7 @@ census_zip_age_sex_table = function(GZ, GZ_vec, p_r, regularize=TRUE, count=FALS
         cli_abort(c("Number of racial categories doesn't match the Census data.",
                     "i"="Categories should be White, Black, Hispanic, Asian, and other."))
 
-    x = read_rds("data/nc_zip_age_sex_race.rds")
+    x = readr::read_rds("data/nc_zip_age_sex_race.rds")
     x_nozip = group_by(x, age, sex) %>%
         summarize(across(total:other, sum)) %>%
         ungroup() %>%
