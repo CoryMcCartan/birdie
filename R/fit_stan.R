@@ -13,22 +13,25 @@ est_nonparam = function(X, GZ, pr_base, alpha, method, iter, verbose) {
         n_prior_obs = alpha[1]
     )
 
+    tictoc::tic()
     if (method == "opt") {
-        rstan::optimizing(stanmodels$simple_nonparam, stan_data,
-                          verbose=verbose,
-                          #draws=iter, importance_resampling=TRUE,
-                          tol_grad=1e-6, tol_param=1e-5, init_alpha=1)
+        out = rstan::optimizing(stanmodels$simple_nonparam, stan_data,
+                                verbose=verbose,
+                                #draws=iter, importance_resampling=TRUE,
+                                tol_grad=1e-6, tol_param=1e-5, init_alpha=1)
     } else if (method == "vb") {
-        rstan::vb(stanmodels$simple_nonparam, stan_data,
-                  init=0,
-                  pars="p_xr", algorithm="meanfield",
-                  eta=1, adapt_engaged=FALSE,
-                  grad_samples=2, eval_elbo=50, elbo_samples=75,
-                  iter=700, importance_resampling=FALSE)
+        out = rstan::vb(stanmodels$simple_nonparam, stan_data,
+                        init=0,
+                        pars="p_xr", algorithm="meanfield",
+                        eta=1, adapt_engaged=FALSE,
+                        grad_samples=2, eval_elbo=50, elbo_samples=75,
+                        iter=700, importance_resampling=FALSE)
     } else {
-        rstan::sampling(stanmodels$simple_nonparam, stan_data, pars="p_xr",
-                        chains=1, iter=300+iter, warmup=300)
+        out = rstan::sampling(stanmodels$simple_nonparam, stan_data, pars="p_xr",
+                              chains=1, iter=300+iter, warmup=300)
     }
+    tictoc::toc()
+    out
 }
 
 est_additive = function(X, GZ, GZ_var, pr_base, method, iter, verbose) {
@@ -50,22 +53,25 @@ est_additive = function(X, GZ, GZ_var, pr_base, method, iter, verbose) {
         prior_beta_scale = 1.0
     )
 
+    tictoc::tic()
     if (method == "opt") {
-        rstan::optimizing(stanmodels$simple_additive, stan_data,
-                          verbose=verbose,
-                          #draws=iter, importance_resampling=TRUE,
-                          tol_grad=1e-6, tol_param=1e-5, init_alpha=1)
+        out = rstan::optimizing(stanmodels$simple_additive, stan_data,
+                                verbose=verbose,
+                                #draws=iter, importance_resampling=TRUE,
+                                tol_grad=1e-6, tol_param=1e-5, init_alpha=1)
     } else if (method == "vb") {
-        rstan::vb(stanmodels$simple_additive, stan_data,
-                  init=0,
-                  pars=c("p_xr", "beta_scale"), algorithm="meanfield",
-                  eta=1, adapt_engaged=FALSE,
-                  grad_samples=1, eval_elbo=50, elbo_samples=75,
-                  tol_rel_obj=0.002,
-                  iter=700, importance_resampling=FALSE)
+        out = rstan::vb(stanmodels$simple_additive, stan_data,
+                        init=0,
+                        pars=c("p_xr", "beta_scale"), algorithm="meanfield",
+                        eta=1, adapt_engaged=FALSE,
+                        grad_samples=1, eval_elbo=50, elbo_samples=75,
+                        tol_rel_obj=0.002,
+                        iter=700, importance_resampling=FALSE)
     } else {
-        rstan::sampling(stanmodels$simple_additive, stan_data, pars="p_xr",
-                        #init=list(list(p_xr=xr$bisg)),
-                        chains=1, iter=300+iter, warmup=300)
+        out = rstan::sampling(stanmodels$simple_additive, stan_data, pars="p_xr",
+                              #init=list(list(p_xr=xr$bisg)),
+                              chains=1, iter=300+iter, warmup=300)
     }
+    tictoc::toc()
+    out
 }

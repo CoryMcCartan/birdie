@@ -8,6 +8,8 @@ data-raw/*/
 man/
 
 *.rds
+__pycache__
+*.pyc
 
 *.swp
 *.bak

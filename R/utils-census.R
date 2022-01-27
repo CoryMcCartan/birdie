@@ -15,7 +15,8 @@ census_surname_table = function(S, S_name, p_r, regularize=TRUE, counts=FALSE) {
                       p_whi=p_r[1], p_bla=p_r[2], p_his=p_r[3], p_asi=p_r[4], p_oth=p_r[5]))
 
     if (regularize | counts) {
-        names_d = read_csv(here("data/Names_2010Census.csv"), show_col_types=F) %>%
+        names_d = readr::read_csv(system.file("data/Names_2010Census.csv", package="raceproxy"),
+                                  show_col_types=F) %>%
             select(surname.match=name, count)
     }
 

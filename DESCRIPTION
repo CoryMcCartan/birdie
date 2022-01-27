@@ -37,8 +37,8 @@ LinkingTo:
 Config/reticulate:
     list(
         packages = list(
-            list(package = "numpy"),
-            list(package = "pyro-ppl"),
+            list(package = "numpyro"),
+            list(package = "pyro-ppl")
         )
     )
 License: MIT + file LICENSE
