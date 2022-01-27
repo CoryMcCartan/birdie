@@ -123,14 +123,26 @@ calc_joints = function(p_xr, voters, fit, warmup = 1:100) {
     }
 
     if ("pyro" %in% names(fit)) {
-        xr$pyro = (fit$pyro$p_xr %*% diag(p_r)) %>%
+        xr$pyro = (colMeans(fit$pyro$p_xr) %*% diag(p_r)) %>%
             `rownames<-`(rownames(p_xr)) %>%
             `colnames<-`(colnames(p_xr))
-        xr$pyro_low = (fit$pyro$p_xr_low %*% diag(p_r))
-        xr$pyro_high = (fit$pyro$p_xr_high %*% diag(p_r))
+        xr$pyro_low = apply(fit$pyro$p_xr, 2:3, \(x) quantile(x, 0.05)) %*% diag(p_r)
+        xr$pyro_high = apply(fit$pyro$p_xr, 2:3, \(x) quantile(x, 0.95)) %*% diag(p_r)
         coverage = mean((p_xr > xr$pyro_low) & (p_xr < xr$pyro_high))
         cli_inform("PYRO:")
         cli_inform("Average width: {round(mean(xr$pyro_high - xr$pyro_low), 3)}")
+        cli_inform("Empirical coverage: {scales::percent(coverage)}")
+    }
+
+    if ("pyro_pooled" %in% names(fit)) {
+        xr$pyro_pooled = (colMeans(fit$pyro_pooled$p_xr) %*% diag(p_r)) %>%
+            `rownames<-`(rownames(p_xr)) %>%
+            `colnames<-`(colnames(p_xr))
+        xr$pyro_pooled_low = apply(fit$pyro_pooled$p_xr, 2:3, \(x) quantile(x, 0.05)) %*% diag(p_r)
+        xr$pyro_pooled_high = apply(fit$pyro_pooled$p_xr, 2:3, \(x) quantile(x, 0.95)) %*% diag(p_r)
+        coverage = mean((p_xr > xr$pyro_pooled_low) & (p_xr < xr$pyro_pooled_high))
+        cli_inform("PYRO POOLED:")
+        cli_inform("Average width: {round(mean(xr$pyro_pooled_high - xr$pyro_pooled_low), 3)}")
         cli_inform("Empirical coverage: {scales::percent(coverage)}")
     }
 
