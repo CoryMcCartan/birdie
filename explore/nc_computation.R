@@ -13,7 +13,9 @@ if (file.exists(voterfile <- here("data/nc_voters.rds"))) {
     saveRDS(voters, voterfile, compress="xz")
 }
 
-d_fit = slice(voters, 1:10e3)
+d_fit = slice_sample(voters, n=200e3) %>%
+    mutate(gender = coalesce(gender, "U")) %>%
+    filter(!is.na(age))
 
 # tables
 p_xr = prop.table(table(d_fit$party, d_fit$race))
@@ -27,17 +29,37 @@ fit = model_race(party, last_name, zip, Z=c(age, gender), data=d_fit, p_r=p_r,
                  stan_method="vb",
                  iter=400, verbose=TRUE)
 
-fit$pyro = est_additive_pyro(d$X, d$GZ_mat, d$GZ_var, d$pr_base,
-                             iter=20e3, lr=0.25, subsamp=2048, tol=2.50,
-                             reload=TRUE)
+noise_pr = function(x, amt=0.2) {
+    x = exp(log(x) + rnorm(length(x), 0, amt))
+    x / rowSums(x)
+}
+
+for (i in 1:8) {
+    pr_base = noise_pr(d$pr_base)
+    fit_pyro = est_additive_pyro(d$X, d$GZ_mat, d$GZ_var, pr_base,
+                                 iter=20e3, lr=0.25, draws=200, subsamp=2048,  tol=1.35,
+                                 reload=TRUE)
+    if (i == 1) {
+        fit$pyro = fit_pyro
+        fit$pyro_pooled = fit_pyro
+    } else {
+        fit$pyro_pooled$p_xr = abind::abind(fit$pyro_pooled$p_xr, fit_pyro$p_xr, along=1)
+    }
+}
 
 plot(fit$pyro$loss, type='l', ylim=c(min(c(1, fit$pyro$loss)), max(c(2, fit$pyro$loss))))
 lines(seq_along(fit$pyro$r_hat)*100, fit$pyro$r_hat, col='red')
 
-xr = calc_joints(p_xr, voters, fit)
+xr = calc_joints(p_xr, d_fit, fit)
 eval_joints(xr$true, "tv",
             bis = xr$bis,
             bisg = xr$bisg,
             nonparam = xr$nonparam,
             additive = xr$additive,
-            pyro = xr$pyro)
+            pyro = xr$pyro,
+            pyro_pooled = xr$pyro_pooled)
+
+print_cond(xr$true, "true")
+print_cond(xr$pyro, "pyro")
+print_cond(xr$pyro_low, "low")
+print_cond(xr$pyro_high, "high")
