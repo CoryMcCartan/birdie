@@ -134,9 +134,7 @@ def fit_nonparam(X, GZ, pr_base, p_gz, n_x=2, n_prior_obs=1.5,
     return {
         "loss": loss[0:j], 
         "slope": slope[0:j],
-        "p_xr": p_xr.mean(0).T,
-        "p_xr_low": np.quantile(p_xr, 0.05, 0).T,
-        "p_xr_high": np.quantile(p_xr, 0.95, 0).T
+        "p_xr": p_xr.transpose((0, 2, 1))
         }
 
 def fit_additive(X, GZ, GZ_var, pr_base, n_x=2, n_gz_var=1, 
@@ -155,7 +153,7 @@ def fit_additive(X, GZ, GZ_var, pr_base, n_x=2, n_gz_var=1,
     scheduler = pyro.optim.ExponentialLR({
             "optimizer": torch.optim.Adam,
             "optim_args": {"lr": lr},
-            "gamma": 0.5
+            "gamma": 0.8 # how much to multiply 'lr' every call to .step()
         })
     
     guide = autoguide.AutoNormal(model_additive, init_scale=0.01)
@@ -180,9 +178,10 @@ def fit_additive(X, GZ, GZ_var, pr_base, n_x=2, n_gz_var=1,
     params = None
     converge_idx = None
     draws = None
-    pbar = tqdm(total=it)
-    elbo_step_tol = 0.001
+    #pbar = tqdm(total=it)
+    elbo_step_tol = 0.005
     lr = lr
+    it_avgs = 300
     for j in range(it):
         loss[j] = svi.step(*m_args, **m_kwargs)
         
@@ -196,40 +195,44 @@ def fit_additive(X, GZ, GZ_var, pr_base, n_x=2, n_gz_var=1,
             # plateau detection
             split_loss = np.stack(np.split(loss[utils.split_frac(j, 0.5)], 2, 0)).mean(1)
             if lr >= 0.001 and abs(split_loss[0] - split_loss[1]) < elbo_step_tol:
-                elbo_step_tol *= 0.25
-                lr *= 0.5
+                elbo_step_tol *= 0.8
+                lr *= 0.8 # this is just the tracker; change above also
                 scheduler.step()
-            pbar.update(epoch)
+                if m_kwargs["subsamp"] < 5000 and N > 1.25 * m_kwargs["subsamp"]:
+                    m_kwargs["subsamp"] = int(m_kwargs["subsamp"] * 1.25)
+            #pbar.update(epoch)
             
             if converge_idx is None: # haven't convered yet
                 r_hat_i = np.quantile(utils.R_hat_split(params, j, 0.5), 0.95)
-                if r_hat_i <= tol_rhat:
+                if r_hat_i <= tol_rhat or it - j <= it_avgs:
                     converge_idx = j
-                    pbar.set_description("Iterate averaging")
-                else:
-                    pbar.set_description("R-hat %.2f" % r_hat_i)
+                    #pbar.set_description("Iterate averaging")
+                #else:
+                    #pbar.set_description("R-hat %.2f" % r_hat_i)
                 
                 r_hat[j // epoch] = r_hat_i
                 
         if converge_idx is not None: # have converged
             draws = utils.accuml_params(draws)
-            if j - converge_idx >= 200:
+            if j - converge_idx >= it_avgs:
                 break
-    pbar.close()
+    #pbar.close()
     
     draws["params"] = {x: draws["params"][x].mean(0) for x in draws["params"]}
     pyro.get_param_store().set_state(draws)
     with pyro.plate("samples", n_draws, dim=-4):
         draws = guide(*m_args, **m_kwargs)
-    draws = {x: draws[x].cpu().detach().numpy() for x in draws}
+    draws = {x: draws[x].cpu().detach() for x in draws}
+        
+    lw, k = utils.diagnose(model, guide, draws, m_args, m_kwargs, 
+            n_draws, N, nesting=3)
     
-    lw, k = utils.diagnose(model, guide, m_args, m_kwargs, draws=500, N=N)
         
     # Average p_xr over GZ
-    p_x = draws["p_x"]
-    lp_xr_raw = draws["lp_xr_raw"]
-    beta_scale = draws["beta_scale"]
-    beta_raw = draws["beta_raw"]
+    p_x = draws["p_x"].numpy()
+    lp_xr_raw = draws["lp_xr_raw"].numpy()
+    beta_scale = draws["beta_scale"].numpy()
+    beta_raw = draws["beta_raw"].numpy()
     
     beta = beta_scale[..., GZ_var.detach().numpy(), :, :] * beta_raw 
     zero_row = np.zeros((p_x.shape[0], 1, 1, n_r, 1))
@@ -240,13 +243,12 @@ def fit_additive(X, GZ, GZ_var, pr_base, n_x=2, n_gz_var=1,
     p_xr = np.exp(p_xr - p_xr.max(-1, keepdims=True))
     p_xr /= p_xr.sum(-1, keepdims=True)
     
+    
     return {
         "loss": loss[0:j], 
         "log_weights": lw,
         "pareto_k": k,
         "r_hat": r_hat[0:converge_idx],
         "p_xr": p_xr.transpose((0, 2, 1))
-        #"p_xr_low": np.quantile(p_xr, 0.05, 0).T,
-        #"p_xr_high": np.quantile(p_xr, 0.95, 0).T
         }
 

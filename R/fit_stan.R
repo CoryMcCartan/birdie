@@ -28,7 +28,7 @@ est_nonparam = function(X, GZ, pr_base, alpha, method, iter, verbose) {
                         iter=700, importance_resampling=FALSE)
     } else {
         out = rstan::sampling(stanmodels$simple_nonparam, stan_data, pars="p_xr",
-                              chains=1, iter=300+iter, warmup=300)
+                              chains=1, iter=400+iter, warmup=400)
     }
     tictoc::toc()
     out
@@ -70,7 +70,7 @@ est_additive = function(X, GZ, GZ_var, pr_base, method, iter, verbose) {
     } else {
         out = rstan::sampling(stanmodels$simple_additive, stan_data, pars="p_xr",
                               #init=list(list(p_xr=xr$bisg)),
-                              chains=1, iter=300+iter, warmup=300)
+                              chains=1, iter=400+iter, warmup=400)
     }
     tictoc::toc()
     out

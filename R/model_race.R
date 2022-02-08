@@ -31,9 +31,9 @@
 model_race = function(X, S, G, Z=NULL, data=NULL, p_rs=NULL, p_rgz=NULL,
                       p_r=c(white=0.626, black=0.222, hisp=0.098, asian=0.032, other=0.022),
                       regularize=TRUE, alpha=7,
-                      methods=c("bis", "bisg", "gibbs", "lsq", "nonparam", "additive"),
+                      methods=c("bis", "bisg", "lsq", "nonparam", "additive", "pyro"),
                       stan_method=c("vb", "opt", "hmc"),
-                      iter=100, thin=1, verbose=FALSE) {
+                      iter=100, thin=1, use_true_gz=FALSE, verbose=FALSE, ...) {
     check_arg = function(x) {
         x_quo = enquo(x)
         if (!is.numeric(x) || length(x) != 1 || x[1] <= 0)
@@ -73,11 +73,14 @@ model_race = function(X, S, G, Z=NULL, data=NULL, p_rs=NULL, p_rgz=NULL,
     GZ_levels = vapply(GZ, nlevels, integer(1))
     n_gz_col = sum(GZ_levels)
     GZ_var = inverse.rle(list(lengths=GZ_levels, values=1:ncol(GZ)))
+    suppressWarnings({
     GZ_mat = do.call(cbind, lapply(GZ, function(x) {
         out = matrix(0, nrow=length(x), ncol=nlevels(x))
         out[cbind(seq_along(x), as.integer(x))] = 1
         out
     }))
+    d <<- list(GZ_mat=GZ_mat, GZ=GZ)
+    })
 
     ## Parse and check input probabilities ----------------
     if (missing(p_rs)) {
@@ -130,7 +133,12 @@ model_race = function(X, S, G, Z=NULL, data=NULL, p_rs=NULL, p_rgz=NULL,
     if ("bis" %in% methods) {
         out$bis = est_bisg(X_vec, S_vec, G_vec, p_sr, p_gzr, p_r, geo=FALSE)
     }
-    pr_base = est_bisg(X_vec, S_vec, GZ_vec, p_sr, p_gzr, p_r, geo=TRUE)
+
+    if (use_true_gz) {
+        pr_base = prop.table(table(GZ_vec, data$race), margin=1)[GZ_vec, ]
+    } else {
+        pr_base = est_bisg(X_vec, S_vec, GZ_vec, p_sr, p_gzr, p_r, geo=TRUE)
+    }
     if ("bisg" %in% methods) {
         out$bisg = pr_base
     }
@@ -157,9 +165,6 @@ model_race = function(X, S, G, Z=NULL, data=NULL, p_rs=NULL, p_rgz=NULL,
                                M_sr, N_gzr, alpha_sr, beta_gzr, verbose)
     }
 
-    # TODO remove
-    d <<- list(X=X_vec, GZ=GZ_vec, GZ_mat=GZ_mat, GZ_var=GZ_var, pr_base=pr_base)
-
     if ("nonparam" %in% methods) {
         out$nonparam = est_nonparam(X_vec, GZ_vec, pr_base, alpha[1],
                                     match.arg(stan_method), iter, verbose)
@@ -168,6 +173,13 @@ model_race = function(X, S, G, Z=NULL, data=NULL, p_rs=NULL, p_rgz=NULL,
     if ("additive" %in% methods) {
         out$additive = est_additive(X_vec, GZ_mat, GZ_var, pr_base,
                                     match.arg(stan_method), iter, verbose)
+    }
+    gc()
+
+    if ("pyro" %in% methods) {
+        out$pyro = est_additive_pyro(X_vec, GZ_mat, GZ_var, pr_base,
+                                     iter=5e3, subsamp=min(length(X_vec), 1024),
+                                     ..., draws=iter, reload=TRUE)
     }
     gc()
 

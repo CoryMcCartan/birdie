@@ -19,7 +19,7 @@ est_nonparam_pyro = function(X, GZ, pr_base, alpha,
 }
 
 est_additive_pyro = function(X, GZ, GZ_var, pr_base,
-                             iter=2000, subsamp=1000, draws=100, lr=0.01, tol_rhat=1.3,
+                             iter=2000, subsamp=2048, draws=1000, lr=0.3, tol_rhat=1.15,
                              reload=F) {
     if (isTRUE(reload)) {
         reticulate::py_run_string("if 'py.utils' in sys.modules.keys(): del sys.modules['py.utils']")

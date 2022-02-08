@@ -13,8 +13,8 @@ if (file.exists(voterfile <- here("data/nc_voters.rds"))) {
     saveRDS(voters, voterfile, compress="xz")
 }
 
-d_fit = slice_sample(voters, n=200e3) %>%
-    mutate(gender = coalesce(gender, "U")) %>%
+d_fit = slice_sample(voters, n=500e3) %>%
+    mutate(gender = as.factor(coalesce(gender, "U"))) %>%
     filter(!is.na(age))
 
 # tables
@@ -25,9 +25,10 @@ p_r = colSums(p_xr)
 fit = model_race(party, last_name, zip, Z=c(age, gender), data=d_fit, p_r=p_r,
                  regularize=T, alpha=3,
                  #methods=c("bis", "bisg", "nonparam", "additive"),
-                 methods=c("bis", "bisg"),
-                 stan_method="vb",
-                 iter=400, verbose=TRUE)
+                 methods=c("bis", "bisg", "pyro"),
+                 stan_method="hmc",
+                 iter=100, verbose=TRUE)
+
 
 noise_pr = function(x, amt=0.2) {
     x = exp(log(x) + rnorm(length(x), 0, amt))
@@ -54,10 +55,10 @@ xr = calc_joints(p_xr, d_fit, fit)
 eval_joints(xr$true, "tv",
             bis = xr$bis,
             bisg = xr$bisg,
-            nonparam = xr$nonparam,
+            #nonparam = xr$nonparam,
             additive = xr$additive,
-            pyro = xr$pyro,
-            pyro_pooled = xr$pyro_pooled)
+            pyro = xr$pyro)#,
+            #pyro_pooled = xr$pyro_pooled)
 
 print_cond(xr$true, "true")
 print_cond(xr$pyro, "pyro")
