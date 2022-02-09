@@ -55,6 +55,7 @@ model_race = function(r_probs, X, G, Z=NULL, data=NULL, prefix="pr_",
 
     if (isTRUE(reload_py)) {
         reticulate::py_run_string("if 'py.utils' in sys.modules.keys(): del sys.modules['py.utils']")
+        reticulate::py_run_string("if 'py.fit' in sys.modules.keys(): del sys.modules['py.fit']")
         reticulate::py_run_string("from tqdm import tqdm; tqdm._instances.clear()")
         reticulate::py_run_file(system.file("py/pyro.py", package="raceproxy"))
     }
@@ -63,6 +64,7 @@ model_race = function(r_probs, X, G, Z=NULL, data=NULL, prefix="pr_",
                     subsamp = 2048,
                     draws = 1000,
                     lr = 0.25,
+                    it_avgs = 300,
                     tol_rhat = 1.2)
     for (i in names(defaults)) {
         if (is.null(config[[i]]))
@@ -75,8 +77,9 @@ model_race = function(r_probs, X, G, Z=NULL, data=NULL, prefix="pr_",
     out = py$fit_additive(as.integer(X_vec), GZ_mat, as.integer(GZ_var), r_probs,
                           nlevels(X_vec), max(GZ_var), prior,
                           it=as.integer(config$max_iter),
-                          subsamp=as.integer(config$subsamp),
+                          subsamp=min(length(X_vec), as.integer(config$subsamp)),
                           n_draws=as.integer(config$draws),
+                          it_avgs=as.integer(config$it_avgs),
                           lr=config$lr, tol_rhat=config$tol_rhat,
                           silent=silent)
     tictoc::toc(quiet=silent)

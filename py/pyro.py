@@ -5,8 +5,8 @@ import pyro.distributions as dist
 from pyro.infer import SVI
 import pyro.infer.autoguide as autoguide
 import pyro.poutine as poutine
-from tqdm import tqdm
 import py.utils as utils
+import py.fit as fit
 
 # MODELS -------------------------------
         
@@ -58,7 +58,8 @@ def model_additive(X, GZ, GZ_var, pr_base, N=1, n_r=5, n_x=2, n_gz=1, n_gz_var=1
 
 def fit_additive(X, GZ, GZ_var, pr_base, n_x=2, n_gz_var=1, 
         prior_scale={"x": 5.0, "xr": 0.75, "beta": 1.0},
-        it=200, epoch=100, subsamp=1000, n_draws=1000, lr=0.01, tol_rhat=1.2,
+        it=200, epoch=100, subsamp=1000, n_draws=1000, 
+        it_avgs=300, lr=0.01, tol_rhat=1.2,
         silent=False):
     # convert data from R to torch
     X = torch.tensor(X, dtype=torch.int16) - 1
@@ -93,62 +94,11 @@ def fit_additive(X, GZ, GZ_var, pr_base, n_x=2, n_gz_var=1,
                 "prior_scale": prior_scale, "subsamp": subsamp}
     
     pyro.clear_param_store()
-    loss = np.zeros(it)
-    r_hat = np.ones(it // epoch)
-    params = None
-    converge_idx = None
-    draws = None
-    if not silent: pbar = tqdm(total=it)
-    elbo_step_tol = 0.005
-    lr = lr
-    it_avgs = 300
-    for j in range(it):
-        loss[j] = svi.step(*m_args, **m_kwargs)
-        
-        if j == 0:
-            params = np.empty((it, utils.get_flat_params().shape[0])) # set up param tracker
-            r_hat[0] = 1e6
-        elif converge_idx is None: # haven't convered yet
-            params[j] = utils.get_flat_params()
-            
-        if j > 0 and j % epoch == 0:
-            # plateau detection
-            split_loss = np.stack(np.split(loss[utils.split_frac(j, 0.5)], 2, 0)).mean(1)
-            if lr >= 0.001 and abs(split_loss[0] - split_loss[1]) < elbo_step_tol:
-                elbo_step_tol *= 0.8
-                lr *= 0.8 # this is just the tracker; change above also
-                scheduler.step()
-                if m_kwargs["subsamp"] < 5000 and N > 1.25 * m_kwargs["subsamp"]:
-                    m_kwargs["subsamp"] = int(m_kwargs["subsamp"] * 1.25)
-            if not silent: pbar.update(epoch)
-            
-            if converge_idx is None: # haven't convered yet
-                r_hat_i = np.quantile(utils.R_hat_split(params, j, 0.5), 0.95)
-                if r_hat_i <= tol_rhat or it - j <= it_avgs:
-                    converge_idx = j
-                    if not silent: pbar.set_description("Iterate averaging")
-                else:
-                    if not silent: pbar.set_description("R-hat %.2f" % r_hat_i)
-                    pass
-                
-                r_hat[j // epoch] = r_hat_i
-                
-        if converge_idx is not None: # have converged
-            draws = utils.accuml_params(draws)
-            if j - converge_idx >= it_avgs:
-                break
-    if not silent: pbar.close()
+    opt_param, draws, loss, lw, k = fit.run_svi(
+        svi, scheduler, model, guide, m_args, m_kwargs, N,
+        it, epoch, n_draws, it_avgs, lr, tol_rhat, silent
+        )
     
-    draws["params"] = {x: draws["params"][x].mean(0) for x in draws["params"]}
-    pyro.get_param_store().set_state(draws)
-    with pyro.plate("samples", n_draws, dim=-4):
-        draws = guide(*m_args, **m_kwargs)
-    draws = {x: draws[x].cpu().detach() for x in draws}
-        
-    lw, k = utils.diagnose(model, guide, draws, m_args, m_kwargs, 
-            n_draws, N, nesting=3)
-    
-        
     # Average p_xr over GZ
     p_x = draws["p_x"].numpy()
     lp_xr_raw = draws["lp_xr_raw"].numpy()
@@ -166,10 +116,9 @@ def fit_additive(X, GZ, GZ_var, pr_base, n_x=2, n_gz_var=1,
     
     
     return {
-        "loss": loss[0:j], 
+        "loss": loss,
         "log_weights": lw,
         "pareto_k": k,
-        "r_hat": r_hat[0:converge_idx],
         "p_xr": p_xr.transpose((0, 2, 1))
         }
 
