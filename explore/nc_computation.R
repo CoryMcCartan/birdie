@@ -7,7 +7,7 @@ if (file.exists(voterfile <- here("data/nc_voters.rds"))) {
     voters = make_nc_statewide(voterfile)
 }
 
-d_fit = slice_sample(voters, n=100e3) %>%
+d_fit = slice_sample(voters, n=1e3) %>%
     mutate(gender = as.factor(coalesce(gender, "U"))) %>%
     filter(!is.na(age))
 
@@ -18,12 +18,10 @@ p_r = colSums(p_xr)
 
 r_probs = predict_race_sgz(last_name, zip, Z=c(age, gender), data=d_fit,
                            p_r=p_r, iterate=0)
-r_probs = predict_race_sgz(last_name, zip, data=d_fit,
-                           p_r=p_r, iterate=0)
 
 fit = model_race(r_probs, party, zip, c(age, gender), data=d_fit,
                  reload_py=TRUE)
-plot(fit$loss, type='l', ylim=c(min(c(1, fit$loss)), max(c(2, fit$loss))))
+plot(tail(fit$loss, -100), type='l')
 
 xr = list(
     true = p_xr,

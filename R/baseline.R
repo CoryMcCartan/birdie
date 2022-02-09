@@ -33,15 +33,12 @@ predict_race_sgz = function(S, G, Z=NULL, data=NULL, p_rs=NULL, p_rgz=NULL,
     if (!check_vec(S_vec)) cli_abort("{.arg S} must be a character or factor with no missing values.")
     if (!is.character(G_vec) && !is.factor(G_vec))
         cli_abort("{.arg G} must be a character or factor vector.")
-    if (any(is.na(G_vec))) {
-        G_vec = coalesce(G_vec, "<none>")
-    }
+    G_vec = coalesce(G_vec, "<none>")
     if (!all(vapply(Z_df, class, character(1)) %in% c("character", "factor"))) {
         cli_abort("{.arg Z} must contain only character or factor columns.")
     }
     if (any(is.na(Z_df))) cli_abort("Missing values found in {.arg Z}")
 
-    S_vec = as.factor(S_vec)
     G_vec = as.factor(G_vec)
     GZ = cbind(G_vec, Z_df)
     GZ_vec = as.factor(vctrs::vec_duplicate_id(GZ))
@@ -81,10 +78,10 @@ predict_race_sgz = function(S, G, Z=NULL, data=NULL, p_rs=NULL, p_rgz=NULL,
             cli_abort("Some {.arg G}/{.arg Z} combinations are missing from {.arg p_rgz}.")
     }
     if (missing(Z)) {
-        p_gz = prop.table(table(G_vec))
-    } else {
-        p_gz = prop.table(table(GZ_vec))
+        GZ_vec = G_vec
     }
+    p_gz = prop.table(table(GZ_vec))
+
     # flip which margin sums to 1
     p_gzr = as.matrix(select(p_rgz, white:other))
     for (i in seq_along(p_r)) {
@@ -92,11 +89,11 @@ predict_race_sgz = function(S, G, Z=NULL, data=NULL, p_rs=NULL, p_rgz=NULL,
         p_gzr[, i] = p_gzr[, i] / sum(p_gzr[, i])
     }
 
-    m_bisg = est_bisg(S_vec, G_vec, p_sr, p_gzr, p_r)
+    m_bisg = est_bisg(S_vec, GZ_vec, p_sr, p_gzr, p_r)
     if (iterate > 0) {
         for (i in 1:iterate) {
             p_r[1:5] = colMeans(m_bisg)
-            m_bisg = est_bisg(S_vec, G_vec, p_sr, p_gzr, p_r)
+            m_bisg = est_bisg(S_vec, GZ_vec, p_sr, p_gzr, p_r)
         }
     }
 

@@ -145,8 +145,8 @@ census_zip_age_sex_table = function(GZ, GZ_vec, p_r, regularize=TRUE, count=FALS
     GZ$gender = as.character(GZ$gender)
     GZ$zip[!GZ$zip %in% unique(x$zip)] = "<none>"
     GZ = distinct(GZ, zip, age, gender, order)
-    x = inner_join(x, GZ, by=c("zip", "age", "sex"="gender")) %>%
-        arrange(order) %>%
+    x = inner_join(GZ, x, by=c("zip", "age", "gender"="sex")) %>%
+        #arrange(order) %>% # probably not needed but just in case
         select(-order)
 
     alpha = if (regularize) c(3.1, 0.6, 0.8, 0.3, 0.2) else rep(0.001, 5)
@@ -155,5 +155,5 @@ census_zip_age_sex_table = function(GZ, GZ_vec, p_r, regularize=TRUE, count=FALS
         x[[4+i]] = (if_else(x[[4+i]] < 0, 0, x[[4+i]]) + alpha[i]) / denom
     }
 
-    x[, -4]
+    as_tibble(x[, -4])
 }
