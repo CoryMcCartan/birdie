@@ -23,3 +23,5 @@ __pycache__
 *.o
 *.so
 *.html
+
+!data/names_2010_counts.rds

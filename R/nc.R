@@ -1,6 +1,17 @@
 # UTILITIES for studying NC
 
+make_nc_statewide = function(voterfile) {
+    counties = tigris::fips_codes$county[tigris::fips_codes$state == "NC"] %>%
+        stringr::str_sub(end=-8)
+    voters = do.call(rbind, lapply(counties, make_nc_df))
+    voters = voters %>%
+        select(last_name, party, race, zip, gender, age, birth_state, lic) %>%
+        mutate(across(where(is.character), factor))
+    saveRDS(voters, voterfile, compress="xz")
+    voters
+}
 
+# Download and format voter file from NC
 make_nc_df = function(county="Dare") {
     rlang::check_installed("tigris", "NC voter data")
     counties = tigris::fips_codes$county[tigris::fips_codes$state == "NC"]
@@ -45,118 +56,6 @@ make_nc_df = function(county="Dare") {
 }
 
 
-calc_joints = function(p_xr, voters, fit, warmup = 1:100) {
-    xr = list(true = p_xr)
-
-    if ("bis" %in% names(fit)) {
-        xr$bis = purrr::map(rownames(p_xr), ~ colMeans(fit$bis * (voters$party == .))) %>%
-            do.call(rbind, .) %>%
-            `rownames<-`(rownames(p_xr))
-    }
-
-    if ("bisg" %in% names(fit)) {
-        xr$bisg = purrr::map(rownames(p_xr), ~ colMeans(fit$bisg * (voters$party == .))) %>%
-            do.call(rbind, .) %>%
-            `rownames<-`(rownames(p_xr))
-    }
-
-    if ("gibbs" %in% names(fit)) {
-        xr$gibbs = purrr::map(rownames(p_xr), ~ colMeans(fit$gibbs * (voters$party == .))) %>%
-            do.call(rbind, .) %>%
-            `rownames<-`(rownames(p_xr))
-        #xr$gibbs = map(1:5, function(race) {
-        #    map_dbl(rownames(p_xr), ~ mean((fit$gibbs[, -warmup] == race) * (voters$party == .)))
-        #}) %>%
-        #    do.call(cbind, .) %>%
-        #    `rownames<-`(rownames(p_xr)) %>%
-        #    `colnames<-`(colnames(p_xr))
-    }
-
-    if ("nonparam" %in% names(fit)) {
-        if (class(fit$nonparam) == "stanfit") {
-            draws = rstan::extract(fit$nonparam, "p_xr")$p_xr
-            xr$nonparam = (colMeans(draws) %*% diag(p_r)) %>%
-                `rownames<-`(rownames(p_xr)) %>%
-                `colnames<-`(colnames(p_xr))
-            xr$nonparam_low = apply(draws, 2:3, \(x) quantile(x, 0.05)) %*% diag(p_r)
-            xr$nonparam_high = apply(draws, 2:3, \(x) quantile(x, 0.95)) %*% diag(p_r)
-            coverage = mean((p_xr > xr$nonparam_low) & (p_xr < xr$nonparam_high))
-            cli_inform("NONPARAM:")
-            cli_inform("Average width: {round(mean(xr$nonparam_high - xr$nonparam_low), 3)}")
-            cli_inform("Empirical coverage: {scales::percent(coverage)}")
-        } else {
-            xr$nonparam =  matrix(nrow=length(p_x), ncol=length(p_r))
-            for (j in 1:length(p_r)) {
-                for (k in 1:length(p_x)) {
-                    xr$nonparam[k, j] = fit$nonparam$par[str_glue("p_xr[{k},{j}]")]
-                }
-            }
-            xr$nonparam = (xr$nonparam %*% diag(p_r)) %>%
-                `rownames<-`(rownames(p_xr)) %>%
-                `colnames<-`(colnames(p_xr))
-        }
-    }
-
-    if ("additive" %in% names(fit)) {
-        if (class(fit$additive) == "stanfit") {
-            draws = rstan::extract(fit$additive, "p_xr")$p_xr
-            xr$additive = (colMeans(draws) %*% diag(p_r)) %>%
-                `rownames<-`(rownames(p_xr)) %>%
-                `colnames<-`(colnames(p_xr))
-            xr$additive_low = apply(draws, 2:3, \(x) quantile(x, 0.05)) %*% diag(p_r)
-            xr$additive_high = apply(draws, 2:3, \(x) quantile(x, 0.95)) %*% diag(p_r)
-            coverage = mean((p_xr > xr$additive_low) & (p_xr < xr$additive_high))
-            cli_inform("ADDITIVE:")
-            cli_inform("Average width: {round(mean(xr$additive_high - xr$additive_low), 3)}")
-            cli_inform("Empirical coverage: {scales::percent(coverage)}")
-        } else {
-            xr$additive =  matrix(nrow=length(p_x), ncol=length(p_r))
-            for (j in 1:length(p_r)) {
-                for (k in 1:length(p_x)) {
-                    xr$additive[k, j] = fit$additive$par[str_glue("p_xr[{k},{j}]")]
-                }
-            }
-            xr$additive = (xr$additive %*% diag(p_r)) %>%
-                `rownames<-`(rownames(p_xr)) %>%
-                `colnames<-`(colnames(p_xr))
-        }
-    }
-
-    if ("pyro" %in% names(fit)) {
-        xr$pyro = (colMeans(fit$pyro$p_xr) %*% diag(p_r)) %>%
-            `rownames<-`(rownames(p_xr)) %>%
-            `colnames<-`(colnames(p_xr))
-        xr$pyro_low = apply(fit$pyro$p_xr, 2:3, \(x) quantile(x, 0.05)) %*% diag(p_r)
-        xr$pyro_high = apply(fit$pyro$p_xr, 2:3, \(x) quantile(x, 0.95)) %*% diag(p_r)
-        coverage = mean((p_xr > xr$pyro_low) & (p_xr < xr$pyro_high))
-        cli_inform("PYRO:")
-        cli_inform("Average width: {round(mean(xr$pyro_high - xr$pyro_low), 3)}")
-        cli_inform("Empirical coverage: {scales::percent(coverage)}")
-    }
-
-    if ("pyro_pooled" %in% names(fit)) {
-        xr$pyro_pooled = (colMeans(fit$pyro_pooled$p_xr) %*% diag(p_r)) %>%
-            `rownames<-`(rownames(p_xr)) %>%
-            `colnames<-`(colnames(p_xr))
-        xr$pyro_pooled_low = apply(fit$pyro_pooled$p_xr, 2:3, \(x) quantile(x, 0.05)) %*% diag(p_r)
-        xr$pyro_pooled_high = apply(fit$pyro_pooled$p_xr, 2:3, \(x) quantile(x, 0.95)) %*% diag(p_r)
-        coverage = mean((p_xr > xr$pyro_pooled_low) & (p_xr < xr$pyro_pooled_high))
-        cli_inform("PYRO POOLED:")
-        cli_inform("Average width: {round(mean(xr$pyro_pooled_high - xr$pyro_pooled_low), 3)}")
-        cli_inform("Empirical coverage: {scales::percent(coverage)}")
-    }
-
-    xr
-}
-
-print_cond = function(x, title=NULL) {
-    p_r = parent.frame()$p_r
-    out = 100 * x %*% diag(1 / p_r)
-    colnames(out) = names(p_r)
-    if (!is.null(title)) cat(toupper(title), "\n")
-    print(round(out))
-}
-
 plot_county_puma = function(county=NULL) {
     suppressMessages({
     library(ggplot2)
@@ -181,6 +80,9 @@ plot_county_puma = function(county=NULL) {
     suppressWarnings(print(p))
 }
 
+
+
+# AGE / SEX/ RACE / ZIP TABLE
 
 prep_age_sex_race_zip = function() {
     sf1v = tidycensus::load_variables(2010, dataset="sf1") %>%

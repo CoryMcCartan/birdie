@@ -12,11 +12,8 @@ Imports:
     glue,
     methods,
     wru,
-    Rcpp (>= 0.12.0),
-    RcppParallel (>= 5.0.1),
     readr,
     rlang (>= 0.1.2),
-    rstan (>= 2.18.1),
     rstantools (>= 2.1.1),
     reticulate (>= 1.14.0),
     tidyselect,
@@ -25,15 +22,6 @@ Suggests:
     roxygen2,
     zipWRUext2,
     tigris
-LinkingTo: 
-    BH (>= 1.66.0),
-    cli,
-    Rcpp (>= 0.12.0),
-    RcppArmadillo,
-    RcppEigen (>= 0.3.3.3.0),
-    RcppParallel (>= 5.0.1),
-    rstan (>= 2.18.1),
-    StanHeaders (>= 2.18.0)
 Config/reticulate:
     list(
         packages = list(
@@ -49,4 +37,3 @@ RoxygenNote: 7.1.2
 Biarch: true
 Depends: 
     R (>= 3.4.0)
-SystemRequirements: GNU make

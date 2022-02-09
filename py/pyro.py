@@ -9,33 +9,6 @@ from tqdm import tqdm
 import py.utils as utils
 
 # MODELS -------------------------------
-
-def model_nonparam(X, GZ, pr_base, N=1, n_r=5, n_x=2, n_gz=1, n_prior_obs=3.0, subsamp=1000):
-    r"""
-    NONPARAMETRIC MODEL
-    
-    X = (N,) tensor int array of outcomes
-    GZ = (N,) tensor int array of covariates
-    pr_base = (N, 1, n_r) tensor float array of baseline race predictions
-    n_prior_obs = strength of prior on p(X)
-    subsamp = subsampling size
-    """
-    
-    alpha_shape = torch.ones((1, 1, n_x)) * 1.5
-    alpha_scale = torch.ones((1, 1, n_x)) * 1.5 / n_prior_obs
-    alpha_dist = dist.Gamma(alpha_shape, alpha_scale).to_event(1)
-    alpha = pyro.sample("alpha", alpha_dist)
-    
-    with pyro.plate("n_r", n_r):
-        with pyro.plate("n_gz", n_gz):
-            p_xrgz_raw_dist = dist.Dirichlet(alpha)
-            p_xrgz_raw = pyro.sample("p_xrgz_raw", p_xrgz_raw_dist) # (n_gz, n_r, n_x)
-            
-    with pyro.plate("N", N, subsample_size=subsamp) as ind:
-        p_x_i = (pr_base[ind] @ p_xrgz_raw[GZ[ind]]).squeeze()
-        x_dist = dist.Categorical(p_x_i, validate_args=False)
-        pyro.sample("X", x_dist, obs=X[ind])
-        
         
 def model_additive(X, GZ, GZ_var, pr_base, N=1, n_r=5, n_x=2, n_gz=1, n_gz_var=1,
         prior_scale={"x": 5.0, "xr": 0.75, "beta": 1.0}, subsamp=1000):
@@ -82,64 +55,11 @@ def model_additive(X, GZ, GZ_var, pr_base, N=1, n_r=5, n_x=2, n_gz=1, n_gz_var=1
         pyro.sample("X", x_dist, obs=X[ind])
         
         
-# FITTERS -------------------------------
-
-def fit_nonparam(X, GZ, pr_base, p_gz, n_x=2, n_prior_obs=1.5, 
-        it=200, epoch=100, subsamp=1000, lr=0.01, smooth=300, tol=0.005):
-    X = torch.tensor(X, dtype=torch.int16) - 1
-    GZ = torch.tensor(GZ, dtype=torch.long) - 1
-    pr_base = torch.tensor(pr_base, dtype=torch.float)[:, None, :]
-    n_gz = p_gz.shape[0]
-    N = X.shape[0]
-    n_r = pr_base.shape[-1]
-    
-    optimizer = pyro.optim.AdamW({'lr': lr}, {'clip_norm': 2.0})
-    
-    if n_gz > 20:
-        guide = autoguide.AutoNormal(model_nonparam)
-        elbo = pyro.infer.TraceMeanField_ELBO(ignore_jit_warnings=True)
-    else:
-        guide = autoguide.AutoMultivariateNormal(model_nonparam)
-        elbo = pyro.infer.JitTrace_ELBO(max_plate_nesting=2, ignore_jit_warnings=True)
-        
-    model = pyro.poutine.scale(model_nonparam, 1.0 / X.shape[0])
-    guide = pyro.poutine.scale(guide, 1.0 / X.shape[0])
-    svi = SVI(model, guide, optimizer, loss=elbo)
-    
-    pyro.clear_param_store()
-    loss = np.zeros((it,))
-    slope = np.ones(it // 100)
-    for j in range(it):
-        loss[j] = svi.step(X, GZ, pr_base, N=N, n_r=n_r, n_x=n_x, n_gz=n_gz, 
-                           n_prior_obs=n_prior_obs, subsamp=subsamp)
-                           
-        if j > 0 and j % 100 == 0:
-            recent_loss = loss[np.arange(max(0, j-smooth), j)]
-            slope[j // 100] = local_slope(recent_loss)
-            #scheduler.step(recent_loss.mean())
-            if (slope[j // 100] <= tol):
-                break
-            
-            print(".", end="")
-            sys.stdout.flush()
-    print()
-    sys.stdout.flush()
-            
-    with pyro.plate("samples", 2000, dim=-3):
-        samples = guide(X, GZ, pr_base, N=N, n_r=n_r, n_x=n_x, n_gz=n_gz, 
-                        n_prior_obs=n_prior_obs, subsamp=subsamp)
-    
-    p_xr = samples["p_xrgz_raw"].cpu().detach().numpy()
-    p_xr = np.average(p_xr, -3, weights=p_gz)
-    return {
-        "loss": loss[0:j], 
-        "slope": slope[0:j],
-        "p_xr": p_xr.transpose((0, 2, 1))
-        }
 
 def fit_additive(X, GZ, GZ_var, pr_base, n_x=2, n_gz_var=1, 
         prior_scale={"x": 5.0, "xr": 0.75, "beta": 1.0},
-        it=200, epoch=100, subsamp=1000, n_draws=1000, lr=0.01, tol_rhat=1.2):
+        it=200, epoch=100, subsamp=1000, n_draws=1000, lr=0.01, tol_rhat=1.2,
+        silent=False):
     # convert data from R to torch
     X = torch.tensor(X, dtype=torch.int16) - 1
     GZ = torch.tensor(GZ, dtype=torch.float)[:, :, None, None]
@@ -178,7 +98,7 @@ def fit_additive(X, GZ, GZ_var, pr_base, n_x=2, n_gz_var=1,
     params = None
     converge_idx = None
     draws = None
-    #pbar = tqdm(total=it)
+    if not silent: pbar = tqdm(total=it)
     elbo_step_tol = 0.005
     lr = lr
     it_avgs = 300
@@ -200,15 +120,16 @@ def fit_additive(X, GZ, GZ_var, pr_base, n_x=2, n_gz_var=1,
                 scheduler.step()
                 if m_kwargs["subsamp"] < 5000 and N > 1.25 * m_kwargs["subsamp"]:
                     m_kwargs["subsamp"] = int(m_kwargs["subsamp"] * 1.25)
-            #pbar.update(epoch)
+            if not silent: pbar.update(epoch)
             
             if converge_idx is None: # haven't convered yet
                 r_hat_i = np.quantile(utils.R_hat_split(params, j, 0.5), 0.95)
                 if r_hat_i <= tol_rhat or it - j <= it_avgs:
                     converge_idx = j
-                    #pbar.set_description("Iterate averaging")
-                #else:
-                    #pbar.set_description("R-hat %.2f" % r_hat_i)
+                    if not silent: pbar.set_description("Iterate averaging")
+                else:
+                    if not silent: pbar.set_description("R-hat %.2f" % r_hat_i)
+                    pass
                 
                 r_hat[j // epoch] = r_hat_i
                 
@@ -216,7 +137,7 @@ def fit_additive(X, GZ, GZ_var, pr_base, n_x=2, n_gz_var=1,
             draws = utils.accuml_params(draws)
             if j - converge_idx >= it_avgs:
                 break
-    #pbar.close()
+    if not silent: pbar.close()
     
     draws["params"] = {x: draws["params"][x].mean(0) for x in draws["params"]}
     pyro.get_param_store().set_state(draws)

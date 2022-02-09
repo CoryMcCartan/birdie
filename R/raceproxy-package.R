@@ -6,10 +6,7 @@
 ## usethis namespace: start
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @import dplyr
-#' @importFrom Rcpp sourceCpp
-#' @importFrom rstan sampling
 #' @importFrom reticulate py
-#' @useDynLib raceproxy, .registration = TRUE
 ## usethis namespace: end
 NULL
 
