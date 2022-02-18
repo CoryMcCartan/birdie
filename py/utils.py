@@ -13,7 +13,7 @@ def get_flat_params():
 def split_frac(i, a):
     return np.arange(i + 1 - 2 * (math.floor(i*a) // 2), i+1)
     
-def R_hat_split(params, i, a=0.75):
+def R_hat_split(params, i, a=0.6):
     chains = np.stack(np.split(params[split_frac(i, a)], 2, 0))
     N = chains.shape[1]
     M = chains.shape[0]
