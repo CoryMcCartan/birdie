@@ -1,3 +1,4 @@
+import copy
 import torch
 import pyro
 import numpy as np
@@ -7,6 +8,8 @@ import pyro.infer.autoguide as autoguide
 import pyro.poutine as poutine
 import py.utils as utils
 import py.fit as fit
+
+from torch.profiler import profile, record_function, ProfilerActivity
 
 # MODELS -------------------------------
         
@@ -54,12 +57,23 @@ def model_additive(X, GZ, GZ_var, pr_base, N=1, n_r=5, n_x=2, n_gz=1, n_gz_var=1
         x_dist = dist.Categorical(p_x_i[:, None, None, ...], validate_args=False)
         pyro.sample("X", x_dist, obs=X[ind])
         
-        
 
-def fit_additive(X, GZ, GZ_var, pr_base, n_x=2, n_gz_var=1, 
+def perturb_probs(pr_base, sgz, S_log, X, n_x, amount=0.02):
+    pr_base = pr_base.log()
+    eps_r = torch.normal(torch.zeros((1, 1, 5)), amount)
+    eps_xr = torch.normal(torch.zeros((1, n_x, 5)), amount)
+    eps_gz = torch.normal(torch.zeros((sgz["n_gz"], 1, 5)), amount)[torch.as_tensor(sgz["GZ"]) - 1]
+    #eps_x = torch.normal(torch.zeros((n_x, 1, 5)), amount)[X]
+    pr_base += eps_gz + eps_r + torch.sum(eps_xr * S_log, 1, keepdim=True)
+    pr_base = pr_base.exp()
+    pr_base /= pr_base.sum(-1)[:, :, None]
+    return pr_base
+    
+
+def fit_additive(X, GZ, GZ_var, pr_base, n_x=2, n_gz_var=1, sgz=dict(),
         prior_scale={"x": 5.0, "xr": 0.75, "beta": 1.0},
         it=200, epoch=100, subsamp=1000, n_draws=1000, 
-        it_avgs=300, lr=0.01, tol_rhat=1.2,
+        it_avgs=300, n_mi=0, lr=0.01, tol_rhat=1.2,
         silent=False):
     # convert data from R to torch
     X = torch.tensor(X, dtype=torch.int16) - 1
@@ -69,24 +83,25 @@ def fit_additive(X, GZ, GZ_var, pr_base, n_x=2, n_gz_var=1,
     n_gz = GZ.shape[1]
     N = X.shape[0]
     n_r = pr_base.shape[-1]
+    S_log = torch.tensor(sgz["S"]).log()[:, None, :]
     
+    pyro.enable_validation(False)
     optimizer = pyro.optim.AdamW({'lr': lr}, {'clip_norm': 10.0})
-    scheduler = pyro.optim.ExponentialLR({
+    make_scheduler = lambda: pyro.optim.ExponentialLR({
             "optimizer": torch.optim.Adam,
             "optim_args": {"lr": lr},
-            "gamma": 0.8 # how much to multiply 'lr' every call to .step()
+            "gamma": 0.85 # how much to multiply 'lr' every call to .step()
         })
     
     guide = autoguide.AutoNormal(model_additive, init_scale=0.01)
     elbo = pyro.infer.TraceMeanField_ELBO(ignore_jit_warnings=True)
-    #guide = autoguide.AutoMultivariateNormal(model_additive, init_scale=0.01)
-    #elbo = pyro.infer.JitTrace_ELBO(ignore_jit_warnings=True)
         
     # rescale so ELBO ~= 1
     model = pyro.poutine.scale(model_additive, 1.0 / N)
     guide = pyro.poutine.scale(guide, 1.0 / N)
     
-    svi = SVI(model, guide, scheduler, loss=elbo)
+    sched = make_scheduler()
+    svi = SVI(model, guide, sched, loss=elbo)
     
     # setup args once since they are reused
     m_args = (X, GZ, GZ_var, pr_base)
@@ -94,10 +109,28 @@ def fit_additive(X, GZ, GZ_var, pr_base, n_x=2, n_gz_var=1,
                 "prior_scale": prior_scale, "subsamp": subsamp}
     
     pyro.clear_param_store()
-    opt_param, draws, loss, lw, k = fit.run_svi(
-        svi, scheduler, model, guide, m_args, m_kwargs, N,
+    opt_param, draws, loss, new_lr, lw, k, log_p, log_g = fit.run_svi(
+        svi, sched, model, guide, m_args, m_kwargs, N, 3, # 3 = nesting
         it, epoch, n_draws, it_avgs, lr, tol_rhat, silent
         )
+        
+    lr = min(new_lr, lr * 0.2)
+    loss2 = None
+    for i in range(n_mi):
+        sched = make_scheduler()
+        svi = SVI(model, guide, sched, loss=elbo)
+        
+        pyro.clear_param_store()
+        pyro.get_param_store().set_state(copy.deepcopy(opt_param))
+        
+        m_args_new = (X, GZ, GZ_var, perturb_probs(pr_base, sgz, S_log, X, n_x))
+        _, mi_draws, loss2, _, _, _, _, _ = fit.run_svi(
+            svi, sched, model, guide, m_args_new, m_kwargs, N, 3, 
+            500, epoch, int(n_draws/n_mi), int(it_avgs/2), lr, 
+            tol_rhat=max(tol_rhat, 2), silent=silent)
+            
+        for x in draws:
+            draws[x] = torch.cat((draws[x], mi_draws[x]))
     
     # Average p_xr over GZ
     p_x = draws["p_x"].numpy()
@@ -114,11 +147,13 @@ def fit_additive(X, GZ, GZ_var, pr_base, n_x=2, n_gz_var=1,
     p_xr = np.exp(p_xr - p_xr.max(-1, keepdims=True))
     p_xr /= p_xr.sum(-1, keepdims=True)
     
-    
     return {
         "loss": loss,
+        "loss2": loss2,
         "log_weights": lw,
         "pareto_k": k,
+        "log_p": log_p,
+        "log_g": log_g,
         "p_xr": p_xr.transpose((0, 2, 1))
         }
 

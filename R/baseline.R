@@ -33,13 +33,12 @@ predict_race_sgz = function(S, G, Z=NULL, data=NULL, p_rs=NULL, p_rgz=NULL,
     if (!check_vec(S_vec)) cli_abort("{.arg S} must be a character or factor with no missing values.")
     if (!is.character(G_vec) && !is.factor(G_vec))
         cli_abort("{.arg G} must be a character or factor vector.")
-    G_vec = coalesce(G_vec, "<none>")
     if (!all(vapply(Z_df, class, character(1)) %in% c("character", "factor"))) {
         cli_abort("{.arg Z} must contain only character or factor columns.")
     }
     if (any(is.na(Z_df))) cli_abort("Missing values found in {.arg Z}")
 
-    G_vec = as.factor(G_vec)
+    G_vec = as.factor(coalesce(G_vec, "<none>"))
     GZ = cbind(G_vec, Z_df)
     GZ_vec = as.factor(vctrs::vec_duplicate_id(GZ))
 
@@ -97,7 +96,7 @@ predict_race_sgz = function(S, G, Z=NULL, data=NULL, p_rs=NULL, p_rgz=NULL,
         }
     }
 
-    as_tibble(m_bisg)
+    list(pr=as_tibble(m_bisg), GZ=GZ_vec, S=p_sr[S_vec, ])
 }
 
 
