@@ -19,9 +19,10 @@ __pycache__
 *.out
 *.log
 *.pdf
-*.tex
 *.o
 *.so
 *.html
 
 !data/names_2010_counts.rds
+
+paper/race-proxy.tex

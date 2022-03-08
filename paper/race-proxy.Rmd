@@ -1,0 +1,249 @@
+---
+title: "Unbiased Estimation of Racial Disparities when Race is Not Observed"
+author: 
+date: '`r format(Sys.Date(), "%B %e, %Y")`'
+abstract: |
+    Abstract here.
+keywords: 
+    - keyword 1
+    - keyword 2
+bibliography: references.bib
+biblio-style: apalike
+output:
+    bookdown::pdf_document2:
+        template: "template.tex"
+        number_sections: true
+        keep_tex: true
+        includes: 
+            in_header: "header.tex"
+        latex_engine: pdflatex
+editor_options: 
+    markdown: 
+        wrap: sentence
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+library(here)
+
+opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE,
+               fig.path=here("paper/figures/"), fig.align="center",
+               fig.width=(8.5-2*1)/2, out.width="100%", fig.asp=0.8)
+```
+
+# Introduction
+
+# Problem
+
+```{=tex}
+\begin{figure}[h]
+\begin{center}
+    \tikzstyle{main node}=[circle,draw,font=\sffamily\Large\bfseries]
+    \tikzstyle{sub node}=[circle,draw,dashed,font=\sffamily\Large\bfseries]
+    \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=3cm,thick]
+    
+        \node[main node] (G) {$G$};
+        \node[main node] (R) [below of=G] {$R$};
+        \node[main node] (S) [below left=1cm and 1cm of R] {$S$};
+        \node[main node] (X) [right of=G] {$X$};
+        \node[main node] (Z) [below of=X] {$Z$};
+        \node[main node] (Y) [below right=0.5cm and 1cm of X] {$Y$};
+        
+        \path[every node/.style={font=\sffamily\small}]
+        (R) edge node  {} (G)
+        (R) edge node  {} (Z)
+        (R) edge node  {} (X)
+        (R) edge node  {} (S)
+        (G) edge [dashed] node  {} (S)
+        (G) edge node  {} (Z)
+        (G) edge node  {} (X)
+        (Z) edge node  {} (X)
+        (Z) edge node  {} (Y)
+        (Z) edge [dashed] node  {} (S)
+        (X) edge node  {} (Y);
+    \end{tikzpicture}
+\end{center}
+\caption{DAG}
+\label{fig:dag}
+\end{figure}
+```
+-   $R_i\in \cR$: race
+-   $X_i\in\cX$: outcome (may depend on race)
+-   $Y_i\in\cY$: algorithmic outcome (does not depend on race)
+-   $G_i\in\cG$: location of residence
+-   $Z_i\in\cZ$: other covariates
+-   $S_i\in\cS$: surname
+
+The above DAG implies the following conditional independence relations:
+
+-   $S\indep X\mid R$ (without dashed lines)
+-   $S\indep X\mid R,G,Z$ (with dashed lines)
+-   $Y\indep R\mid X, Z$
+
+# Model
+
+## General model
+
+From the DAG shown in Figure \@ref(fig:dag), we can write down the following fully saturated model.
+\begin{align*}
+    X_i \mid R_i, G_i, Z_i, \Theta &\sim \Categorical_\cX(\vb*\theta_{\cdot R_i}(G_i,Z_i)) \\
+    (G_i, Z_i) \mid R_i &\sim \Categorical_{\cG\times\cZ}(\vb p_{GZ|R_i}) \\
+    S_i \mid R_i &\sim \Categorical_\cS(\vb p_{S|R_i}) \\
+    R_i &\sim \Categorical_\cR(\vb p_R) \\
+    \Theta &\sim \pi(\Theta)
+\end{align*}
+The parameter $\Theta$ can be viewed as a matrix of functions, with each entry $\theta_{xr}$ mapping values of $G$ and $Z$ to a conditional probability $\Pr(X=x\mid R=r, G=g, Z=z)$.
+
+Our primary quantity of interest is the marginalized parameter $$
+    \bar\Theta = \sum_{g\in\cG,z\in\cZ} \Theta(g, z) p_{gz},
+$$ the conditional distribution of $X$ given $R$.
+Here $p_{gz}$ are the marginal probabilities of every $(g, z)$ combination in our population of interest.
+
+The posterior is then
+
+\begin{align*}
+    \pi(\Theta, \vb R\mid \vb X, \vb G, \vb Z, \vb S)
+    &\propto \pi(\Theta)\prod_{i=1}^N \pi(X_i\mid G_i, Z_i, R_i, \Theta)
+            \pi(G_i, Z_i\mid R_i)\pi(S_i\mid R_i)\pi(R_i) \\
+    &= \pi(\Theta) \prod_{i=1}^N \theta_{X_iR_i}(G_i, Z_i) p_{G_iZ_i\mid R_i} p_{S_i\mid R_i} p_{R_i} \\
+    &= \pi(\Theta) \prod_{i=1}^N \theta_{X_iR_i}(G_i, Z_i)\hat{r_i}_{R_i},
+\end{align*} where we let $\hat{\vb r}_i\dfeq \vb p_{G_iZ_i\mid R} \circ \vb p_{S_i\mid R} \circ \vb p_{R}$ denote the vector of BISGZ race probabilities, which depend on external data represented in $\vb p_{GZ\mid R}$, $\vb p_{S\mid R}$, and $\vb p_R$, but not on the parameters $\Theta$ and $\vb R$.
+
+## Marginalized Posterior
+
+Since $\vb R$ is high-dimensional, discrete, and not of primary interest, we marginalize it out to improve sampling.
+
+\begin{align*}
+    \pi(X_i,G_i,Z_i,S_i\mid \Theta)
+    &\propto \sum_{r\in\cR} \pi(X_i,R_i,G_i,Z_i,S_i\mid \Theta) \\
+    &= \sum_{r\in\cR} \theta_{X_i r}(G_i, Z_i)\hat{r}_{ir} \\
+    &= \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i,
+\end{align*}
+So the marginalized posterior is
+\begin{align}
+    \pi(\Theta\mid \vb X, \vb G, \vb Z, \vb S)
+    &= \pi(\Theta) \prod_{i=1}^N \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i.
+    \label{eq:post-marg}
+\end{align}
+
+## Prior on $\Theta$
+
+
+# Error and Bias
+
+The primary source of error in the model \eqref{eq:post-marg} comes from inaccurate input tables $\vb p_{GZ\mid R}$, $\vb p_{S\mid R}$, and $\vb p_R$.
+We can consider the "true" values of these tables, which would yield "true" individual race probabilities $\vb r^*_i$.
+The question then becomes one of quantifying how a particular error in these probabilities $\vb r^*_i - \hat{\vb r}_i$ translates into error in the posterior.
+
+Denote by $\pi^*$ the posterior constructed using the $\vb r^*_i$.
+Then for a particular quantity of interest $g(\Theta)$, we can write the relative absolute error as \[
+    \mathrm{RAE}_{\pi^*}(g) \dfeq \qty|\frac{\E_{\pi^*}[g(\Theta)] 
+    - \E_{\pi}[g(\Theta)]}{\E_{\pi}[g(\Theta)]}|,
+\]
+From Theorem 4 of @weiss1996approach, we can bound $\mathrm{RAE}(g)$ with the $\chi^2$-divergence between $\pi^*$ and $\pi$; for any $g$, \[
+    \mathrm{RAE}_{\pi^*}(g)^2  \le \chi^2(\pi^*) = \E_\pi\qty(
+        \frac{\pi^*(\Theta\mid \vb X, \vb G, \vb Z, \vb S)}{
+        \pi(\Theta\mid \vb X, \vb G, \vb Z, \vb S)}  - 1)^2
+\]
+
+Since we don't know $\vb r^*_i$, we will focus on deriving a worst-case bound.
+Of course, without any conditions, $\vb r^*_i$ can be arbitrarily far from $\hat{\vb r}_i$, and $\chi^2(\pi^*)$ will be very high.
+We will derive an upper bound on $\chi^2(\pi^*)$ assuming $||\vb r^*_i - \hat{\vb r}_i||^2\le \eps^2$ for all $i$.
+
+We'll first simplify the problem by moving the expectation to the outside and removing the sum-to-1 constraint for the $tilde{\vb r}_i$L
+\begin{align*}
+    \chi^2(\pi^*) &\le \sup_{\forall i\,\substack{\tilde{\vb r}_i \in B(\hat{\vb r}_i, \eps) \\ 
+        \ind^\top \tilde{\vb r}_i=1}} 
+        \E_\pi\qty( \frac{\tilde\pi(\Theta\mid \vb X, \vb G, \vb Z, \vb S)}{
+            \pi(\Theta\mid \vb X, \vb G, \vb Z, \vb S)}  - 1)^2 \\
+    &= \sup_{\forall i\,\substack{\tilde{\vb r}_i \in B(\hat{\vb r}_i, \eps) \\ 
+        \ind^\top \tilde{\vb r}_i=1}} 
+        \E_\pi\qty( \prod_{i=1}^N 
+            \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \tilde{\vb r}_i}{
+            \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i}  - 1)^2 \\
+    &\le \E_\pi\qty[
+        \sup_{\forall i\,\substack{\tilde{\vb r}_i \in B(\hat{\vb r}_i, \eps) \\ 
+            \ind^\top \tilde{\vb r}_i=1}} 
+        \qty( \prod_{i=1}^N 
+            \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \tilde{\vb r}_i}{
+            \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i}  - 1)^2] \\
+    &\le \E_\pi\qty[
+        \sup_{\forall i\,\tilde{\vb r}_i \in B(\hat{\vb r}_i, \eps)} 
+        \qty( \prod_{i=1}^N 
+            \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \tilde{\vb r}_i}{
+            \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i}  - 1)^2]
+\end{align*}
+
+Denote by $J$ the quantity inside the supremum, and let \[
+    C_{-i} \dfeq \qty(\prod_{l\neq i}^N 
+            \frac{\vb*\theta_{X_l}(G_l, Z_l)^\top \tilde{\vb r}_l}{
+            \vb*\theta_{X_l}(G_l, Z_l)^\top \hat{\vb r}_l})
+            \times \frac{1}{\vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i}.
+\]
+Then we can calculate partial derivatives:
+\begin{align*}
+    \pdv{J}{\tilde r_ij} &= 2\qty(C_{-i}(\vb*\theta_{X_i}(G_i, Z_i)^\top 
+        \tilde{\vb r}_i) - 1) C_{-i} \theta_{X_ij} \qand\\
+    \pdv[2]{J}{\tilde r_ij}{\tilde r_ik} &= 2C_{-i}^2 \theta_{X_ij}\theta_{X_ik},
+\end{align*}
+so the Hessian matrix of $J$ w.r.t $\tilde{\vb r}_i$ is \[
+    H_i=2(C_{-i})^2 \theta_{X_i}\theta_{X_i}^\top,
+\] which is positive definite.
+Therefore $J$ is convex in each $\tilde{\vb r}_i$.
+Since the allowable $\tilde{\vb r}_i$ are a convex set (viz., a ball of radius $\eps$), the maximum of $J$ across such $\tilde{\vb r}_i$, holding the other $\tilde{\vb r}_{-i}$ constant, will be attained on the boundary of the ball.
+We are then faced with a constrained maximization problem: maximizing $J$ such that $||\tilde{\vb r}_i - \hat{\vb r}_i||^2=\eps^2$.
+Using a Lagrange multiplier $\lambda$, we obtain a system of equations:
+\begin{equation}
+    2 \qty(C_{-i}(\vb*\theta_{X_i}(G_i, Z_i)^\top 
+        \tilde{\vb r}_i) - 1) C_{-i} \theta_{X_ij}
+    = 2\lambda(\tilde r_{ij}-\hat r_{ij}), 
+    \label{eq:lagr-sys}
+\end{equation}
+for all $j\in\cR$.
+Dropping shared constants, squaring, and summing across the equations yields \[
+    \qty(C_{-i}(\vb*\theta_{X_i}(G_i, Z_i)^\top 
+        \tilde{\vb r}_i) - 1)^2 C_{-i}^{2}
+       ||\vb*\theta_{X_i}||^2
+    = \lambda^2||\tilde{\vb r}_i-\hat{\vb r}_i||^2 = \lambda^2\eps^2,
+\] so \[
+    \lambda = \pm\qty(C_{-i}(\vb*\theta_{X_i}(G_i, Z_i)^\top 
+        \tilde{\vb r}_i) - 1)
+       ||\vb*\theta_{X_i}||\eps^{-1}.
+\] As long as $\tilde\pi\neq \pi$ for a particular $\Theta$, we can substitute into \eqref{eq:lagr-sys} and simplify to yield \[
+    \theta_{X_ij} = \pm||\vb*\theta_{X_i}||\eps^{-1}(\tilde r_{ij}-\hat r_{ij}),
+\] so \[
+    \tilde{\vb r}_i = \hat{\vb r}_i \pm \eps \frac{\vb*\theta_{X_i}}{||\vb*\theta_{X_i}||}.
+\] Notice that as this does not depend on any other $\tilde{\vb r}_{-i}$, we have in fact found the (constrained) values of all $\tilde{\vb r}_i$ which maximize $J$.
+
+What value does $J$ take at these values?
+This question is complicated slightly by the presence of the $\pm$ in the expression for the optimal $\tilde{\vb r}_i$.
+But since $\Theta>0$ it suffices to consider only the cases where we take the positive side across all $i$, or the negative side.
+First, however, simplifying, we have
+\begin{align*}
+     \sup_{\forall i\,\tilde{\vb r}_i \in B(\hat{\vb r}_i, \eps)} J
+     &= \qty(\prod_{i=1}^N \frac{
+     \vb*\theta_{X_i}^\top\qty(\hat{\vb r}_i \pm \eps \frac{\vb*\theta_{X_i}}{||\vb*\theta_{X_i}||})
+     }{\vb*\theta_{X_i}^\top\hat{\vb r}_i} - 1)^2 \\
+     &= \qty(\prod_{i=1}^N \qty(1 \pm 
+        \frac{\eps}{\vb*\theta_{X_i}^\top\hat{\vb r}_i}) - 1)^2 \\
+     &= \qty(1 + \qty(\sum_{l=1}^N 
+         \sum_{\substack{I\subseteq\{1,\dots,N\}\\|I| = l}}
+         \prod_{i\in I} \frac{\pm \eps}{\vb*\theta_{X_i}^\top\hat{\vb r}_i}) - 1)^2 \\
+     &= \eps^2 \qty(\sum_{l=1}^N 
+         \sum_{\substack{I\subseteq\{1,\dots,N\}\\|I| = l}}
+         \prod_{i\in I} \frac{\pm 1}{\vb*\theta_{X_i}^\top\hat{\vb r}_i})^2 \\
+     &= \eps^2 \qty(1 + \qty(\sum_{l=1}^N 
+         \sum_{\substack{I\subseteq\{1,\dots,N\}\\|I| = l}}
+         \prod_{i\in I} \frac{\pm 1}{\vb*\theta_{X_i}^\top\hat{\vb r}_i}) - 1)^2 \\
+     &= \eps^2 \qty(\prod_{i=1}^N \qty(1 \pm 
+        \frac{1}{\vb*\theta_{X_i}^\top\hat{\vb r}_i}) - 1)^2.
+\end{align*}
+Thus finally 
+\begin{equation}
+    \mathrm{RAE}_{\pi^*}(g) \le \eps \sqrt{\E_\pi\qty[
+        \max_{s\in \{-1, 1\}} \qty(
+        \prod_{i=1}^N \qty(1 +
+        \frac{s}{\vb*\theta_{X_i}^\top\hat{\vb r}_i}) - 1)^2]}
+\end{equation}
+
+# References {-}
