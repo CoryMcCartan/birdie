@@ -1,5 +1,5 @@
 ---
-title: "Unbiased Estimation of Racial Disparities when Race is Not Observed"
+title: "Consistent Estimation of Racial Disparities when Race is Not Observed"
 author: 
 date: '`r format(Sys.Date(), "%B %e, %Y")`'
 abstract: |
@@ -111,13 +111,12 @@ The posterior is then
 
 ## Marginalized Posterior
 
-Since $\vb R$ is high-dimensional, discrete, and not of primary interest, we marginalize it out to improve sampling.
-
+Since $\vb R$ is high-dimensional, discrete, and not of primary interest, we marginalize it out to improve sampling:
 \begin{align*}
     \pi(X_i,G_i,Z_i,S_i\mid \Theta)
     &\propto \sum_{r\in\cR} \pi(X_i,R_i,G_i,Z_i,S_i\mid \Theta) \\
-    &= \sum_{r\in\cR} \theta_{X_i r}(G_i, Z_i)\hat{r}_{ir} \\
-    &= \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i,
+    &= \sum_{r\in\cR} \theta_{X_i r}(G_i, Z_i)\hat{r}_{ir} 
+    = \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i.
 \end{align*}
 So the marginalized posterior is
 \begin{align}
@@ -135,115 +134,93 @@ The primary source of error in the model \eqref{eq:post-marg} comes from inaccur
 We can consider the "true" values of these tables, which would yield "true" individual race probabilities $\vb r^*_i$.
 The question then becomes one of quantifying how a particular error in these probabilities $\vb r^*_i - \hat{\vb r}_i$ translates into error in the posterior.
 
-Denote by $\pi^*$ the posterior constructed using the $\vb r^*_i$.
+Denote by $\pi^*$ the posterior constructed using the $\vb r^*_i$. 
 Then for a particular quantity of interest $g(\Theta)$, we can write the relative absolute error as \[
     \mathrm{RAE}_{\pi^*}(g) \dfeq \qty|\frac{\E_{\pi^*}[g(\Theta)] 
-    - \E_{\pi}[g(\Theta)]}{\E_{\pi}[g(\Theta)]}|,
-\]
-From Theorem 4 of @weiss1996approach, we can bound $\mathrm{RAE}(g)$ with the $\chi^2$-divergence between $\pi^*$ and $\pi$; for any $g$, \[
-    \mathrm{RAE}_{\pi^*}(g)^2  \le \chi^2(\pi^*) = \E_\pi\qty(
-        \frac{\pi^*(\Theta\mid \vb X, \vb G, \vb Z, \vb S)}{
-        \pi(\Theta\mid \vb X, \vb G, \vb Z, \vb S)}  - 1)^2
+    - \E_{\pi}[g(\Theta)]}{\mathrm{sd}_{\pi}[g(\Theta)]}|,
 \]
 
-Since we don't know $\vb r^*_i$, we will focus on deriving a worst-case bound.
-Of course, without any conditions, $\vb r^*_i$ can be arbitrarily far from $\hat{\vb r}_i$, and $\chi^2(\pi^*)$ will be very high.
-We will derive an upper bound on $\chi^2(\pi^*)$ assuming $||\vb r^*_i - \hat{\vb r}_i||^2\le \eps^2$ for all $i$.
+Let $\vb*\delta_i^* \dfeq \vb r^*_i - \hat{\vb r}_i$, and notice that $\ind^\top\vb*\delta_i=0$ and all $\delta_{ij}\in[-1,1]$.
+Define perturbation weights \[
+    w(\Theta,\vb*\delta^*) \dfeq 
+    \prod_{i=1}^N 
+    \qty(1 + \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i^*}{
+    \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i})
+    \propto \frac{\pi^*(\Theta\mid\vb X,\vb G,\vb Z,\vb S)}{\pi(\Theta\mid\vb X,\vb G,\vb Z,\vb S)}.
+\] 
 
-We'll first simplify the problem by moving the expectation to the outside and removing the sum-to-1 constraint for the $tilde{\vb r}_i$L
-\begin{align*}
-    \chi^2(\pi^*) &\le \sup_{\forall i\,\substack{\tilde{\vb r}_i \in B(\hat{\vb r}_i, \eps) \\ 
-        \ind^\top \tilde{\vb r}_i=1}} 
-        \E_\pi\qty( \frac{\tilde\pi(\Theta\mid \vb X, \vb G, \vb Z, \vb S)}{
-            \pi(\Theta\mid \vb X, \vb G, \vb Z, \vb S)}  - 1)^2 \\
-    &= \sup_{\forall i\,\substack{\tilde{\vb r}_i \in B(\hat{\vb r}_i, \eps) \\ 
-        \ind^\top \tilde{\vb r}_i=1}} 
-        \E_\pi\qty( \prod_{i=1}^N 
-            \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \tilde{\vb r}_i}{
-            \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i}  - 1)^2 \\
-    &\le \E_\pi\qty[
-        \sup_{\forall i\,\substack{\tilde{\vb r}_i \in B(\hat{\vb r}_i, \eps) \\ 
-            \ind^\top \tilde{\vb r}_i=1}} 
-        \qty( \prod_{i=1}^N 
-            \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \tilde{\vb r}_i}{
-            \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i}  - 1)^2] \\
-    &\le \E_\pi\qty[
-        \sup_{\forall i\,\tilde{\vb r}_i \in B(\hat{\vb r}_i, \eps)} 
-        \qty( \prod_{i=1}^N 
-            \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \tilde{\vb r}_i}{
-            \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i}  - 1)^2]
-\end{align*}
-
-Denote by $J$ the quantity inside the supremum, and let \[
-    C_{-i} \dfeq \qty(\prod_{l\neq i}^N 
-            \frac{\vb*\theta_{X_l}(G_l, Z_l)^\top \tilde{\vb r}_l}{
-            \vb*\theta_{X_l}(G_l, Z_l)^\top \hat{\vb r}_l})
-            \times \frac{1}{\vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i}.
+From Theorem 4 of @weiss1996approach, we can bound $\mathrm{RAE}(g)$ with the variance of these perturbation weights after normalization, which is also the $\chi^2$-divergence between $\pi^*$ and $\pi$: \[
+    \mathrm{RAE}_{\pi^*}(g)^2  \le \chi^2(\pi^*) 
+    = \frac{\E_\pi[w(\Theta,\vb*\delta^*)^2]}{\E_\pi[w(\Theta,\vb*\delta^*)]^2} - 1
 \]
-Then we can calculate partial derivatives:
-\begin{align*}
-    \pdv{J}{\tilde r_ij} &= 2\qty(C_{-i}(\vb*\theta_{X_i}(G_i, Z_i)^\top 
-        \tilde{\vb r}_i) - 1) C_{-i} \theta_{X_ij} \qand\\
-    \pdv[2]{J}{\tilde r_ij}{\tilde r_ik} &= 2C_{-i}^2 \theta_{X_ij}\theta_{X_ik},
-\end{align*}
-so the Hessian matrix of $J$ w.r.t $\tilde{\vb r}_i$ is \[
-    H_i=2(C_{-i})^2 \theta_{X_i}\theta_{X_i}^\top,
-\] which is positive definite.
-Therefore $J$ is convex in each $\tilde{\vb r}_i$.
-Since the allowable $\tilde{\vb r}_i$ are a convex set (viz., a ball of radius $\eps$), the maximum of $J$ across such $\tilde{\vb r}_i$, holding the other $\tilde{\vb r}_{-i}$ constant, will be attained on the boundary of the ball.
-We are then faced with a constrained maximization problem: maximizing $J$ such that $||\tilde{\vb r}_i - \hat{\vb r}_i||^2=\eps^2$.
-Using a Lagrange multiplier $\lambda$, we obtain a system of equations:
-\begin{equation}
-    2 \qty(C_{-i}(\vb*\theta_{X_i}(G_i, Z_i)^\top 
-        \tilde{\vb r}_i) - 1) C_{-i} \theta_{X_ij}
-    = 2\lambda(\tilde r_{ij}-\hat r_{ij}), 
-    \label{eq:lagr-sys}
-\end{equation}
-for all $j\in\cR$.
-Dropping shared constants, squaring, and summing across the equations yields \[
-    \qty(C_{-i}(\vb*\theta_{X_i}(G_i, Z_i)^\top 
-        \tilde{\vb r}_i) - 1)^2 C_{-i}^{2}
-       ||\vb*\theta_{X_i}||^2
-    = \lambda^2||\tilde{\vb r}_i-\hat{\vb r}_i||^2 = \lambda^2\eps^2,
-\] so \[
-    \lambda = \pm\qty(C_{-i}(\vb*\theta_{X_i}(G_i, Z_i)^\top 
-        \tilde{\vb r}_i) - 1)
-       ||\vb*\theta_{X_i}||\eps^{-1}.
-\] As long as $\tilde\pi\neq \pi$ for a particular $\Theta$, we can substitute into \eqref{eq:lagr-sys} and simplify to yield \[
-    \theta_{X_ij} = \pm||\vb*\theta_{X_i}||\eps^{-1}(\tilde r_{ij}-\hat r_{ij}),
-\] so \[
-    \tilde{\vb r}_i = \hat{\vb r}_i \pm \eps \frac{\vb*\theta_{X_i}}{||\vb*\theta_{X_i}||}.
-\] Notice that as this does not depend on any other $\tilde{\vb r}_{-i}$, we have in fact found the (constrained) values of all $\tilde{\vb r}_i$ which maximize $J$.
 
-What value does $J$ take at these values?
-This question is complicated slightly by the presence of the $\pm$ in the expression for the optimal $\tilde{\vb r}_i$.
-But since $\Theta>0$ it suffices to consider only the cases where we take the positive side across all $i$, or the negative side.
-First, however, simplifying, we have
+Since we don't know $\vb r^*_i$, we will focus on deriving a worst-case bound on $\chi^2(\pi^*)$ in terms of the average size of the $\vb*\delta_i^*$, measured as \[
+    \Delta^* = \sqrt{\sum_{i=1}^N\sum_{j\in\cR} {\delta_{ij}^*}^2}.
+\]
+
+We'll first simplify the problem by moving the supremum to the inside: if $\Delta^*\le \eps$, then
 \begin{align*}
-     \sup_{\forall i\,\tilde{\vb r}_i \in B(\hat{\vb r}_i, \eps)} J
-     &= \qty(\prod_{i=1}^N \frac{
-     \vb*\theta_{X_i}^\top\qty(\hat{\vb r}_i \pm \eps \frac{\vb*\theta_{X_i}}{||\vb*\theta_{X_i}||})
-     }{\vb*\theta_{X_i}^\top\hat{\vb r}_i} - 1)^2 \\
-     &= \qty(\prod_{i=1}^N \qty(1 \pm 
-        \frac{\eps}{\vb*\theta_{X_i}^\top\hat{\vb r}_i}) - 1)^2 \\
-     &= \qty(1 + \qty(\sum_{l=1}^N 
-         \sum_{\substack{I\subseteq\{1,\dots,N\}\\|I| = l}}
-         \prod_{i\in I} \frac{\pm \eps}{\vb*\theta_{X_i}^\top\hat{\vb r}_i}) - 1)^2 \\
-     &= \eps^2 \qty(\sum_{l=1}^N 
-         \sum_{\substack{I\subseteq\{1,\dots,N\}\\|I| = l}}
-         \prod_{i\in I} \frac{\pm 1}{\vb*\theta_{X_i}^\top\hat{\vb r}_i})^2 \\
-     &= \eps^2 \qty(1 + \qty(\sum_{l=1}^N 
-         \sum_{\substack{I\subseteq\{1,\dots,N\}\\|I| = l}}
-         \prod_{i\in I} \frac{\pm 1}{\vb*\theta_{X_i}^\top\hat{\vb r}_i}) - 1)^2 \\
-     &= \eps^2 \qty(\prod_{i=1}^N \qty(1 \pm 
-        \frac{1}{\vb*\theta_{X_i}^\top\hat{\vb r}_i}) - 1)^2.
+    \chi^2(\pi^*) \le \sup_{\Delta=\eps}
+        \frac{\E_\pi[w(\Theta,\vb*\delta)^2]}{\E_\pi[w(\Theta,\vb*\delta)]^2} - 1 
+    \le \E_\pi\qty[\sup_{\Delta=\eps} \qty(\frac{w(\Theta,\vb*\delta)}{
+        \E_\pi[w(\Theta,\vb*\delta)]})^2] - 1 \\
+    = \E_\pi\qty[\exp \qty(2\cdot\sup_{\Delta=\eps}(
+        \log w(\Theta,\vb*\delta) - \log\E_\pi[w(\Theta,\vb*\delta)]))] - 1.
+        \numberthis\label{eq:sup-simp}
 \end{align*}
-Thus finally 
-\begin{equation}
-    \mathrm{RAE}_{\pi^*}(g) \le \eps \sqrt{\E_\pi\qty[
-        \max_{s\in \{-1, 1\}} \qty(
-        \prod_{i=1}^N \qty(1 +
-        \frac{s}{\vb*\theta_{X_i}^\top\hat{\vb r}_i}) - 1)^2]}
-\end{equation}
+
+We can leverage the inequality $\log(1+x)\le x$ to upper-bound the first term inside the supremum:
+\begin{align*}
+    \log w(\theta,\vb*\delta) 
+    &= \sum_{i=1}^N \log(1 + \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i}{
+        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i}) \\
+    &\le \sum_{i=1}^N \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i}{
+        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i}.
+\end{align*}
+
+For the second term, the opposite inequality $\frac{x}{1+x}\le \log(1+x)$ yields
+\begin{align*}
+    \log \E_\pi w(\Theta,\vb*\delta) &\ge \E_\pi \log w(\Theta,\vb*\delta) \\
+    &= \sum_{i=1}^N \E_\pi \log(1 + \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i}{
+        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i}) \\
+    &\ge \sum_{i=1}^N \E_\pi\qty[
+        \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i}{
+        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i + 
+            \vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i}] \\
+    &\le \sum_{i=1}^N \E_\pi\qty[
+        \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i}{
+        \norm{\vb*\theta_{X_i}(G_i, Z_i)}\norm{\hat{\vb r}_i + \vb*\delta_i}}]
+    \le \sum_{i=1}^N \E_\pi\qty[
+        \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i}{
+        \norm{\vb*\theta_{X_i}(G_i, Z_i)}}].
+\end{align*}
+
+Combining these results,
+\begin{align*}
+    \log w(\theta,\vb*\delta) - \log \E_\pi w(\Theta,\vb*\delta) 
+    &\le \sum_{i=1}^N \qty(
+        \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top}{
+        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i} -
+        \E_\pi\qty[
+        \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top}{
+            \norm{\vb*\theta_{X_i}(G_i, Z_i)}}])  \vb*\delta_i \\
+    &\le \Delta \sqrt{\sum_{i=1}^N \norm{
+        \frac{\vb*\theta_{X_i}(G_i, Z_i)}{
+        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i} -
+        \E_\pi\qty[
+        \frac{\vb*\theta_{X_i}(G_i, Z_i)}{
+            \norm{\vb*\theta_{X_i}(G_i, Z_i)}}]}^2} \\
+\end{align*}
+
+Finally, substituting into \eqref{eq:sup-simp} and taking a square root, \[
+    \mathrm{RAE}_{\pi^*}(g) \le  \sqrt{\E_\pi
+    \exp\qty(\eps^2\sum_{i=1}^N \norm{
+        \frac{\vb*\theta_{X_i}(G_i, Z_i)}{
+        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i} -
+        \E_\pi\qty[
+        \frac{\vb*\theta_{X_i}(G_i, Z_i)}{
+            \norm{\vb*\theta_{X_i}(G_i, Z_i)}}]}^2) - 1}
+\]
+
 
 # References {-}
