@@ -32,12 +32,12 @@ run_boot = function(i) {
 
 
     capture.output(suppressMessages({
-        r_probs = predict_race_sgz(last_name, zip, c(gender, age), data=d_fit,
+        r_probs = predict_race_sgz(last_name, zip, data=d_fit,
                                    p_r=p_r, iterate=0)
 
-        fit0 = model_race(r_probs$pr, party, zip, c(gender, age), data=d_fit, sgz=r_probs,
+        fit0 = model_race(r_probs$pr, party, zip, data=d_fit, sgz=r_probs,
                           reload_py=F, config=list(n_mi=0, lr=0.2), silent=T)
-        fit1 = model_race(r_probs$pr, party, zip, c(gender, age), data=d_fit, sgz=r_probs,
+        fit1 = model_race(r_probs$pr, party, zip, data=d_fit, sgz=r_probs,
                           reload_py=F, config=list(n_mi=5, lr=0.2), silent=T)
 
         xr = list(
@@ -85,15 +85,7 @@ d = res %>%
               coverage_mi = mean(covered_mi),
               coverage_diff = mean(cover_diff))
 
-ggplot(d, aes(bias_mod, coverage_diff, label=lbl)) +
-    geom_vline(xintercept=0, col="#00000077") +
-    #geom_hline(yintercept=0.9, col="#002233cc", lty="dashed") +
-    geom_point(aes(shape=party, color=race), size=5) +
-    geom_text_repel(size=2.8, fontface="bold", point.padding=6) +
-    lims(x=c(-0.3, 0.35)) +
-    scale_y_continuous("Coverage", labels=percent) +
-    scale_fill_wa_d("larch")
-ggplot(d, aes(bias_true, coverage_true, label=lbl)) +
+ggplot(d, aes(bias_mi, coverage_mi, label=lbl)) +
     geom_vline(xintercept=0, col="#00000077") +
     geom_hline(yintercept=0.9, col="#002233cc", lty="dashed") +
     geom_point(aes(shape=party, color=race), size=5) +
@@ -102,6 +94,7 @@ ggplot(d, aes(bias_true, coverage_true, label=lbl)) +
     scale_y_continuous("Coverage", labels=percent) +
     scale_fill_wa_d("larch")
 
+
 ggplot(d, aes(bias_bisg, std_bisg, label=lbl)) +
     geom_vline(xintercept=0, col="#00000077") +
     geom_point(aes(shape=party, color=race), size=5) +
@@ -109,13 +102,7 @@ ggplot(d, aes(bias_bisg, std_bisg, label=lbl)) +
     scale_y_continuous("Std. dev. in error of posterior median", trans="log10")
 
 ci_mult = diff(qnorm(c(0.05, 0.95)))
-ggplot(d, aes(ci_mult*std_mi, ci_width_mi, label=lbl)) +
-    geom_abline(slope=1, col="#00000077") +
-    geom_point(aes(shape=party, color=race), size=5) +
-    geom_text_repel(size=2.8, fontface="bold", point.padding=6) +
-    scale_x_continuous("Std. dev. in error of posterior median", trans="log10", limits=c(0.002, 0.3)) +
-    scale_y_continuous("Mean credible interval width", trans="log10", limits=c(0.007, 0.8))
-ggplot(d, aes(std_true, ci_width_true, label=lbl)) +
+ggplot(d, aes(ci_mult*std_mod, ci_width_mod, label=lbl)) +
     geom_abline(slope=1, col="#00000077") +
     geom_point(aes(shape=party, color=race), size=5) +
     geom_text_repel(size=2.8, fontface="bold", point.padding=6) +
@@ -123,7 +110,7 @@ ggplot(d, aes(std_true, ci_width_true, label=lbl)) +
     scale_y_continuous("Mean credible interval width", trans="log10", limits=c(0.007, 0.8))
 ggsave("~/Desktop/ss.png", width=9.5, height=4.5, dpi=600)
 
-ggplot(d, aes(coverage_bisg, coverage_true, label=lbl)) +
+ggplot(d, aes(coverage_mod, coverage_mi, label=lbl)) +
     geom_hline(yintercept=0.9, col="#002233cc", lty="dashed") +
     geom_vline(xintercept=0.9, col="#002233cc", lty="dashed") +
     geom_point(aes(shape=party, color=race), size=5) +

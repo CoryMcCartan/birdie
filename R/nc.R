@@ -5,7 +5,8 @@ make_nc_statewide = function(voterfile) {
         stringr::str_sub(end=-8)
     voters = do.call(rbind, lapply(counties, make_nc_df))
     voters = voters %>%
-        select(last_name, party, race, zip, gender, age, birth_state, lic) %>%
+        select(-first_name, -middle_name) %>%
+        #select(last_name, party, race, zip, gender, age, birth_state, lic) %>%
         mutate(across(where(is.character), factor))
     saveRDS(voters, voterfile, compress="xz")
     voters
@@ -25,7 +26,7 @@ make_nc_df = function(county="Dare") {
     rawfile = glue::glue("{tmp}/ncvoter{county_i}.txt")
 
     voters_raw = readr::read_tsv(rawfile, show_col_types=F,
-                                 col_types=readr::cols(birth_age="i",
+                                 col_types=readr::cols(age_at_year_end="i",
                                                        birth_year="i",
                                                        .default="c"))
 
@@ -41,11 +42,16 @@ make_nc_df = function(county="Dare") {
                gender = as.factor(gender_code),
                party = factor(party_codes[party_cd],
                               levels=c("dem", "ind", "rep", "lib")),
-               age = cut(birth_age, breaks=c(18, 20, 25, 30, 35, 40, 45, 50, 55,
-                                       60, 62, 65, 67, 70, 75, 80, 85, 150),
+               age = cut(age_at_year_end,
+                         breaks=c(18, 20, 25, 30, 35, 40, 45, 50, 55,
+                                  60, 62, 65, 67, 70, 75, 80, 85, 150),
                          right=FALSE),
+               address = dplyr::na_if(res_street_address, "REMOVED"),
+               city = res_city_desc,
+               county = county,
                lic = drivers_lic == "Y") %>%
-        select(last_name:middle_name, suffix=name_suffix_lbl, zip=zip_code,
+        select(last_name:middle_name, suffix=name_suffix_lbl,
+               address, city, zip=zip_code, county,
                race, gender, age, birth_state, party, lic) %>%
         dplyr::slice(which(!is.na(.$last_name)))
 
