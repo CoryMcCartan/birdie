@@ -20,10 +20,24 @@
 \usetikzlibrary{bayesnet}
 
 % paper-specific
+\renewcommand{\vec}{\mathrm{vec}}
+\newcommand{\proj}{\mathrm{proj}}
 
 % generic
 \theoremstyle{plain}
-\newtheorem{prop}{Proposition}
+\newtheorem{prop}{Proposition}[section]
+\newtheorem*{prop*}{Proposition}
+\newtheorem{claim}[prop]{Claim}
+\newtheorem*{claim*}{Claim}
+\newtheorem{corollary}{Corollary}[prop]
+\newtheorem*{corollary*}{Corollary}
+\newtheorem{theorem}[prop]{Theorem}
+\newtheorem*{theorem*}{Theorem}
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem*{lemma*}{Lemma}
+\newtheorem{assump}{Assumption}
+\renewcommand\theassump{A\arabic{assump}}
+\newtheorem*{assump*}{Assumption}
 
 \newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
 
@@ -51,6 +65,7 @@
 \DeclareMathOperator{\Pr}{\mathbb{P}}
 \newcommand{\indep}{\mathbin{\perp\!\!\!\!\!\:\perp}}
 \newcommand{\gvn}{\;\middle|\;}
+\newcommand{\R}{\ensuremath{\mathcal{R}}}
 \newcommand{\F}{\ensuremath{\mathcal{F}}}
 \newcommand{\B}{\ensuremath{\mathcal{B}}}
 \newcommand{\ind}{\mathds{1}}
