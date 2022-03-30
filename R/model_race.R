@@ -62,8 +62,8 @@ model_race = function(r_probs, X, G, Z=NULL, data=NULL, sgz=NULL, prefix="pr_",
                     subsamp = 2048,
                     epoch = 50,
                     draws = 800,
-                    lr = 0.2,
-                    n_mi = 5,
+                    lr = 0.25,
+                    n_mi = 0,
                     it_avgs = 300,
                     tol_rhat = 1.2)
     for (i in names(defaults)) {

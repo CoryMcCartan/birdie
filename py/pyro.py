@@ -83,7 +83,7 @@ def fit_additive(X, GZ, GZ_var, pr_base, n_x=2, n_gz_var=1, sgz=dict(),
     n_gz = GZ.shape[1]
     N = X.shape[0]
     n_r = pr_base.shape[-1]
-    S_log = torch.tensor(sgz["S"]).log()[:, None, :]
+    #S_log = torch.tensor(sgz["S"]).log()[:, None, :]
     
     pyro.enable_validation(False)
     optimizer = pyro.optim.AdamW({'lr': lr}, {'clip_norm': 10.0})
@@ -114,23 +114,23 @@ def fit_additive(X, GZ, GZ_var, pr_base, n_x=2, n_gz_var=1, sgz=dict(),
         it, epoch, n_draws, it_avgs, lr, tol_rhat, silent
         )
         
-    lr = min(new_lr, lr * 0.2)
-    loss2 = None
-    for i in range(n_mi):
-        sched = make_scheduler()
-        svi = SVI(model, guide, sched, loss=elbo)
-        
-        pyro.clear_param_store()
-        pyro.get_param_store().set_state(copy.deepcopy(opt_param))
-        
-        m_args_new = (X, GZ, GZ_var, perturb_probs(pr_base, sgz, S_log, X, n_x))
-        _, mi_draws, loss2, _, _, _, _, _ = fit.run_svi(
-            svi, sched, model, guide, m_args_new, m_kwargs, N, 3, 
-            500, epoch, int(n_draws/n_mi), int(it_avgs/2), lr, 
-            tol_rhat=max(tol_rhat, 2), silent=silent)
-            
-        for x in draws:
-            draws[x] = torch.cat((draws[x], mi_draws[x]))
+    #lr = min(new_lr, lr * 0.2)
+    #loss2 = None
+    #for i in range(n_mi):
+    #    sched = make_scheduler()
+    #    svi = SVI(model, guide, sched, loss=elbo)
+    #    
+    #    pyro.clear_param_store()
+    #    pyro.get_param_store().set_state(copy.deepcopy(opt_param))
+    #    
+    #    m_args_new = (X, GZ, GZ_var, perturb_probs(pr_base, sgz, S_log, X, n_x))
+    #    _, mi_draws, loss2, _, _, _, _, _ = fit.run_svi(
+    #        svi, sched, model, guide, m_args_new, m_kwargs, N, 3, 
+    #        500, epoch, int(n_draws/n_mi), int(it_avgs/2), lr, 
+    #        tol_rhat=max(tol_rhat, 2), silent=silent)
+    #        
+    #    for x in draws:
+    #        draws[x] = torch.cat((draws[x], mi_draws[x]))
     
     # Average p_xr over GZ
     p_x = draws["p_x"].numpy()
@@ -149,7 +149,7 @@ def fit_additive(X, GZ, GZ_var, pr_base, n_x=2, n_gz_var=1, sgz=dict(),
     
     return {
         "loss": loss,
-        "loss2": loss2,
+        #"loss2": loss2,
         "log_weights": lw,
         "pareto_k": k,
         "log_p": log_p,

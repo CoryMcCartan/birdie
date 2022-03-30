@@ -36,3 +36,47 @@ cor(log(x[,1]), x[,2], method="pearson")
 cor(log(x[,1]), log(x[,2]), method="pearson")
 cor(x[,1], x[,2], method="spearman")
 }
+
+library(mvtnorm)
+library(gtools)
+fn = function(...) {
+    x = rmvnorm(1, sigma=diag(10))[1, ]
+    x = (x - mean(x)) / sum(x^2)
+    r = rdirichlet(1, rep(1, 10))
+    x = x * r
+
+    if (any(r - x < 0)) stop()
+
+    out = r * sum(x^2) - x * sum(r * x)
+    all(out * sign(sum(r*x)) >= 0)
+}
+res = map_dbl(1:5000, fn)
+hist(res, breaks=100)
+hist(sign(res), breaks=100)
+
+
+
+
+# OLS and distribution of X ----
+
+fn = function(loc=0.5, ...) {
+    N = 100
+    n_beta_obs = 50
+    X = rbeta(N, loc*n_beta_obs, (1 - loc)*n_beta_obs)
+    pr = 0.4*(1-X) + 0.8*X
+    Y = rbinom(N, 1, pr)
+    coef = lm.fit(cbind(1-X, X), Y)$coefficients
+    tibble(loc = loc,
+           beta1 = coef[1],
+           beta2 = coef[2],
+           mean_error = mean(Y - pr))
+}
+
+res = seq(0.01, 0.99, length.out=99) %>%
+    sample(5000, replace=T) %>%
+    map_dfr(fn)
+
+ggplot(res, aes(loc, beta1)) +
+    geom_point() +
+    geom_smooth(formula=y~s(x), method="gam")
+

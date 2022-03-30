@@ -1,0 +1,237 @@
+\makeatletter \let \proof \axp@oldproof \let \endproof \endaxp@oldproof \let \section \axp@oldsection 
+\global \def \axp@protectref@ii {\ref {axp@sii}}
+\axp@section {\appendixsectionformat {\protect \axp@protectref@ii }{Problem and Identification}}
+\makeatletter 
+\setcounter {axp@equationx}{\c@equation }\setcounter {equation}{0}
+{\pretocmd {\@begintheorem }{\patchcmd {\thmhead }{\@acmplainnotefont }{}{}{}\patchcmd {\thmhead }{\the \thm@notefont }{}{}{}\patchcmd {\thmhead }{(}{}{}{}\patchcmd {\thmhead }{)}{}{}{}}{}{} \begin {axp@theoremrp} [\axp@refstar {axp@ri}]\axp@forward@target {axp@fw@ri}{}\axp@redefinelabels \rpleti \end {axp@theoremrp} }
+\setcounter {equation}{\c@axp@equationx }
+\makeatletter \begin {axp@oldproof}\makeatother 
+Applying the law of total probability and our conditional independence relation $S\indep X\mid R,G,Z$, we have,
+for all $x\in\cX$, $g\in\cG$, $z\in\cZ$, and $s\in\cS$,
+\begin{align*}
+    \Pr(X=x\mid G=g, Z=z, S=s)
+    &= \sum_{r\in\cR} \Pr(X=x\mid R=r, G=g, Z=z, S=s)\Pr(R=r\mid G=g, Z=z, S=s) \\
+    &= \sum_{r\in\cR} \Pr(X=x\mid R=r, G=g, Z=z)\Pr(R=r\mid G=g, Z=z, S=s).
+\end{align*}
+The left-hand side is estimable from the data and the rightmost term $\Pr(R=r\mid G=g, Z=z, S=s)$ is assumed known.
+So for each $x\in\cX$, $g\in\cG$, and $z\in\cZ$, this relation is a linear system in unknown parameters $\Pr(X=x\mid R=r, G=g, Z=z)$.
+These parameters are identified if and only if this system has a unique solution, i.e. if the coefficient matrix $\hat{\vb R}^{(xgz)}$ has rank $|\cR|$ and so does the augmented matrix $\mqty(\hat{\vb R}^{(xgz)}&b^{(xgz)})$.
+\makeatletter 
+\end {axp@oldproof}
+\makeatletter 
+\setcounter {axp@equationx}{\c@equation }\setcounter {equation}{0}
+{\pretocmd {\@begintheorem }{\patchcmd {\thmhead }{\@acmplainnotefont }{}{}{}\patchcmd {\thmhead }{\the \thm@notefont }{}{}{}\patchcmd {\thmhead }{(}{}{}{}\patchcmd {\thmhead }{)}{}{}{}}{}{} \begin {axp@theoremrp} [\axp@refstar {axp@rii}]\axp@forward@target {axp@fw@rii}{}\axp@redefinelabels \rpletii \end {axp@theoremrp} }
+\setcounter {equation}{\c@axp@equationx }
+\makeatletter \begin {axp@oldproof}\makeatother 
+Since the individual BISGZ probabilities are nonnegative and sum to 1, a pair $j,k\in\cR$ of races has perfectly discriminating BISGZ probabilities if and only if the corresponding columns of $\hat{\vb R}$ are orthogonal, i.e., $\hat{\vb r}_{\cdot j}^\top\hat{\vb r}_{\cdot k}$.
+Begin by writing $\vb X_\proj$ in terms of the $\hat{\vb R}$ basis, so \[
+    \vb X_\proj = \sum_{j\in\cR} c_j\hat{\vb r}_{\cdot j},
+\] and thus $\hat{\vb\mu}^{(\text{OLS})}_{X|R}(j)=c_j$.
+Without loss of generality, suppose the $c_j$ are numbered as $c_1\ge c_2\ge \cdots\ge c_{|\cR|}$.
+We can also expand $\vb 1$ in the same basis. Since the individual probabilities must sum to one, in fact we have \(
+    \vb 1 = \sum_{j\in\cR} \hat{\vb r}_{\cdot j}.
+\)
+
+For the forward direction, we assume $\hat{\mu}^{(\text{wtd})}_{X|R}(j)=\hat{\mu}^{(\text{OLS})}_{X|R}(j)=c_j$;
+multiplying out the denominator of the weighted estimator, we have $\hat{\vb r}_{\cdot j}^\top \vb X=c_j\hat{\vb r}_{\cdot j}^\top\vb 1$ for all $j$; substituting the basis expansions of $\vb X_\proj$ and $\vb 1$, this yields \[
+    \sum_{k\in\cR} c_k \hat{\vb r}_{\cdot j}^\top\hat{\vb r}_{\cdot k}
+    = \sum_{k\in\cR} c_j \hat{\vb r}_{\cdot j}^\top\hat{\vb r}_{\cdot k}, \qq{so}
+    \sum_{k\in\cR} (c_j-c_k) \hat{\vb r}_{\cdot j}^\top\hat{\vb r}_{\cdot k}=0.
+\] Now fix $j\in J_1=\argmax_j c_j$; this relation still holds, but now every term in the sum is nonnegative and in particular $c_j>c_k$ for all $k\not\in J_1$.
+Therefore we must have $\hat{\vb r}_{\cdot j}^\top\hat{\vb r}_{\cdot k}=0$ for all $k\not\in J_1$.
+Then fix $j\in J_2=\argmax_{j\not\in J_1} c_j$; since $\hat{\vb r}_{\cdot j}^\top\hat{\vb r}_{\cdot l}=0$ for all $l\in J_1$, every term in the sum is still nonnegative and in particular $c_j>c_k$ for all $k\not\in J_1\cup J_2$.
+Therefore we must have $\hat{\vb r}_{\cdot j}^\top\hat{\vb r}_{\cdot k}=0$ for all $k\not\in J_1\cup J_2$.
+Proceeding this way through all sets of common values in the $c_j$ we find that for all $j,k\in\cR$, either $c_j=c_k$ or  $\hat{\vb r}_{\cdot j}^\top\hat{\vb r}_{\cdot k}=0$.
+
+For the reverse direction, fix $j\in\cR$ and let $J=\{k\in\cR:c_k=c_j\}$, so that by assumption $\hat{\vb r}_{\cdot j}^\top\hat{\vb r}_{\cdot k}=0$ for all $k\not\in J$.
+Then by the above basis expansion, $\hat{\mu}^{(\text{OLS})}_{X|R}(j)=c_j$, and \[
+    \hat{\mu}^{(\text{wtd})}_{X|R}(j)
+    = \frac{\sum_{k\in\cR} c_k \hat{\vb r}_{\cdot j}^\top\hat{\vb r}_{\cdot k}}{
+        \sum_{k\in\cR}\hat{\vb r}_{\cdot j}^\top\hat{\vb r}_{\cdot k}}
+    = \frac{c_j \sum_{k\in J} \hat{\vb r}_{\cdot j}^\top\hat{\vb r}_{\cdot k}}{
+        \sum_{k\in J}\hat{\vb r}_{\cdot j}^\top\hat{\vb r}_{\cdot k}}
+    = c_j = \hat{\mu}^{(\text{OLS})}_{X|R}(j). \qedhere
+\]
+\makeatletter 
+\end {axp@oldproof}
+\global \def \axp@protectref@iv {\ref {axp@siv}}
+\axp@section {\appendixsectionformat {\protect \axp@protectref@iv }{Error and Bias}}
+\begin{lemma} \label{lem:biassign}
+For a vector $\vb b$, if \[
+    \hat r_{ij}\vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i} -
+    \delta_{ij}\hat{\vb r}_i^\top\vb b_{X_i\cdot G_iZ_i} \ge 0
+\] for all $1\le i\le N$ and $j\in\cR$, then \[
+    \Cov_\pi\qty(\frac{w(\Theta,\vb*\delta)}{\E_\pi[w(\Theta,\vb*\delta)\mid\vb Y]},
+        \vec(\Theta)^\top\vb b\gvn\vb Y) \ge 0.
+\] Conversely, if \(
+    \hat r_{ij}\vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i} -
+    \delta_{ij}\hat{\vb r}_i^\top\vb b_{X_i\cdot G_iZ_i} \le 0
+\) for all $1\le i\le N$ and $j\in\cR$, then \[
+    \Cov_\pi\qty(\frac{w(\Theta,\vb*\delta)}{\E_\pi[w(\Theta,\vb*\delta)\mid\vb Y]},
+        \vec(\Theta)^\top\vb b\gvn\vb Y) \le 0.
+\]
+\end{lemma}
+\begin{proof}
+We will leverage the covariance inequality, which states that for a monotonically increasing function $g$ and monotonically increasing (decreasing) functions $f$, and any random variable $X$, $\Cov(f(X),g(X))$ is nonnegative (nonpositive).
+Since $w$ is nonnegative, we need only consider $\Cov_\pi\qty(w(\Theta,\vb*\delta), \vec(\Theta)^\top\vb b\mid\vb Y)$, without the normalization constant $\E_\pi[w(\Theta,\vb*\delta)\mid\vb Y]$.
+In fact, since $w$ is a product of nonnegative terms, and the product of nonnegative monotonic functions is again monotonic, by the covariance inequality it suffices to show that each term \[
+    w_i \dfeq 1 + \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i}{
+        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i}
+\] is monotonic in $\vec(\Theta)^\top\vb b$.
+
+Partial derivatives with respect to elements of $\vec(\Theta)$ are clearly zero except for those corresponding to $\vec(\Theta)_{X_i\cdot G_iZ_i}$. These are \[
+    \pdv{w_i}{\vec(\Theta)_{X_irG_iZ_i}}
+    = \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i\delta_{ir} -
+        \vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i \hat r_{ir}}{
+        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i}.
+\] The directional derivative along $\vb b$ is then
+\begin{align*}
+    \partial_{\vb b}w_i
+    &= \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i
+                \vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i} -
+                \vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i
+                \hat{\vb r}_i^\top\vb b_{X_i\cdot G_iZ_i}}{
+            (\vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i)^2} \\
+    &= \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top}{
+            (\vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i)^2}
+            (\hat{\vb r}_i\vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i} -
+            \vb*\delta_i\hat{\vb r}_i^\top\vb b_{X_i\cdot G_iZ_i}).
+\end{align*}
+Since $\vb*\theta_{X_i}(G_i, Z_i)$ is nonnegative, a sufficient condition for the directional derivative to be nonnegative, and thus for $w_i$ to be monotonically increasing in $\vec(\Theta)^\top\vb b$, is for
+$\hat r_{ij}\vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i} - \delta_{ij}\hat{\vb r}_i^\top\vb b_{X_i\cdot G_iZ_i} \ge 0$ for all $j\in\cR$. Similarly, by reversing this inequality, we have a sufficient condition for $w_i$ to be monotonically decreasing in $\vec(\Theta)^\top\vb b$.
+\end{proof}
+\makeatletter 
+\makeatletter 
+\setcounter {axp@equationx}{\c@equation }\setcounter {equation}{1}
+{\pretocmd {\@begintheorem }{\patchcmd {\thmhead }{\@acmplainnotefont }{}{}{}\patchcmd {\thmhead }{\the \thm@notefont }{}{}{}\patchcmd {\thmhead }{(}{}{}{}\patchcmd {\thmhead }{)}{}{}{}}{}{} \begin {axp@theoremrp} [\axp@refstar {axp@riii}]\axp@forward@target {axp@fw@riii}{}\axp@redefinelabels \rpletiii \end {axp@theoremrp} }
+\setcounter {equation}{\c@axp@equationx }
+\makeatletter \begin {axp@oldproof}\makeatother 
+Let $i\in I$. Then by assumption $\vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i}=c\delta_{ir}>0$.
+Let $j\in\cR$. If $j=r$, \[
+    \hat r_{ir}\vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i} -
+    \delta_{ir}\hat{\vb r}_i^\top\vb b_{X_i\cdot G_iZ_i}
+    = \hat r_{ir}c\delta_{ir} - \delta_{ir}\hat r_{ir}c = 0,
+\]
+If $j\neq r$, we have \[
+    \hat r_{ij}\vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i} -
+    \delta_{ij}\hat{\vb r}_i^\top\vb b_{X_i\cdot G_iZ_i}
+    = \hat r_{ij}c\delta_{ir} - \delta_{ij}\hat r_{ij}c
+    = c\hat r_{ij}(\delta_{ir} - \delta_{ij})\ge 0.
+\]
+So the condition of Lemma~\ref{lem:biassign} is satisfied for all $j\in\cR$, and
+thus by the lemma we conclude that \[
+    \E_{\pi^*}[\vec(\Theta)^\top\vb b\mid\vb Y] - \E_{\pi}[\vec(\Theta)^\top\vb b\mid\vb Y]
+    = \Cov_\pi\qty(\frac{w(\Theta,\vb*\delta)}{\E_\pi[w(\Theta,\vb*\delta)]},
+    \vec(\Theta)^\top\vb b \gvn\vb Y) \ge 0. \qedhere
+\]
+\makeatletter 
+\end {axp@oldproof}
+\makeatletter 
+\setcounter {axp@equationx}{\c@equation }\setcounter {equation}{1}
+{\pretocmd {\@begintheorem }{\patchcmd {\thmhead }{\@acmplainnotefont }{}{}{}\patchcmd {\thmhead }{\the \thm@notefont }{}{}{}\patchcmd {\thmhead }{(}{}{}{}\patchcmd {\thmhead }{)}{}{}{}}{}{} \begin {axp@theoremrp} [\axp@refstar {axp@riv}]\axp@forward@target {axp@fw@riv}{}\axp@redefinelabels \rpletiv \end {axp@theoremrp} }
+\setcounter {equation}{\c@axp@equationx }
+\makeatletter \begin {axp@oldproof}\makeatother 
+Let $i\in I$. Then by assumption $\vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i}=c(|\delta_{ir}|+|\delta_{is}|)>0$.
+Let $j\in\cR$. If $j=r$ we have \[
+    \hat r_{ir}\vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i} -
+    \delta_{ir}\hat{\vb r}_i^\top\vb b_{X_i\cdot G_iZ_i}
+    = \hat r_{ir}c_1(2c_{2i}) - c_{2i}c(\hat r_{ir}-\hat r_{is})
+    = c_1c_{2i}(\hat r_{ir} +\hat r_{is}) \ge 0.
+\]
+If $j=s$ we have \[
+    \hat r_{is}\vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i} -
+    \delta_{is}\hat{\vb r}_i^\top\vb b_{X_i\cdot G_iZ_i}
+    = \hat r_{is}c_1(2c_{2i}) + c_{2i}c(\hat r_{ir}-\hat r_{is})
+    = c_1c_{2i}(\hat r_{is} +\hat r_{i+}) \ge 0.
+\] If $j\not\in\{r,s\}$ then $\delta_{ij}=0$, so \[
+    \hat r_{ij}\vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i} -
+    \delta_{ij}\hat{\vb r}_i^\top\vb b_{X_i\cdot G_iZ_i}
+    = \hat r_{ij}c_1(2c_{2i}) \ge 0.
+\] So the condition of Lemma~\ref{lem:biassign} is satisfied for all $j\in\cR$, and
+thus by the lemma we conclude that \[
+    \E_{\pi^*}[\vec(\Theta)^\top\vb b\mid\vb Y] - \E_{\pi}[\vec(\Theta)^\top\vb b\mid\vb Y]
+    = \Cov_\pi\qty(\frac{w(\Theta,\vb*\delta)}{\E_\pi[w(\Theta,\vb*\delta)]},
+    \vec(\Theta)^\top\vb b \gvn\vb Y) \ge 0. \qedhere
+\]
+\makeatletter 
+\end {axp@oldproof}
+\makeatletter 
+\setcounter {axp@equationx}{\c@equation }\setcounter {equation}{1}
+{\pretocmd {\@begintheorem }{\patchcmd {\thmhead }{\@acmplainnotefont }{}{}{}\patchcmd {\thmhead }{\the \thm@notefont }{}{}{}\patchcmd {\thmhead }{(}{}{}{}\patchcmd {\thmhead }{)}{}{}{}}{}{} \begin {axp@theoremrp} [\axp@refstar {axp@rv}]\axp@forward@target {axp@fw@rv}{}\axp@redefinelabels \rpletv \end {axp@theoremrp} }
+\setcounter {equation}{\c@axp@equationx }
+\makeatletter \begin {axp@oldproof}\makeatother 
+From Theorem 4 of @weiss1996approach, we can bound $\mathrm{RAE}(g)$ with the variance of these perturbation weights after normalization, which is also the $\chi^2$-divergence between $\pi^*$ and $\pi$: \[
+    \mathrm{RAE}_{\pi^*}(g)^2  \le \chi^2(\pi^*)
+    = \frac{\E_\pi[w(\Theta,\vb*\delta^*)^2]}{\E_\pi[w(\Theta,\vb*\delta^*)]^2} - 1
+\]
+
+Since we don't know $\vb r^*_i$, we will focus on deriving a worst-case bound on $\chi^2(\pi^*)$ in terms of the average size of the $\vb*\delta_i^*$, measured as \[
+    \Delta^* = \sqrt{\sum_{i=1}^N\sum_{j\in\cR} {\delta_{ij}^*}^2}.
+\]
+
+We'll first simplify the problem by moving the supremum to the inside: if $\Delta^*\le \eps$, then
+\begin{align*}
+    \chi^2(\pi^*) \le \sup_{\Delta=\eps}
+        \frac{\E_\pi[w(\Theta,\vb*\delta)^2]}{\E_\pi[w(\Theta,\vb*\delta)]^2} - 1
+    \le \E_\pi\qty[\sup_{\Delta=\eps} \qty(\frac{w(\Theta,\vb*\delta)}{
+        \E_\pi[w(\Theta,\vb*\delta)]})^2] - 1 \\
+    = \E_\pi\qty[\exp \qty(2\cdot\sup_{\Delta=\eps}(
+        \log w(\Theta,\vb*\delta) - \log\E_\pi[w(\Theta,\vb*\delta)]))] - 1.
+        \numberthis\label{eq:sup-simp}
+\end{align*}
+
+We can leverage the inequality $\log(1+x)\le x$ to upper-bound the first term inside the supremum:
+\begin{align*}
+    \log w(\theta,\vb*\delta)
+    &= \sum_{i=1}^N \log(1 + \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i}{
+        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i}) \\
+    &\le \sum_{i=1}^N \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i}{
+        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i}.
+\end{align*}
+
+For the second term, the opposite inequality $\frac{x}{1+x}\le \log(1+x)$ yields
+\begin{align*}
+    \log \E_\pi w(\Theta,\vb*\delta) &\ge \E_\pi \log w(\Theta,\vb*\delta) \\
+    &= \sum_{i=1}^N \E_\pi \log(1 + \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i}{
+        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i}) \\
+    &\ge \sum_{i=1}^N \E_\pi\qty[
+        \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i}{
+        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i +
+            \vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i}] \\
+    &\le \sum_{i=1}^N \E_\pi\qty[
+        \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i}{
+        \norm{\vb*\theta_{X_i}(G_i, Z_i)}\norm{\hat{\vb r}_i + \vb*\delta_i}}]
+    \le \sum_{i=1}^N \E_\pi\qty[
+        \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i}{
+        \norm{\vb*\theta_{X_i}(G_i, Z_i)}}].
+\end{align*}
+
+Combining these results,
+\begin{align*}
+    \log w(\theta,\vb*\delta) - \log \E_\pi w(\Theta,\vb*\delta)
+    &\le \sum_{i=1}^N \qty(
+        \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top}{
+        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i} -
+        \E_\pi\qty[
+        \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top}{
+            \norm{\vb*\theta_{X_i}(G_i, Z_i)}}])  \vb*\delta_i \\
+    &\le \Delta \sqrt{\sum_{i=1}^N \norm{
+        \frac{\vb*\theta_{X_i}(G_i, Z_i)}{
+        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i} -
+        \E_\pi\qty[
+        \frac{\vb*\theta_{X_i}(G_i, Z_i)}{
+            \norm{\vb*\theta_{X_i}(G_i, Z_i)}}]}^2} \\
+\end{align*}
+
+Finally, substituting into \eqref{eq:sup-simp} and taking a square root, \[
+    \mathrm{RAE}_{\pi^*}(g) \le  \sqrt{\E_\pi
+    \exp\qty(\eps^2\sum_{i=1}^N \norm{
+        \frac{\vb*\theta_{X_i}(G_i, Z_i)}{
+        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i} -
+        \E_\pi\qty[
+        \frac{\vb*\theta_{X_i}(G_i, Z_i)}{
+            \norm{\vb*\theta_{X_i}(G_i, Z_i)}}]}^2) - 1}
+    \qedhere
+\]
+\makeatletter 
+\end {axp@oldproof}

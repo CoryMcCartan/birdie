@@ -13,6 +13,7 @@
 \usepackage{tocloft}
 \usepackage{dsfont}
 \usepackage{thmtools}
+\usepackage{apxproof}
 \usepackage{graphicx}
 \usepackage{booktabs}
 
@@ -25,19 +26,13 @@
 
 % generic
 \theoremstyle{plain}
-\newtheorem{prop}{Proposition}[section]
-\newtheorem*{prop*}{Proposition}
-\newtheorem{claim}[prop]{Claim}
-\newtheorem*{claim*}{Claim}
-\newtheorem{corollary}{Corollary}[prop]
-\newtheorem*{corollary*}{Corollary}
-\newtheorem{theorem}[prop]{Theorem}
-\newtheorem*{theorem*}{Theorem}
-\newtheorem{lemma}[prop]{Lemma}
-\newtheorem*{lemma*}{Lemma}
+\newtheoremrep{prop}{Proposition}[section]
+\newtheoremrep{claim}[prop]{Claim}
+\newtheoremrep{corollary}{Corollary}[prop]
+\newtheoremrep{theorem}[prop]{Theorem}
+\newtheoremrep{lemma}[prop]{Lemma}
 \newtheorem{assump}{Assumption}
 \renewcommand\theassump{A\arabic{assump}}
-\newtheorem*{assump*}{Assumption}
 
 \newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
 

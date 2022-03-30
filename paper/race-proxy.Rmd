@@ -17,6 +17,7 @@ output:
         includes: 
             in_header: "header.tex"
         latex_engine: pdflatex
+        citation_package: natbib
 editor_options: 
     markdown: 
         wrap: sentence
@@ -29,63 +30,120 @@ library(here)
 opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE,
                fig.path=here("paper/figures/"), fig.align="center",
                fig.width=(8.5-2*1)/2, out.width="100%", fig.asp=0.8)
+options(bookdown.theorem.preamble = FALSE)
 ```
 
 # Introduction
 
+BISG [@fiscella2006bisg;@elliott2008bisg].
+
+
 # Problem and Identification
 
+## Setup and BISG Procedure
+
+For each individual $i$ in our dataset, we have the following variables.
+
+-   $R_i\in \cR$: race (unknown)
+-   $X_i\in\cX$: outcome 
+-   $G_i\in\cG$: location of residence
+-   $Z_i\in\cZ$: other covariates
+-   $S_i\in\cS$: surname
+<!-- -   $Y_i\in\cY$: algorithmic outcome (does not depend on race) -->
+
+We assume throughout that these variables are discrete.
+In practice, location is discrete, since joint information about location, race, and other variables is only available down to the Census block level.
+Continuous outcomes here must be discretized, though there are natural extensions of the model that would make use of any continuous structure.
+
+The BISG(Z) procedure assumes that $S\indep G, Z\mid R$. With this assumption, \[
+    \Pr(R=r\mid G=g, Z=z, S=s) \ \propto\ 
+    \Pr(G=g, Z=z\mid R=r)\Pr(S=s \mid R=r)\Pr(R=r),
+\] by Bayes' Rule.
+The first and last terms are taken from decennial Census tables or the American Community Survey (ACS), while
+the second term comes from the Census Bureau's surname tables [@censusnames].
+Throughout, let $\hat{\vb r}_i \dfeq \Pr(R_i\mid G_i,Z_i,S_i)$ be these BISG(Z) probabilities.
+
+Then a natural estimator of $\Pr(X=x\mid R=r)$ is a weighted average: \[
+    \hat\mu^{(\text{wtd})}_{X|R}(x\mid r) 
+    = \frac{\sum_{i=1}^N \ind\{X_i=x\}\hat r_{ir}}{
+        \sum_{i=1}^N \hat r_{ir}}.
+\]
+However natural, this estimator should raise suspicions as to being unbiased for $\Pr(X=x\mid R=r)$, since BISG makes no assumptions about the relationship of $X$ to any of $R$, $G$, $Z$, or $S$.
+Indeed, the estimator is biased, with the amount of bias controlled by the residual correlation of $X$ and $R$ after controlling for $G$, $Z$, and $S$.
+
+\begin{theorem}[Theorem 3.1 of \citealt{chen2019fairness}]
+If race is binary (so $\cR=\{0,1\}$), then as $N\to\infty$, \[
+    \hat\mu^{(\text{wtd})}_{X|R}(x\mid r) - \Pr(X=x\mid R=r)
+    \cvas -\frac{\E[\Cov(\ind\{X=x\}, \ind\{R=r\}\mid G,Z,S)]}{\Pr(R=r)}.
+\]
+\end{theorem}
+
+If any racial disparity in $X$ is mediated purely through $G$, $Z$, and $S$, so that $X\indep R\mid G,Z,S$, then the estimator will be unbiased.
+While almost certainly untrue in most practical settings, there may be a few cases in which this is an appropriate assumption.
+For example, for a manager reviewing job applications, race is typically unobserved, but the manager may be influenced by racial or gender cues in a candidate's name [@park2009names;@aaslund2012names].
+Then the assumption $X\indep R\mid G,Z,S$ is naturally satisfied and $\hat\mu^{(\text{wtd})}_{X|R}(x\mid r)$ will be asymptotically unbiased. 
+But outside of these cases, the natural BISG estimator will fail, unless by pure luck biases for some combinations of the covariates cancel biases for other combinations of the covariates once the outer expectation is taken.
+
+
+## Identification
+
+We seek to estimate $\Pr(X=x\mid R=r$ without the bias inherent in the default BISG estimator $\hat\mu^{(\text{wtd})}_{X|R}(x\mid r)$.
+Our key identifying assumption is the following (cf. the implicit BISG assumption $X\indep R\mid G,Z,S$).
+
+\begin{assump}\label{assump:xs}
+For all $1\le i\le N$, $X_i\indep S_i\mid R_i,G_i,Z_i$.
+\end{assump}
+
+To better understand this assumption, consider the causal model depicted by the directed acyclic graph (DAG) in Figure \ref{fig:dag}.
+
 ```{=tex}
-\begin{figure}[h]
+\begin{figure}[ht]
 \begin{center}
     \tikzstyle{main node}=[circle,draw,font=\sffamily\Large\bfseries]
     \tikzstyle{sub node}=[circle,draw,dashed,font=\sffamily\Large\bfseries]
-    \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=3cm,thick]
+    \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2.5cm,thick]
     
         \node[main node] (G) {$G$};
         \node[main node] (R) [below of=G] {$R$};
-        \node[main node] (S) [below left=1cm and 1cm of R] {$S$};
+        \node[main node] (S) [below left=0.6cm and 0.6cm of R] {$S$};
         \node[main node] (X) [right of=G] {$X$};
         \node[main node] (Z) [below of=X] {$Z$};
-        \node[main node] (Y) [below right=0.5cm and 1cm of X] {$Y$};
+        %\node[main node] (Y) [below right=0.5cm and 1cm of X] {$Y$};
         
         \path[every node/.style={font=\sffamily\small}]
         (R) edge node  {} (G)
         (R) edge node  {} (Z)
         (R) edge node  {} (X)
         (R) edge node  {} (S)
-        (G) edge [dashed] node  {} (S)
         (G) edge node  {} (Z)
         (G) edge node  {} (X)
-        (Z) edge node  {} (X)
-        (Z) edge node  {} (Y)
-        (Z) edge [dashed] node  {} (S)
-        (X) edge node  {} (Y);
+        (Z) edge node  {} (X);
+        %(Z) edge node  {} (Y)
+        %(X) edge node  {} (Y);
+        
+        \path[every node/.style={font=\sffamily\small}, <->]
+        (G) edge [dashed, bend right] node  {} (S)
+        (Z) edge [dashed, bend left] node  {} (S);
     \end{tikzpicture}
 \end{center}
-\caption{DAG}
+\caption{One possible causal structure for which the proposed model applies, represented as a directed acyclic graph.}
 \label{fig:dag}
 \end{figure}
 ```
--   $R_i\in \cR$: race
--   $X_i\in\cX$: outcome (may depend on race)
--   $Y_i\in\cY$: algorithmic outcome (does not depend on race)
--   $G_i\in\cG$: location of residence
--   $Z_i\in\cZ$: other covariates
--   $S_i\in\cS$: surname
 
-The above DAG implies the following conditional independence relations:
+The DAG implies that $X\indep S\mid R,G,Z$, since all paths from $S$ to $X$ are blocked by $R$, $G$, or $Z$ (for more details, see \citealt{pearl1995causal}).
+Of course, other causal structures, such as a version of Figure \ref{fig:dag} with additional unobserved confounding between $G$, $Z$, $R$, and $X$, are possible; as long as $X\indep S\mid R,G,Z$, $\Pr(X=x\mid R=r)$ is identified, as we will see below.
 
--   $S\indep X\mid R$ (without dashed lines)
--   $S\indep X\mid R,G,Z$ (with dashed lines)
--   $Y\indep R\mid X, Z$
+In any particular application it is important to consider whether names have a causal effect on the outcome, or whether name and outcome are caused by an unobserved confounder that is not controlled for in $Z$.
+In these cases (such as in the hiring example above), our proposed method may not be appropriate.
 
-## Identification
+But in many settings, including our motivating examples of tax audit decisions and voter turnout, name can reasonably be considered independent of the outcome, conditional on race, location, and perhaps one or two other variables (such as income).
+The following theorem records the precise conditions needed for identification.
 
-\begin{theorem}
+\begin{theoremrep}
 For all $g\in\cG$, $z\in\cZ$, and $x\in\cX$, define a matrix $\hat{\vb R}^{(xgz)}$ with entries $\hat r^{(xgz)}_{rs}=\Pr(R=r\mid G=g, Z=z, S=s)$ has rank $|\cR|$, and a vector $\vb b^{(xgz)}$ with entries $b^{(xgz)}_s=\Pr(X=x\mid G=g, Z=z, S=s)$.
-Then the conditional racial disparities $\Pr(X=x\mid R, G=g, Z=z)$ are identified if and only if both $\hat{\vb R}^{(xgz)}$ and the augmented matrix $\mqty(\hat{\vb R}^{(xgz)}&\vb b^{(xgz)})$ have rank $|\cR|$.
-\end{theorem}
+Then under Assumption~\ref{assump:xs}, and assuming knowledge of the joint distribution $\Pr(R,G,Z,S)$, the conditional probabilities $\Pr(X=x\mid R, G=g, Z=z)$ are identified if and only if both $\hat{\vb R}^{(xgz)}$ and the augmented matrix $\mqty(\hat{\vb R}^{(xgz)}&\vb b^{(xgz)})$ have rank $|\cR|$.
+\end{theoremrep}
 \begin{proof}
 Applying the law of total probability and our conditional independence relation $S\indep X\mid R,G,Z$, we have,
 for all $x\in\cX$, $g\in\cG$, $z\in\cZ$, and $s\in\cS$,
@@ -94,18 +152,19 @@ for all $x\in\cX$, $g\in\cG$, $z\in\cZ$, and $s\in\cS$,
     &= \sum_{r\in\cR} \Pr(X=x\mid R=r, G=g, Z=z, S=s)\Pr(R=r\mid G=g, Z=z, S=s) \\
     &= \sum_{r\in\cR} \Pr(X=x\mid R=r, G=g, Z=z)\Pr(R=r\mid G=g, Z=z, S=s).
 \end{align*}
-The left-hand side is estimable from the data and the rightmost term $\Pr(R=r\mid G=g, Z=z, S=s)$ is just the BISG+ probability.
+The left-hand side is estimable from the data and the rightmost term $\Pr(R=r\mid G=g, Z=z, S=s)$ is assumed known.
 So for each $x\in\cX$, $g\in\cG$, and $z\in\cZ$, this relation is a linear system in unknown parameters $\Pr(X=x\mid R=r, G=g, Z=z)$.
 These parameters are identified if and only if this system has a unique solution, i.e. if the coefficient matrix $\hat{\vb R}^{(xgz)}$ has rank $|\cR|$ and so does the augmented matrix $\mqty(\hat{\vb R}^{(xgz)}&b^{(xgz)})$.
 \end{proof}
+
+See @kuroki2014measurement and @miao2018identifying for similar ideas in the context of causal identification with unmeasured confounders with noisy proxies.
 
 ## Comparison with Weighted Estimator
 The above identification equation may bring to mind a least-squares estimator.
 This is not a good idea for several reasons, not least of which is the fact that the unknown parameters are probabilities and thus constrained to lie in $[0,1]$ and sum to 1.
 However, the ordinary least squares estimator provides useful intuition as to how existing methods fail, and why there is additional information "left on the table" to use in producing an accurate estimation of racial disparities.
 
-Let $\hat{\vb r}_i=\Pr(R_i\mid G_i,Z_i,S_i)$, the BISGZ probabilities, for i.i.d. data $\{(X_i,G_i,Z_i,S_i,R_i)\}_{i=1}^N$, with $X_i$ binary and $R_i$ unobserved
-Then the usual weighted estimator of $\E[X\mid R=r]$ is \[
+Continue with the above notation but suppose that $X$ is binary. Then the usual weighted estimator of $\Pr[X=x\mid R=r]$ may be written \[
     \hat\mu^{(\text{wtd})}_{X|R}(r) 
     = \frac{\hat{\vb r}_{\cdot r}^\top \vb X}{\hat{\vb r}_{\cdot r}^\top \vb 1}
     = \frac{\norm{\proj_{\hat{\vb r}_{\cdot r}}(\vb X)}}{
@@ -129,11 +188,11 @@ To make the comparison even easier, notice that we can break the projection $\pr
 From this representation, we can easily intuit that these two estimators should agree when the columns of $\hat{\vb R}$ are orthogonal, because then one may compute coordinate representations by projecting onto the basis vectors.
 This is indeed the case, as the following result precisely states.
 
-\begin{theorem}
+\begin{theoremrep}
 $\hat{\vb*\mu}^{(\text{wtd})}_{X|R}=\hat{\vb*\mu}^{(\text{OLS})}_{X|R}$ if and only if
 for every pair $j,k\in\cR$, either the BISGZ probabilities perfectly discriminate (i.e., $\Pr(R_i=j\mid G_i,Z_i,S_i)>0$ implies $\Pr(R_i=k\mid G_i,Z_i,S_i)=0$ and vice versa) or 
 $\hat{\mu}^{(\text{wtd})}_{X|R}(j)=\hat{\mu}^{(\text{wtd})}_{X|R}(k)$ .
-\end{theorem}
+\end{theoremrep}
 \begin{proof}
 Since the individual BISGZ probabilities are nonnegative and sum to 1, a pair $j,k\in\cR$ of races has perfectly discriminating BISGZ probabilities if and only if the corresponding columns of $\hat{\vb R}$ are orthogonal, i.e., $\hat{\vb r}_{\cdot j}^\top\hat{\vb r}_{\cdot k}$.
 Begin by writing $\vb X_\proj$ in terms of the $\hat{\vb R}$ basis, so \[
@@ -189,11 +248,14 @@ Suppose in the extreme case that all but a few values of $\hat{\vb R}$ were equa
 Then $\hat{\mu}^{(\text{wtd})}_{X|R}(r)\approx \E[R]$ for both $r=0$ and $r=1$, despite the perfect disparity.
 The weighted estimator ignores the fact that the most high-information data points are those with $\hat{\vb r}_i$ close to 0 or 1; instead, it allows "low-quality" data points with poor racial predictions to overwhelm the estimation.
 
+Despite the valuable intuition provided by the OLS estimator, it is not a good choice in general to estimate racial disparities.
+Instead, we propose a Bayesian model, which we describe next.
+
 # Model
 
 ## General model
 
-From the DAG shown in Figure \@ref(fig:dag), we can write down the following fully saturated model.
+From the DAG shown in Figure \@ref(fig:dag), we can write down the following general model.
 \begin{align*}
     X_i \mid R_i, G_i, Z_i, \Theta &\sim \Categorical_\cX(\vb*\theta_{\cdot R_i}(G_i,Z_i)) \\
     (G_i, Z_i) \mid R_i &\sim \Categorical_{\cG\times\cZ}(\vb p_{GZ|R_i}) \\
@@ -201,7 +263,7 @@ From the DAG shown in Figure \@ref(fig:dag), we can write down the following ful
     R_i &\sim \Categorical_\cR(\vb p_R) \\
     \Theta &\sim \pi(\Theta)
 \end{align*}
-The parameter $\Theta$ can be viewed as a matrix of functions, with each entry $\theta_{xr}$ mapping values of $G$ and $Z$ to a conditional probability $\Pr(X=x\mid R=r, G=g, Z=z)$.
+The parameter $\Theta$ can be viewed as a matrix of functions, with each entry $\theta_{xr}$ mapping values of $g$ and $z$ to a conditional probability $\Pr(X=x\mid R=r, G=g, Z=z)$.
 
 Our primary quantity of interest is the marginalized parameter $$
     \bar\Theta = \sum_{g\in\cG,z\in\cZ} \Theta(g, z) p_{gz},
@@ -298,6 +360,7 @@ Throughout, we will let $\vec(\Theta)$ denote the vector of parameters $\theta_{
 ## Sign
 We have the following result for a linear $g(\Theta)=\vec(\Theta)^\top\vb b$.
 
+\begin{toappendix}
 \begin{lemma} \label{lem:biassign}
 For a vector $\vb b$, if \[
     \hat r_{ij}\vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i} -
@@ -342,14 +405,15 @@ Partial derivatives with respect to elements of $\vec(\Theta)$ are clearly zero 
 Since $\vb*\theta_{X_i}(G_i, Z_i)$ is nonnegative, a sufficient condition for the directional derivative to be nonnegative, and thus for $w_i$ to be monotonically increasing in $\vec(\Theta)^\top\vb b$, is for
 $\hat r_{ij}\vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i} - \delta_{ij}\hat{\vb r}_i^\top\vb b_{X_i\cdot G_iZ_i} \ge 0$ for all $j\in\cR$. Similarly, by reversing this inequality, we have a sufficient condition for $w_i$ to be monotonically decreasing in $\vec(\Theta)^\top\vb b$.
 \end{proof}
+\end{toappendix}
 
 
-\begin{theorem}
+\begin{theoremrep}
 Let $r\in\cR$, $I\subseteq\{1,\dots,N\}$, and $\vb b$ a vector such that $\vb b_{X_i\cdot G_iZ_i}= c\vb e_r$ for all $i\in I$ and $0$ elsewhere, where $\vb e_r\in\R^{|\cR|}$ is the standard basis vector in the $r$ direction and $c>0$.
 Then if for all $i\in I$, $\delta_{ir}>0$ and $\delta_{ij}<\delta_{ir}$ for $j\neq r$, \[
     \E_{\pi^*}[\vec(\Theta)^\top\vb b\mid\vb Y] \ge \E_{\pi}[\vec(\Theta)^\top\vb b\mid\vb Y].
 \]
-\end{theorem}
+\end{theoremrep}
 \begin{proof}
 Let $i\in I$. Then by assumption $\vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i}=c\delta_{ir}>0$. 
 Let $j\in\cR$. If $j=r$, \[
@@ -375,18 +439,18 @@ By reversing the sign of $\vb*\delta_i$, we can reverse the direction of the bia
 For the binary race case, we have the following translation of this result.
 
 \begin{corollary}
-Suppose that race is binarized, i.e., $\cR=\{0,1\}$.
+Suppose that race is binary, i.e., $\cR=\{0,1\}$.
 Then for any $x\in\cX$, the model-based estimate of $\Pr[X=x\mid R=1]$, denoted $\E_\pi[\bar\Theta_{x1}\mid\vb Y]$, 
 will be biased downwards (upwards) if, for all $i$ with $X_i=x$, the BISGZ probability $\hat r_{i1}$ is biased downwards (upwards).
 \end{corollary}
 
 
-\begin{theorem}
+\begin{theoremrep}
 Let $r,s\in\cR$, $I\subseteq\{1,\dots,N\}$, and $\vb b$ a vector such that $\vb b_{X_i\cdot G_iZ_i}= c_1(\vb e_r-\vb e_s)$ for all $i\in I$ and $0$ elsewhere, for some $c_1>0$.
 Then if for all $i\in I$, $\vb*\delta_i=c_{2i}(e_r-e_s)$ for some $c_{2i}>0$, \[
     \E_{\pi^*}[\vec(\Theta)^\top\vb b\mid\vb Y] \ge \E_{\pi}[\vec(\Theta)^\top\vb b\mid\vb Y].
 \]
-\end{theorem}
+\end{theoremrep}
 \begin{proof}
 Let $i\in I$. Then by assumption $\vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i}=c(|\delta_{ir}|+|\delta_{is}|)>0$. 
 Let $j\in\cR$. If $j=r$ we have \[
@@ -416,8 +480,9 @@ As above, we can reverse the direction of the bias by reversing the sign of $\vb
 
 \begin{corollary}
 Suppose both the race and outcome variables are binary, i.e., $\cX=\cR=\{0,1\}$.
-Then the model-based estimate of the disparity $\E[X\mid R=1]-\E[X\mid R=0]$, denoted $\E_\pi[\bar\Theta_{11}-\bar\Theta_{10}\mid\vb Y]$, 
-will be biased downwards (upwards) if, for all $i$ with $X_i=1$, the BISGZ probability $\hat r_{i1}$ is biased downwards (upwards).
+Suppose that race is binary, i.e., $\cR=\{0,1\}$.
+Then for any $x\in\cX$, the model-based estimate of the disparity $\Pr[X=x\mid R=1]-\Pr[X=x\mid R=0]$, denoted $\E_\pi[\bar\Theta_{11}-\bar\Theta_{10}\mid\vb Y]$, 
+will be biased downwards (upwards) if, for all $i$ with $X_i=x$, the BISGZ probability $\hat r_{i1}$ is biased downwards (upwards).
 \end{corollary}
 
 Certainly more results in this direction are possible, but these two suffice to understand how bias could arise in estimating a conditional probability and in estimating a disparity.
@@ -429,6 +494,18 @@ Certainly more results in this direction are possible, but these two suffice to 
 
 ## Old work
 
+\begin{theoremrep}
+We have \[
+    \mathrm{RAE}_{\pi^*}(g) \le  \sqrt{\E_\pi
+    \exp\qty(\eps^2\sum_{i=1}^N \norm{
+        \frac{\vb*\theta_{X_i}(G_i, Z_i)}{
+        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i} -
+        \E_\pi\qty[
+        \frac{\vb*\theta_{X_i}(G_i, Z_i)}{
+            \norm{\vb*\theta_{X_i}(G_i, Z_i)}}]}^2) - 1}.
+\]
+\end{theoremrep}
+\begin{proof}
 From Theorem 4 of @weiss1996approach, we can bound $\mathrm{RAE}(g)$ with the variance of these perturbation weights after normalization, which is also the $\chi^2$-divergence between $\pi^*$ and $\pi$: \[
     \mathrm{RAE}_{\pi^*}(g)^2  \le \chi^2(\pi^*) 
     = \frac{\E_\pi[w(\Theta,\vb*\delta^*)^2]}{\E_\pi[w(\Theta,\vb*\delta^*)]^2} - 1
@@ -500,7 +577,11 @@ Finally, substituting into \eqref{eq:sup-simp} and taking a square root, \[
         \E_\pi\qty[
         \frac{\vb*\theta_{X_i}(G_i, Z_i)}{
             \norm{\vb*\theta_{X_i}(G_i, Z_i)}}]}^2) - 1}
+    \qedhere
 \]
+\end{proof}
 
 
-# References {-}
+<div id="refs"></div>
+
+# (APPENDIX) Appendix {-} 
