@@ -27,3 +27,4 @@ __pycache__
 data/censusData.rdata
 
 paper/race-proxy.tex
+paper/polmeth.*
