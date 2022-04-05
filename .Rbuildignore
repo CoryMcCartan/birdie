@@ -1,3 +1,9 @@
 ^LICENSE\.md$
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^explore$
+^paper$
+^replication$
+__pycache__
+.*\.pyc$
+^data-raw$

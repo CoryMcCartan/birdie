@@ -16,7 +16,7 @@
 #'
 #' @return TBD
 #' @export
-model_race = function(r_probs, X, G, Z=NULL, data=NULL, sgz=NULL, prefix="pr_",
+model_race = function(r_probs, X, G, Z=NULL, data=NULL, prefix="pr_",
                       config=list(), silent=FALSE, reload_py=FALSE) {
     if (missing(data)) cli_abort("{.arg data} must be provided.")
     X_vec = eval_tidy(enquo(X), data)
@@ -45,17 +45,18 @@ model_race = function(r_probs, X, G, Z=NULL, data=NULL, sgz=NULL, prefix="pr_",
     GZ_var = inverse.rle(list(lengths=GZ_levels, values=1:ncol(GZ)))
     suppressWarnings({
         GZ_mat = do.call(cbind, lapply(GZ, function(x) {
-            out = matrix(0, nrow=length(x), ncol=nlevels(x))
-            out[cbind(seq_along(x), as.integer(x))] = 1
+            out = matrix(0L, nrow=length(x), ncol=nlevels(x))
+            out[cbind(seq_along(x), as.integer(x))] = 1L
             out
         }))
     })
 
-    if (isTRUE(reload_py) || !"fit_additive" %in% names(py)) {
+    if (isTRUE(reload_py)) {
         reticulate::py_run_string("if 'py.utils' in sys.modules.keys(): del sys.modules['py.utils']")
         reticulate::py_run_string("if 'py.fit' in sys.modules.keys(): del sys.modules['py.fit']")
         reticulate::py_run_string("from tqdm import tqdm; tqdm._instances.clear()")
-        reticulate::py_run_file(system.file("py/pyro.py", package="raceproxy"))
+        py_path = system.file("py", package="raceproxy")
+        py_code <<- reticulate::import_from_path("raceproxy", path=py_path, delay_load=FALSE)
     }
 
     defaults = list(max_iter = 5000,
@@ -73,24 +74,19 @@ model_race = function(r_probs, X, G, Z=NULL, data=NULL, sgz=NULL, prefix="pr_",
 
     prior = list(x = 5.00, xr = 0.75, beta = 1.00)
 
-    sgz$pr = NULL
-    #sgz$n_s = nlevels(sgz$S)
-    sgz$n_gz = nlevels(sgz$GZ)
-    #sgz$S = as.integer(sgz$S)
-    sgz$GZ = as.integer(sgz$GZ)
-
-    tictoc::tic()
-    out = py$fit_additive(as.integer(X_vec), GZ_mat, as.integer(GZ_var), r_probs,
-                          nlevels(X_vec), max(GZ_var), sgz, prior,
-                          it=as.integer(config$max_iter),
-                          epoch=as.integer(config$epoch),
-                          subsamp=min(length(X_vec), as.integer(config$subsamp)),
-                          n_draws=as.integer(config$draws),
-                          it_avgs=as.integer(config$it_avgs),
-                          n_mi=as.integer(config$n_mi),
-                          lr=config$lr, tol_rhat=config$tol_rhat,
-                          silent=silent)
-    tictoc::toc(quiet=silent)
+    ts1 = proc.time()
+    out = py_code$pyro$fit_additive(
+        as.integer(X_vec), GZ_mat, as.integer(GZ_var), r_probs,
+        nlevels(X_vec), as.integer(max(GZ_var)), prior,
+        it=as.integer(config$max_iter),
+        epoch=as.integer(config$epoch),
+        subsamp=min(length(X_vec), as.integer(config$subsamp)),
+        n_draws=as.integer(config$draws),
+        it_avgs=as.integer(config$it_avgs),
+        n_mi=as.integer(config$n_mi),
+        lr=config$lr, tol_rhat=config$tol_rhat,
+        silent=silent)
+    if (isFALSE(silent)) print(structure(proc.time() - ts1, class="proc_time"))
 
     out
 }

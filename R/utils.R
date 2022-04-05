@@ -10,17 +10,3 @@ print_cond = function(x, title=NULL, digits=1) {
     if (!is.null(title)) cat(toupper(title), "\n")
     print(round(out, digits))
 }
-
-
-eval_log_score = function(..., eps=1e-9) {
-    log_score = function(m, eps=1e-9) {
-        R_vec = as.integer(voters$race)
-        mean(log(map_dbl(seq_len(nrow(voters)), \(i) m[i, R_vec[i]] + eps)))
-    }
-
-    scores = rlang::list2(...) %>%
-        vapply(log_score, numeric(1), eps) %>%
-        sort(decreasing=TRUE)
-    tibble(method = names(scores),
-           log_score = scores)
-}

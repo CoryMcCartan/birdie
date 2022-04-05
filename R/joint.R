@@ -15,9 +15,10 @@ calc_joint_bisgz = function(r_probs, x, prefix="pr_") {
         colnames(r_probs) = substring(colnames(r_probs), nchar(prefix)+1L)
     }
 
-    lapply(levels(x), function(.) colMeans(r_probs * (x == .))) %>%
-        do.call(rbind, .) %>%
-        `rownames<-`(levels(x))
+    out = lapply(levels(x), function(l) colMeans(r_probs * (x == l)))
+    out = do.call(rbind, out)
+    rownames(out) = levels(x)
+    out
 }
 
 #' Calculate a posterior quantile of the joint distribution of R and X
@@ -31,8 +32,9 @@ calc_joint_bisgz = function(r_probs, x, prefix="pr_") {
 #' @export
 calc_joint_model = function(draws, q=0.5,
                             p_r=c(white=0.615, black=0.123, hisp=0.176, asian=0.053, other=0.034)) {
-    apply(draws, 2:3, \(x) quantile(x, q)) %*% diag(p_r) %>%
-        `colnames<-`(names(p_r))
+    out = apply(draws, 2:3, function(x) quantile(x, q)) %*% diag(p_r)
+    colnames(out) = names(p_r)
+    out
 }
 
 
@@ -49,11 +51,11 @@ calc_joint_model = function(draws, q=0.5,
 eval_joints = function(tgt, metric=c("tv", "mad", "rmse"), ...) {
     score_fn = function(x) cli_abort("Metric {.val {metric}} not recognized.")
     if (metric == "tv") {
-        score_fn = \(x) sum(abs(tgt - x)) / 2
+        score_fn = function(x) sum(abs(tgt - x)) / 2
     } else if (metric == "mad") {
-        score_fn = \(x) mean(abs(tgt - x))
+        score_fn = function(x) mean(abs(tgt - x))
     } else if (metric == "rmse") {
-        score_fn = \(x) sqrt(mean((tgt - x)^2))
+        score_fn = function(x) sqrt(mean((tgt - x)^2))
     }
 
     joints = rlang::list2(...) %>%

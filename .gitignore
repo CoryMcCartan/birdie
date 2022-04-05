@@ -28,3 +28,5 @@ data/censusData.rdata
 
 paper/race-proxy.tex
 paper/polmeth.*
+replication/presentation.*
+inst/doc

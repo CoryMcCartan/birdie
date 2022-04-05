@@ -1,66 +1,81 @@
 
 # Helper function to make an R|S table
 census_surname_table = function(S, S_name, p_r, regularize=TRUE, counts=FALSE) {
-    if (length(p_r) != 5)
+    if (length(p_r) != 6)
         cli_abort(c("Number of racial categories doesn't match the Census table.",
-                    "i"="Categories should be White, Black, Hispanic, Asian, and other."))
+                    "i"="Categories should be White, Black, Hispanic, Asian,
+                    American Indian/Alaska Native, and other."))
 
-    suppressMessages(require("wru"))
-    x = data.frame(surname = unique(S)) %>%
-        wru::merge_surnames(impute.missing=FALSE) %>%
-        suppressWarnings() %>%
-        na.omit
+    d_cens = readRDS(system.file("extdata", "names_2010_counts.rds",
+                                 package="raceproxy", mustWork=TRUE))
 
-    x = rbind(x, list(surname="<generic>", surname.match="ALL OTHER NAMES",
-                      p_whi=p_r[1], p_bla=p_r[2], p_his=p_r[3], p_asi=p_r[4], p_oth=p_r[5]))
+    out = data.frame(last_name = unique(proc_names(S))) %>%
+        left_join(d_cens, by="last_name")
+    missing_idx = which(is.na(out$pr_white))
+    double_idx = missing_idx[is_double_name(out$last_name[missing_idx])]
+    # track which indices will become <generic>
+    bad = setdiff(missing_idx, double_idx)
 
-    if (regularize | counts) {
-        names_d = readRDS(system.file("data/names_2010_counts.rds", package="raceproxy"))
-    }
+    # double-barelled surnames
+    match_1st_idx = match(stringr::word(out$last_name[double_idx], 1, 1), d_cens$last_name)
+    match_2nd_idx = match(stringr::word(out$last_name[double_idx], 2, 2), d_cens$last_name)
+
+    # neither matches
+    na_ct = is.na(match_1st_idx) + is.na(match_2nd_idx)
+    bad = c(bad, double_idx[which(na_ct == 2)])
+
+    # one or the other matches: use it but with half confidence
+    only_1st = which(!is.na(match_1st_idx) & is.na(match_2nd_idx))
+    only_2nd = which(is.na(match_1st_idx) & !is.na(match_2nd_idx))
+    out[double_idx[only_1st], -1] = d_cens[match_1st_idx[only_1st], -1] / 2
+    out[double_idx[only_2nd], -1] = d_cens[match_2nd_idx[only_2nd], -1] / 2
+
+    # both match: average guesses
+    both = which(na_ct == 0)
+    pr_1st = as.matrix(d_cens[match_1st_idx[both], -1])
+    pr_2nd = as.matrix(d_cens[match_2nd_idx[both], -1])
+    sum1 = rowSums(pr_1st)
+    sum2 = rowSums(pr_2nd)
+    new_totals = pmin(sum1, sum2) / 2 # err on the side of less information
+    out[double_idx[both], -1] =  0.5*new_totals*(pr_1st/sum1 + pr_2nd/sum2)
+
+    # replace non-matches w/ <generic>
+    out = rbind(out[-bad, ], tail(d_cens, 1))
 
     if (regularize) {
-        x = left_join(x, names_d, by="surname.match") %>%
-            mutate(count = dplyr::coalesce(count, 50))
-        m = (0.2 + as.matrix(x[, 3:7]) * x$count) / (x$count + 1)
-        x[, 3:7] = m
-        x$count = NULL
+        out[, -1] = 0.2 + out[, -1]
     }
-    if (counts) {
-        x = left_join(x, names_d, by="surname.match") %>%
-            mutate(count = dplyr::coalesce(count, 50))
-        x[, 3:7] = as.matrix(x[, 3:7]) * (x$count + regularize)
-        x$count = NULL
+    if (!counts) {
+        out[, -1] = out[, -1] / (rowSums(out[, -1]) + 0.2*regularize)
     }
 
-    x = x[, -2]
-    colnames(x) = c(S_name, "white", "black", "hisp", "asian", "other")
-    as_tibble(x)
+    colnames(out) = c(S_name, "white", "black", "hisp", "asian", "aian", "other")
+    as_tibble(out)
 }
 
 # Helper function to make an R|G table
-census_zip_table = function(G, G_name, p_r, regularize=TRUE, count=FALSE) {
-    if (!rlang::is_installed("zipWRUext2"))
-        cli_abort(c("{.pkg zipWRUext2} must be installed to use ZIP code information automatically.",
-                    ">"=' {.code devtools::install_github("https://github.com/jcuriel-unc/zipWRUext",
-                    subdir="zipWRUext2")} to install.'))
-    if (length(p_r) != 5)
-        cli_abort(c("Number of racial categories doesn't match the Census data.",
-                    "i"="Categories should be White, Black, Hispanic, Asian, and other."))
+census_zip_table = function(G, G_name, p_r, regularize=TRUE, counts=FALSE) {
+    if (length(p_r) != 6)
+        cli_abort(c("Number of racial categories doesn't match the Census table.",
+                    "i"="Categories should be White, Black, Hispanic, Asian,
+                    American Indian/Alaska Native, and other."))
 
-    x = zipWRUext2::zip_all_census2[, 2:8]
-    x = rbind(x, list(zcta5="<none>", total_pop=1e4,
-                      q_whi=1e4*p_r[1], q_bla=1e4*p_r[2],
-                      q_his=1e4*p_r[3], q_asi=1e4*p_r[4], q_oth=1e4*p_r[5]))
-    match_idx = match(levels(G), x$zcta5)
-    match_idx[is.na(match_idx)] = match("<none>", x$zcta5)
-    x = x[match_idx, ]
-    alpha = if (regularize) c(3.1, 0.6, 0.8, 0.3, 0.2) else rep(0, 5)
+    d_cens = readRDS(system.file("extdata", "zip_race_2010.rds",
+                            package="raceproxy", mustWork=TRUE))
+    d_cens = rbind(d_cens, list(zcta5="<none>", pop=1e4,
+                      pop_white=1e4*p_r[1], pop_black=1e4*p_r[2],
+                      pop_hisp=1e4*p_r[3], pop_asian=1e4*p_r[4],
+                      pop_aian=1e4*p_r[5], pop_other=1e4*p_r[6]))
+    match_idx = match(levels(G), d_cens$zcta5)
+    match_idx[is.na(match_idx)] = match("<none>", d_cens$zcta5)
+    d_cens = d_cens[match_idx, ]
+    alpha = if (regularize) c(3.1, 0.60, 0.87, 0.24, 0.036, 0.11) else rep(0, 6)
     for (i in seq_along(p_r)) {
-        denom = if (count) 1 else (x[, 2] + sum(alpha))
-        x[, 2+i] = (x[, 2+i] + alpha[i]) / denom
+        denom = if (counts) 1 else (d_cens[, 2] + sum(alpha))
+        d_cens[, 2+i] = (d_cens[, 2+i] + alpha[i]) / denom
     }
-    x = x[, -2]
-    colnames(x) = c(G_name, "white", "black", "hisp", "asian", "other")
-    as_tibble(x)
+    d_cens = d_cens[, -2]
+    colnames(d_cens) = c(G_name, "white", "black", "hisp", "asian", "aian", "other")
+    as_tibble(d_cens)
 }
 
