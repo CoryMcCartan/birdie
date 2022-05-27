@@ -1,13 +1,14 @@
 library(raceproxy)
 library(dplyr)
+library(here)
 
-if (file.exists(voterfile <- here("data/nc_voters.rds"))) {
+if (file.exists(voterfile <- here("data-raw/nc_voters.rds"))) {
     voters = readRDS(voterfile)
 } else {
     voters = make_nc_statewide(voterfile)
 }
 
-d_fit = slice_sample(voters, n=200e3) %>%
+d_fit = slice_sample(voters, n=20e3) %>%
     mutate(gender = as.factor(coalesce(gender, "U"))) %>%
     filter(!is.na(age))
 

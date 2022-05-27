@@ -36,6 +36,8 @@ $if(highlighting-macros)$
 $highlighting-macros$
 $endif$
 
+\bibliographystyle{$if(biblio-style)$$biblio-style$$else$apalike$endif$}
+
 % Pandoc citation processing
 $if(csl-refs)$
 \newlength{\csllabelwidth}
@@ -95,7 +97,6 @@ $endif$
 
 $body$
 
-\bibliographystyle{$if(biblio-style)$$biblio-style$$else$unsrt$endif$}
 \bibliography{$bibliography$}
 
 $for(include-after)$

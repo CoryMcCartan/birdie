@@ -17,6 +17,7 @@ __pycache__
 *.gcx
 *.aux
 *.out
+*.axp
 *.log
 *.pdf
 *.o

@@ -43,7 +43,5 @@
 #' @keywords internal
 #' @importFrom rlang expr enquo enquos sym syms .data := as_name as_label eval_tidy
 #' @importFrom tidyselect eval_select
-#' @aliases expr enquo enquos sym syms .data := as_name as_label
-#' @export expr enquo enquos sym syms .data := as_name as_label
 NULL
 

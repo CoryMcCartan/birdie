@@ -35,8 +35,7 @@ options(bookdown.theorem.preamble = FALSE)
 
 # Introduction
 
-BISG [@fiscella2006bisg;@elliott2008bisg].
-
+BISG [@fiscella2006bisg; @elliott2008bisg].
 
 # Problem and Identification
 
@@ -45,55 +44,54 @@ BISG [@fiscella2006bisg;@elliott2008bisg].
 For each individual $i$ in our dataset, we have the following variables.
 
 -   $R_i\in \cR$: race (unknown)
--   $X_i\in\cX$: outcome 
+-   $X_i\in\cX$: outcome
 -   $G_i\in\cG$: location of residence
 -   $Z_i\in\cZ$: other covariates
--   $S_i\in\cS$: surname
-<!-- -   $Y_i\in\cY$: algorithmic outcome (does not depend on race) -->
+-   $S_i\in\cS$: surname <!-- -   $Y_i\in\cY$: algorithmic outcome (does not depend on race) -->
 
 We assume throughout that these variables are discrete.
 In practice, location is discrete, since joint information about location, race, and other variables is only available down to the Census block level.
 Continuous outcomes here must be discretized, though there are natural extensions of the model that would make use of any continuous structure.
 
-The BISG(Z) procedure assumes that $S\indep G, Z\mid R$. With this assumption, \[
+The BISG(Z) procedure assumes that $S\indep G, Z\mid R$.
+With this assumption, $$
     \Pr(R=r\mid G=g, Z=z, S=s) \ \propto\ 
     \Pr(G=g, Z=z\mid R=r)\Pr(S=s \mid R=r)\Pr(R=r),
-\] by Bayes' Rule.
-The first and last terms are taken from decennial Census tables or the American Community Survey (ACS), while
-the second term comes from the Census Bureau's surname tables [@censusnames].
+$$ by Bayes' Rule.
+The first and last terms are taken from decennial Census tables or the American Community Survey (ACS), while the second term comes from the Census Bureau's surname tables [@censusnames].
 Throughout, let $\hat{\vb r}_i \dfeq \Pr(R_i\mid G_i,Z_i,S_i)$ be these BISG(Z) probabilities.
 
-Then a natural estimator of $\Pr(X=x\mid R=r)$ is a weighted average: \[
+Then a natural estimator of $\Pr(X=x\mid R=r)$ is a weighted average: $$
     \hat\mu^{(\text{wtd})}_{X|R}(x\mid r) 
     = \frac{\sum_{i=1}^N \ind\{X_i=x\}\hat r_{ir}}{
         \sum_{i=1}^N \hat r_{ir}}.
-\]
-However natural, this estimator should raise suspicions as to being unbiased for $\Pr(X=x\mid R=r)$, since BISG makes no assumptions about the relationship of $X$ to any of $R$, $G$, $Z$, or $S$.
+$$ However natural, this estimator should raise suspicions as to being unbiased for $\Pr(X=x\mid R=r)$, since BISG makes no assumptions about the relationship of $X$ to any of $R$, $G$, $Z$, or $S$.
 Indeed, the estimator is biased, with the amount of bias controlled by the residual correlation of $X$ and $R$ after controlling for $G$, $Z$, and $S$.
 
+```{=tex}
 \begin{theorem}[Theorem 3.1 of \citealt{chen2019fairness}]
 If race is binary (so $\cR=\{0,1\}$), then as $N\to\infty$, \[
     \hat\mu^{(\text{wtd})}_{X|R}(x\mid r) - \Pr(X=x\mid R=r)
     \cvas -\frac{\E[\Cov(\ind\{X=x\}, \ind\{R=r\}\mid G,Z,S)]}{\Pr(R=r)}.
 \]
 \end{theorem}
-
+```
 If any racial disparity in $X$ is mediated purely through $G$, $Z$, and $S$, so that $X\indep R\mid G,Z,S$, then the estimator will be unbiased.
 While almost certainly untrue in most practical settings, there may be a few cases in which this is an appropriate assumption.
-For example, for a manager reviewing job applications, race is typically unobserved, but the manager may be influenced by racial or gender cues in a candidate's name [@park2009names;@aaslund2012names].
-Then the assumption $X\indep R\mid G,Z,S$ is naturally satisfied and $\hat\mu^{(\text{wtd})}_{X|R}(x\mid r)$ will be asymptotically unbiased. 
+For example, for a manager reviewing job applications, race is typically unobserved, but the manager may be influenced by racial or gender cues in a candidate's name [@park2009names; @aaslund2012names].
+Then the assumption $X\indep R\mid G,Z,S$ is naturally satisfied and $\hat\mu^{(\text{wtd})}_{X|R}(x\mid r)$ will be asymptotically unbiased.
 But outside of these cases, the natural BISG estimator will fail, unless by pure luck biases for some combinations of the covariates cancel biases for other combinations of the covariates once the outer expectation is taken.
-
 
 ## Identification
 
 We seek to estimate $\Pr(X=x\mid R=r$ without the bias inherent in the default BISG estimator $\hat\mu^{(\text{wtd})}_{X|R}(x\mid r)$.
 Our key identifying assumption is the following (cf. the implicit BISG assumption $X\indep R\mid G,Z,S$).
 
+```{=tex}
 \begin{assump}\label{assump:xs}
 For all $1\le i\le N$, $X_i\indep S_i\mid R_i,G_i,Z_i$.
 \end{assump}
-
+```
 To better understand this assumption, consider the causal model depicted by the directed acyclic graph (DAG) in Figure \ref{fig:dag}.
 
 ```{=tex}
@@ -130,9 +128,8 @@ To better understand this assumption, consider the causal model depicted by the 
 \label{fig:dag}
 \end{figure}
 ```
-
 The DAG implies that $X\indep S\mid R,G,Z$, since all paths from $S$ to $X$ are blocked by $R$, $G$, or $Z$ (for more details, see \citealt{pearl1995causal}).
-Of course, other causal structures, such as a version of Figure \ref{fig:dag} with additional unobserved confounding between $G$, $Z$, $R$, and $X$, are possible; as long as $X\indep S\mid R,G,Z$, $\Pr(X=x\mid R=r)$ is identified, as we will see below.
+Of course, other causal structures, such as a version of Figure \ref{fig:dag} with additional unobserved confounding between $G$, $Z$, $R$, and $X$, are possible; as long as $X\indep S\mid R,G,Z$, then $\Pr(X=x\mid R=r)$ is identified, as we will see below.
 
 In any particular application it is important to consider whether names have a causal effect on the outcome, or whether name and outcome are caused by an unobserved confounder that is not controlled for in $Z$.
 In these cases (such as in the hiring example above), our proposed method may not be appropriate.
@@ -160,32 +157,33 @@ These parameters are identified if and only if this system has a unique solution
 See @kuroki2014measurement and @miao2018identifying for similar ideas in the context of causal identification with unmeasured confounders with noisy proxies.
 
 ## Comparison with Weighted Estimator
+
 The above identification equation may bring to mind a least-squares estimator.
 This is not a good idea for several reasons, not least of which is the fact that the unknown parameters are probabilities and thus constrained to lie in $[0,1]$ and sum to 1.
 However, the ordinary least squares estimator provides useful intuition as to how existing methods fail, and why there is additional information "left on the table" to use in producing an accurate estimation of racial disparities.
 
-Continue with the above notation but suppose that $X$ is binary. Then the usual weighted estimator of $\Pr[X=x\mid R=r]$ may be written \[
+Continue with the above notation but suppose that $X$ is binary.
+Then the usual weighted estimator of $\Pr[X=x\mid R=r]$ may be written $$
     \hat\mu^{(\text{wtd})}_{X|R}(r) 
     = \frac{\hat{\vb r}_{\cdot r}^\top \vb X}{\hat{\vb r}_{\cdot r}^\top \vb 1}
     = \frac{\norm{\proj_{\hat{\vb r}_{\cdot r}}(\vb X)}}{
         \norm{\proj_{\hat{\vb r}_{\cdot r}}(\vb 1)}},
-\] the ratio of the projected length of the outcome vector $\vb X$ and the constant vector $\vb 1$ onto $\hat{\vb r}_{\cdot r}$.
-For the OLS estimator, we can rewrite the identification equation in this case on an observation level as \[
+$$ the ratio of the projected length of the outcome vector $\vb X$ and the constant vector $\vb 1$ onto $\hat{\vb r}_{\cdot r}$.
+For the OLS estimator, we can rewrite the identification equation in this case on an observation level as $$
     \vb X = \hat{\vb R} \hat{\vb*\mu}^{(\text{OLS})}_{X|R} ,
-\] where $\hat{\vb R}$ is the $n$-by-$r$ matrix with columns $\hat{\vb r}_{\cdot r}$. Then the estimator is \[
+$$ where $\hat{\vb R}$ is the $n$-by-$r$ matrix with columns $\hat{\vb r}_{\cdot r}$.
+Then the estimator is $$
     \hat{\vb*\mu}^{(\text{OLS})}_{X|R} = (\hat{\vb R}^\top\hat{\vb R})^{-1}\hat{\vb R}^\top\vb X
     = \mathrm{coord}_{\hat{\vb R}}(\proj_{\hat{\vb R}}(\vb X)),
-\] where $\mathrm{coord}_{\hat{\vb R}}$ is the function that returns the coordinates of its input vector in the $\hat{\vb R}$ basis (by assumption $\hat{\vb R}$ has rank $|\cR|$ and so its columns are linearly independent).
-To make the comparison even easier, notice that we can break the projection $\proj_{\hat{\vb r}_{\cdot r}}$ into two steps, writing it instead as \(
-    \proj_{\hat{\vb r}_{\cdot r}} = \proj_{\hat{\vb r}_{\cdot r}} \circ \proj_{\hat{\vb R}},
-\) since $\hat{\vb r}$ is one of the columns of $\hat{\vb R}$. Letting $\vb X_{\proj}=\proj_{\hat{\vb R}}(X)$, then, we can rewrite our estimators as \[
+$$ where $\mathrm{coord}_{\hat{\vb R}}$ is the function that returns the coordinates of its input vector in the $\hat{\vb R}$ basis (by assumption $\hat{\vb R}$ has rank $|\cR|$ and so its columns are linearly independent).
+To make the comparison even easier, notice that we can break the projection $\proj_{\hat{\vb r}_{\cdot r}}$ into two steps, writing it instead as $\proj_{\hat{\vb r}_{\cdot r}} = \proj_{\hat{\vb r}_{\cdot r}} \circ \proj_{\hat{\vb R}},$ since $\hat{\vb r}$ is one of the columns of $\hat{\vb R}$.
+Letting $\vb X_{\proj}=\proj_{\hat{\vb R}}(X)$, then, we can rewrite our estimators as $$
     \hat\mu^{(\text{wtd})}_{X|R}(r) 
     = \frac{\norm{\proj_{\hat{\vb r}_{\cdot r}}(\vb X_\proj)}}{
         \norm{\proj_{\hat{\vb r}_{\cdot r}}(\vb 1)}}  \qand
     \hat{\vb\mu}^{(\text{OLS})}_{X|R}(r)
     = \mathrm{coord}_{\hat{\vb R}}(\vb X_\proj)_r.
-\]
-From this representation, we can easily intuit that these two estimators should agree when the columns of $\hat{\vb R}$ are orthogonal, because then one may compute coordinate representations by projecting onto the basis vectors.
+$$ From this representation, we can easily intuit that these two estimators should agree when the columns of $\hat{\vb R}$ are orthogonal, because then one may compute coordinate representations by projecting onto the basis vectors.
 This is indeed the case, as the following result precisely states.
 
 \begin{theoremrep}
@@ -231,19 +229,18 @@ That can be illustrated well by the following stylized example, where for simpli
 
 Take the race vector $\vb R$ as fixed, and suppose that there is complete disparity, so $\vb X=\vb R$.
 As we have so far, assume the BISGZ probabilities are well-calibrated, so $\hat{\vb R}=\Pr(\vb R\mid\vb G,\vb Z,\vb S)$.
-Then the OLS estimator may be written as \[
+Then the OLS estimator may be written as $$
     \hat{\vb*\mu}^{(\text{OLS})}_{X|R}
     = \vb*\mu_{X|R} + (\hat{\vb R}^\top\hat{\vb R})^{-1})\hat{\vb R}^\top\vb*\eps,
-\] where $\vb*\mu_{X|R}=\mqty(0&1)^\top$ is the true conditional expectation and $\vb*\eps=\vb X-\hat{\vb r}_{\cdot 1}$ here is the true residual. Since
-\begin{align*}
+$$ where $\vb*\mu_{X|R}=\mqty(0&1)^\top$ is the true conditional expectation and $\vb*\eps=\vb X-\hat{\vb r}_{\cdot 1}$ here is the true residual.
+Since \begin{align*}
     \E[\hat{\vb R}^\top(\vb X-\hat{\vb r}_{\cdot 1})]
     &=\E\qty[\E[\hat{\vb R}^\top(\vb X-\hat{\vb r}_{\cdot 1})\mid \vb G,\vb Z,\vb S]] \\
     &=\E\qty[\hat{\vb R}^\top\E[\vb X\mid \vb G,\vb Z,\vb S]-\hat{\vb R}^\top\hat{\vb r}_{\cdot 1}] \\
     &=\E\qty[\hat{\vb R}^\top\E[\vb R\mid \vb G,\vb Z,\vb S]-\hat{\vb R}^\top\hat{\vb r}_{\cdot 1}] \\
     &=\E[\hat{\vb R}^\top\hat{\vb r}_{\cdot 1}-\hat{\vb R}^\top\hat{\vb r}_{\cdot 1}] = 0,
-\end{align*}
-the OLS estimator is unbiased for $\vb*\mu_{X|R}$, regardless of the specific distribution of $\hat{\vb R}$--i.e., _no matter_ how well $\vb G$, $\vb Z$, and $\vb S$ predict $\vb R$! (Subject, of course, to the identification rank condition.)
-In contrast, $\hat{\vb*\mu}^{(\text{wtd})}_{X|R}$ is highly dependent on the distribution of $\hat{\vb R}$.
+\end{align*} the OLS estimator is unbiased for $\vb*\mu_{X|R}$, regardless of the specific distribution of $\hat{\vb R}$--i.e., *no matter* how well $\vb G$, $\vb Z$, and $\vb S$ predict $\vb R$!
+(Subject, of course, to the identification rank condition.) In contrast, $\hat{\vb*\mu}^{(\text{wtd})}_{X|R}$ is highly dependent on the distribution of $\hat{\vb R}$.
 Suppose in the extreme case that all but a few values of $\hat{\vb R}$ were equal to the population average $\E[R]$.
 Then $\hat{\mu}^{(\text{wtd})}_{X|R}(r)\approx \E[R]$ for both $r=0$ and $r=1$, despite the perfect disparity.
 The weighted estimator ignores the fact that the most high-information data points are those with $\hat{\vb r}_i$ close to 0 or 1; instead, it allows "low-quality" data points with poor racial predictions to overwhelm the estimation.
@@ -262,8 +259,7 @@ From the DAG shown in Figure \@ref(fig:dag), we can write down the following gen
     S_i \mid R_i &\sim \Categorical_\cS(\vb p_{S|R_i}) \\
     R_i &\sim \Categorical_\cR(\vb p_R) \\
     \Theta &\sim \pi(\Theta)
-\end{align*}
-The parameter $\Theta$ can be viewed as a matrix of functions, with each entry $\theta_{xr}$ mapping values of $g$ and $z$ to a conditional probability $\Pr(X=x\mid R=r, G=g, Z=z)$.
+\end{align*} The parameter $\Theta$ can be viewed as a matrix of functions, with each entry $\theta_{xr}$ mapping values of $g$ and $z$ to a conditional probability $\Pr(X=x\mid R=r, G=g, Z=z)$.
 
 Our primary quantity of interest is the marginalized parameter $$
     \bar\Theta = \sum_{g\in\cG,z\in\cZ} \Theta(g, z) p_{gz},
@@ -278,24 +274,21 @@ The posterior is then
             \pi(G_i, Z_i\mid R_i)\pi(S_i\mid R_i)\pi(R_i) \\
     &= \pi(\Theta) \prod_{i=1}^N \theta_{X_iR_i}(G_i, Z_i) p_{G_iZ_i\mid R_i} p_{S_i\mid R_i} p_{R_i} \\
     &\propto \pi(\Theta) \prod_{i=1}^N \theta_{X_iR_i}(G_i, Z_i)\hat{r_i}_{R_i},
-\end{align*} where we let \[
+\end{align*} where we let $$
     \hat{\vb r}_i\dfeq 
     \frac{\vb p_{G_iZ_i\mid R} \circ \vb p_{S_i\mid R} \circ \vb p_{R}}{
     \vb 1^\top(\vb p_{G_iZ_i\mid R} \circ \vb p_{S_i\mid R} \circ \vb p_{R})
     }
-\] denote the vector of BISGZ race probabilities, which depend on external data represented in $\vb p_{GZ\mid R}$, $\vb p_{S\mid R}$, and $\vb p_R$, but not on the parameters $\Theta$ and $\vb R$.
+$$ denote the vector of BISGZ race probabilities, which depend on external data represented in $\vb p_{GZ\mid R}$, $\vb p_{S\mid R}$, and $\vb p_R$, but not on the parameters $\Theta$ and $\vb R$.
 
 ## Marginalized Posterior
 
-Since $\vb R$ is high-dimensional, discrete, and not of primary interest, we marginalize it out to improve sampling:
-\begin{align*}
+Since $\vb R$ is high-dimensional, discrete, and not of primary interest, we marginalize it out to improve sampling: \begin{align*}
     \pi(X_i,G_i,Z_i,S_i\mid \Theta)
     &\propto \sum_{r\in\cR} \pi(X_i,R_i,G_i,Z_i,S_i\mid \Theta) \\
     &= \sum_{r\in\cR} \theta_{X_i r}(G_i, Z_i)\hat{r}_{ir} 
     = \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i.
-\end{align*}
-So the marginalized posterior is
-\begin{align}
+\end{align*} So the marginalized posterior is \begin{align}
     \pi(\Theta\mid \vb X, \vb G, \vb Z, \vb S)
     &= \pi(\Theta) \prod_{i=1}^N \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i.
     \label{eq:post-marg}
@@ -303,33 +296,27 @@ So the marginalized posterior is
 
 ## Prior on $\Theta$
 
-A natural prior on $\Theta$ would be to allow for maximum flexibility with a _fully saturated_ specification:
-\begin{align*}
+A natural prior on $\Theta$ would be to allow for maximum flexibility with a *fully saturated* specification: \begin{align*}
     \Theta_{xr}(g, \vb z) &= \theta_{xrg\vb z},  \\
     \vb*\theta_{\cdot rgz}&\iid\Dirichlet(\alpha)
-\end{align*}
-This prior fully captures the DAG in Figure \@ref(fig:dag) with no additional assumptions.
+\end{align*} This prior fully captures the DAG in Figure \@ref(fig:dag) with no additional assumptions.
 However, it suffers from the curse of dimensionality as more covariates are added to $Z$, especially since in practice $G$ will be quite large, covering many blocks or ZIP codes.
-For example, for a binary outcome and nationwide data, if we use block-level race data, five racial categories, and just four binary covariates, the model has over 650 _million_ parameters, which is nearly double the entire U.S. population.
-With all of these parameters _a priori_ independent under the fully saturated prior, there is no opportunity for sharing statistical strength; the prior will dominate the likelihood for individual parameters.
+For example, for a binary outcome and nationwide data, if we use block-level race data, five racial categories, and just four binary covariates, the model has over 650 *million* parameters, which is nearly double the entire U.S. population.
+With all of these parameters *a priori* independent under the fully saturated prior, there is no opportunity for sharing statistical strength; the prior will dominate the likelihood for individual parameters.
 This problem could be partially remedied by adding some hierarchical structure to the priors on $\vb*\theta_{\cdot rgz}$, e.g., by grouping parameters at the county or state level.
 
 We take a slightly different approach, motivated in part by the fact that we are primarily interested only in $\bar\Theta$, and by a belief that the interaction structure is primarily low-dimensional.
 It is reasonable to assume that the relationship between $X$ and $R$ could vary widely by geographies, or within demographic subgroups.
 But we do not believe that the magnitude of higher-order interactions is particularly large; while $X\mid R$ could be more extreme within some demographic subgroups, any further variation in this across small geographic units is unlikely to be substantial.
-This leads us to the following _additive_ prior specification, which can be thought about as a random intercept model:
-\begin{align*}
+This leads us to the following *additive* prior specification, which can be thought about as a random intercept model: \begin{align*}
     \Theta_{xr}(g, \vb z) &= g^{-1}\qty(\log\theta_{xr} + \beta^{(0)}_{xrg} + 
         \sum_{i=1}^{|\cZ|} \beta^{(i)}_{xrz_i})\\
         \vb*\theta_{\cdot r} &\iid \Dirichlet(\alpha) \\
         \vb*\beta^{(i)}\mid\sigma^2_i &\iid \Norm(0, \sigma^2_i) \\
         \sigma^2_i &\iid \Cauchy^+(0, L)
-\end{align*}
-The hierarchical priors on the $\vb*\beta^{(i)}$ allow the model to shrink towards zero covariates which are not predictive of a varying relationship between $X$ and $R$.
-To the extent one wishes to model higher-order interactions, those can be added as additional random intercepts;
-the key efficiency gain is in separating the large number of geographic parameters $\beta^{(0)}_{xrg}$ from the other covariates.
+\end{align*} The hierarchical priors on the $\vb*\beta^{(i)}$ allow the model to shrink towards zero covariates which are not predictive of a varying relationship between $X$ and $R$.
+To the extent one wishes to model higher-order interactions, those can be added as additional random intercepts; the key efficiency gain is in separating the large number of geographic parameters $\beta^{(0)}_{xrg}$ from the other covariates.
 We have found, on smaller datasets where fitting both the additive and fully saturated specifications is possible, that both give similar inferences for $\bar\Theta$, but the additive specification quickly becomes more accurate even for medium-sized problems.
-
 
 # Error and Bias
 
@@ -337,30 +324,78 @@ The primary source of error in the model \eqref{eq:post-marg} comes from inaccur
 We can consider the "true" values of these tables, which would yield "true" individual race probabilities $\vb r^*_i$.
 The question then becomes one of quantifying how a particular error in these probabilities $\vb r^*_i - \hat{\vb r}_i$ translates into error in the posterior.
 
-Denote by $\pi^*$ the posterior constructed using the $\vb r^*_i$, and let
-$\vb*\delta_i^* \dfeq \vb r^*_i - \hat{\vb r}_i$. 
-Notice that $\vb 1^\top\vb*\delta_i=0$ and all $\delta_{ij}\in[-1,1]$.
-Defining perturbation weights \[
+Denote by $\pi_{\vb*\delta}$ the posterior constructed using $\hat{\vb r}_i+\vb*\delta_i$ as the probabilities, so $\pi_{\vb*\delta^*}$ is the "true" posterior with $\vb*\delta_i^* \dfeq \vb r^*_i - \hat{\vb r}_i$.
+Estimating how $\pi$ and $\pi_{\vb*\delta}$ differ in general is difficult, but we can gain insight by focusing on "small enough" $\vb*\delta$, such that a linear approximation is appropriate.
+
+Defining perturbation weights $$
     w(\Theta,\vb*\delta^*) \dfeq 
     \prod_{i=1}^N 
     \qty(1 + \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i^*}{
     \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i})
-    \propto \frac{\pi^*(\Theta\mid\vb X,\vb G,\vb Z,\vb S)}{\pi(\Theta\mid\vb X,\vb G,\vb Z,\vb S)},
-\] we can write the bias for a particular quantity of interest $g(\Theta)$ as
-\begin{align*}
-    \E_{\pi^*}[g(\Theta)\mid\vb Y] - \E_\pi[g(\Theta)\mid\vb Y]
-    &= \frac{\E_\pi[w(\Theta,\vb*\delta^*)g(\Theta)\mid\vb Y]}{\E_\pi[w(\Theta,\vb*\delta^*)\mid\vb Y]} - 
-        \E_\pi[g(\Theta)\mid\vb Y] \\
-    &= \Cov_\pi\qty(\frac{w(\Theta,\vb*\delta^*)}{\E_\pi[w(\Theta,\vb*\delta^*)]}, g(\Theta)\gvn\vb Y),
-\end{align*}
-where $\vb Y=(\vb X,\vb G, \vb Z,\vb S)$ is the observed data.
-To understand the effect of error, we will attempt to write the sign and magnitude of this covariance in terms of $\vb*\delta^*$.
+    \propto \frac{\pi_{\vb*\delta^*}(\Theta\mid\vb X,\vb G,\vb Z,\vb S)}{\pi(\Theta\mid\vb X,\vb G,\vb Z,\vb S)},
+$$ we can write the bias for a particular quantity of interest $g(\Theta)$ as \begin{align*}
+    \E_{\pi_{\vb*\delta^*}}[g(\Theta)] - \E_\pi[g(\Theta)]
+    &= \eval{\dv{\E_{\pi_{\vb*\delta}}[g(\Theta)]}{\vb*\delta}}_{\vb*\delta=0}^\top
+        \vb*\delta^* + o(\norm{\vb*\delta^*}) \\
+    &= \Cov_\pi\qty(g(\Theta), 
+        \eval{\dv{\log w(\Theta,\vb*\delta)}{\vb*\delta}}_{\vb*\delta=0})^\top
+        \vb*\delta^* + o(\norm{\vb*\delta^*}),
+        \numberthis\label{eq:bias-dv}
+\end{align*} where the second equality is Theorem 2.1 of @giordano2018cov (see also the idea of *local sensitivity* from @gustafson1996local).
+
+The rest of this section will apply the representations like \eqref{eq:bias-dv} to provide bounds on the posterior error that may be used as part of a sensitivity analysis.
 Throughout, we will let $\vec(\Theta)$ denote the vector of parameters $\theta_{xr}(g, z)$.
 
+## Magnitude
+
+\begin{theoremrep} \label{thm:bound}
+Define $\widetilde{\Theta}_{ir}\dfeq 
+\frac{\theta_{X_ir}(G_i,Z_i)}{\vb*\theta_{X_i}(G_i,Z_i)^\top\hat{\vb r}_i}$.
+Then for any input probabilities with total error $\norm{\vb*\delta^*}^2
+=\sum_{i=1}^n\norm{\vb*\delta_i^*}^2\le \Delta^2$,
+\begin{align*}
+    |\E_{\pi^*}[g(\Theta)] - \E_\pi[g(\Theta)]|
+    &\lesssim \Delta\norm{\Cov_\pi(g(\Theta), \widetilde{\Theta})},
+\end{align*}
+as $\Delta\to 0$.
+\end{theoremrep}
+\begin{proof}
+This is immediate from \eqref{eq:bias-dv} once we compute 
+\begin{align*}
+    \dv{\log w(\Theta,\vb*\delta)}{\delta_{ir}} 
+    &= \dv{\delta_{ir}} \sum_{i=1}^N 
+        \log(1+\frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i}{
+        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i}) \\
+    &= \dv{\delta_{ir}}
+        \log(1+\frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i}{
+        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i}) \\
+    &= \frac{1}{1+\frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i}{
+        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i}} \times
+        \frac{\theta_{X_ir}(G_i, Z_i)}{
+        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i} \\
+    &= \frac{\theta_{X_ir}(G_i, Z_i)}{
+        \vb*\theta_{X_i}(G_i, Z_i)^\top(\hat{\vb r}_i+\vb*\delta_i)}
+\end{align*}
+and evaluate at $\vb*\delta=0$, since the worst-case bias for a fixed total error can be obtained by having the maximum allowable $\vb*\delta$ point in the direction of the gradient of $\log w(\Theta,\vb*\delta)$.
+\end{proof}
+
+The bound provided by Theorem \ref{thm:bound} may be computed readily from posterior draws, but it obscures the qualitative features of how the error depends on $\vb*\delta^*$, and in particular the sample size. 
+
 ## Sign
-We have the following result for a linear $g(\Theta)=\vec(\Theta)^\top\vb b$.
+
+Beyond the linear approximation, we also can show the following for a linear $g(\Theta)=\vec(\Theta)^\top\vb b$.
 
 \begin{toappendix}
+For the proofs of the results about the direction of the bias, we can write the bias for a particular quantity of interest $g(\Theta)$ as
+\begin{align*}
+    \E_{\pi_{\vb*\delta^*}}[g(\Theta)] - \E_\pi[g(\Theta)]
+    &= \frac{\E_\pi[w(\Theta,\vb*\delta^*)g(\Theta)]}{\E_\pi[w(\Theta,\vb*\delta^*)]} - 
+        \E_\pi[g(\Theta)] \\
+    &= \Cov_\pi\qty(\frac{w(\Theta,\vb*\delta^*)}{\E_\pi[w(\Theta,\vb*\delta^*)]}, g(\Theta)),
+\end{align*}
+where $\vb Y=(\vb X,\vb G, \vb Z,\vb S)$ is the observed data.
+This holds exactly, and is not just a linear approximations (notice the absence of a logarithm around the perturbation weights). 
+
 \begin{lemma} \label{lem:biassign}
 For a vector $\vb b$, if \[
     \hat r_{ij}\vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i} -
@@ -407,11 +442,10 @@ $\hat r_{ij}\vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i} - \delta_{ij}\hat{\vb r}_i^
 \end{proof}
 \end{toappendix}
 
-
 \begin{theoremrep}
 Let $r\in\cR$, $I\subseteq\{1,\dots,N\}$, and $\vb b$ a vector such that $\vb b_{X_i\cdot G_iZ_i}= c\vb e_r$ for all $i\in I$ and $0$ elsewhere, where $\vb e_r\in\R^{|\cR|}$ is the standard basis vector in the $r$ direction and $c>0$.
 Then if for all $i\in I$, $\delta_{ir}>0$ and $\delta_{ij}<\delta_{ir}$ for $j\neq r$, \[
-    \E_{\pi^*}[\vec(\Theta)^\top\vb b\mid\vb Y] \ge \E_{\pi}[\vec(\Theta)^\top\vb b\mid\vb Y].
+    \E_{\pi_{\vb*\delta^*}}[\vec(\Theta)^\top\vb b\mid\vb Y] \ge \E_{\pi}[\vec(\Theta)^\top\vb b\mid\vb Y].
 \]
 \end{theoremrep}
 \begin{proof}
@@ -429,7 +463,7 @@ If $j\neq r$, we have \[
 \]
 So the condition of Lemma~\ref{lem:biassign} is satisfied for all $j\in\cR$, and
 thus by the lemma we conclude that \[
-    \E_{\pi^*}[\vec(\Theta)^\top\vb b\mid\vb Y] - \E_{\pi}[\vec(\Theta)^\top\vb b\mid\vb Y]
+    \E_{\pi_{\vb*\delta^*}}[\vec(\Theta)^\top\vb b\mid\vb Y] - \E_{\pi}[\vec(\Theta)^\top\vb b\mid\vb Y]
     = \Cov_\pi\qty(\frac{w(\Theta,\vb*\delta)}{\E_\pi[w(\Theta,\vb*\delta)]}, 
     \vec(\Theta)^\top\vb b \gvn\vb Y) \ge 0. \qedhere
 \]
@@ -444,11 +478,10 @@ Then for any $x\in\cX$, the model-based estimate of $\Pr[X=x\mid R=1]$, denoted 
 will be biased downwards (upwards) if, for all $i$ with $X_i=x$, the BISGZ probability $\hat r_{i1}$ is biased downwards (upwards).
 \end{corollary}
 
-
 \begin{theoremrep}
 Let $r,s\in\cR$, $I\subseteq\{1,\dots,N\}$, and $\vb b$ a vector such that $\vb b_{X_i\cdot G_iZ_i}= c_1(\vb e_r-\vb e_s)$ for all $i\in I$ and $0$ elsewhere, for some $c_1>0$.
 Then if for all $i\in I$, $\vb*\delta_i=c_{2i}(e_r-e_s)$ for some $c_{2i}>0$, \[
-    \E_{\pi^*}[\vec(\Theta)^\top\vb b\mid\vb Y] \ge \E_{\pi}[\vec(\Theta)^\top\vb b\mid\vb Y].
+    \E_{\pi_{\vb*\delta^*}}[\vec(\Theta)^\top\vb b\mid\vb Y] \ge \E_{\pi}[\vec(\Theta)^\top\vb b\mid\vb Y].
 \]
 \end{theoremrep}
 \begin{proof}
@@ -470,7 +503,7 @@ If $j=s$ we have \[
     = \hat r_{ij}c_1(2c_{2i}) \ge 0.
 \] So the condition of Lemma~\ref{lem:biassign} is satisfied for all $j\in\cR$, and
 thus by the lemma we conclude that \[
-    \E_{\pi^*}[\vec(\Theta)^\top\vb b\mid\vb Y] - \E_{\pi}[\vec(\Theta)^\top\vb b\mid\vb Y]
+    \E_{\pi_{\vb*\delta^*}}[\vec(\Theta)^\top\vb b\mid\vb Y] - \E_{\pi}[\vec(\Theta)^\top\vb b\mid\vb Y]
     = \Cov_\pi\qty(\frac{w(\Theta,\vb*\delta)}{\E_\pi[w(\Theta,\vb*\delta)]}, 
     \vec(\Theta)^\top\vb b \gvn\vb Y) \ge 0. \qedhere
 \]
@@ -487,101 +520,16 @@ will be biased downwards (upwards) if, for all $i$ with $X_i=x$, the BISGZ proba
 
 Certainly more results in this direction are possible, but these two suffice to understand how bias could arise in estimating a conditional probability and in estimating a disparity.
 
+# Validation Study
 
-## Magnitude
+- Intro NC data
+- figure: estimated versus actual outcome rates by race and method, with error bars. Facet by several different outcome variables to show it's not just party
+- table/text: TV distance on joint distribution by method
 
+# Application
 
+- Treasury data, no covariates
 
-## Old work
+# Discussion
 
-\begin{theoremrep}
-We have \[
-    \mathrm{RAE}_{\pi^*}(g) \le  \sqrt{\E_\pi
-    \exp\qty(\eps^2\sum_{i=1}^N \norm{
-        \frac{\vb*\theta_{X_i}(G_i, Z_i)}{
-        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i} -
-        \E_\pi\qty[
-        \frac{\vb*\theta_{X_i}(G_i, Z_i)}{
-            \norm{\vb*\theta_{X_i}(G_i, Z_i)}}]}^2) - 1}.
-\]
-\end{theoremrep}
-\begin{proof}
-From Theorem 4 of @weiss1996approach, we can bound $\mathrm{RAE}(g)$ with the variance of these perturbation weights after normalization, which is also the $\chi^2$-divergence between $\pi^*$ and $\pi$: \[
-    \mathrm{RAE}_{\pi^*}(g)^2  \le \chi^2(\pi^*) 
-    = \frac{\E_\pi[w(\Theta,\vb*\delta^*)^2]}{\E_\pi[w(\Theta,\vb*\delta^*)]^2} - 1
-\]
-
-Since we don't know $\vb r^*_i$, we will focus on deriving a worst-case bound on $\chi^2(\pi^*)$ in terms of the average size of the $\vb*\delta_i^*$, measured as \[
-    \Delta^* = \sqrt{\sum_{i=1}^N\sum_{j\in\cR} {\delta_{ij}^*}^2}.
-\]
-
-We'll first simplify the problem by moving the supremum to the inside: if $\Delta^*\le \eps$, then
-\begin{align*}
-    \chi^2(\pi^*) \le \sup_{\Delta=\eps}
-        \frac{\E_\pi[w(\Theta,\vb*\delta)^2]}{\E_\pi[w(\Theta,\vb*\delta)]^2} - 1 
-    \le \E_\pi\qty[\sup_{\Delta=\eps} \qty(\frac{w(\Theta,\vb*\delta)}{
-        \E_\pi[w(\Theta,\vb*\delta)]})^2] - 1 \\
-    = \E_\pi\qty[\exp \qty(2\cdot\sup_{\Delta=\eps}(
-        \log w(\Theta,\vb*\delta) - \log\E_\pi[w(\Theta,\vb*\delta)]))] - 1.
-        \numberthis\label{eq:sup-simp}
-\end{align*}
-
-We can leverage the inequality $\log(1+x)\le x$ to upper-bound the first term inside the supremum:
-\begin{align*}
-    \log w(\theta,\vb*\delta) 
-    &= \sum_{i=1}^N \log(1 + \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i}{
-        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i}) \\
-    &\le \sum_{i=1}^N \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i}{
-        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i}.
-\end{align*}
-
-For the second term, the opposite inequality $\frac{x}{1+x}\le \log(1+x)$ yields
-\begin{align*}
-    \log \E_\pi w(\Theta,\vb*\delta) &\ge \E_\pi \log w(\Theta,\vb*\delta) \\
-    &= \sum_{i=1}^N \E_\pi \log(1 + \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i}{
-        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i}) \\
-    &\ge \sum_{i=1}^N \E_\pi\qty[
-        \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i}{
-        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i + 
-            \vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i}] \\
-    &\le \sum_{i=1}^N \E_\pi\qty[
-        \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i}{
-        \norm{\vb*\theta_{X_i}(G_i, Z_i)}\norm{\hat{\vb r}_i + \vb*\delta_i}}]
-    \le \sum_{i=1}^N \E_\pi\qty[
-        \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i}{
-        \norm{\vb*\theta_{X_i}(G_i, Z_i)}}].
-\end{align*}
-
-Combining these results,
-\begin{align*}
-    \log w(\theta,\vb*\delta) - \log \E_\pi w(\Theta,\vb*\delta) 
-    &\le \sum_{i=1}^N \qty(
-        \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top}{
-        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i} -
-        \E_\pi\qty[
-        \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top}{
-            \norm{\vb*\theta_{X_i}(G_i, Z_i)}}])  \vb*\delta_i \\
-    &\le \Delta \sqrt{\sum_{i=1}^N \norm{
-        \frac{\vb*\theta_{X_i}(G_i, Z_i)}{
-        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i} -
-        \E_\pi\qty[
-        \frac{\vb*\theta_{X_i}(G_i, Z_i)}{
-            \norm{\vb*\theta_{X_i}(G_i, Z_i)}}]}^2} \\
-\end{align*}
-
-Finally, substituting into \eqref{eq:sup-simp} and taking a square root, \[
-    \mathrm{RAE}_{\pi^*}(g) \le  \sqrt{\E_\pi
-    \exp\qty(\eps^2\sum_{i=1}^N \norm{
-        \frac{\vb*\theta_{X_i}(G_i, Z_i)}{
-        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i} -
-        \E_\pi\qty[
-        \frac{\vb*\theta_{X_i}(G_i, Z_i)}{
-            \norm{\vb*\theta_{X_i}(G_i, Z_i)}}]}^2) - 1}
-    \qedhere
-\]
-\end{proof}
-
-
-<div id="refs"></div>
-
-# (APPENDIX) Appendix {-} 
+# (APPENDIX) Appendix {.unnumbered}

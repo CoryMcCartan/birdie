@@ -8,8 +8,8 @@ mat gibbs_me(int iter, int warmup, const uvec &S, const uvec &GZ,
     // setup sizes and inits
     int N = S.size();
     int n_r = M_sr.n_cols;
-    int n_s = M_sr.n_rows;
-    int n_gz = N_gzr.n_rows;
+    // int n_s = M_sr.n_rows;
+    // int n_gz = N_gzr.n_rows;
 
     mat out(N, n_r, fill::zeros);
 

@@ -105,7 +105,7 @@ census_zip_age_sex_table = function(GZ, GZ_vec, p_r, regularize=TRUE, count=FALS
         cli_abort(c("Number of racial categories doesn't match the Census data.",
                     "i"="Categories should be White, Black, Hispanic, Asian, and other."))
 
-    x = readr::read_rds("data/nc_zip_age_sex_race.rds")
+    x = readr::read_rds("data-raw/nc_zip_age_sex_race.rds")
     x_nozip = group_by(x, age, sex) %>%
         summarize(across(total:other, sum)) %>%
         ungroup() %>%

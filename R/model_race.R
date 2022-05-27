@@ -14,7 +14,8 @@
 #' @param silent whether to suppress output
 #' @param reload_py whether to reload the python code (development only)
 #'
-#' @return TBD
+#' @return A list containing the model output. Element `p_xr` contains the
+#'   approximate posterior draws of the global X|R table.
 #' @export
 model_race = function(r_probs, X, G, Z=NULL, data=NULL, prefix="pr_",
                       config=list(), silent=FALSE, reload_py=FALSE) {
@@ -86,7 +87,7 @@ model_race = function(r_probs, X, G, Z=NULL, data=NULL, prefix="pr_",
         n_mi=as.integer(config$n_mi),
         lr=config$lr, tol_rhat=config$tol_rhat,
         silent=silent)
-    if (isFALSE(silent)) print(structure(proc.time() - ts1, class="proc_time"))
+    if (isFALSE(silent)) print(structure(proc.time() - ts1, class="proc_time")[3])
 
     out
 }

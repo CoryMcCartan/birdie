@@ -12,18 +12,17 @@
 #'   Defaults to a table from the U.S. Census Bureau from 2010.
 #' @param p_rgz a data frame, containing columns matching `G`and `Z`, and columns for
 #'   each value of `R` giving the conditional probabilities of R given Z and G.
-#'   Defaults to a table from the 2010 decennial census.
+#'   Defaults to a ZIP code table from the 2010 decennial census.
 #' @param p_r a vector containing the marginal probabilities for each value of
 #'   `R`. Defaults to the demographics of the US.
 #' @param iterate how much to iteratively refine the race prior from the data. Set to 0 to disable.
-#' @param regularize if `TRUE`, regularize the Census-calculated `R|S` and `R|G,Z` tables
 #'
 #' @return a tibble, with rows matching `data` and columns for the race probabilities
 #' @export
 predict_race_sgz = function(S, G, Z=NULL, data=NULL, p_rs=NULL, p_rgz=NULL,
                             p_r=c(white=0.630, black=0.121, hisp=0.173,
                                   asian=0.0478, aian=0.0072, other=0.0210),
-                            iterate=10L, regularize=TRUE) {
+                            iterate=10L) {
     ## Parse and check input data frame ----------------
     if (missing(data)) cli_abort("{.arg data} must be provided.")
     S_vec = eval_tidy(enquo(S), data)
@@ -38,14 +37,15 @@ predict_race_sgz = function(S, G, Z=NULL, data=NULL, p_rs=NULL, p_rgz=NULL,
     }
     if (any(is.na(Z_df))) cli_abort("Missing values found in {.arg Z}")
 
+    G_name = as_name(enquo(G))
     G_vec = as.factor(coalesce(G_vec, "<none>"))
-    GZ = cbind(G_vec, Z_df)
+    GZ = dplyr::bind_cols("{G_name}":=G_vec, Z_df)
     GZ_vec = as.factor(vctrs::vec_duplicate_id(GZ))
 
     ## Parse and check input probabilities ----------------
     if (missing(p_rs)) {
         S_vec = as.character(S_vec)
-        p_rs = census_surname_table(S_vec, as_name(enquo(S)), p_r, regularize)
+        p_rs = census_surname_table(S_vec, as_name(enquo(S)), p_r)
         S_vec[!S_vec %in% p_rs[[1]]] = "<generic>"
         S_vec = factor(S_vec, levels=p_rs[[1]])
     } else {
@@ -64,19 +64,31 @@ predict_race_sgz = function(S, G, Z=NULL, data=NULL, p_rs=NULL, p_rgz=NULL,
         names(GZ)[1] = "zip"
         #p_rgz = census_zip_age_sex_table(GZ, GZ_vec, p_r, regularize)
     } else if (missing(p_rgz)) {
-        p_rgz = census_zip_table(G_vec, as_name(enquo(G)), p_r, regularize)
+        p_rgz = census_zip_table(G_vec, G_name, p_r)
     } else {
         if (!is.data.frame(p_rs)) cli_abort("{.arg p_rgz} must be a data frame.")
         if (!all(colnames(GZ) %in% colnames(p_rgz)))
             cli_abort("All columns in {.arg G} and {.arg Z} must be in {.arg p_rgz}.")
         if (ncol(p_rgz) != 6 + ncol(GZ))
             cli_abort("Number of racial categories in {.arg p_rgz} and {.arg R} must match.")
-        if (nrow(anti_join(GZ, p_rgz, by=colnames(GZ))) > 0)
-            cli_abort("Some {.arg G}/{.arg Z} combinations are missing from {.arg p_rgz}.")
+        # if (nrow(anti_join(GZ, p_rgz, by=colnames(GZ))) > 0)
+        #     cli_abort("Some {.arg G}/{.arg Z} combinations are missing from {.arg p_rgz}.")
     }
     if (missing(Z)) {
         GZ_vec = G_vec
     }
+
+    # match ZIP codes
+    if (!"<none>" %in% p_rgz[[G_name]]) {
+        p_rgz = rbind(p_rgz, rlang::list2("{G_name}":="<none>",
+                      white=p_r[1], black=p_r[2], hisp=p_r[3],
+                      asian=p_r[4], aian=p_r[5], other=p_r[6]))
+    }
+    p_rgz = mutate(p_rgz, across(.data$white:.data$other, ~ coalesce(., p_r[cur_column()])))
+    match_idx = match(levels(G_vec), p_rgz[[G_name]])
+    match_idx[is.na(match_idx)] = match("<none>", p_rgz[[G_name]])
+    p_rgz = p_rgz[match_idx, ]
+
     p_gz = prop.table(table(GZ_vec))
 
     # flip which margin sums to 1

@@ -30,6 +30,24 @@ d = d_raw %>%
 
 write_rds(d, here("inst/extdata/zip_race_2010.rds"), compress="xz")
 
+
+# ZIP code by race (2020) ------
+d_raw = censable::build_dec("block", "NC", geometry=TRUE, year=2020)
+zip_geom = tigris::zctas(state="NC", year=2010)
+idx_zip = geomander::geo_match(d_raw, zip_geom, method="area")
+d = d_raw %>%
+    sf::st_drop_geometry() %>%
+    mutate(zip = zip_geom$ZCTA5CE10[idx_zip],
+           pop_asian = pop_asian + pop_nhpi,
+           pop_other = pop_other + pop_two,
+           vap_asian = vap_asian + vap_nhpi,
+           vap_other = vap_other + vap_two) %>%
+    select(-pop_nhpi, -pop_two, -vap_nhpi, -vap_two) %>%
+    group_by(zip) %>%
+    summarize(across(pop:vap_other, function(x) as.integer(sum(x))))
+write_rds(d, here("inst/extdata/zip_race_2020_nc.rds"), compress="xz")
+
+
 # Surnames by race ------
 # overall race probabilities
 p_r = summarize(d, across(pop:pop_other, sum)) %>%

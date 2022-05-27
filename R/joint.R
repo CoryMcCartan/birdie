@@ -1,23 +1,53 @@
 
-#' Calculate the joint distribution of R and X
+#' Estimate the joint distribution of R and X
 #'
 #' @param r_probs a matrix data frame of race probabilities
 #' @param x the variable X to tabulate against
+#' @param method the estimation method: a weighted-mean estimator, a
+#'   thresholding estimator, or a multiple-imputation estimator.
 #' @param prefix how to select the race probability columns from `r_probs`, if
 #'   if is a data frame
+#' @param n_mi if `method == "mi"`, how many imputations to produce.
 #'
 #' @returns a matrix
 #' @export
-calc_joint_bisgz = function(r_probs, x, prefix="pr_") {
+calc_joint_bisgz = function(r_probs, x, method=c("weight", "thresh", "mi", "ols"),
+                            prefix="pr_", n_mi=8) {
     x = as.factor(x)
+    N = length(x)
     if (!is.matrix(r_probs)) {
         r_probs = as.matrix(dplyr::select(r_probs, starts_with(prefix)))
         colnames(r_probs) = substring(colnames(r_probs), nchar(prefix)+1L)
     }
+    stopifnot(nrow(r_probs) == N)
 
-    out = lapply(levels(x), function(l) colMeans(r_probs * (x == l)))
-    out = do.call(rbind, out)
-    rownames(out) = levels(x)
+    method = match.arg(method)
+    if (method == "weight") {
+        out = lapply(levels(x), function(l) colMeans(r_probs * (x == l)))
+        out = do.call(rbind, out)
+        rownames(out) = levels(x)
+    } else if (method == "thresh") {
+        r_est = max.col(r_probs)
+        out = table(x, r_est) / N
+        names(dimnames(out)) = NULL
+        colnames(out) = colnames(r_probs)
+    } else if (method == "mi") {
+        n_race = ncol(r_probs)
+        out = matrix(0, nrow=nlevels(x), ncol=n_race)
+        for (i in seq_len(n_mi)) {
+            r_est = apply(r_probs, 1, function(x) sample(n_race, 1, prob=x))
+            out = out + table(x, r_est) / N / n_mi
+        }
+        names(dimnames(out)) = NULL
+        colnames(out) = colnames(r_probs)
+    } else if (method == "ols") {
+        out = lapply(levels(x), function(l) {
+            lm.fit(r_probs, x == l)$coefficients
+        })
+        out = do.call(rbind, out)
+        out = out %*% diag(colMeans(r_probs))
+        rownames(out) = levels(x)
+    }
     out
 }
 
@@ -50,8 +80,15 @@ calc_joint_model = function(draws, q=0.5,
 #' @export
 eval_joints = function(tgt, metric=c("tv", "mad", "rmse"), ...) {
     score_fn = function(x) cli_abort("Metric {.val {metric}} not recognized.")
+    n_out = 1
     if (metric == "tv") {
         score_fn = function(x) sum(abs(tgt - x)) / 2
+    } else if (metric == "tv_col") {
+        score_fn = function(x) list(colSums(abs(tgt - x)) / 2)
+        n_out = ncol(tgt)
+    } else if (metric == "tv_row") {
+        score_fn = function(x) list(rowSums(abs(tgt - x)) / 2)
+        n_out = nrow(tgt)
     } else if (metric == "mad") {
         score_fn = function(x) mean(abs(tgt - x))
     } else if (metric == "rmse") {
@@ -59,8 +96,11 @@ eval_joints = function(tgt, metric=c("tv", "mad", "rmse"), ...) {
     }
 
     joints = rlang::list2(...) %>%
-        vapply(score_fn, numeric(1)) %>%
-        sort()
+        #vapply(score_fn, numeric(n_out)) %>%
+        sapply(score_fn)# %>%
+    if (n_out == 1) {
+        joints = sort(joints)
+    }
     tibble(method = names(joints),
            "{toupper(metric)}" := joints)
 }

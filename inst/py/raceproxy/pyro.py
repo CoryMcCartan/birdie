@@ -122,6 +122,7 @@ def fit_additive(X, GZ, GZ_var, pr_base, n_x=2, n_gz_var=1,
         "pareto_k": k,
         "log_p": log_p,
         "log_g": log_g,
-        "p_xr": p_xr.transpose((0, 2, 1))
+        "p_xr": p_xr.transpose((0, 2, 1)),
+        "beta_scale": beta_scale.squeeze()
         }
 

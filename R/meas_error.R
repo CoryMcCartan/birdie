@@ -36,15 +36,15 @@ predict_race_sgz_me = function(S, G, Z=NULL, data=NULL, p_rs=NULL, p_rgz=NULL,
     }
     if (any(is.na(Z_df))) cli_abort("Missing values found in {.arg Z}")
 
+    G_name = as_name(enquo(G))
     G_vec = as.factor(coalesce(G_vec, "<none>"))
-    GZ = cbind(G_vec, Z_df)
+    GZ = dplyr::bind_cols("{G_name}":=G_vec, Z_df)
     GZ_vec = as.factor(vctrs::vec_duplicate_id(GZ))
 
     ## Parse and check input probabilities ----------------
     if (missing(p_rs)) {
         S_vec = as.character(S_vec)
-        p_rs = census_surname_table(S_vec, as_name(enquo(S)), p_r,
-                                    regularize=FALSE, counts=TRUE)
+        p_rs = census_surname_table(S_vec, as_name(enquo(S)), p_r, counts=TRUE)
         S_vec[!S_vec %in% p_rs[[1]]] = "<generic>"
         S_vec = factor(S_vec, levels=p_rs[[1]])
     } else {
@@ -53,25 +53,41 @@ predict_race_sgz_me = function(S, G, Z=NULL, data=NULL, p_rs=NULL, p_rgz=NULL,
             cli_abort("Some names are missing from {.arg p_rs}.")
     }
     p_s = prop.table(table(S_vec))
+    p_sr = as.matrix(p_rs[, -1])
+    for (i in seq_along(p_r)) {
+        p_sr[, i] = p_sr[, i] * p_s
+        p_sr[, i] = p_sr[, i] / sum(p_sr[, i])
+    }
 
     if (missing(p_rgz) && !missing(Z) && ncol(Z_df) == 2) { # TODO remove this (NC-specific)
         names(GZ)[1] = "zip"
         #p_rgz = census_zip_age_sex_table(GZ, GZ_vec, p_r, regularize)
     } else if (missing(p_rgz)) {
-        p_rgz = census_zip_table(G_vec, as_name(enquo(G)), p_r,
-                                 regularize=FALSE, counts=TRUE)
+        p_rgz = census_zip_table(G_vec, G_name, p_r, counts=TRUE)
     } else {
         if (!is.data.frame(p_rs)) cli_abort("{.arg p_rgz} must be a data frame.")
         if (!all(colnames(GZ) %in% colnames(p_rgz)))
             cli_abort("All columns in {.arg G} and {.arg Z} must be in {.arg p_rgz}.")
         if (ncol(p_rgz) != 6 + ncol(GZ))
             cli_abort("Number of racial categories in {.arg p_rgz} and {.arg R} must match.")
-        if (nrow(anti_join(GZ, p_rgz, by=colnames(GZ))) > 0)
-            cli_abort("Some {.arg G}/{.arg Z} combinations are missing from {.arg p_rgz}.")
+        # if (nrow(anti_join(GZ, p_rgz, by=colnames(GZ))) > 0)
+        #     cli_abort("Some {.arg G}/{.arg Z} combinations are missing from {.arg p_rgz}.")
     }
     if (missing(Z)) {
         GZ_vec = G_vec
     }
+
+    # match ZIP codes
+    if (!"<none>" %in% p_rgz[[G_name]]) {
+        p_rgz = rbind(p_rgz, rlang::list2("{G_name}":="<none>",
+                                          white=1e5*p_r[1], black=1e5*p_r[2], hisp=1e5*p_r[3],
+                                          asian=1e5*p_r[4], aian=1e5*p_r[5], other=1e5*p_r[6]))
+    }
+    p_rgz = mutate(p_rgz, across(.data$white:.data$other, ~ coalesce(., p_r[cur_column()])))
+    match_idx = match(levels(G_vec), p_rgz[[G_name]])
+    match_idx[is.na(match_idx)] = match("<none>", p_rgz[[G_name]])
+    p_rgz = p_rgz[match_idx, ]
+
     p_gz = prop.table(table(GZ_vec))
 
     alpha_gzr = matrix(rep(p_r, nrow(p_rgz)), nrow=nrow(p_rgz), ncol=6, byrow=T)

@@ -8,7 +8,8 @@
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom Rcpp sourceCpp
 #' @importFrom reticulate py
-#' @importFrom stats na.omit quantile
+#' @importFrom stats na.omit quantile lm.fit
+#' @importFrom utils tail
 #' @useDynLib raceproxy, .registration = TRUE
 ## usethis namespace: end
 NULL
