@@ -1,6 +1,10 @@
 ---
-title: "Estimation of Racial Disparities when Race is Not Observed"
-author: 
+title: "Estimation of Racial Disparities when Race is Not Observed: Application to Tax Auditing"
+authors: 
+    - name: Cory McCartan
+    - name: Kosuke Imai
+    - name: Jacob Goldin
+    - name: Daniel E. Ho
 date: '`r format(Sys.Date(), "%B %e, %Y")`'
 abstract: |
     Abstract here.
@@ -53,7 +57,7 @@ We assume throughout that these variables are discrete.
 In practice, location is discrete, since joint information about location, race, and other variables is only available down to the Census block level.
 Continuous outcomes here must be discretized, though there are natural extensions of the model that would make use of any continuous structure.
 
-The BISG(Z) procedure assumes that $S\indep G, Z\mid R$.
+The BISG(Z) procedure assumes that $S\indep G, Z\mid R$. **KI: Let's write this formally as an assumption**
 With this assumption, $$
     \Pr(R=r\mid G=g, Z=z, S=s) \ \propto\ 
     \Pr(G=g, Z=z\mid R=r)\Pr(S=s \mid R=r)\Pr(R=r),
@@ -76,7 +80,7 @@ If race is binary (so $\cR=\{0,1\}$), then as $N\to\infty$, \[
 \]
 \end{theorem}
 ```
-If any racial disparity in $X$ is mediated purely through $G$, $Z$, and $S$, so that $X\indep R\mid G,Z,S$, then the estimator will be unbiased.
+If any racial disparity in $X$ is mediated purely through $G$, $Z$, and $S$, so that $X\indep R\mid G,Z,S$, then the estimator will be unbiased. **KI: Let's also write this formally as an assumption as it will be important to contrast this with our assumption**
 While almost certainly untrue in most practical settings, there may be a few cases in which this is an appropriate assumption.
 For example, for a manager reviewing job applications, race is typically unobserved, but the manager may be influenced by racial or gender cues in a candidate's name [@park2009names; @aaslund2012names].
 Then the assumption $X\indep R\mid G,Z,S$ is naturally satisfied and $\hat\mu^{(\text{wtd})}_{X|R}(x\mid r)$ will be asymptotically unbiased.
@@ -128,14 +132,14 @@ To better understand this assumption, consider the causal model depicted by the 
 \label{fig:dag}
 \end{figure}
 ```
-The DAG implies that $X\indep S\mid R,G,Z$, since all paths from $S$ to $X$ are blocked by $R$, $G$, or $Z$ (for more details, see \citealt{pearl1995causal}).
-Of course, other causal structures, such as a version of Figure \ref{fig:dag} with additional unobserved confounding between $G$, $Z$, $R$, and $X$, are possible; as long as $X\indep S\mid R,G,Z$, then $\Pr(X=x\mid R=r)$ is identified, as we will see below.
+The DAG implies that $X\indep S\mid R,G,Z$, since all paths from $S$ to $X$ are blocked by $R$, $G$, or $Z$ (for more details, see \citealt{pearl1995causal}). **KI: Let's add another DAG right next to this that represents the usual assumption and then add some discussion.**
+Of course, other causal structures, such as a version of Figure \ref{fig:dag} with additional unobserved confounding between $G$, $Z$, $R$, and $X$, are possible; as long as $X\indep S\mid R,G,Z$, then $\Pr(X=x\mid R=r)$ is identified, as we will see below. **KI: let's expand this discussion a bit.  There are three important points. First, this model relaxes the BISG assumption for allowing unobserved confounding between $G$ and $S$ and between $G$ and $Z$.  In addition, unlike the weighting estimator, we can allow for the direct effect of $R$ on $X$.  This is important because you can see this leads to the bias in the weighting estimator.  However, like the weighting estimator, we cannot add unobserved confounding to $X \leftrightarrow Z$ because it will open up the path $R \rightarrow Z \leftarrow U \rightarrow X$ where $Z$ is a collider.  The same argument applies to $G$.**
 
 In any particular application it is important to consider whether names have a causal effect on the outcome, or whether name and outcome are caused by an unobserved confounder that is not controlled for in $Z$.
 In these cases (such as in the hiring example above), our proposed method may not be appropriate.
 
 But in many settings, including our motivating examples of tax audit decisions and voter turnout, name can reasonably be considered independent of the outcome, conditional on race, location, and perhaps one or two other variables (such as income).
-The following theorem records the precise conditions needed for identification.
+The following theorem records the precise conditions needed for identification. **KI: I think it's worthwhile to walk readers through the basic intuition for this result like you did in your slide while keeping a formal proof in the appendix.  We want people to realize that this identification result is based on a very simple equality.**
 
 \begin{theoremrep}
 For all $g\in\cG$, $z\in\cZ$, and $x\in\cX$, define a matrix $\hat{\vb R}^{(xgz)}$ with entries $\hat r^{(xgz)}_{rs}=\Pr(R=r\mid G=g, Z=z, S=s)$ has rank $|\cR|$, and a vector $\vb b^{(xgz)}$ with entries $b^{(xgz)}_s=\Pr(X=x\mid G=g, Z=z, S=s)$.
@@ -158,6 +162,7 @@ See @kuroki2014measurement and @miao2018identifying for similar ideas in the con
 
 ## Comparison with Weighted Estimator
 
+**KI: Theorem 2.3 is great, but I did not find the discussions right before and after the theorem particularly helpful.  I suggest we comment it out for now unless we can make it more intuitive.**
 The above identification equation may bring to mind a least-squares estimator.
 This is not a good idea for several reasons, not least of which is the fact that the unknown parameters are probabilities and thus constrained to lie in $[0,1]$ and sum to 1.
 However, the ordinary least squares estimator provides useful intuition as to how existing methods fail, and why there is additional information "left on the table" to use in producing an accurate estimation of racial disparities.
@@ -252,6 +257,7 @@ Instead, we propose a Bayesian model, which we describe next.
 
 ## General model
 
+**KI: One general concern I have about this and next sections is that they are based on a very general model/notation.  I worry about losing some readers.  At the same time, I see the value of generality.  Two possibilities.  Start with a simpler model and then present a more general case.  Alternatively, add enough discussions so that people can still build some intuition.**
 From the DAG shown in Figure \@ref(fig:dag), we can write down the following general model.
 \begin{align*}
     X_i \mid R_i, G_i, Z_i, \Theta &\sim \Categorical_\cX(\vb*\theta_{\cdot R_i}(G_i,Z_i)) \\
@@ -281,8 +287,11 @@ The posterior is then
     }
 $$ denote the vector of BISGZ race probabilities, which depend on external data represented in $\vb p_{GZ\mid R}$, $\vb p_{S\mid R}$, and $\vb p_R$, but not on the parameters $\Theta$ and $\vb R$.
 
+**KI: One interesting observation is that BISGZ makes an additional assumption, which our methodology avoids.  This is $S \indep \{G, Z\} \mid R$. By plugging in BISG probabilities, we are at least partially introducing this assumption.  Unfortunately, this is necessary in order to utilize surname data.  This is why our sensitivity analysis will be useful.  This kind of discussion will be important.**
+
 ## Marginalized Posterior
 
+**KI: This section can be combined into the previous section.  In general, we can have one methods section with several subsections.**
 Since $\vb R$ is high-dimensional, discrete, and not of primary interest, we marginalize it out to improve sampling: \begin{align*}
     \pi(X_i,G_i,Z_i,S_i\mid \Theta)
     &\propto \sum_{r\in\cR} \pi(X_i,R_i,G_i,Z_i,S_i\mid \Theta) \\
@@ -344,7 +353,7 @@ $$ we can write the bias for a particular quantity of interest $g(\Theta)$ as \b
 \end{align*} where the second equality is Theorem 2.1 of @giordano2018cov (see also the idea of *local sensitivity* from @gustafson1996local).
 
 The rest of this section will apply the representations like \eqref{eq:bias-dv} to provide bounds on the posterior error that may be used as part of a sensitivity analysis.
-Throughout, we will let $\vec(\Theta)$ denote the vector of parameters $\theta_{xr}(g, z)$.
+Throughout, we will let $\vec(\Theta)$ denote the vector of parameters $\theta_{xr}(g, z)$. 
 
 ## Magnitude
 
@@ -379,7 +388,7 @@ This is immediate from \eqref{eq:bias-dv} once we compute
 and evaluate at $\vb*\delta=0$, since the worst-case bias for a fixed total error can be obtained by having the maximum allowable $\vb*\delta$ point in the direction of the gradient of $\log w(\Theta,\vb*\delta)$.
 \end{proof}
 
-The bound provided by Theorem \ref{thm:bound} may be computed readily from posterior draws, but it obscures the qualitative features of how the error depends on $\vb*\delta^*$, and in particular the sample size. 
+The bound provided by Theorem \ref{thm:bound} may be computed readily from posterior draws, but it obscures the qualitative features of how the error depends on $\vb*\delta^*$, and in particular the sample size. **KI: Did you check how informative this bound is in the real data?**
 
 ## Sign
 
