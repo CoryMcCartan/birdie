@@ -7,21 +7,22 @@
 #' @param Z the column(s), if any, containing other covariates. Use `c()` to provide multiple columns
 #' @param data the data
 #' @param p_rs a data frame, containing a column matching `S` and columns for
-#'   each value of `R` giving the conditional probabilities of R given S.
+#'   each value of `R` giving the number of voters in each level of R given S.
 #'   Defaults to a table from the U.S. Census Bureau from 2010.
 #' @param p_rgz a data frame, containing columns matching `G`and `Z`, and columns for
-#'   each value of `R` giving the conditional probabilities of R given Z and G.
+#'   each value of `R` giving the number of voters in each level of R given Z and G.
 #'   Defaults to a table from the 2010 decennial census.
 #' @param p_r a vector containing the marginal probabilities for each value of
 #'   `R`. Defaults to the demographics of the US.
 #' @param iter how many Gibbs iterations
+#' @param warmup how many warmup iterations
 #'
 #' @return a tibble, with rows matching `data` and columns for the race probabilities
 #' @export
 predict_race_sgz_me = function(S, G, Z=NULL, data=NULL, p_rs=NULL, p_rgz=NULL,
                                p_r=c(white=0.630, black=0.121, hisp=0.173,
                                      asian=0.0478, aian=0.0072, other=0.0210),
-                               iter=2000) {
+                               iter=2000, warmup=100) {
     ## Parse and check input data frame ----------------
     if (missing(data)) cli_abort("{.arg data} must be provided.")
     S_vec = eval_tidy(enquo(S), data)
@@ -93,7 +94,6 @@ predict_race_sgz_me = function(S, G, Z=NULL, data=NULL, p_rs=NULL, p_rgz=NULL,
     alpha_gzr = matrix(rep(p_r, nrow(p_rgz)), nrow=nrow(p_rgz), ncol=6, byrow=T)
     beta_sr = matrix(rep(p_r, nrow(p_rs)), nrow=nrow(p_rs), ncol=6, byrow=T)
 
-    warmup = 100L
     m_bisg = gibbs_me(iter+warmup, warmup, S_vec, GZ_vec,
                       as.matrix(p_rs[,-1]), as.matrix(p_rgz[,-1]),
                       alpha_gzr, beta_sr, verbosity=3L)

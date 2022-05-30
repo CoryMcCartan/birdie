@@ -4,6 +4,7 @@
 
 data-raw/*.csv
 data-raw/*/
+data-out
 
 man/
 
@@ -19,9 +20,9 @@ __pycache__
 *.out
 *.axp
 *.log
-*.pdf
 *.o
 *.so
+*.pdf
 *.html
 
 !data/names_2010_counts.rds
@@ -29,5 +30,9 @@ data/censusData.rdata
 
 paper/race-proxy.tex
 paper/polmeth.*
+!paper/figures/*.pdf
+!paper/data/*.rds
+!paper/data/*.csv
 replication/presentation.*
 inst/doc
+

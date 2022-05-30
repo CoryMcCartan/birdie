@@ -27,7 +27,7 @@ calc_joint_bisgz = function(r_probs, x, method=c("weight", "thresh", "mi", "ols"
         out = do.call(rbind, out)
         rownames(out) = levels(x)
     } else if (method == "thresh") {
-        r_est = max.col(r_probs)
+        r_est = factor(max.col(r_probs), levels=seq_len(ncol(r_probs)))
         out = table(x, r_est) / N
         names(dimnames(out)) = NULL
         colnames(out) = colnames(r_probs)
@@ -47,23 +47,27 @@ calc_joint_bisgz = function(r_probs, x, method=c("weight", "thresh", "mi", "ols"
         out = do.call(rbind, out)
         out = out %*% diag(colMeans(r_probs))
         rownames(out) = levels(x)
+        colnames(out) = colnames(r_probs)
     }
     out
 }
 
 #' Calculate a posterior quantile of the joint distribution of R and X
 #'
-#' @param draws a 3-dim array with the first dimension representing draws
+#' @param fit a `fit_raceproxy` object (the output of `model_race`)
+#' @param which if `condition` was used in `model_race`, which estimates to extract.
 #' @param q the quantile
 #' @param p_r a vector containing the marginal probabilities for each value of
 #'   `R`. Defaults to the demographics of the US.
 #'
 #' @returns a matrix
 #' @export
-calc_joint_model = function(draws, q=0.5,
-                            p_r=c(white=0.615, black=0.123, hisp=0.176, asian=0.053, other=0.034)) {
-    out = apply(draws, 2:3, function(x) quantile(x, q)) %*% diag(p_r)
-    colnames(out) = names(p_r)
+calc_joint_model = function(fit, which="global", q=0.5,
+                            p_r=c(white=0.630, black=0.121, hisp=0.173,
+                                  asian=0.0478, aian=0.0072, other=0.0210)) {
+    out = apply(fit$draws[[which]], 2:3, function(x) quantile(x, q)) %*% diag(p_r)
+    colnames(out) = fit$r_lev
+    rownames(out) = fit$x_lev
     out
 }
 
@@ -78,16 +82,18 @@ calc_joint_model = function(draws, q=0.5,
 #'
 #' @return a tibble with a row for every argument in `...`
 #' @export
-eval_joints = function(tgt, metric=c("tv", "mad", "rmse"), ...) {
+eval_joints = function(tgt, metric=c("tv", "tv_col", "tv_row", "mad", "rmse"), ...) {
     score_fn = function(x) cli_abort("Metric {.val {metric}} not recognized.")
+    metric = match.arg(metric)
+
     n_out = 1
     if (metric == "tv") {
         score_fn = function(x) sum(abs(tgt - x)) / 2
     } else if (metric == "tv_col") {
-        score_fn = function(x) list(colSums(abs(tgt - x)) / 2)
+        score_fn = function(x) list(colSums(abs(tgt - x)) / 2 / colSums(tgt))
         n_out = ncol(tgt)
     } else if (metric == "tv_row") {
-        score_fn = function(x) list(rowSums(abs(tgt - x)) / 2)
+        score_fn = function(x) list(rowSums(abs(tgt - x)) / 2 / rowSums(tgt))
         n_out = nrow(tgt)
     } else if (metric == "mad") {
         score_fn = function(x) mean(abs(tgt - x))

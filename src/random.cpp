@@ -13,6 +13,7 @@ int rcatp(vec probs, double u) {
     for (j = 0; j < m; j++) {
         if (probs[j] >= u) break;
     }
+    if (j == m) j = m - 1; // random floating-point overflow
 
     return j + 1;
 }
