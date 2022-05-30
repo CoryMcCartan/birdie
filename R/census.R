@@ -22,7 +22,7 @@ census_surname_table = function(S, S_name, p_r, counts=FALSE) {
 
     # neither matches
     na_ct = is.na(match_1st_idx) + is.na(match_2nd_idx)
-    bad = c(bad, double_idx[which(na_ct == 2)])
+    bad = na.omit(c(bad, double_idx[which(na_ct == 2)]))
 
     # one or the other matches: use it but with half confidence
     only_1st = which(!is.na(match_1st_idx) & is.na(match_2nd_idx))

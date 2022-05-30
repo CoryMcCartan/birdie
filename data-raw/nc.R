@@ -3,12 +3,25 @@
 make_nc_statewide = function(voterfile) {
     counties = tigris::fips_codes$county[tigris::fips_codes$state == "NC"] %>%
         stringr::str_sub(end=-8)
-    voters = do.call(rbind, lapply(counties, make_nc_df))
+
+    voters = bind_rows(lapply(counties, function(county) {
+        cat(county, "\n")
+        cty_voters = make_nc_df(county)
+        cty_vhist = make_nc_vhist(county)
+
+        left_join(cty_voters, cty_vhist, by="regnum") %>%
+            mutate(across(starts_with("voted_"), ~ coalesce(., FALSE)),
+                   n_voted = as.integer(rowSums(across(starts_with("voted_")))),
+                   .after="lic") %>%
+            select(-middle_name, -suffix, -address, -birth_state)
+    })) %>%
+        mutate(across(starts_with("voted_"), ~ coalesce(., FALSE)))
+
     voters = voters %>%
-        select(-first_name, -middle_name) %>%
-        #select(last_name, party, race, zip, gender, age, birth_state, lic) %>%
         mutate(across(where(is.character), factor))
-    saveRDS(voters, voterfile, compress="xz")
+    if (!is.null(voterfile)) {
+        saveRDS(voters, voterfile, compress="xz")
+    }
     voters
 }
 
@@ -21,7 +34,7 @@ make_nc_df = function(county="Dare") {
     url = glue::glue("https://s3.amazonaws.com/dl.ncsbe.gov/data/ncvoter{county_i}.zip")
     tmp = withr::local_tempdir()
     zipfile = paste(tmp, "ncvoters.zip")
-    download.file(url, zipfile)
+    download.file(url, zipfile, quiet=TRUE)
     unzip(zipfile, exdir=tmp)
     rawfile = glue::glue("{tmp}/ncvoter{county_i}.txt")
 
@@ -48,10 +61,12 @@ make_nc_df = function(county="Dare") {
                          right=FALSE),
                address = dplyr::na_if(res_street_address, "REMOVED"),
                city = res_city_desc,
-               county = county,
+               county_name = county,
+               county = paste0("37", tigris::fips_codes$county_code[county_i]),
                lic = drivers_lic == "Y") %>%
-        select(last_name:middle_name, suffix=name_suffix_lbl,
-               address, city, zip=zip_code, county,
+        select(regnum=voter_reg_num,
+               last_name:middle_name, suffix=name_suffix_lbl,
+               address, city, zip=zip_code, county, county_name,
                race, gender, age, birth_state, party, lic) %>%
         dplyr::slice(which(!is.na(.$last_name)))
 
@@ -59,6 +74,44 @@ make_nc_df = function(county="Dare") {
     unlink(rawfile)
 
     voters
+}
+
+make_nc_vhist = function(county = "Dare", years=2012:2022, general_only=TRUE) {
+    rlang::check_installed("tigris", "NC voter data")
+    counties = tigris::fips_codes$county[tigris::fips_codes$state == "NC"]
+    county_i = match(paste(county, "County"), counties)
+
+    url = glue::glue("https://s3.amazonaws.com/dl.ncsbe.gov/data/ncvhis{county_i}.zip")
+    tmp = withr::local_tempdir()
+    zipfile = paste(tmp, "ncvoters.zip")
+    download.file(url, zipfile, quiet=TRUE)
+    unzip(zipfile, exdir=tmp)
+    rawfile = glue::glue("{tmp}/ncvhis{county_i}.txt")
+
+    vhist_raw = readr::read_tsv(rawfile, show_col_types=F,
+                                col_types=readr::cols(voter_reg_num="c",
+                                                      election_desc="c",
+                                                      .default="_"))
+
+    months = if (general_only) "11" else formatC(1:12, width=2, flag="0")
+
+    vhist = vhist_raw %>%
+        rename(regnum=voter_reg_num) %>%
+        tidyr::separate(election_desc, c("date", NA), sep=10) %>%
+        tidyr::separate(date, c("month", NA, "year"), sep=c(2, 6)) %>%
+        mutate(election_date = stringr::str_c("voted_", year, "_", month),
+               voted = TRUE) %>%
+        filter(year %in% as.character(years),
+               month %in% months) %>%
+        select(-month, -year) %>%
+        distinct() %>%
+        tidyr::pivot_wider(names_from=election_date, names_sort=TRUE,
+                           values_from=voted, values_fill=FALSE)
+
+    unlink(zipfile)
+    unlink(rawfile)
+
+    vhist
 }
 
 

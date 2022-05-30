@@ -1,5 +1,6 @@
 #include "gibbs.h"
 
+
 // [[Rcpp::export]]
 mat gibbs_me(int iter, int warmup, const uvec &S, const uvec &GZ,
              const mat &M_sr, const mat &N_gzr,
@@ -8,8 +9,6 @@ mat gibbs_me(int iter, int warmup, const uvec &S, const uvec &GZ,
     // setup sizes and inits
     int N = S.size();
     int n_r = M_sr.n_cols;
-    // int n_s = M_sr.n_rows;
-    // int n_gz = N_gzr.n_rows;
 
     mat out(N, n_r, fill::zeros);
 
@@ -60,7 +59,6 @@ mat gibbs_me(int iter, int warmup, const uvec &S, const uvec &GZ,
                     out(i, R[i] - 1) += 1.0 / (iter - warmup);
                 }
             }
-
         }
     } catch (Rcpp::internal::InterruptedException e) {
         Rcerr << "Interrupted. Only partial results available.\n";

@@ -6,5 +6,4 @@
 #include "random.h"
 #include <cli/progress.h>
 
-
 #endif

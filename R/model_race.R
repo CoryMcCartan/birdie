@@ -6,7 +6,10 @@
 #' @param r_probs a matrix data frame of race probabilities
 #' @param X the column containing the outcome
 #' @param G the column containing locations
-#' @param Z the column(s), if any, containing other covariates. Use `c()` to provide multiple columns
+#' @param Z the column(s), if any, containing other covariates. Use `c()` to provide multiple columns.
+#' @param condition the columns in `G` or `Z` to condition on in creating predictions.
+#'   For example, if `Z` contains `gender`, setting `condition=gender` would
+#'   produce X|R estimates for each gender.
 #' @param data the data
 #' @param prefix how to select the race probability columns from `r_probs`, if
 #'   if is a data frame
@@ -17,7 +20,8 @@
 #' @return A list containing the model output. Element `p_xr` contains the
 #'   approximate posterior draws of the global X|R table.
 #' @export
-model_race = function(r_probs, X, G, Z=NULL, data=NULL, prefix="pr_",
+model_race = function(r_probs, X, G, Z=NULL, condition=NULL,
+                      data=NULL, prefix="pr_", method=c("svi", "mle"),
                       config=list(), silent=FALSE, reload_py=FALSE) {
     if (missing(data)) cli_abort("{.arg data} must be provided.")
     X_vec = eval_tidy(enquo(X), data)
@@ -52,6 +56,26 @@ model_race = function(r_probs, X, G, Z=NULL, data=NULL, prefix="pr_",
         }))
     })
 
+
+    # prepare prediction matrices
+    GZ_names = c(
+        names(eval_select(enquo(G), data)),
+        names(eval_select(enquo(Z), data))
+    )
+    cond_name = names(eval_select(enquo(condition), data))
+
+    preds = list(global = colMeans(GZ_mat))
+    if (length(cond_name) == 1) {
+        col_idx = match(cond_name, GZ_names)
+        cols = which(GZ_var == col_idx)
+        col_lvls = levels(GZ[[col_idx]])
+        for (i in seq_along(cols)) {
+            lab = paste0(cond_name, ": ", col_lvls[i])
+            preds[[lab]] = colMeans(GZ_mat[GZ_mat[, cols[i]] == 1, , drop=FALSE])
+        }
+    }
+
+
     if (isTRUE(reload_py)) {
         reticulate::py_run_string("if 'py.utils' in sys.modules.keys(): del sys.modules['py.utils']")
         reticulate::py_run_string("if 'py.fit' in sys.modules.keys(): del sys.modules['py.fit']")
@@ -60,14 +84,16 @@ model_race = function(r_probs, X, G, Z=NULL, data=NULL, prefix="pr_",
         py_code <<- reticulate::import_from_path("raceproxy", path=py_path, delay_load=FALSE)
     }
 
+    method = match.arg(method)
+
     defaults = list(max_iter = 5000,
                     subsamp = 2048,
                     epoch = 50,
-                    draws = 800,
-                    lr = 0.25,
-                    n_mi = 0,
-                    it_avgs = 300,
-                    tol_rhat = 1.2)
+                    draws = if_else(method == "svi", 1000, 2),
+                    lr = if_else(method == "svi", 0.25, 0.3),
+                    n_err = 100,
+                    it_avgs = if_else(method == "svi", 400, 600),
+                    tol_rhat = if_else(method == "svi", 1.2, 1.1))
     for (i in names(defaults)) {
         if (is.null(config[[i]]))
             config[[i]] = defaults[[i]]
@@ -77,17 +103,51 @@ model_race = function(r_probs, X, G, Z=NULL, data=NULL, prefix="pr_",
 
     ts1 = proc.time()
     out = py_code$pyro$fit_additive(
-        as.integer(X_vec), GZ_mat, as.integer(GZ_var), r_probs,
+        as.integer(X_vec), GZ_mat, as.integer(GZ_var), r_probs, preds,
         nlevels(X_vec), as.integer(max(GZ_var)), prior,
         it=as.integer(config$max_iter),
         epoch=as.integer(config$epoch),
         subsamp=min(length(X_vec), as.integer(config$subsamp)),
         n_draws=as.integer(config$draws),
         it_avgs=as.integer(config$it_avgs),
-        n_mi=as.integer(config$n_mi),
+        n_err=as.integer(min(config$n_err, length(X_vec))),
         lr=config$lr, tol_rhat=config$tol_rhat,
-        silent=silent)
+        method=method, silent=silent)
     if (isFALSE(silent)) print(structure(proc.time() - ts1, class="proc_time")[3])
 
+    class(out) = "fit_raceproxy"
+    out$N = length(X_vec)
+    out$vars = GZ_names
+    out$x_lev = levels(X_vec)
+    out$r_lev = colnames(r_probs)
     out
+}
+
+#' @export
+print.fit_raceproxy = function(x, ...) {
+    cli::cli_text("A {.pkg raceproxy} model fit with
+                  {format(x$N, big.mark=',')} observations and
+                  {format(dim(x$draws$global)[1], big.mark=',')} draws")
+    # cli::cli_text("{dim(fit$draws$global)[2]} outcome and
+                  # {dim(fit$draws$global)[3]} race categories")
+    cat("\n")
+
+    cli::cli_text("Predictor variable importance (std. devs.):")
+    if (is.matrix(x$beta_scale)) {
+        var_sd = round(colMeans(x$beta_scale), 3)
+    } else {
+        var_sd = mean(x$beta_scale)
+    }
+    names(var_sd) = x$vars
+    print(var_sd)
+    cat("\n")
+
+    cli::cli_text("Predictions for: {c('everyone', names(x$draws)[-1])}")
+    cat("\n")
+
+    cli::cli_text("Estimates for everyone:")
+    m = round(colMeans(x$draws$global), 3)
+    colnames(m) = x$r_lev
+    rownames(m) = x$x_lev
+    print(m)
 }

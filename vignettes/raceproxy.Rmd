@@ -72,6 +72,7 @@ The `prefix` parameter to `model_race()` lets you specify the naming convention 
 
 ```{r}
 fit = model_race(r_probs, turnout, zip, data=pseudo_vf)
+print(fit)
 ```
 
 The `fit` object has a lot of diagnostic information.
@@ -80,7 +81,7 @@ The `fit` object has a lot of diagnostic information.
 str(fit)
 ```
 
-The array stored in `fit$p_xr` contains the actual estimates of the distribution of our outome given race.
+The arrays stored in `fit$draws` contains the actual estimates of the distribution of our outome given race.
 Since `raceproxy` fits a Bayesian model, we have one set of estimates for every random draw from our posterior.
 You are encouraged to use all of these draws, as they capture the uncertainty inherent in the estimation.
 For a  quick summary, you can take the mean across draws.
@@ -94,11 +95,15 @@ You can use `calc_joint_model()` to build a credible interval around your estima
 ```{r}
 xr = list(
     true = p_xr,
-    bisg = calc_joint_bisgz(r_probs, pseudo_vf$turnout),
-    model = calc_joint_model(fit$p_xr, 0.5, p_r),
+    weight = calc_joint_bisgz(r_probs, pseudo_vf$turnout, method="weight"),
+    thresh = calc_joint_bisgz(r_probs, pseudo_vf$turnout, method="thresh"),
+    mi = calc_joint_bisgz(r_probs, pseudo_vf$turnout, method="mi"),
+    ols = calc_joint_bisgz(r_probs, pseudo_vf$turnout, method="ols"),
+    
+    model = calc_joint_model(fit, "global", 0.5, p_r),
     # credible interval
-    model_low = calc_joint_model(fit$p_xr, 0.05, p_r),
-    model_high = calc_joint_model(fit$p_xr, 0.95, p_r)
+    model_low = calc_joint_model(fit, "global", 0.05, p_r),
+    model_high = calc_joint_model(fit, "global", 0.95, p_r)
 )
 ```
 
@@ -115,8 +120,11 @@ Smaller values are better.
 
 ```{r}
 eval_joints(xr$true, "tv",
-            bisg = xr$bisg,
+            weight = xr$weight,
+            thresh = xr$thresh,
+            mi = xr$mi,
+            ols = xr$ols,
             model = xr$model)
 ```
 
-The `raceproxy` methodology meaningfully improves on the BISG estimate.
+The `raceproxy` methodology meaningfully improves on the other BISG estimators.
