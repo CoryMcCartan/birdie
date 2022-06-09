@@ -6,7 +6,10 @@
 #' @param r_probs a matrix data frame of race probabilities
 #' @param X the column containing the outcome
 #' @param G the column containing locations
-#' @param Z the column(s), if any, containing other covariates. Use `c()` to provide multiple columns
+#' @param Z the column(s), if any, containing other covariates. Use `c()` to provide multiple columns.
+#' @param condition the columns in `G` or `Z` to condition on in creating predictions.
+#'   For example, if `Z` contains `gender`, setting `condition=gender` would
+#'   produce X|R estimates for each gender.
 #' @param data the data
 #' @param prefix how to select the race probability columns from `r_probs`, if
 #'   if is a data frame
@@ -17,7 +20,8 @@
 #' @return A list containing the model output. Element `p_xr` contains the
 #'   approximate posterior draws of the global X|R table.
 #' @export
-model_race = function(r_probs, X, G, Z=NULL, data=NULL, prefix="pr_",
+model_race = function(r_probs, X, G, Z=NULL, condition=NULL,
+                      data=NULL, prefix="pr_",
                       config=list(), silent=FALSE, reload_py=FALSE) {
     if (missing(data)) cli_abort("{.arg data} must be provided.")
     X_vec = eval_tidy(enquo(X), data)
@@ -52,6 +56,26 @@ model_race = function(r_probs, X, G, Z=NULL, data=NULL, prefix="pr_",
         }))
     })
 
+
+    # prepare prediction matrices
+    GZ_names = c(
+        names(eval_select(enquo(G), data)),
+        names(eval_select(enquo(Z), data))
+    )
+    cond_name = names(eval_select(enquo(condition), data))
+
+    preds = list(global = colMeans(GZ_mat))
+    if (length(cond_name) == 1) {
+        col_idx = match(cond_name, GZ_names)
+        cols = which(GZ_var == col_idx)
+        col_lvls = levels(GZ[[col_idx]])
+        for (i in seq_along(cols)) {
+            lab = paste0(cond_name, ": ", col_lvls[i])
+            preds[[lab]] = colMeans(GZ_mat[GZ_mat[, cols[i]] == 1, ])
+        }
+    }
+
+
     if (isTRUE(reload_py)) {
         reticulate::py_run_string("if 'py.utils' in sys.modules.keys(): del sys.modules['py.utils']")
         reticulate::py_run_string("if 'py.fit' in sys.modules.keys(): del sys.modules['py.fit']")
@@ -77,7 +101,7 @@ model_race = function(r_probs, X, G, Z=NULL, data=NULL, prefix="pr_",
 
     ts1 = proc.time()
     out = py_code$pyro$fit_additive(
-        as.integer(X_vec), GZ_mat, as.integer(GZ_var), r_probs,
+        as.integer(X_vec), GZ_mat, as.integer(GZ_var), r_probs, preds,
         nlevels(X_vec), as.integer(max(GZ_var)), prior,
         it=as.integer(config$max_iter),
         epoch=as.integer(config$epoch),

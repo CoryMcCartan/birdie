@@ -58,7 +58,7 @@ def model_additive(X, GZ, GZ_var, pr_base, N=1, n_r=5, n_x=2, n_gz=1, n_gz_var=1
         pyro.sample("X", x_dist, obs=X[ind])
         
 
-def fit_additive(X, GZ, GZ_var, pr_base, n_x=2, n_gz_var=1,
+def fit_additive(X, GZ, GZ_var, pr_base, preds, n_x=2, n_gz_var=1,
         prior_scale={"x": 5.0, "xr": 0.75, "beta": 1.0},
         it=200, epoch=100, subsamp=1000, n_draws=1000, 
         it_avgs=300, n_mi=0, lr=0.01, tol_rhat=1.2,
@@ -111,10 +111,15 @@ def fit_additive(X, GZ, GZ_var, pr_base, n_x=2, n_gz_var=1,
     zero_row = np.zeros((p_x.shape[0], 1, 1, n_r, 1))
     lp_xr = np.log(p_x) + np.concatenate((zero_row, lp_xr_raw), -1) 
             
-    GZ_mean = GZ.detach().numpy().mean(0)
-    p_xr = np.tensordot(GZ_mean, beta, (-3, -3)).squeeze() + lp_xr.squeeze()
-    p_xr = np.exp(p_xr - p_xr.max(-1, keepdims=True))
-    p_xr /= p_xr.sum(-1, keepdims=True)
+    draws_out = {}
+    for key in preds:
+        GZ_mean = np.array(preds[key], dtype=np.single)[:, None, None]
+        
+        p_xr = np.tensordot(GZ_mean, beta, (-3, -3)).squeeze() + lp_xr.squeeze()
+        p_xr = np.exp(p_xr - p_xr.max(-1, keepdims=True))
+        p_xr /= p_xr.sum(-1, keepdims=True)
+        
+        draws_out[key] = p_xr.transpose((0, 2, 1))
     
     return {
         "loss": loss,
@@ -122,7 +127,7 @@ def fit_additive(X, GZ, GZ_var, pr_base, n_x=2, n_gz_var=1,
         "pareto_k": k,
         "log_p": log_p,
         "log_g": log_g,
-        "p_xr": p_xr.transpose((0, 2, 1)),
+        "draws": draws_out,
         "beta_scale": beta_scale.squeeze()
         }
 
