@@ -53,17 +53,20 @@ calc_joint_bisgz = function(r_probs, x, method=c("weight", "thresh", "mi", "ols"
 
 #' Calculate a posterior quantile of the joint distribution of R and X
 #'
-#' @param draws a 3-dim array with the first dimension representing draws
+#' @param fit a `fit_raceproxy` object (the output of `model_race`)
+#' @param which if `condition` was used in `model_race`, which estimates to extract.
 #' @param q the quantile
 #' @param p_r a vector containing the marginal probabilities for each value of
 #'   `R`. Defaults to the demographics of the US.
 #'
 #' @returns a matrix
 #' @export
-calc_joint_model = function(draws, q=0.5,
-                            p_r=c(white=0.615, black=0.123, hisp=0.176, asian=0.053, other=0.034)) {
-    out = apply(draws, 2:3, function(x) quantile(x, q)) %*% diag(p_r)
-    colnames(out) = names(p_r)
+calc_joint_model = function(fit, which="global", q=0.5,
+                            p_r=c(white=0.630, black=0.121, hisp=0.173,
+                                  asian=0.0478, aian=0.0072, other=0.0210)) {
+    out = apply(fit$draws[[which]], 2:3, function(x) quantile(x, q)) %*% diag(p_r)
+    colnames(out) = fit$r_lev
+    rownames(out) = fit$x_lev
     out
 }
 

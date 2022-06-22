@@ -71,7 +71,7 @@ model_race = function(r_probs, X, G, Z=NULL, condition=NULL,
         col_lvls = levels(GZ[[col_idx]])
         for (i in seq_along(cols)) {
             lab = paste0(cond_name, ": ", col_lvls[i])
-            preds[[lab]] = colMeans(GZ_mat[GZ_mat[, cols[i]] == 1, ])
+            preds[[lab]] = colMeans(GZ_mat[GZ_mat[, cols[i]] == 1, , drop=FALSE])
         }
     }
 
@@ -89,7 +89,7 @@ model_race = function(r_probs, X, G, Z=NULL, condition=NULL,
                     epoch = 50,
                     draws = 800,
                     lr = 0.25,
-                    n_mi = 0,
+                    n_err = 100,
                     it_avgs = 300,
                     tol_rhat = 1.2)
     for (i in names(defaults)) {
@@ -108,10 +108,44 @@ model_race = function(r_probs, X, G, Z=NULL, condition=NULL,
         subsamp=min(length(X_vec), as.integer(config$subsamp)),
         n_draws=as.integer(config$draws),
         it_avgs=as.integer(config$it_avgs),
-        n_mi=as.integer(config$n_mi),
+        n_err=as.integer(min(config$n_err, length(X_vec))),
         lr=config$lr, tol_rhat=config$tol_rhat,
         silent=silent)
     if (isFALSE(silent)) print(structure(proc.time() - ts1, class="proc_time")[3])
 
+    class(out) = "fit_raceproxy"
+    out$N = length(X_vec)
+    out$vars = GZ_names
+    out$x_lev = levels(X_vec)
+    out$r_lev = colnames(r_probs)
     out
+}
+
+#' @export
+print.fit_raceproxy = function(x, ...) {
+    cli::cli_text("A {.pkg raceproxy} model fit with
+                  {format(x$N, big.mark=',')} observations and
+                  {format(dim(fit$draws$global)[1], big.mark=',')} draws")
+    # cli::cli_text("{dim(fit$draws$global)[2]} outcome and
+                  # {dim(fit$draws$global)[3]} race categories")
+    cat("\n")
+
+    cli::cli_text("Predictor variable importance (std. devs.):")
+    if (is.matrix(x$beta_scale)) {
+        var_sd = round(colMeans(x$beta_scale), 3)
+    } else {
+        var_sd = mean(x$beta_scale)
+    }
+    names(var_sd) = x$vars
+    print(var_sd)
+    cat("\n")
+
+    cli::cli_text("Predictions for: {c('everyone', names(fit$draws)[-1])}")
+    cat("\n")
+
+    cli::cli_text("Estimates for everyone:")
+    m = round(colMeans(x$draws$global), 3)
+    colnames(m) = x$r_lev
+    rownames(m) = x$x_lev
+    print(m)
 }

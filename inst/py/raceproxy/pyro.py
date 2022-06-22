@@ -2,6 +2,7 @@ import copy
 import torch
 import pyro
 import numpy as np
+from scipy.special import softmax
 import pyro.distributions as dist
 from pyro.infer import SVI
 import pyro.infer.autoguide as autoguide
@@ -61,7 +62,7 @@ def model_additive(X, GZ, GZ_var, pr_base, N=1, n_r=5, n_x=2, n_gz=1, n_gz_var=1
 def fit_additive(X, GZ, GZ_var, pr_base, preds, n_x=2, n_gz_var=1,
         prior_scale={"x": 5.0, "xr": 0.75, "beta": 1.0},
         it=200, epoch=100, subsamp=1000, n_draws=1000, 
-        it_avgs=300, n_mi=0, lr=0.01, tol_rhat=1.2,
+        it_avgs=300, n_err=0, lr=0.01, tol_rhat=1.2,
         silent=False):
     # convert data from R to torch
     X = torch.tensor(X, dtype=torch.int16) - 1
@@ -112,14 +113,37 @@ def fit_additive(X, GZ, GZ_var, pr_base, preds, n_x=2, n_gz_var=1,
     lp_xr = np.log(p_x) + np.concatenate((zero_row, lp_xr_raw), -1) 
             
     draws_out = {}
+    raw_error = {}
+    raw_cov = {}
+    ind = np.random.choice(N, n_err, replace=False)
+    pr_base = pr_base[ind].numpy()
+    normalizer = torch.nn.Softmax(-1)
     for key in preds:
         GZ_mean = np.array(preds[key], dtype=np.single)[:, None, None]
         
         p_xr = np.tensordot(GZ_mean, beta, (-3, -3)).squeeze() + lp_xr.squeeze()
         p_xr = np.exp(p_xr - p_xr.max(-1, keepdims=True))
         p_xr /= p_xr.sum(-1, keepdims=True)
-        
         draws_out[key] = p_xr.transpose((0, 2, 1))
+        
+        if n_err == 0: 
+            continue
+        
+        p_xr_i = softmax(
+            np.tensordot(
+                GZ.numpy()[None, ind], beta, axes=(2, 2)
+            ).squeeze().transpose((1, 0, 2, 3))
+            + lp_xr.squeeze(-3),
+            axis=-1)  # (..., ind, n_r, n_x)
+        p_xr_i = np.take_along_axis(p_xr_i, X[None, ind, None, None].numpy(), -1)  # (..., ind, n_r, 1)
+        theta_tilde = (p_xr_i / (pr_base @ p_xr_i)).reshape((n_draws, 1, 1, -1))
+        
+        cov = ((p_xr[..., None] - p_xr[..., None].mean(0)) 
+                * (theta_tilde - theta_tilde.mean(0))
+            ).sum(0) / (n_draws - 1)
+        
+        raw_error[key] = np.sqrt(n_r * N * np.mean(np.square(cov), axis=-1)).transpose((1, 0))
+        raw_cov[key] = cov
     
     return {
         "loss": loss,
@@ -128,6 +152,9 @@ def fit_additive(X, GZ, GZ_var, pr_base, preds, n_x=2, n_gz_var=1,
         "log_p": log_p,
         "log_g": log_g,
         "draws": draws_out,
+        "raw_error": raw_error,
+        "raw_cov": raw_cov,
+        "err_ind": ind,
         "beta_scale": beta_scale.squeeze()
         }
 
