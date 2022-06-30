@@ -56,7 +56,8 @@ d = slice_sample(voters, n=500e3) %>%
     mutate(GEOID_county = as.character(county),
            GEOID_tract = if_else(is.na(tract), GEOID_county, str_c(county, tract)),
            GEOID_block = if_else(is.na(block), GEOID_county, str_c(county, tract, block)),
-           GEOID_zip = if_else(is.na(zip), str_c("cty", county), as.character(zip)))
+           GEOID_zip = if_else(is.na(zip), str_c("cty", county), as.character(zip)),
+           n_voted = factor(n_voted))
 # rm(voters)
 
 p_r = prop.table(table(d$race))
@@ -71,8 +72,6 @@ r_probs = map(geo_levels, function(level) {
     set_names(geo_levels)
 
 # Party ID -----------
-
-p_xr = prop.table(table(d$party, d$race))
 
 fits = imap(r_probs, function(d_pr, level) {
     cat(level, "\n")
@@ -89,12 +88,7 @@ fits = imap(r_probs, function(d_pr, level) {
 write_rds(fits, here("data-out/nc_fits_party.rds"), compress="xz")
 
 
-
 # Turnout -----------
-
-d$n_voted = factor(d$n_voted)
-
-p_xr = prop.table(table(d$n_voted, d$race))
 
 fits = imap(r_probs, function(d_pr, level) {
     cat(level, "\n")

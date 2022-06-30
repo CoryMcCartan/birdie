@@ -47,6 +47,7 @@ calc_joint_bisgz = function(r_probs, x, method=c("weight", "thresh", "mi", "ols"
         out = do.call(rbind, out)
         out = out %*% diag(colMeans(r_probs))
         rownames(out) = levels(x)
+        colnames(out) = colnames(r_probs)
     }
     out
 }
