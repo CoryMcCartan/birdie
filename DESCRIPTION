@@ -34,7 +34,8 @@ LinkingTo:
 Config/reticulate:
     list(
         packages = list(
-            list(package = "pyro-ppl")
+            list(package = "pyro-ppl"),
+            list(package = "scipy")
         )
     )
 License: MIT + file LICENSE

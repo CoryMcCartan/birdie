@@ -81,7 +81,7 @@ calc_joint_model = function(fit, which="global", q=0.5,
 #'
 #' @return a tibble with a row for every argument in `...`
 #' @export
-eval_joints = function(tgt, metric=c("tv", "mad", "rmse"), ...) {
+eval_joints = function(tgt, metric=c("tv", "tv_col", "tv_row", "mad", "rmse"), ...) {
     score_fn = function(x) cli_abort("Metric {.val {metric}} not recognized.")
     metric = match.arg(metric)
 
