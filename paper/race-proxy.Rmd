@@ -137,7 +137,7 @@ Despite the best efforts of the Census Bureau, the decennial census has intrinsi
 And because of births, deaths, and moves, census data are out-of-date from the moment of publication.
 These errors have led further extensions of the BISG estimator to account for some of this measurement error [@imai2022addressing], which can help with accuracy for smaller racial groups.
 
-Even though Assumptions \ref{a:indep-sgz} and \ref{a:cens-acc} are never completely met, BISG still produces accurate and generally well-calibrated estimates in practice [@kenny2021working; @deluca2022validating].
+Even though Assumptions \ref{a:indep-sgz} and \ref{a:cens-acc} are never completely met, BISG still produces accurate and generally well-calibrated estimates in practice [@kenny2021das; @deluca2022validating].
 
 ## Identification of Racial Disparities with BISG Probabilities
 
@@ -346,7 +346,7 @@ $$ the ratio of the projected length of the outcome vector $\ind\{\vb X=x\}$ and
 We can write the OLS estimator as $$
     \hat{\vb*\mu}^{(\text{ols})}_{X|R} = (\hat{\vb P}^\top\hat{\vb P})^{-1}\hat{\vb P}^\top \ind\{\vb X=x\}
     = \mathrm{coord}_{\hat{\vb P}}(\proj_{\hat{\vb P}}(\ind\{\vb X=x\}),
-$$ where $\mathrm{coord}_{\hat{\vb R}}$ is the function that returns the coordinates of its input vector in the $\hat{\vb R}$ basis (by assumption $\hat{\vb R}$ has rank $|\cR|$ and so its columns are linearly independent).
+$$ where $\mathrm{coord}_{\hat{\vb P}}$ is the function that returns the coordinates of its input vector in the $\hat{\vb P}$ basis (by assumption $\hat{\vb P}$ has rank $|\cR|$ and so its columns are linearly independent).
 To make the comparison even easier, notice that we can break the projection $\proj_{\hat{\vb P}_{\cdot r}}$ into two steps, writing it instead as $\proj_{\hat{\vb P}_{\cdot r}} = \proj_{\hat{\vb P}_{\cdot r}} \circ \proj_{\hat{\vb P}}$.
 Letting $\vb X_{\proj}=\proj_{\hat{\vb P}}(\ind\{\vb X=x\})$, then, we can rewrite our estimators as $$
     \hat\mu^{(\text{wtd})}_{X|R}(x\mid r) 
@@ -395,7 +395,7 @@ To address this challenge, and to open the door to more modeling flexibility, we
 ## General Bayesian model
 
 We begin with a model for the outcome $X$, depending on $R$, $G$, $Z$.
-Following Assumption \ref{a:indep-xs}, we do not need to condition on $S$.
+Following Assumption \ref{a:indep-xs}, we do not need to condition on $S$:
 \begin{equation*}
     X_i \mid R_i, G_i, Z_i, \Theta \sim \Categorical_\cX(\vb*\theta_{\cdot R_i}(G_i,Z_i))
 \end{equation*}
@@ -408,7 +408,7 @@ $$ which is the conditional distribution of $X$ given $R$ in the sample populati
 Since we marginalize out $G$ and $Z$, we adopt the notation $\theta_{xr}(g,z)$.
 
 Next, we model $G$, $Z$, and $S$ given $R$.
-We adopt the BISG model, modeling $S$ and $(G,Z)$ separately (Assumptions \ref{a:indep-sgz}) and treating the Census tables $\vb q$ as accurate (Assumption \ref{a:cens-acc}).
+We adopt the BISG model, modeling $S$ and $(G,Z)$ separately (Assumptions \ref{a:indep-sgz}) and treating the Census tables $\vb q$ as accurate (Assumption \ref{a:cens-acc}):
 \begin{align*}
     (G_i, Z_i) \mid R_i &\sim \Categorical_{\cG\times\cZ}(\vb q_{GZ|R_i}) \\
     S_i \mid R_i &\sim \Categorical_\cS(\vb q_{S|R_i}) \\
@@ -489,7 +489,7 @@ Defining perturbation weights $$
     w(\Theta,\vb*\delta^*) \dfeq 
     \prod_{i=1}^N 
     \qty(1 + \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i^*}{
-    \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i})
+    \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb P}_i})
     \propto \frac{\pi_{\vb*\delta^*}(\Theta\mid\vb X,\vb G,\vb Z,\vb S)}{\pi(\Theta\mid\vb X,\vb G,\vb Z,\vb S)},
 $$ we can write the bias for a particular quantity of interest $g(\Theta)$ as \begin{align*}
     \E_{\pi_{\vb*\delta^*}}[g(\Theta)] - \E_\pi[g(\Theta)]
@@ -505,7 +505,7 @@ With this representation, we can bound the total error in $\E_\pi[g(\Theta)]$ fo
 ```{=tex}
 \begin{theoremrep} \label{thm:bound}
 Define $\tilde\vartheta_{ir}\dfeq 
-\frac{\theta_{X_ir}(G_i,Z_i)}{\vb*\theta_{X_i}(G_i,Z_i)^\top\hat{\vb r}_i}$.
+\frac{\theta_{X_ir}(G_i,Z_i)}{\vb*\theta_{X_i}(G_i,Z_i)^\top\hat{\vb P}_i}$.
 Then for any input probabilities with total error $\norm{\vb*\delta^*}^2
 =\sum_{i=1}^n\norm{\vb*\delta_i^*}^2\le \Delta^2$,
 \begin{equation} \label{eq:covbound}
@@ -520,16 +520,16 @@ This is immediate from \eqref{eq:bias-dv} once we compute
     \dv{\log w(\Theta,\vb*\delta)}{\delta_{ir}} 
     &= \dv{\delta_{ir}} \sum_{i=1}^N 
         \log(1+\frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i}{
-        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i}) \\
+        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb P}_i}) \\
     &= \dv{\delta_{ir}}
         \log(1+\frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i}{
-        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i}) \\
+        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb P}_i}) \\
     &= \frac{1}{1+\frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i}{
-        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i}} \times
+        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb P}_i}} \times
         \frac{\theta_{X_ir}(G_i, Z_i)}{
-        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i} \\
+        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb P}_i} \\
     &= \frac{\theta_{X_ir}(G_i, Z_i)}{
-        \vb*\theta_{X_i}(G_i, Z_i)^\top(\hat{\vb r}_i+\vb*\delta_i)}
+        \vb*\theta_{X_i}(G_i, Z_i)^\top(\hat{\vb P}_i+\vb*\delta_i)}
 \end{align*}
 and evaluate at $\vb*\delta=0$, since the worst-case bias for a fixed total error can be obtained by having the maximum allowable $\vb*\delta$ point in the direction of the gradient of $\log w(\Theta,\vb*\delta)$.
 \end{proof}
@@ -559,13 +559,13 @@ This holds exactly, and is not just a linear approximations (notice the absence 
 \begin{lemma} \label{lem:biassign}
 For a vector $\vb b$, if \[
     \hat r_{ij}\vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i} -
-    \delta_{ij}\hat{\vb r}_i^\top\vb b_{X_i\cdot G_iZ_i} \ge 0
+    \delta_{ij}\hat{\vb P}_i^\top\vb b_{X_i\cdot G_iZ_i} \ge 0
 \] for all $1\le i\le N$ and $j\in\cR$, then \[
     \Cov_\pi\qty(\frac{w(\Theta,\vb*\delta)}{\E_\pi[w(\Theta,\vb*\delta)\mid\vb Y]}, 
         \vec(\Theta)^\top\vb b\gvn\vb Y) \ge 0.
 \] Conversely, if \(
     \hat r_{ij}\vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i} -
-    \delta_{ij}\hat{\vb r}_i^\top\vb b_{X_i\cdot G_iZ_i} \le 0
+    \delta_{ij}\hat{\vb P}_i^\top\vb b_{X_i\cdot G_iZ_i} \le 0
 \) for all $1\le i\le N$ and $j\in\cR$, then \[
     \Cov_\pi\qty(\frac{w(\Theta,\vb*\delta)}{\E_\pi[w(\Theta,\vb*\delta)\mid\vb Y]}, 
         \vec(\Theta)^\top\vb b\gvn\vb Y) \le 0.
@@ -576,29 +576,29 @@ We will leverage the covariance inequality, which states that for a monotonicall
 Since $w$ is nonnegative, we need only consider $\Cov_\pi\qty(w(\Theta,\vb*\delta), \vec(\Theta)^\top\vb b\mid\vb Y)$, without the normalization constant $\E_\pi[w(\Theta,\vb*\delta)\mid\vb Y]$.
 In fact, since $w$ is a product of nonnegative terms, and the product of nonnegative monotonic functions is again monotonic, by the covariance inequality it suffices to show that each term \[
     w_i \dfeq 1 + \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i}{
-        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i} 
+        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb P}_i} 
 \] is monotonic in $\vec(\Theta)^\top\vb b$.
 
 Partial derivatives with respect to elements of $\vec(\Theta)$ are clearly zero except for those corresponding to $\vec(\Theta)_{X_i\cdot G_iZ_i}$. These are \[
     \pdv{w_i}{\vec(\Theta)_{X_irG_iZ_i}}
-    = \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i\delta_{ir} -
+    = \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb P}_i\delta_{ir} -
         \vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i \hat r_{ir}}{
-        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i}.
+        \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb P}_i}.
 \] The directional derivative along $\vb b$ is then 
 \begin{align*}
     \partial_{\vb b}w_i 
-    &= \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i
+    &= \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb P}_i
                 \vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i} - 
                 \vb*\theta_{X_i}(G_i, Z_i)^\top \vb*\delta_i
-                \hat{\vb r}_i^\top\vb b_{X_i\cdot G_iZ_i}}{
-            (\vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i)^2} \\
+                \hat{\vb P}_i^\top\vb b_{X_i\cdot G_iZ_i}}{
+            (\vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb P}_i)^2} \\
     &= \frac{\vb*\theta_{X_i}(G_i, Z_i)^\top}{
-            (\vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb r}_i)^2}
-            (\hat{\vb r}_i\vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i} - 
-            \vb*\delta_i\hat{\vb r}_i^\top\vb b_{X_i\cdot G_iZ_i}).
+            (\vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb P}_i)^2}
+            (\hat{\vb P}_i\vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i} - 
+            \vb*\delta_i\hat{\vb P}_i^\top\vb b_{X_i\cdot G_iZ_i}).
 \end{align*}
 Since $\vb*\theta_{X_i}(G_i, Z_i)$ is nonnegative, a sufficient condition for the directional derivative to be nonnegative, and thus for $w_i$ to be monotonically increasing in $\vec(\Theta)^\top\vb b$, is for
-$\hat r_{ij}\vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i} - \delta_{ij}\hat{\vb r}_i^\top\vb b_{X_i\cdot G_iZ_i} \ge 0$ for all $j\in\cR$. Similarly, by reversing this inequality, we have a sufficient condition for $w_i$ to be monotonically decreasing in $\vec(\Theta)^\top\vb b$.
+$\hat r_{ij}\vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i} - \delta_{ij}\hat{\vb P}_i^\top\vb b_{X_i\cdot G_iZ_i} \ge 0$ for all $j\in\cR$. Similarly, by reversing this inequality, we have a sufficient condition for $w_i$ to be monotonically decreasing in $\vec(\Theta)^\top\vb b$.
 \end{proof}
 \end{toappendix}
 ```
@@ -614,12 +614,12 @@ Then if for all $i\in I$, $\delta_{ir}>0$ and $\delta_{ij}<\delta_{ir}$ for $j\n
 Let $i\in I$. Then by assumption $\vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i}=c\delta_{ir}>0$. 
 Let $j\in\cR$. If $j=r$, \[
     \hat r_{ir}\vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i} -
-    \delta_{ir}\hat{\vb r}_i^\top\vb b_{X_i\cdot G_iZ_i}
+    \delta_{ir}\hat{\vb P}_i^\top\vb b_{X_i\cdot G_iZ_i}
     = \hat r_{ir}c\delta_{ir} - \delta_{ir}\hat r_{ir}c = 0,
 \]
 If $j\neq r$, we have \[
     \hat r_{ij}\vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i} -
-    \delta_{ij}\hat{\vb r}_i^\top\vb b_{X_i\cdot G_iZ_i}
+    \delta_{ij}\hat{\vb P}_i^\top\vb b_{X_i\cdot G_iZ_i}
     = \hat r_{ij}c\delta_{ir} - \delta_{ij}\hat r_{ij}c
     = c\hat r_{ij}(\delta_{ir} - \delta_{ij})\ge 0.
 \]
@@ -652,18 +652,18 @@ Then if for all $i\in I$, $\vb*\delta_i=c_{2i}(e_r-e_s)$ for some $c_{2i}>0$, \[
 Let $i\in I$. Then by assumption $\vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i}=c(|\delta_{ir}|+|\delta_{is}|)>0$. 
 Let $j\in\cR$. If $j=r$ we have \[
     \hat r_{ir}\vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i} -
-    \delta_{ir}\hat{\vb r}_i^\top\vb b_{X_i\cdot G_iZ_i}
+    \delta_{ir}\hat{\vb P}_i^\top\vb b_{X_i\cdot G_iZ_i}
     = \hat r_{ir}c_1(2c_{2i}) - c_{2i}c(\hat r_{ir}-\hat r_{is}) 
     = c_1c_{2i}(\hat r_{ir} +\hat r_{is}) \ge 0.
 \]
 If $j=s$ we have \[
     \hat r_{is}\vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i} -
-    \delta_{is}\hat{\vb r}_i^\top\vb b_{X_i\cdot G_iZ_i}
+    \delta_{is}\hat{\vb P}_i^\top\vb b_{X_i\cdot G_iZ_i}
     = \hat r_{is}c_1(2c_{2i}) + c_{2i}c(\hat r_{ir}-\hat r_{is}) 
     = c_1c_{2i}(\hat r_{is} +\hat r_{i+}) \ge 0.
 \] If $j\not\in\{r,s\}$ then $\delta_{ij}=0$, so \[
     \hat r_{ij}\vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i} -
-    \delta_{ij}\hat{\vb r}_i^\top\vb b_{X_i\cdot G_iZ_i}
+    \delta_{ij}\hat{\vb P}_i^\top\vb b_{X_i\cdot G_iZ_i}
     = \hat r_{ij}c_1(2c_{2i}) \ge 0.
 \] So the condition of Lemma~\ref{lem:biassign} is satisfied for all $j\in\cR$, and
 thus by the lemma we conclude that \[

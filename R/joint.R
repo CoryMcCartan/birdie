@@ -27,7 +27,7 @@ calc_joint_bisgz = function(r_probs, x, method=c("weight", "thresh", "mi", "ols"
         out = do.call(rbind, out)
         rownames(out) = levels(x)
     } else if (method == "thresh") {
-        r_est = max.col(r_probs)
+        r_est = factor(max.col(r_probs), levels=seq_len(ncol(r_probs)))
         out = table(x, r_est) / N
         names(dimnames(out)) = NULL
         colnames(out) = colnames(r_probs)

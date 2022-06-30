@@ -125,7 +125,7 @@ model_race = function(r_probs, X, G, Z=NULL, condition=NULL,
 print.fit_raceproxy = function(x, ...) {
     cli::cli_text("A {.pkg raceproxy} model fit with
                   {format(x$N, big.mark=',')} observations and
-                  {format(dim(fit$draws$global)[1], big.mark=',')} draws")
+                  {format(dim(x$draws$global)[1], big.mark=',')} draws")
     # cli::cli_text("{dim(fit$draws$global)[2]} outcome and
                   # {dim(fit$draws$global)[3]} race categories")
     cat("\n")
@@ -140,7 +140,7 @@ print.fit_raceproxy = function(x, ...) {
     print(var_sd)
     cat("\n")
 
-    cli::cli_text("Predictions for: {c('everyone', names(fit$draws)[-1])}")
+    cli::cli_text("Predictions for: {c('everyone', names(x$draws)[-1])}")
     cat("\n")
 
     cli::cli_text("Estimates for everyone:")

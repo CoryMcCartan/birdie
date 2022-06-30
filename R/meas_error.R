@@ -7,10 +7,10 @@
 #' @param Z the column(s), if any, containing other covariates. Use `c()` to provide multiple columns
 #' @param data the data
 #' @param p_rs a data frame, containing a column matching `S` and columns for
-#'   each value of `R` giving the conditional probabilities of R given S.
+#'   each value of `R` giving the number of voters in each level of R given S.
 #'   Defaults to a table from the U.S. Census Bureau from 2010.
 #' @param p_rgz a data frame, containing columns matching `G`and `Z`, and columns for
-#'   each value of `R` giving the conditional probabilities of R given Z and G.
+#'   each value of `R` giving the number of voters in each level of R given Z and G.
 #'   Defaults to a table from the 2010 decennial census.
 #' @param p_r a vector containing the marginal probabilities for each value of
 #'   `R`. Defaults to the demographics of the US.
