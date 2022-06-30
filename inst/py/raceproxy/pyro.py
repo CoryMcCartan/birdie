@@ -62,7 +62,7 @@ def model_additive(X, GZ, GZ_var, pr_base, N=1, n_r=5, n_x=2, n_gz=1, n_gz_var=1
 def fit_additive(X, GZ, GZ_var, pr_base, preds, n_x=2, n_gz_var=1,
         prior_scale={"x": 5.0, "xr": 0.75, "beta": 1.0},
         it=200, epoch=100, subsamp=1000, n_draws=1000, 
-        it_avgs=300, n_err=0, lr=0.01, tol_rhat=1.2,
+        it_avgs=300, n_err=0, lr=0.01, tol_rhat=1.2, method="vi",
         silent=False):
     # convert data from R to torch
     X = torch.tensor(X, dtype=torch.int16) - 1
@@ -81,7 +81,12 @@ def fit_additive(X, GZ, GZ_var, pr_base, preds, n_x=2, n_gz_var=1,
             "gamma": 0.85 # how much to multiply 'lr' every call to .step()
         })
     
-    guide = autoguide.AutoNormal(model_additive, init_scale=0.01)
+    if method == "svi":
+        guide = autoguide.AutoNormal(model_additive, init_scale=0.01)
+    elif method == "mle":
+        guide = autoguide.AutoLaplaceApproximation(model_additive)
+    else:
+        raise ValueError('`method` should be either "vi" or "mle"')
     elbo = pyro.infer.TraceMeanField_ELBO(ignore_jit_warnings=True)
         
     # rescale so ELBO ~= 1

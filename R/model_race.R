@@ -21,7 +21,7 @@
 #'   approximate posterior draws of the global X|R table.
 #' @export
 model_race = function(r_probs, X, G, Z=NULL, condition=NULL,
-                      data=NULL, prefix="pr_",
+                      data=NULL, prefix="pr_", method=c("svi", "mle"),
                       config=list(), silent=FALSE, reload_py=FALSE) {
     if (missing(data)) cli_abort("{.arg data} must be provided.")
     X_vec = eval_tidy(enquo(X), data)
@@ -84,14 +84,16 @@ model_race = function(r_probs, X, G, Z=NULL, condition=NULL,
         py_code <<- reticulate::import_from_path("raceproxy", path=py_path, delay_load=FALSE)
     }
 
+    method = match.arg(method)
+
     defaults = list(max_iter = 5000,
                     subsamp = 2048,
                     epoch = 50,
-                    draws = 800,
-                    lr = 0.25,
+                    draws = if_else(method == "svi", 1000, 2),
+                    lr = if_else(method == "svi", 0.25, 0.3),
                     n_err = 100,
-                    it_avgs = 300,
-                    tol_rhat = 1.2)
+                    it_avgs = if_else(method == "svi", 400, 600),
+                    tol_rhat = if_else(method == "svi", 1.2, 1.1))
     for (i in names(defaults)) {
         if (is.null(config[[i]]))
             config[[i]] = defaults[[i]]
@@ -110,7 +112,7 @@ model_race = function(r_probs, X, G, Z=NULL, condition=NULL,
         it_avgs=as.integer(config$it_avgs),
         n_err=as.integer(min(config$n_err, length(X_vec))),
         lr=config$lr, tol_rhat=config$tol_rhat,
-        silent=silent)
+        method=method, silent=silent)
     if (isFALSE(silent)) print(structure(proc.time() - ts1, class="proc_time")[3])
 
     class(out) = "fit_raceproxy"

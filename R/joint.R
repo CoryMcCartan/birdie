@@ -83,6 +83,8 @@ calc_joint_model = function(fit, which="global", q=0.5,
 #' @export
 eval_joints = function(tgt, metric=c("tv", "mad", "rmse"), ...) {
     score_fn = function(x) cli_abort("Metric {.val {metric}} not recognized.")
+    metric = match.arg(metric)
+
     n_out = 1
     if (metric == "tv") {
         score_fn = function(x) sum(abs(tgt - x)) / 2
