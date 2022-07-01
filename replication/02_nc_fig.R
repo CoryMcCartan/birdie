@@ -1,6 +1,3 @@
-fits_party <- read_rds(here("data-out/nc_fits_party.rds"))
-fits_turnout <- read_rds(here("data-out/nc_fits_turnout.rds"))
-
 eval_fit = function(fits, X) {
     X = eval_tidy(enquo(X), d)
 
@@ -60,7 +57,11 @@ ggsave(here("paper/figures/nc_overview.pdf"), plot=p, width=7.5, height=3.5)
 
 # Fit quality plots -----
 
-geos = c(county="County", zip="ZIP code", tract="Tract", block="Block")
+lbl_race = function(race) {
+    str_c(races[race], " (", percent(as.numeric(p_r[race]), 0.1), ")")
+}
+
+geos = c(county="County", zip="ZIP code", tract="Census tract", block="Census block")
 geos_short = c(county="County", zip="ZIP", tract="Tract", block="Block")
 methods = c(model="Model", ols="OLS", thresh="Threshold", weight="Weighted")
 
@@ -84,7 +85,7 @@ ggplot(aes(x=factor(geos[level], levels=geos), y=tv,
 p2 = filter(tv_party, race!="overall") %>%
 ggplot(aes(x=factor(geos_short[level], levels=geos_short), y=tv,
            color=methods[method], shape=methods[method], group=methods[method])) +
-    facet_wrap(~ factor(races[race], levels=races)) +
+    facet_wrap(~ factor(lbl_race(race), levels=lbl_race(names(races)))) +
     geom_line(position=position_dodge(width=0.25), size=0.7) +
     geom_point(size=2.0, position=position_dodge(width=0.25)) +
     scale_color_wa_d() +
@@ -118,7 +119,7 @@ ggplot(aes(x=factor(geos[level], levels=geos), y=tv,
 p2 = filter(tv_turnout, race!="overall") %>%
 ggplot(aes(x=factor(geos_short[level], levels=geos_short), y=tv,
            color=methods[method], shape=methods[method], group=methods[method])) +
-    facet_wrap(~ factor(races[race], levels=races)) +
+    facet_wrap(~ factor(lbl_race(race), levels=lbl_race(names(races)))) +
     geom_line(position=position_dodge(width=0.25), size=0.7) +
     geom_point(size=2.0, position=position_dodge(width=0.25)) +
     scale_color_wa_d() +
