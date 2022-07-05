@@ -73,33 +73,41 @@ r_probs = map(geo_levels, function(level) {
 
 # Party ID -----------
 
-fits = imap(r_probs, function(d_pr, level) {
-    cat(level, "\n")
+if (!file.exists(path <- here("data-out/nc_fits_party.rds"))) {
+    fits_party = imap(r_probs, function(d_pr, level) {
+        cat(level, "\n")
 
-    lr = 0.4
-    if (level == "block") level = "tract"
-    if (level == "county") lr = 0.75
-    if (level == "zip") lr = 0.5
+        lr = 0.4
+        if (level == "block") level = "tract"
+        if (level == "county") lr = 0.75
+        if (level == "zip") lr = 0.5
 
-    model_race(d_pr, party, !!rlang::sym(str_c("GEOID_", level)),
-               data=d, config=list(lr=lr, tol_rhat=1.15, it_avgs=500))
-})
+        model_race(d_pr, party, !!rlang::sym(str_c("GEOID_", level)),
+                   data=d, config=list(lr=lr, tol_rhat=1.15, it_avgs=500))
+    })
 
-write_rds(fits, here("data-out/nc_fits_party.rds"), compress="xz")
+    write_rds(fits_party, path, compress="xz")
+} else {
+    fits_party <- read_rds(path)
+}
 
 
 # Turnout -----------
 
-fits = imap(r_probs, function(d_pr, level) {
-    cat(level, "\n")
+if (!file.exists(path <- here("data-out/nc_fits_turnout.rds"))) {
+    fits_turnout = imap(r_probs, function(d_pr, level) {
+        cat(level, "\n")
 
-    lr = 0.65
-    if (level == "block" || level == "tract") level = "zip"
-    if (level == "county") lr = 0.8
+        lr = 0.65
+        if (level == "block" || level == "tract") level = "zip"
+        if (level == "county") lr = 0.8
 
-    model_race(d_pr, n_voted, !!rlang::sym(str_c("GEOID_", level)),
-               data=d, config=list(lr=lr, tol_rhat=1.2, draws=1000, it_avgs=500))
-})
+        model_race(d_pr, n_voted, !!rlang::sym(str_c("GEOID_", level)),
+                   data=d, config=list(lr=lr, tol_rhat=1.2, draws=1000, it_avgs=500))
+    })
 
-write_rds(fits, here("data-out/nc_fits_turnout.rds"), compress="xz")
+    write_rds(fits, path, compress="xz")
+} else {
+    fits_turnout <- read_rds(path)
+}
 

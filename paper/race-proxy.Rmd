@@ -692,9 +692,29 @@ We recommend that practitioners other data sources, such as surveys, to estimate
 
 # Validation Study
 
--   Intro NC data
--   figure: estimated versus actual outcome rates by race and method, with error bars. Facet by several different outcome variables to show it's not just party
--   table/text: TV distance on joint distribution by method
+```{r nc-overview, fig.width=6.5}
+#| fig.cap: |
+#|     Distribution of party identification (left) and turnout (right) by race, 
+#|     for a sample of 500,000 North Carolina voters.
+knitr::include_graphics("figures/nc_overview.pdf")
+```
+
+```{r nc-fit-party, fig.width=6.75}
+#| fig.cap: |
+#|     Total variation distance between the estimated and actual distribution of
+#|     party identification, by estimation method, level of geographic detail 
+#|     used in the BISG predictions, and, on the right, also by race.
+knitr::include_graphics("figures/nc_party_fit.pdf")
+```
+
+```{r nc-fit-turnout, fig.width=6.75}
+#| fig.cap: |
+#|     Total variation distance between the estimated and actual distribution of
+#|     turnout, by estimation method, level of geographic detail 
+#|     used in the BISG predictions, and, on the right, also by race.
+knitr::include_graphics("figures/nc_turnout_fit.pdf")
+```
+
 
 # Application
 

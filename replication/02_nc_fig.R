@@ -1,6 +1,3 @@
-fits_party <- read_rds(here("data-out/nc_fits_party.rds"))
-fits_turnout <- read_rds(here("data-out/nc_fits_turnout.rds"))
-
 eval_fit = function(fits, X) {
     X = eval_tidy(enquo(X), d)
 
@@ -60,10 +57,15 @@ ggsave(here("paper/figures/nc_overview.pdf"), plot=p, width=7.5, height=3.5)
 
 # Fit quality plots -----
 
-geos = c(county="County", zip="ZIP code", tract="Tract", block="Block")
+lbl_race = function(race) {
+    str_c(races[race], " (", percent(as.numeric(p_r[race]), 0.1), ")")
+}
+
+geos = c(county="County", zip="ZIP code", tract="Census tract", block="Census block")
 geos_short = c(county="County", zip="ZIP", tract="Tract", block="Block")
 methods = c(model="Model", ols="OLS", thresh="Threshold", weight="Weighted")
 
+## Party fit quality -----
 p1 = filter(tv_party, race=="overall") %>%
 ggplot(aes(x=factor(geos[level], levels=geos), y=tv,
            color=methods[method], shape=methods[method], group=methods[method])) +
@@ -73,16 +75,17 @@ ggplot(aes(x=factor(geos[level], levels=geos), y=tv,
     geom_point(size=2.0, position=position_dodge(width=0.25)) +
     scale_color_wa_d() +
     scale_x_discrete(expand=c(0.07, 0, 0.06, 0)) +
-    scale_y_log10("Total variation distance") +
-    labs(x="BISG geographic precision") +
+    scale_y_log10("Overall total variation distance") +
+    labs(x="BISG geographic precision", title="Party identification") +
     guides(color="none", shape="none") +
     theme_paper() +
-    theme(plot.margin=unit(c(0, 0.1, 0, 0), "cm"))
+    theme(plot.margin=unit(c(0, 0.1, 0, 0), "cm"),
+          plot.title=element_text(margin=margin(0, 0, -12, 0)))
 
 p2 = filter(tv_party, race!="overall") %>%
 ggplot(aes(x=factor(geos_short[level], levels=geos_short), y=tv,
            color=methods[method], shape=methods[method], group=methods[method])) +
-    facet_wrap(~ factor(races[race], levels=races)) +
+    facet_wrap(~ factor(lbl_race(race), levels=lbl_race(names(races)))) +
     geom_line(position=position_dodge(width=0.25), size=0.7) +
     geom_point(size=2.0, position=position_dodge(width=0.25)) +
     scale_color_wa_d() +
@@ -93,4 +96,38 @@ ggplot(aes(x=factor(geos_short[level], levels=geos_short), y=tv,
     theme(plot.margin=unit(c(0, 0, 0, 0), "cm"))
 
 p = p1 + p2 + plot_layout(widths=c(0.4, 0.6))
-ggsave(here("paper/figures/nc_party_fit.pdf"), plot=p, width=8, height=4)
+ggsave(here("paper/figures/nc_party_fit.pdf"), plot=p, width=8, height=3.75)
+
+## Turnout fit quality -----
+p1 = filter(tv_turnout, race=="overall") %>%
+ggplot(aes(x=factor(geos[level], levels=geos), y=tv,
+           color=methods[method], shape=methods[method], group=methods[method])) +
+    geom_textline(aes(label=methods[method],
+                      hjust=c(model=0.08, weight=0.08, thresh=0.52, ols=0.1)[method]),
+                  position=position_dodge(width=0.25),
+                  linewidth=0.7, size=3.5, family="Times") +
+    geom_point(size=2.0, position=position_dodge(width=0.25)) +
+    scale_color_wa_d() +
+    scale_x_discrete(expand=c(0.07, 0, 0.06, 0)) +
+    scale_y_log10("Overall total variation distance") +
+    labs(x="BISG geographic precision", title="Turnout") +
+    guides(color="none", shape="none") +
+    theme_paper() +
+    theme(plot.margin=unit(c(0, 0.1, 0, 0), "cm"),
+          plot.title=element_text(margin=margin(0, 0, -12, 0)))
+
+p2 = filter(tv_turnout, race!="overall") %>%
+ggplot(aes(x=factor(geos_short[level], levels=geos_short), y=tv,
+           color=methods[method], shape=methods[method], group=methods[method])) +
+    facet_wrap(~ factor(lbl_race(race), levels=lbl_race(names(races)))) +
+    geom_line(position=position_dodge(width=0.25), size=0.7) +
+    geom_point(size=2.0, position=position_dodge(width=0.25)) +
+    scale_color_wa_d() +
+    scale_y_log10("Total variation distance") +
+    labs(x="BISG geographic precision") +
+    guides(color="none", shape="none") +
+    theme_paper() +
+    theme(plot.margin=unit(c(0, 0, 0, 0), "cm"))
+
+p = p1 + p2 + plot_layout(widths=c(0.4, 0.6))
+ggsave(here("paper/figures/nc_turnout_fit.pdf"), plot=p, width=8, height=3.75)
