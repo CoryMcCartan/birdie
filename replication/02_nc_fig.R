@@ -131,3 +131,36 @@ ggplot(aes(x=factor(geos_short[level], levels=geos_short), y=tv,
 
 p = p1 + p2 + plot_layout(widths=c(0.4, 0.6))
 ggsave(here("paper/figures/nc_turnout_fit.pdf"), plot=p, width=8, height=3.75)
+
+
+# Poster plots -----
+# bind_rows(`Party ID`=tv_party, `Turnout`=tv_turnout, .id="outcome") |>
+tv_party |>
+    filter(method %in% c("model", "weight"), level == "zip") |>
+    mutate(race = fct_inorder(c(overall="Overall", races)[race])) |>
+ggplot(aes(race, tv, fill=c(model="New model", weight="Weighting")[method])) +
+    geom_hline(yintercept=0) +
+    geom_col(position=position_dodge()) +
+    labs(title="Party registration", x=NULL,
+         y="TV distance\n(lower is better)", fill="Method") +
+    scale_fill_wa_d("palouse", which=c("snake", "hills")) +
+    coord_cartesian(expand=FALSE) +
+    theme_minimal(base_family="IBM Plex Sans Medium", base_size=24) +
+    theme(plot.margin=margin(0, 0, 0, 0),
+          legend.position=c(0.8, 0.55),
+          panel.grid.major.x=element_blank())
+ggsave("~/Desktop/chart1.png", width=12, height=4.5, dpi=250)
+
+tv_party |>
+    filter(method %in% c("model", "weight"), level == "zip") |>
+    mutate(race = fct_inorder(c(overall="Overall", races)[race])) |>
+ggplot(aes(race, tv, fill=c(model="New model", weight="Weighting")[method])) +
+    geom_hline(yintercept=0) +
+    geom_col(position=position_dodge()) +
+    labs(title="Turnout", x=NULL, y=NULL, fill="Method") +
+    scale_fill_wa_d("palouse", which=c("snake", "hills"), guide="none") +
+    coord_cartesian(expand=FALSE) +
+    theme_minimal(base_family="IBM Plex Sans Medium", base_size=24) +
+    theme(plot.margin=margin(0, 0, 0, 0),
+          panel.grid.major.x=element_blank())
+ggsave("~/Desktop/chart2.png", width=11, height=4.5, dpi=250)
