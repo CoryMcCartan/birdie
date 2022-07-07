@@ -90,10 +90,10 @@ eval_joints = function(tgt, metric=c("tv", "tv_col", "tv_row", "mad", "rmse"), .
     if (metric == "tv") {
         score_fn = function(x) sum(abs(tgt - x)) / 2
     } else if (metric == "tv_col") {
-        score_fn = function(x) list(colSums(abs(tgt - x)) / 2)
+        score_fn = function(x) list(colSums(abs(tgt - x)) / 2 / colSums(tgt))
         n_out = ncol(tgt)
     } else if (metric == "tv_row") {
-        score_fn = function(x) list(rowSums(abs(tgt - x)) / 2)
+        score_fn = function(x) list(rowSums(abs(tgt - x)) / 2 / rowSums(tgt))
         n_out = nrow(tgt)
     } else if (metric == "mad") {
         score_fn = function(x) mean(abs(tgt - x))

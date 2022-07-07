@@ -2,13 +2,20 @@
 title: "Estimation of Racial Disparities when Race is Not Observed"
 authors: 
     - name: Cory McCartan
+      department: Department of Statistics
       affiliation: Harvard University
     - name: Kosuke Imai
+      department: Department of Government, Department of Statistics
       affiliation: Harvard University
     - name: Jacob Goldin
+      department: Law School, Department of Economics
       affiliation: Stanford University
     - name: Daniel E. Ho
+      department: Law School
       affiliation: Stanford University
+    - name: Robin Fisher
+      department: Office of Tax Analysis
+      affiliation: U.S. Department of the Treasury
 date: '`r format(Sys.Date(), "%B %e, %Y")`'
 abstract: |
     The identification and estimation of racial disparities in health care, financial services, voting, and other contexts is often hampered by the lack of racial information in administrative records. As a result, many analysts have adopted Bayesian Improved Surname Geocoding (BISG), which uses individual names and addresses to predict race. BISG can produce accurate racial predictions, but these alone are not sufficient for estimating racial disparities, and the most common methods for estimating disparities using BISG predictions are biased. We clarify the assumptions implicit in BISG and racial disparity estimation, and provide a new identification condition for correctly estimating disparities which is applicable in a wide variety of real-world contexts. Leveraging this new identification approach, we introduce a new Bayesian model for racial disparity estimation. The model achieves 75% lower error than existing approaches in estimating turnout rates by race in North Carolina. We also apply the model to large-scale IRS administrative data to produce the first-ever estimates of claim rates of the home mortgage interest deduction (HMID) by race, finding that XX and YY. Open-source software is available for implementing the proposed methodology.
@@ -65,14 +72,13 @@ Proposed outline:
 
     3.  Introduces a Bayesian model to estimate disparities using this new condition
 
-    4.  Validates the model on real-world data taken from the voter file in \_\_\_
+    4.  Validates the model on real-world data taken from the voter file in North Carolina
 
     5.  Applies the model to large-scale IRS administrative data to produce the first-ever estimates of claim rates of the home mortgage interest deduction (HMID) by race.
 
 6.  In most real-world applications, the new model and identification condition are much appropriate and will produce much-improved estimates.
 
-    1.  However, there is no one-size-fits-all approach for the estimation of disparities.
-        Careful consideration of the underlying causal and information structure is required to choose the correct estimation approach and avoid making the wrong conclusions.
+    1.  However, there is no one-size-fits-all approach for the estimation of disparities. Careful consideration of the underlying causal and information structure is required to choose the correct estimation approach and avoid making the wrong conclusions.
 
 # Problem and Identification
 
@@ -166,7 +172,6 @@ If race is binary (so $\cR=\{0,1\}$), then as $N\to\infty$, \[
 \]
 \end{theorem}
 ```
-
 The following additional assumption is therefore sufficient for the weighted estimator to be asymptotically unbiased.
 
 ```{=tex}
@@ -174,9 +179,9 @@ The following additional assumption is therefore sufficient for the weighted est
 For all individuals $i$, $X_i\indep R_i\mid G_i,Z_i,S_i$.
 \end{assump}
 ```
-
 Figure \@ref(fig:dag)(a) shows a causal structure that satisfies Assumption \ref{a:indep-xr}.
-The DAG implies that $X\indep R\mid G,Z,S$. since all paths from $R$ to $X$ are blocked by $G$, $Z$, or $S$ (for more details, see \citealt{pearl1995causal}).
+The DAG implies that $X\indep R\mid G,Z,S$.
+since all paths from $R$ to $X$ are blocked by $G$, $Z$, or $S$ (for more details, see \citealt{pearl1995causal}).
 Here, $R$ must satisfy a kind of exclusion restriction: its entire effect on the outcome is mediated through $S$, $G$, and $Z$.
 There can be no confounding between $X$ and the $X$, such as through a latent socioeconomic status variable that isn't fully controlled by $Z$.
 In most practical settings, this will not be the case---racial disparities in HMID claim rates arise from more than geographic variation and surnames.
@@ -245,8 +250,6 @@ But outside of these cases, the weighted estimator will fail, unless by pure luc
 \label{fig:dag}
 \end{figure}
 ```
-
-
 We can identify $\Pr(X\mid R)$ another way by relying on the following assumption instead.
 
 ```{=tex}
@@ -254,7 +257,6 @@ We can identify $\Pr(X\mid R)$ another way by relying on the following assumptio
 For all individuals $i$, $X_i\indep S_i\mid R_i,G_i,Z_i$.
 \end{assump}
 ```
-
 Compared to Assumption \ref{a:indep-xr}, it is surname, rather than race, which must satisfy the exclusion restriction under Assumption \ref{a:indep-xs}.
 Figure \@ref(fig:dag)(b) shows one possible causal structure that meets this assumption.
 Race has a direct effect on the outcome $X$, and on $G$ and $Z$, while all paths from $S$ to $X$ are blocked by $G$, $Z$, or $R$.
@@ -287,17 +289,12 @@ So for each $x\in\cX$, $g\in\cG$, and $z\in\cZ$, this relation is a linear syste
 These parameters are identified if and only if this system has a unique solution, i.e. if the coefficient matrix ${\vb P}^{(xgz)}$ has rank $|\cR|$ and so does the augmented matrix $\mqty({\vb P}^{(xgz)}&b^{(xgz)})$.
 \end{proof}
 ```
-
-The essence of the identification result is the following observation: under Assumption \ref{a:indep-xs}, we have,
-for all $x\in\cX$, $g\in\cG$, $z\in\cZ$, and $s\in\cS$,
-\begin{equation} \label{eq:tprob}
+The essence of the identification result is the following observation: under Assumption \ref{a:indep-xs}, we have, for all $x\in\cX$, $g\in\cG$, $z\in\cZ$, and $s\in\cS$, \begin{equation} \label{eq:tprob}
     \Pr(X=x\mid G=g, Z=z, S=s)
     = \sum_{r\in\cR} \Pr(X=x\mid R=r, G=g, Z=z)\Pr(R=r\mid G=g, Z=z, S=s).
-\end{equation}
-The leftmost term is estimable from the data, while the rightmost term is the BISG estimand.
+\end{equation} The leftmost term is estimable from the data, while the rightmost term is the BISG estimand.
 The remaining term in the middle can be solved for, since \eqref{eq:tprob} holds across all combinations of $X$, $G$, $Z$, and $S$, leading to a large system of equations.
 See @kuroki2014measurement and @miao2018identifying for similar ideas in the context of causal identification with noisy proxies of unmeasured confounders.
-
 
 # Model
 
@@ -305,9 +302,8 @@ The identifying equation \eqref{eq:tprob} shows that $\Pr(X=x\mid G=g, Z=z, S=s)
 Thus it is possible to estimate $\Pr(X=x\mid R)$ with a least-squares estimator $$
 \hat{\vb*\mu}^{(\text{ols})}_{X\mid R}(x\mid \cdot) 
 = (\hat{\vb P}^\top \hat{\vb P})^{-1} \hat{\vb P}\,\ind\{\vb X = x\},
-$$ where as above $\hat{\vb P}$ is the matrix of BISG probabilities. 
-<!-- and where $\vb X_{gz}$ is the vector of outcome variables for the individuals with $G_i=g$ and $Z_i=z$. -->
-This estimator is unbiased in finite samples.
+$$ where as above $\hat{\vb P}$ is the matrix of BISG probabilities.
+<!-- and where $\vb X_{gz}$ is the vector of outcome variables for the individuals with $G_i=g$ and $Z_i=z$. --> This estimator is unbiased in finite samples.
 
 ```{=tex}
 \begin{theoremrep} \label{thm:ols-bias}
@@ -323,7 +319,6 @@ ID equation -> linear model
 BISG accurate -> strict exogeneity
 \end{proof}
 ```
-
 This is not a property shared by $\hat{\mu}^{(\text{wtd})}_{x\mid r}$.
 In fact, the weighted and OLS estimators are guaranteed to disagree, unless either the BISG probabilities are perfect or the weighted estimator is constant across races, as Theorem \ref{thm:wtd-vs-ols} below shows.
 This underscores the importance of selecting the appropriate assumption (\ref{a:indep-xr} or \ref{a:indep-xs}) for a particular analysis, since they imply different estimators with different results.
@@ -387,7 +382,6 @@ Then by the above basis expansion, $\hat{\mu}^{(\text{ols})}_{X|R}(x\mid j)=c_j$
 \]
 \end{proof}
 ```
-
 Despite these advantages over the weighted estimator, $\hat{\vb*\mu}^{(\text{ols})}_{X\mid R}$ is not well-suited to estimation in general, since ignores the fact that the unknown parameters are probabilities and thus constrained to be nonnegative and sum to 1.
 As a result, in any particular sample, $\hat{\vb*\mu}^{(\text{ols})}_{X\mid R}$ can produce impossible or contradictory estimates.
 To address this challenge, and to open the door to more modeling flexibility, we adopt a simple Bayesian model instead.
@@ -395,11 +389,9 @@ To address this challenge, and to open the door to more modeling flexibility, we
 ## General Bayesian model
 
 We begin with a model for the outcome $X$, depending on $R$, $G$, $Z$.
-Following Assumption \ref{a:indep-xs}, we do not need to condition on $S$:
-\begin{equation*}
+Following Assumption \ref{a:indep-xs}, we do not need to condition on $S$: \begin{equation*}
     X_i \mid R_i, G_i, Z_i, \Theta \sim \Categorical_\cX(\vb*\theta_{\cdot R_i}(G_i,Z_i))
-\end{equation*}
-Since the probabilities for each level of the outcome, $\vb*\theta_{\cdot R_i}(G_i,Z_i)$, can vary by $R$, $G$, and $Z$, this component of the model places no restrictions on the outcome process.
+\end{equation*} Since the probabilities for each level of the outcome, $\vb*\theta_{\cdot R_i}(G_i,Z_i)$, can vary by $R$, $G$, and $Z$, this component of the model places no restrictions on the outcome process.
 We have written the parameters as $\theta_{xr}(g,z)$ rather than $\theta_{xrgz}$ to separate the conceptual role of $R$ and $G,Z$ in the model: the distribution of $X$ given $R$ is of primary interest, while $G$ and $Z$ are mostly nuisance variables.
 Specifically, our main target of inference is the summary parameter $$
     \bar\Theta 
@@ -408,17 +400,15 @@ $$ which is the conditional distribution of $X$ given $R$ in the sample populati
 Since we marginalize out $G$ and $Z$, we adopt the notation $\theta_{xr}(g,z)$.
 
 Next, we model $G$, $Z$, and $S$ given $R$.
-We adopt the BISG model, modeling $S$ and $(G,Z)$ separately (Assumptions \ref{a:indep-sgz}) and treating the Census tables $\vb q$ as accurate (Assumption \ref{a:cens-acc}):
-\begin{align*}
+We adopt the BISG model, modeling $S$ and $(G,Z)$ separately (Assumptions \ref{a:indep-sgz}) and treating the Census tables $\vb q$ as accurate (Assumption \ref{a:cens-acc}): \begin{align*}
     (G_i, Z_i) \mid R_i &\sim \Categorical_{\cG\times\cZ}(\vb q_{GZ|R_i}) \\
     S_i \mid R_i &\sim \Categorical_\cS(\vb q_{S|R_i}) \\
     R_i &\iid \Categorical_\cR(\vb q_R)
-\end{align*} 
+\end{align*}
 
 Finally, the parameter $\Theta$ requires a prior model, we denote $\pi(\Theta)$.
 The details of $\pi(\Theta)$ are discussed in the next section.
-The posterior can then be written as
-\begin{align*}
+The posterior can then be written as \begin{align*}
     \pi(\Theta, \vb R\mid \vb X, \vb G, \vb Z, \vb S)
     &\propto \pi(\Theta)\prod_{i=1}^N \pi(X_i\mid G_i, Z_i, R_i, \Theta)
             \pi(G_i, Z_i\mid R_i)\pi(S_i\mid R_i)\pi(R_i) \\
@@ -427,20 +417,18 @@ The posterior can then be written as
 \end{align*} where as above $\hat{\vb P_i}$ are the BISG probability estimates for individual $i$, which depend on Census data represented in $\vb q_{GZ\mid R}$, $\vb q_{S\mid R}$, and $\vb q_R$, but not on the parameters $\Theta$ and $\vb R$.
 Notice the similarities between the final form of the posterior and the identifying equation \eqref{eq:tprob}.
 
-Since $\vb R$ is high-dimensional, discrete, and not of primary interest, we can easily marginalize it out:
-\begin{align*}
+Since $\vb R$ is high-dimensional, discrete, and not of primary interest, we can easily marginalize it out: \begin{align*}
     \pi(\Theta\mid \vb X, \vb G, \vb Z, \vb S)
     &\propto \pi(\Theta) \prod_{i=1}^N \pi(X_i,G_i,Z_i,S_i\mid \Theta) \\
     &\propto \pi(\Theta) \prod_{i=1}^N \sum_{r\in\cR} \pi(X_i,R_i,G_i,Z_i,S_i\mid \Theta) \\
     &= \pi(\Theta) \prod_{i=1}^N \sum_{r\in\cR} \theta_{X_i r}(G_i, Z_i)\hat{P}_{ir}
     = \pi(\Theta) \prod_{i=1}^N \vb*\theta_{X_i}(G_i, Z_i)^\top \hat{\vb P}_i.
     \numberthis \label{eq:post-marg}
-\end{align*}
-This makes it much easier to sample from the model, as the number of parameters is now a function only of the sizes of $\cX$, $\cR$, $\cG$, and $\cZ$, and not the sample size $N$.
+\end{align*} This makes it much easier to sample from the model, as the number of parameters is now a function only of the sizes of $\cX$, $\cR$, $\cG$, and $\cZ$, and not the sample size $N$.
 
 ## Prior on $\Theta$
 
-The final but critical component of the model is the prior $\pi(\Theta)$. 
+The final but critical component of the model is the prior $\pi(\Theta)$.
 A natural prior would be to allow for maximum flexibility with a *fully saturated* specification: \begin{align*}
     \Theta_{xr}(g, \vb z) &= \theta_{xrg\vb z},  \\
     \vb*\theta_{\cdot rgz}&\iid\Dirichlet(\alpha)
@@ -602,7 +590,6 @@ $\hat r_{ij}\vb*\delta_i^\top\vb b_{X_i\cdot G_iZ_i} - \delta_{ij}\hat{\vb P}_i^
 \end{proof}
 \end{toappendix}
 ```
-
 ```{=tex}
 \begin{theoremrep}
 Let $r\in\cR$, $I\subseteq\{1,\dots,N\}$, and $\vb b$ a vector such that $\vb b_{X_i\cdot G_iZ_i}= c\vb e_r$ for all $i\in I$ and $0$ elsewhere, where $\vb e_r\in\R^{|\cR|}$ is the standard basis vector in the $r$ direction and $c>0$.
@@ -683,7 +670,6 @@ Then for any $x\in\cX$, the model-based estimate of the disparity $\Pr[X=x\mid R
 will be biased downwards (upwards) if, for all $i$ with $X_i=x$, the BISG probability $\hat r_{i1}$ is biased downwards (upwards).
 \end{corollary}
 ```
-
 Taken together, Corollaries \ref{cor:errdir1} and \ref{cor:errdir2} show that if the individual probabilities of belonging to a racial group are uniformly biased, so too will be the corresponding estimates of the conditional probabilities and disparities.
 Most of the time, these bias in the BISG probabilities will not be be so one-sided, and the error patterns will be more complex.
 But a pattern of uniform bias will arise when the prior $p(R)$ doesn't match the population distribution of race.
@@ -692,6 +678,22 @@ We recommend that practitioners other data sources, such as surveys, to estimate
 
 # Validation Study
 
+To better understand how the proposed model performs in real-world contexts, we apply it to a validation dataset where the "ground truth" relationship between outcome and race is known.
+We compare the method's error against existing estimators, and evaluate how the error depends on the level of geographic precision used in the BISG probabilities.
+
+## North Carolina Voter File
+
+Like most other Southern states with a history of disenfranchising minority voters, the state of North Carolina asks (and previously required) every voter to self-report their race upon registration.
+This data, along with voters' names, addresses, gender, party registration (if any), and voting history, is part of the voter file that the secretary of state makes publicly available.
+
+The voter file is an ideal validation setting for the proposed methodology.
+The two outcomes we examine here, party registration and turnout, are the product of many unobservable factors, and are almost guaranteed to exhibit at least some differences by race.
+Most importantly, since race is recorded, inferences about these differences using the estimators discussed here can be compared to the true values.
+
+We use a subset of the June 2022 voter file which could be linked to a proprietary voter file provided by L2, Inc. The L2 file geocoded each address to a Census block, which is necessary for the finest block-level BISG predictions.
+We also removed any records without individual race information.
+Since our goal is validation compared to some ground truth, and not inference about the overall population of North Carolina voters, these exclusions are not problematic.
+
 ```{r nc-overview, fig.width=6.5}
 #| fig.cap: |
 #|     Distribution of party identification (left) and turnout (right) by race, 
@@ -699,22 +701,76 @@ We recommend that practitioners other data sources, such as surveys, to estimate
 knitr::include_graphics("figures/nc_overview.pdf")
 ```
 
+The overall merged voter file contains 5,711,795 voters, 71.2% of which were White, 21.1% of which were black, and 7.7% of which belonged to another race.
+For analysis purposes, we further subsampled this file by selecting 500,000 records at random without replacement.
+A sample size of half a million is large enough to ensure that sampling error is essentially negligible, while reducing the overall computational burden.
+
+Figure \@ref(fig:nc-overview) shows the distribution of party registration and turnout by race in this subsample.
+White voters disproportionately register as Republicans, while Black voters disproportionately register as Democrats.
+We measure turnout as the number of November general elections each individual voted in from 2012 through 2021, ranging from 0 to 10.
+Turnout rates are highest for Black and White voters, and lowest for Hispanic voters.
+
+## Results
+
+We first calculate BISG probabilities using 2010 Census data at the census block, tract, ZIP code tabulation area (ZCTA), and county level.
+Every record in the voter file contains county information, while roughly 13% of records are missing ZIP codes and 27% of records are missing blocks/tracts; when these finer geographic identifiers were missing, we used county-level Census tables in the BISG calculations.
+
+The BISG probabilities are broadly accurate, with XXX scores of \_\_\_\_\_\_\_\_ for \_\_\_, etc. etc.
+
 ```{r nc-fit-party, fig.width=6.75}
 #| fig.cap: |
-#|     Total variation distance between the estimated and actual distribution of
+#|     Total variation distance (on a logarithmic scale)
+#|     between the estimated and actual distribution of
 #|     party identification, by estimation method, level of geographic detail 
 #|     used in the BISG predictions, and, on the right, also by race.
 knitr::include_graphics("figures/nc_party_fit.pdf")
 ```
 
+For each set of BISG probabilities, we estimate the joint distribution of each outcome variable and race using the proposed method, the weighting estimator, the OLS estimator, and a thresholding estimator that deterministically assigns each individual the maximum *a posteriori* racial category.
+For the propsed method, we use the additive specification described above, using geographic random effects matching the geographic level used in the BISG probabilities (e.g., county random effects for the county-level BISG probabilities), except for the block-level probabilities.
+Due to the large number of individual census blocks, we use tract random effects instead for this particular model.
+
+We measure the error in the estimated joint distribution with the total variation (TV) distance, calculated as$$
+d_\text{TV}(\hat{\vb*\mu}_{X|R}, \vb*\mu_{X|R}) 
+= \half\sum_{x\in\cX}\sum_{r\in\cR} |\hat{\mu}_{X,R}(x, r) - \mu_{X,R}(x, r)|.
+$$The TV distance is an upper bound on the error in *any* probability calculated from the estimated joint distribution, and as such is useful general-purpose measure of estimation error.
+Figures \@ref(fig:nc-fit-party) and \@ref(fig:nc-fit-turnout) show the TV distance for each estimator across the range of geographic levels used in the BISG calculation.
+The figures also show the TV distance for each conditional distribution by race, to illuminate how the estimators perform on each subgroup.
+
+As far as the overall TV error, the proposed method outperforms every alternative, for both party ID and turnout, at every geographic level.
+The OLS estimator outperforms the weighting estimator for party ID, but the situation is reversed for turnout.
+This suggests that compared to the effect of race on party ID, the effect of race on turnout is more strongly moderated by geography, reducing the size of the violation of Assumption \\ref{a:indep-xr}.
+The thresholding estimator consistently performs poorly.
+
+While finer geographic data translates to improved accuracy for the OLS and model-based estimates for party ID, there is no clear trend for the other estimators or for the turnout analysis.
+While it is difficult to know exactly why this is the case, it suggests that when fully geocoded addresses are not available, using ZIP codes or counties alone may suffice---something that has already been suggested for BISG estimation alone [\@clark2021minmaxing].
+CM: check this reference.
+
 ```{r nc-fit-turnout, fig.width=6.75}
 #| fig.cap: |
-#|     Total variation distance between the estimated and actual distribution of
+#|     Total variation distance (on a logarithmic scale)
+#|     between the estimated and actual distribution of
 #|     turnout, by estimation method, level of geographic detail 
 #|     used in the BISG predictions, and, on the right, also by race.
 knitr::include_graphics("figures/nc_turnout_fit.pdf")
 ```
 
+The results are more mixed for individual racial groups.
+It is important to remember that Black and White voters together comprise over 92% of the sample.
+The new model consistently outperforms the other estimators for Hispanic and Asian voters, and is either best or essentially tied for best for White, Black, and Native voters, across both outcomes and all geographic levels.
+All of the methods struggle for the Other category, likely due to its small size and the heterogeneity of its members.
+However, the weighting estimator is probably the "least bad" for this group.
+
+As noted above, the sampling error in all of these estimates is minimal---the widest 90% confidence interval in the block-level model estimates of party ID by race ranges from 0.2824 to 0.2859---not enough to explain the residual TV error.
+This error results from a violation of Assumptions \ref{a:indep-sgz}--\ref{a:indep-xs}, likely in large part driven by outdated Census data and differences between the adult and registered voter populations.
+
+We can apply the theoretical bounds from Theorem \ref{thm:bound} to gain a better understanding of how these data issues, which lead to errors in the BISG probabilities, translate to errors in the proposed model's estimates.
+For the county-level party ID estimates, a total error of $\Delta=0.997$ is sufficient to explain the largest error in the joint distribution.
+For the county-level turnout estimates, a total error of $\Delta=0.765$ suffices.
+These total errors translate to an average error in the individual BISG probabilities, $||\vb*\delta_i||$, of 0.14 and 0.11 percentage points, respectively.
+The actual average error is almost certainly higher but is not in the worst-case direction (which is what Theorem \ref{thm:bound} assumes).
+Moreover, the bounds on the individual entries of the joint distributions implied by even these small $\Delta$ are only useful for the larger racial groups; they are vacuous for the "Other" category, for instance.
+Nevertheless, this kind of analysis can give an idea of the relative sensitivity of the party ID and turnout estimates to data error (namely, that the turnout estimates are more sensitive).
 
 # Application
 
@@ -737,3 +793,4 @@ knitr::include_graphics("figures/nc_turnout_fit.pdf")
 -   Reiterate importance of specific causal structure
 
 # (APPENDIX) Appendix {.unnumbered}
+

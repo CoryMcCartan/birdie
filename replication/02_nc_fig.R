@@ -147,11 +147,11 @@ ggplot(aes(race, tv, fill=c(model="New model", weight="Weighting")[method])) +
     coord_cartesian(expand=FALSE) +
     theme_minimal(base_family="IBM Plex Sans Medium", base_size=24) +
     theme(plot.margin=margin(0, 0, 0, 0),
-          legend.position=c(0.8, 0.55),
+          legend.position=c(0.3, 0.75),
           panel.grid.major.x=element_blank())
 ggsave("~/Desktop/chart1.png", width=12, height=4.5, dpi=250)
 
-tv_party |>
+tv_turnout |>
     filter(method %in% c("model", "weight"), level == "zip") |>
     mutate(race = fct_inorder(c(overall="Overall", races)[race])) |>
 ggplot(aes(race, tv, fill=c(model="New model", weight="Weighting")[method])) +
