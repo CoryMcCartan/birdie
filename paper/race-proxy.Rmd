@@ -42,6 +42,7 @@ editor_options:
 ```{r setup, include=FALSE}
 library(knitr)
 library(here)
+library(scales)
 
 opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE,
                fig.path=here("paper/figures/"), fig.align="center",
@@ -715,7 +716,19 @@ Turnout rates are highest for Black and White voters, and lowest for Hispanic vo
 We first calculate BISG probabilities using 2010 Census data at the census block, tract, ZIP code tabulation area (ZCTA), and county level.
 Every record in the voter file contains county information, while roughly 13% of records are missing ZIP codes and 27% of records are missing blocks/tracts; when these finer geographic identifiers were missing, we used county-level Census tables in the BISG calculations.
 
-The BISG probabilities are broadly accurate, with XXX scores of \_\_\_\_\_\_\_\_ for \_\_\_, etc. etc.
+```{r}
+x = readRDS("data/nc_bisg.rds")
+acc = percent(x$acc, 0.1)
+score = number(x$score, 0.001)
+```
+
+The BISG probabilities are broadly accurate.
+Using the maximum a posteriori racial category as a prediction is `r acc["county"]` accurate for the county probabilities, `r acc["zip"]` accurate for the ZIP code probabilities, `r acc["tract"]` accurate for the tract probabilities, and `r acc["block"]` accurate for the block probabilities.
+Accuracy isn't everything, of course.
+A better measure of the quality of the BISG probabilities is the logarithmic score, a proper scoring rule which rewards accurate and calibrated probabilistic estimates (higher values are better).
+The logarithmic scores for the BISG probabilities are -`r score["county"]` for counties, -`r score["zip"]` for ZIP codes, -`r score["tract"]` for tracts, and -`r score["block"]` for blocks.
+For comparison, the prior-only logarithmic score (i.e., using no name or geographic information) is -`r number(x$base_score, 0.001)`.
+The worsened performance for block-level versus tract-level probabilities likely stems from the larger impact of census measurement error at smaller geographies, a problem that could be addressed using newer BISG methods such as those of @imai2022addressing.
 
 ```{r nc-fit-party, fig.width=6.75}
 #| fig.cap: |
@@ -744,7 +757,6 @@ The thresholding estimator consistently performs poorly.
 
 While finer geographic data translates to improved accuracy for the OLS and model-based estimates for party ID, there is no clear trend for the other estimators or for the turnout analysis.
 While it is difficult to know exactly why this is the case, it suggests that when fully geocoded addresses are not available, using ZIP codes or counties alone may suffice---something that has already been suggested for BISG estimation alone [@clark2021minmaxing].
-**CM: check this reference.**
 
 ```{r nc-fit-turnout, fig.width=6.75}
 #| fig.cap: |
@@ -761,13 +773,17 @@ The new model consistently outperforms the other estimators for Hispanic and Asi
 All of the methods struggle for the Other category, likely due to its small size and the heterogeneity of its members.
 However, the weighting estimator is probably the "least bad" for this group.
 
-As noted above, the sampling error in all of these estimates is minimal---the widest 90% confidence interval in the block-level model estimates of party ID by race ranges from 0.2824 to 0.2859---not enough to explain the residual TV error.
+```{r}
+x = readRDS("data/nc_bounds.rds")
+```
+
+As noted above, the sampling error in all of these estimates is minimal---the widest 90% confidence interval in the block-level model estimates of party ID by race ranges from `r number(x$ci_min, 0.0001)` to `r number(x$ci_max, 0.0001)`---not enough to explain the residual TV error.
 This error results from a violation of Assumptions \ref{a:indep-sgz}--\ref{a:indep-xs}, likely in large part driven by outdated Census data and differences between the adult and registered voter populations.
 
-We can apply the theoretical bounds from Theorem \ref{thm:bound} to gain a better understanding of how these data issues, which lead to errors in the BISG probabilities, translate to errors in the proposed model's estimates.
-For the county-level party ID estimates, a total error of $\Delta=0.997$ is sufficient to explain the largest error in the joint distribution.
-For the county-level turnout estimates, a total error of $\Delta=0.765$ suffices.
-These total errors translate to an average error in the individual BISG probabilities, $||\vb*\delta_i||$, of 0.14 and 0.11 percentage points, respectively.
+We can apply the theoretical bounds from Theorem \ref{thm:bound} to gain a better understanding of how these data issues, which lead to errors in the BISG probabilities, translate to errors in the proposed model"s estimates.
+For the county-level party ID estimates, a total error of $\Delta=`r number(x[["tot_err_party"]], 0.001)`$ is sufficient to explain the largest error in the joint distribution.
+For the county-level turnout estimates, a total error of $\Delta=`r number(x[["tot_err_turnout"]], 0.001)`$ suffices.
+These total errors translate to an average error in the individual BISG probabilities, $||\vb*\delta_i||$, of `r number(100*x[["avg_err_party"]], 0.01)` and `r number(100*x[["avg_err_turnout"]], 0.01)` percentage points, respectively.
 The actual average error is almost certainly higher but is not in the worst-case direction (which is what Theorem \ref{thm:bound} assumes).
 Moreover, the bounds on the individual entries of the joint distributions implied by even these small $\Delta$ are only useful for the larger racial groups; they are vacuous for the "Other" category, for instance.
 Nevertheless, this kind of analysis can give an idea of the relative sensitivity of the party ID and turnout estimates to data error (namely, that the turnout estimates are more sensitive).

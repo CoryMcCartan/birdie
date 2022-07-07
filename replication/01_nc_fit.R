@@ -71,6 +71,21 @@ r_probs = map(geo_levels, function(level) {
 }) %>%
     set_names(geo_levels)
 
+# BISG quality
+log_score_baseline = mean(log(p_r[as.integer(d$race)]))
+log_scores = map_dbl(r_probs, function(x) {
+    pr_act = as.matrix(x)[cbind(1:nrow(x), as.integer(d$race))]
+    pr_act[pr_act == 0] = 1e-6
+    mean(log(pr_act))
+})
+acc_thresh = map_dbl(r_probs, ~ mean(max.col(.) == as.integer(d$race)))
+
+list(base_score = log_score_baseline,
+     score = log_scores,
+     acc = acc_thresh) |>
+    write_rds(here("paper/data/nc_bisg.rds"))
+
+
 # Party ID -----------
 
 if (!file.exists(path <- here("data-out/nc_fits_party.rds"))) {
