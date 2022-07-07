@@ -739,12 +739,12 @@ The figures also show the TV distance for each conditional distribution by race,
 
 As far as the overall TV error, the proposed method outperforms every alternative, for both party ID and turnout, at every geographic level.
 The OLS estimator outperforms the weighting estimator for party ID, but the situation is reversed for turnout.
-This suggests that compared to the effect of race on party ID, the effect of race on turnout is more strongly moderated by geography, reducing the size of the violation of Assumption \\ref{a:indep-xr}.
+This suggests that compared to the effect of race on party ID, the effect of race on turnout is more strongly moderated by geography, reducing the size of the violation of Assumption \ref{a:indep-xr}.
 The thresholding estimator consistently performs poorly.
 
 While finer geographic data translates to improved accuracy for the OLS and model-based estimates for party ID, there is no clear trend for the other estimators or for the turnout analysis.
-While it is difficult to know exactly why this is the case, it suggests that when fully geocoded addresses are not available, using ZIP codes or counties alone may suffice---something that has already been suggested for BISG estimation alone [\@clark2021minmaxing].
-CM: check this reference.
+While it is difficult to know exactly why this is the case, it suggests that when fully geocoded addresses are not available, using ZIP codes or counties alone may suffice---something that has already been suggested for BISG estimation alone [@clark2021minmaxing].
+**CM: check this reference.**
 
 ```{r nc-fit-turnout, fig.width=6.75}
 #| fig.cap: |
@@ -793,4 +793,3 @@ Nevertheless, this kind of analysis can give an idea of the relative sensitivity
 -   Reiterate importance of specific causal structure
 
 # (APPENDIX) Appendix {.unnumbered}
-
