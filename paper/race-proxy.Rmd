@@ -4,25 +4,27 @@ authors:
     - name: Cory McCartan
       department: Department of Statistics
       affiliation: Harvard University
-    - name: Kosuke Imai
-      department: Department of Government, Department of Statistics
-      affiliation: Harvard University
+    - name: Robin Fisher
+      department: Office of Tax Analysis
+      affiliation: U.S. Department of the Treasury
     - name: Jacob Goldin
       department: Law School, Department of Economics
       affiliation: Stanford University
     - name: Daniel E. Ho
       department: Law School
       affiliation: Stanford University
-    - name: Robin Fisher
-      department: Office of Tax Analysis
-      affiliation: U.S. Department of the Treasury
+    - name: Kosuke Imai
+      department: Department of Government, Department of Statistics
+      affiliation: Harvard University
 date: '`r format(Sys.Date(), "%B %e, %Y")`'
 abstract: |
-    The identification and estimation of racial disparities in health care, financial services, voting, and other contexts is often hampered by the lack of racial information in administrative records. As a result, many analysts have adopted Bayesian Improved Surname Geocoding (BISG), which uses individual names and addresses to predict race. BISG can produce accurate racial predictions, but these alone are not sufficient for estimating racial disparities, and the most common methods for estimating disparities using BISG predictions are biased. We clarify the assumptions implicit in BISG and racial disparity estimation, and provide a new identification condition for correctly estimating disparities which is applicable in a wide variety of real-world contexts. Leveraging this new identification approach, we introduce a new Bayesian model for racial disparity estimation. The model achieves 75% lower error than existing approaches in estimating turnout rates by race in North Carolina. We also apply the model to large-scale IRS administrative data to produce the first-ever estimates of claim rates of the home mortgage interest deduction (HMID) by race, finding that XX and YY. Open-source software is available for implementing the proposed methodology.
+    The estimation of racial disparities in health care, financial services, voting, and other contexts is often hampered by the lack of racial information in administrative records. As a result, many analysts have adopted Bayesian Improved Surname Geocoding (BISG), which uses individual names and addresses to predict race. Although BISG can produce well calibrated racial predictions, its prediction errors tend to be correlated with the outcomes of interest, yielding biased estimates of racial disparities. We propose a new identification strategy that corrects this bias in estimating racial disparity via BISG.  This strategy is applicable whenever one's surname is conditionally independent of the outcome given their (unobserved) race, geolocation, and other observed information. Leveraging this identification approach, we introduce a new Bayesian model for racial disparity estimation that accounts for the high-dimensionality of surnames.  Lastly, we also develop a sensitivity analysis to address the potential violation of the required assumption.  Our validation study based on voter files shows  that the proposed model achieves 75% lower error than existing approaches in estimating turnout rates by race in North Carolina. We also apply the model to large-scale IRS administrative data to produce the first-ever estimates of claim rates of the home mortgage interest deduction (HMID) by race.  We find that XX and YY. Open-source software is available for implementing the proposed methodology.
 keywords: 
-    - racial disparities
     - BISG
     - ecological inference
+    - proxy variable
+    - race imputation
+    - sensitivity analysis
 bibliography: references.bib
 biblio-style: apalike
 output:
@@ -56,6 +58,7 @@ Proposed outline:
 
 1.  Identification and estimation of racial disparities is of critical importance.
     But in many settings, individual race data are not available.
+    Often the law requires one not to collect racial information (so that one cannot discriminate) but the same law demands the evaluation of racial disparity.
 
 2.  One existing solution is the use of ecological inference, but this faces other challenges such as unverifiable assumptions.
 
@@ -67,19 +70,18 @@ Proposed outline:
 
 5.  This article:
 
-    1.  Clarifies the assumptions implicit in every step of the estimation of racial disparities
+    1.  Provides a new identification condition for accurately estimating disparities
 
-    2.  Provides a new identification condition for accurately estimating disparities
-
-    3.  Introduces a Bayesian model to estimate disparities using this new condition
+    2.  Introduces a Bayesian model to estimate disparities using this new condition
+    
+    3.  Develops a sensitivity analysis for the potential violation of the required assumption
 
     4.  Validates the model on real-world data taken from the voter file in North Carolina
 
     5.  Applies the model to large-scale IRS administrative data to produce the first-ever estimates of claim rates of the home mortgage interest deduction (HMID) by race.
 
-6.  In most real-world applications, the new model and identification condition are much appropriate and will produce much-improved estimates.
+    6.   Open-source software package
 
-    1.  However, there is no one-size-fits-all approach for the estimation of disparities. Careful consideration of the underlying causal and information structure is required to choose the correct estimation approach and avoid making the wrong conclusions.
 
 # Problem and Identification
 
@@ -794,7 +796,10 @@ Nevertheless, this kind of analysis can give an idea of the relative sensitivity
 
 # Discussion
 
--   Open-source software package
+
+-  In most real-world applications, the new model and identification condition are much appropriate and will produce much-improved estimates.
+
+    1.  However, there is no one-size-fits-all approach for the estimation of disparities. Careful consideration of the underlying causal and information structure is required to choose the correct estimation approach and avoid making the wrong conclusions.
 
 -   Future work:
 
