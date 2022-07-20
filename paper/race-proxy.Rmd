@@ -8,17 +8,15 @@ authors:
       department: Office of Tax Analysis
       affiliation: U.S. Department of the Treasury
     - name: Jacob Goldin
-      department: Law School, Department of Economics
-      affiliation: Stanford University
+      department: Sanford Law School
     - name: Daniel E. Ho
-      department: Law School
-      affiliation: Stanford University
+      department: Stanford Law School
     - name: Kosuke Imai
-      department: Department of Government, Department of Statistics
+      department: Department of Government and Department of Statistics
       affiliation: Harvard University
 date: '`r format(Sys.Date(), "%B %e, %Y")`'
 abstract: |
-    The estimation of racial disparities in health care, financial services, voting, and other contexts is often hampered by the lack of racial information in administrative records. As a result, many analysts have adopted Bayesian Improved Surname Geocoding (BISG), which uses individual names and addresses to predict race. Although BISG can produce well calibrated racial predictions, its prediction errors tend to be correlated with the outcomes of interest, yielding biased estimates of racial disparities. We propose a new identification strategy that corrects this bias in estimating racial disparity via BISG.  This strategy is applicable whenever one's surname is conditionally independent of the outcome given their (unobserved) race, geolocation, and other observed information. Leveraging this identification approach, we introduce a new Bayesian model for racial disparity estimation that accounts for the high-dimensionality of surnames.  Lastly, we also develop a sensitivity analysis to address the potential violation of the required assumption.  Our validation study based on voter files shows  that the proposed model achieves 75% lower error than existing approaches in estimating turnout rates by race in North Carolina. We also apply the model to large-scale IRS administrative data to produce the first-ever estimates of claim rates of the home mortgage interest deduction by race.  We find that XX and YY. Open-source software is available for implementing the proposed methodology.
+    The estimation of racial disparities in health care, financial services, voting, and other contexts is often hampered by the lack of racial information in administrative records. As a result, many analysts have adopted Bayesian Improved Surname Geocoding (BISG), which uses individual names and addresses to predict race. Although BISG tend to produce well calibrated racial predictions, its prediction errors are often correlated with the outcomes of interest, yielding biased estimates of racial disparities. We propose a new identification strategy that corrects this bias in estimating racial disparity via BISG's race predictions.  The proposed strategy is applicable whenever one's surname is conditionally independent of the outcome given their (unobserved) race, residence location, and other observed characteristics. Leveraging this identification strategy, we introduce a new Bayesian model that estimates racial disparity while accounting for the high-dimensionality of surnames.  Lastly, we also develop a sensitivity analysis to address the potential violation of the required assumption that BISG's race predictions are well calibrated.  Our validation study based on voter files shows that the proposed model achieves 75% lower error than existing approaches in estimating turnout rates by race in North Carolina. A similarly substantial improvement is obtained in estimating racial disparities of partisan identification.  We also apply the model to large-scale IRS administrative data to produce the first-ever estimates of claim rates of the home mortgage interest deduction by race.  We find that ... Open-source software is available for implementing the proposed methodology.
 keywords: 
     - BISG
     - ecological inference
@@ -85,46 +83,52 @@ Proposed outline:
     6.   Open-source software package
 
 
-# Problem and Identification
+# Identification
+
+In this section, we discuss the proposed identification strategy.
+Specifically, we show that racial disparity is identifiable if one's surname is conditionally independent of the outcome given their race, residence geolocation, and other observed information, assuming that BISG can accurately identify race probabilities.
 
 ## Setup and BISG Procedure
 
-Our population consists of $N$ i.i.d. individuals $(Y_i, R_i, G_i, X_i, S_i)$, where
+Suppose that we have an i.i.d. sample of $N$ individuals from a population of infinite size.
+For each individual $i=1,2,\ldots,N$, we define a tuple $\{Y_i, R_i, G_i, X_i, S_i\}$, where $Y_i\in\cY$ is the outcome of interest for individual $i$, $R_i\in \cR$ is the (unknown) race of the individual, $G_i\in\cG$ is the (geo)location of the individual's residence, $X_i\in\cX$ are other observed characteristics, and $S_i\in\cS$ is the individual's surname.
+When we are not referring to a particular individual, we will drop the subscripts.
+Note that individual's race is unobservable but all other variables are observed although the availability of $X$ is not required for the proposed methodology.
 
--   $Y_i\in\cY$ is the outcome,
--   $R_i\in \cR$ is the (unknown) race of individual $i$,
--   $G_i\in\cG$ is the location of the invidual's residence,
--   $X_i\in\cX$ are other covariates, and
--   $S_i\in\cS$ is the individual's surname.
+We assume throughout that these variables are discrete, taking a finite set of values, i.e., $|\cY|=C_Y$, $|\cR|=C_R$, $|\cG|=C_G$, $|\cX|=C_X$, and $|\cS|=C_S$ where $C_Y$, $C_R$, $C_G$, $C_X$, and $C_S$ are constants.
+Note that typically $S$ is high-dimensional as there exist a large number of unique names. 
+In practice, residence location $G$ is also discrete, since joint information about location, race, and other variables is only available down to the Census block level.
+For the sake of simplicity, we assume that the outcome variable $Y$ is also discrete, though it is possible to extend the proposed methodology to continuous outcome variables.
 
-We assume throughout that these variables are discrete.
-When we are not discussing an individual in particular, we will drop the subscripts.
-In practice, location is discrete, since joint information about location, race, and other variables is only available down to the Census block level.
-Continuous outcomes here must be discretized, though there are natural extensions of the model that would make use of any continuous structure.
+BISG relies on data from the decennial Census or the American Community Survey (ACS), which provide information on the joint distribution of $R$ and $G$ (and any other covariates $X$, such as gender or age).
+It then combines this information with data from the Census Bureau's surname tables [@censusnames], which provide information on the joint distribution of $R$ and $S$.
+We summarize this set of information from the Census by two conditional probabilities, $\vb q_{GX|R}$ and $\vb q_{S|R}$, and one marginal probability, $\vb q_R = P(R)$.
 
-BISG relies on data from the decennial Census or the American Community Survey (ACS), which provide information on the joint distribution of $R$ and $G$ (and any other covariates $X$, such as gender or age), and from the Census Bureau's surname tables [@censusnames], which provide information on the joint distribution of $R$ and $S$.
-We denote these Census tables by $\vb q_{GX|R}$, $\vb q_{S|R}$, and $\vb q_R$, respectively.
-The BISG estimator of the probability that individual $i$ belongs to race $r$ can then be written as \begin{equation} \label{eq:pr-bisg}
+The BISG estimator of the probability that individual $i$ belongs to race $r \in \cR$ can then be written as [@fiscella2006bisg; @elliott2008bisg] 
+\begin{equation} \label{eq:pr-bisg}
     \hat{P}_{ir} \dfeq \frac{q_{G_iX_i|r}\, q_{S_i|r}\, q_r}{
         \sum_{j\in\cR}q_{G_iX_i|j}\, q_{S_i|j}\, q_j},
 \end{equation}
-where, for example, $q_{G_iX_i|r}$ indicates the conditional probability of location $G_i$ and covariates $X_i$ given race $r$, taken from the Census table $\vb q_{GX|R}$.
+where, for example, $q_{G_iX_i|r}$ indicates the estimated conditional probability of residence location $G_i$ and covariates $X_i$ given race $r$, taken from the Census table $\vb q_{GX|R}$.
 
-The BISG estimator implicitly relies on two key assumptions: a conditional independence relation, and an assumption about the accuracy of Census data.
+The BISG estimator implicitly relies on two key assumptions.
+The first is the following conditional independence relation between an individual's surname and residence location (as well as other characteristics) given their unobserved race.
 
 ```{=tex}
 \begin{assump}[Conditional independence of name and other proxy variables] \label{a:indep-sgx}
-    For all individuals $i$, $S_i\indep G_i, X_i\mid R_i$.
+    For all individuals $i$, $S_i\indep \{G_i, X_i\}\mid R_i$.
 \end{assump}
 ```
 
-Assumption \ref{a:indep-sgx} seems plausible on its face: once we know an individual is White, does knowing their surname is Smith tell us anything about where they live, what they make, or other demographic information?
-However, there are cases where this is assumption is violated, often because of a lack of granularity in how race is coded.
-For example, people with Chinese, Indian, Filipino, Vietnamese, Korean, or Japanese are all coded as "Asian" in the census.
-However, these groups have different demographic and geographic distributions, and very different sets of characteristic surnames.
-Unlike the Smith example, knowing that an Asian individual's surname is Gupta makes it much more likely that they have a higher income and live in the Eastern U.S [@budiman2019key].
+Assumption \ref{a:indep-sgx} implies, for example, that once we know an individual is White, knowing their surname is Smith tell us nothing about their residence location and other characteristics.
+Although this assumption appears to be reasonable, the lack of granularity in the coding of race may lead to its violation.
+For example, people with Chinese, Indian, Filipino, Vietnamese, Korean, or Japanese are all coded as one racial group "Asian" in the census.
+These groups, however, have distinct sets of surnames and may have different demographic and geographic distributions.
+Unlike the Smith example, therefore, knowing that an Asian individual's surname is Gupta makes it much more likely that they have a higher income and live in the Eastern U.S [@budiman2019key].
 <!--# Nevertheless, Assumption \ref{a:indep-sgx} appears to approximately hold in practice for White, Black, and Hispanic individuals, which make up a substantial majority of the U.S. population. -->
- 
+
+The second assumption of BISG is that the Census tables reflect the true population distributions of $R$, $S$, $G$, and $X$.
+
 ```{=tex}
 \begin{assump}[Data accuracy] \label{a:cens-acc}
     For all individuals $i$, 
@@ -136,21 +140,21 @@ Unlike the Smith example, knowing that an Asian individual's surname is Gupta ma
 \end{assump}
 ```
 
-Assumption \ref{a:cens-acc}, which assumes that the Census tables reflect the true distributions of $R$, $S$, $G$, and $X$, is likewise never exactly met in practice.
+Like Assumption \ref{a:indep-sgx}, Assumption \ref{a:cens-acc} never holds exactly in practice.
 Despite the best efforts of the Census Bureau, the decennial census has intrinsic error, including undercounting minority racial groups [@census2022undercount; @censuscount; @racecounts], as well as error introduced by privacy-preserving mechanisms [@abowd2020].
-And because of births, deaths, and moves, census data are out-of-date from the moment of publication.
+And because of births, deaths, and moves, census data are often out-of-date from the moment of publication.
 These errors have led further extensions of the BISG estimator to account for some of this measurement error [@imai2022addressing], which can help with accuracy for smaller racial groups.
 
-Even though Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc} are never completely met, they hold well enough to produce accurate and generally well-calibrated estimates in practice [@kenny2021das; @deluca2022validating].
+Even though Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc} are never perfectly met, researchers find that BISG produces accurate and generally well-calibrated estimates in practice [@imai:khan:16; @kenny2021das; @deluca2022validating].
 
 Under Assumption \ref{a:indep-sgx}, by Bayes' Rule, $$
     \Pr(R_i=r\mid G_i,X_i,S_i)
     \propto \Pr(G_i, X_i\mid R_i=r)\Pr(S_i\mid R_i=r)\Pr(R_i=r),
-$$ justifying the form of \eqref{eq:pr-bisg}, and providing us with the following immediate result.
+$$ justifying the estimator given in \eqref{eq:pr-bisg}, and providing us with the following immediate result.
 
 ```{=tex}
-\begin{prop}
-Under Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc}, the BISG estimator is correct:
+\begin{prop}[Accuracy of BISG]
+Under Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc}, the BISG estimator is accurate:
 $\hat P_{ir} = \Pr(R_i=r\mid G_i,X_i,S_i)$.
 \end{prop}
 ```
