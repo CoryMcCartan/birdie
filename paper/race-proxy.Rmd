@@ -153,7 +153,7 @@ Under Assumption \ref{a:indep-sgx}, by Bayes' Rule, $$
 $$ justifying the estimator given in \eqref{eq:pr-bisg}, and providing us with the following immediate result.
 
 ```{=tex}
-\begin{prop}[Accuracy of BISG]
+\begin{prop}[Accuracy of BISG] \label{p:bisg}
 Under Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc}, the BISG estimator is accurate:
 $\hat P_{ir} = \Pr(R_i=r\mid G_i,X_i,S_i)$.
 \end{prop}
@@ -164,14 +164,14 @@ $\hat P_{ir} = \Pr(R_i=r\mid G_i,X_i,S_i)$.
 
 Unfortunately, accurate and calibrated estimates of $\Pr(R\mid G,X,S)$ are not sufficient for identifying racial disparities.
 The reason is that the prediction error of race probabilities may be correlated with the outcome variable of interest.
-Specifically, we consider the following weighting estimator, which attempts to capture the uncertainty inherent in race prediction,^[An alternative is a classification estimator, which deterministically assigns individuals to a predicted racial category based on the BISG estimates $\vb{\hat P}_i$ (either the largest $\hat P_{ir}$ or the one which exceeds a predetermined threshold). Unlike the weighting estimator, this classification estimator does not take into account uncertainty.]
+Specifically, we consider the following weighted estimator, which attempts to capture the uncertainty inherent in race prediction,^[An alternative is a classification estimator, which deterministically assigns individuals to a predicted racial category based on the BISG estimates $\vb{\hat P}_i$ (either the largest $\hat P_{ir}$ or the one which exceeds a predetermined threshold). Unlike the weighted estimator, this classification estimator does not take into account uncertainty.]
 $$
     \hat\mu^{(\text{wtd})}_{Y|R}(y\mid r) 
         = \frac{\sum_{i=1}^N \ind\{Y_i=y\}\hat P_{ir}}{
             \sum_{i=1}^N \hat P_{ir}}.
 $$
 
-Formally, \citet{chen2019fairness} shows that the asymptotic bias of this weighting estimator is controlled by the residual correlation of $Y$ and $R$ after controlling for $G$, $X$, and $S$.
+Formally, \citet{chen2019fairness} shows that the asymptotic bias of this weighted estimator is controlled by the residual correlation of $Y$ and $R$ after controlling for $G$, $X$, and $S$.
 We reproduce this result here.
 
 ```{=tex}
@@ -182,7 +182,7 @@ If race is binary (so $\cR=\{0,1\}$), then as $N\to\infty$, \[
 \]
 \end{theorem}
 ```
-This result implies that the conditional independence between individual's race and outcome given their surname, residence location, and other characteristics is sufficient to eliminate the bias of the weighting estimator.
+This result implies that the conditional independence between individual's race and outcome given their surname, residence location, and other characteristics is sufficient to eliminate the bias of the weighted estimator.
 
 ```{=tex}
 \begin{assump}[Conditional independence of outcome and race] \label{a:indep-yr}
@@ -190,16 +190,15 @@ For all individuals $i$, $Y_i\indep R_i\mid G_i,X_i,S_i$ holds.
 \end{assump}
 ```
 
-
-Figure \@ref(fig:dag)(a) shows a causal structure that satisfies Assumption \ref{a:indep-yr}.
+Figure \@ref(fig:dag)(a) shows a causal structure that satisfies Assumption \ref{a:indep-yr} as well as Assumption \ref{a:indep-sgx}.
 The DAG implies that $Y\indep R\mid G,X,S$ because all paths from $R$ to $Y$ are blocked by $G$, $X$, or $S$.
 The key causal assumption of this DAG is that the effect of race $R$ on the outcome $Y$ must be entirely mediated by surname $S$, residence location $G$, and other observed characteristics $X$.
-This type of exclusion restriction is difficult to satisfy in many practical settings because race may affect so many factors, biasing the weighting estimator.
+This type of exclusion restriction is difficult to satisfy in many practical settings because race may affect so many factors, biasing the weighted estimator.
 
 But in other settings, Assumption \ref{a:indep-yr} may be more plausible.
 For example, for a manager reviewing job applications on paper race is typically unobserved, but the manager may be influenced by racial or gender cues in a candidate's name or address [@park2009names; @aaslund2012names].
-So long as we observe all information used by the manager, the weighting estimator would give an asymptotically unbiased estimate.
-Outside of these cases, however, the weighting estimator is likely to be biased.
+So long as we observe all information used by the manager, the weighted estimator would give an asymptotically unbiased estimate.
+Outside of these cases, however, the weighted estimator is likely to be biased.
 
 ```{=tex}
 \begin{figure}[ht]
@@ -264,7 +263,7 @@ Outside of these cases, however, the weighting estimator is likely to be biased.
 
 ## Alternative Identification Strategy
 
-To reduce this potential bias of the weighting estimator, we propose an alternative identification assumption that may be applicable when Assumption \ref{a:indep-yr} is not credible.
+To reduce this potential bias of the weighted estimator, we propose an alternative identification assumption that may be applicable when Assumption \ref{a:indep-yr} is not credible.
 Specifically, we assume that surname, rather than race, satisfies the exclusion restriction conditional on (unobserved) race, residence location, and other observed characteristics.
 
 ```{=tex}
@@ -273,7 +272,7 @@ For all individuals $i$, $Y_i\indep S_i\mid R_i,G_i,X_i$.
 \end{assump}
 ```
 
-Figure \@ref(fig:dag)(b) shows one possible causal structure that meets this assumption.
+Figure \@ref(fig:dag)(b) shows one possible causal structure that meets this assumption as well as Assumption \ref{a:indep-sgx}.**KI: We should remove dotted arrows from the figure. I realized that they violate the BISG assumption.**
 In this DAG, race can have a direct effect on the outcome $Y$ as well as on residence location $G$ and other observed chracteristics $X$, while all paths from $S$ to $Y$ are blocked by $G$, $X$, or $R$.
 
 This structure is plausible in many real-world settings, such as our motivating examples of HMID claims and voter turnout.
@@ -281,7 +280,6 @@ In both these cases, we can rule out a direct effect of name on the outcome. (**
 This assumption rules out the possibility that surname directly affects the outcome whereas such a direct effect is allowed under Assumption \ref{a:indep-yr}.
 In the above hiring example, if the manager directly relies upon surname to make the decision, our assumption will be violated.
 Assumption \ref{a:indep-ys} also implies that there is no unobserved confounder affecting both surname and outcome. **KI: What would be an example of this?**
-**KI: I think we should remove dotted arrows from the figure. I realized that they violate the BISG assumption.**
 
 In any particular application, therefore, it is important to consider whether it is more reasonable to rule out the direct effect of race on the outcome or the direct effect of surname on the outcome.
 In the former, Assumption \ref{a:indep-yr} is more appropriate whereas in the latter, Assumption \ref{a:indep-ys} is more credible.
@@ -315,14 +313,14 @@ Lastly, the remaining term in the middle can be solved for, since \eqref{eq:tpro
 Our result is closely related to the causal identification based on proxy variables in the presence of unmeasured confounding [@kuroki2014measurement; @miao2018identifying].
 Here, we use surname as a proxy variable for race.
 
-# Estimation
-
+Together with Proposition \ref{p:bisg}, Theorem \ref{thm:id} imply that racial disparities can be identified under Assumptions \ref{a:indep-sgx}, \ref{a:cens-acc}, and \ref{a:indep-ys}.
 The identifying equation \eqref{eq:tprob} shows that $\Pr(Y=y\mid G=g, X=x, S=s)$ is linear in the BISG estimands $\Pr(R=r\mid G=g, X=x, S=s)$.
-Thus it is possible to estimate $\Pr(Y=y\mid R)$ with a least-squares estimator $$
+Thus, it is natural to consider the following least-squares estimator of $\Pr(Y=y\mid R)$ under this alternative identification strategy, 
+$$
 \hat{\vb*\mu}^{(\text{ols})}_{Y\mid R}(y\mid \cdot) 
 = (\hat{\vb P}^\top \hat{\vb P})^{-1} \hat{\vb P}\,\ind\{\vb Y = y\},
 $$ where as above $\hat{\vb P}$ is the matrix of BISG probabilities.
-<!-- and where $\vb Y_{gx}$ is the vector of outcome variables for the individuals with $G_i=g$ and $X_i=x$. --> This estimator is unbiased in finite samples.
+<!-- and where $\vb Y_{gx}$ is the vector of outcome variables for the individuals with $G_i=g$ and $X_i=x$. --> Indeed, this estimator is unbiased as the following theorem shows.
 **CM: cite to Dan & Jacob's working paper around here.**
 
 ```{=tex}
@@ -339,8 +337,10 @@ ID equation -> linear model
 BISG accurate -> strict exogeneity
 \end{proof}
 ```
-This is not a property shared by $\hat{\mu}^{(\text{wtd})}_{y\mid r}$.
-In fact, the weighted and OLS estimators are guaranteed to disagree, unless either the BISG probabilities are perfect or the weighted estimator is constant across races, as Theorem \ref{thm:wtd-vs-ols} below shows.
+
+It is worth comparing this OLS estimator with the weighted estimator $\hat{\mu}^{(\text{wtd})}_{y\mid r}$.
+The next theorem shows that these two estimators are guaranteed to disagree, unless either the BISG probabilities perfectly discriminate **KI: Doesn't this simply mean that one racial category has a probability of one and the other categories have a probability of zero?** or the weighted estimator is constant across races.
+These two conditions are almost never met in practice.
 This underscores the importance of selecting the appropriate assumption (\ref{a:indep-yr} or \ref{a:indep-ys}) for a particular analysis, since they imply different estimators with different results.
 
 ```{=tex}
@@ -402,9 +402,14 @@ Then by the above basis expansion, $\hat{\mu}^{(\text{ols})}_{Y|R}(y\mid j)=c_j$
 \]
 \end{proof}
 ```
-Despite these advantages over the weighted estimator, $\hat{\vb*\mu}^{(\text{ols})}_{Y\mid R}$ is not well-suited to estimation in general, since ignores the fact that the unknown parameters are probabilities and thus constrained to be nonnegative and sum to 1.
+
+Despite potential advantages over the weighted estimator, $\hat{\vb*\mu}^{(\text{ols})}_{Y\mid R}$ is not well-suited to estimation in practice since it ignores the fact that the unknown parameters are probabilities and thus constrained to be nonnegative and sum to 1.
 As a result, in any particular sample, $\hat{\vb*\mu}^{(\text{ols})}_{Y\mid R}$ can produce impossible or contradictory estimates.
-To address this challenge, and to open the door to more modeling flexibility, we adopt a simple Bayesian model instead.
+This is particularly problematic because a large number of unique surnames make both $\vb P$ and $\vb b$ high-dimensional.
+To address this challenge, and to open the door to more flexible modeling, we propose a simple Bayesian model below.
+
+# Estimation
+
 
 ## General Bayesian model
 
@@ -763,7 +768,7 @@ The worsened performance for block-level versus tract-level probabilities likely
 knitr::include_graphics("figures/nc_party_fit.pdf")
 ```
 
-For each set of BISG probabilities, we estimate the joint distribution of each outcome variable and race using the proposed method, the weighting estimator, the OLS estimator, and a thresholding estimator that deterministically assigns each individual the maximum *a posteriori* racial category.
+For each set of BISG probabilities, we estimate the joint distribution of each outcome variable and race using the proposed method, the weighted estimator, the OLS estimator, and a thresholding estimator that deterministically assigns each individual the maximum *a posteriori* racial category.
 For the propsed method, we use the additive specification described above, using geographic random effects matching the geographic level used in the BISG probabilities (e.g., county random effects for the county-level BISG probabilities), except for the block-level probabilities.
 Due to the large number of individual census blocks, we use tract random effects instead for this particular model.
 
@@ -775,7 +780,7 @@ Figures \@ref(fig:nc-fit-party) and \@ref(fig:nc-fit-turnout) show the TV distan
 The figures also show the TV distance for each conditional distribution by race, to illuminate how the estimators perform on each subgroup.
 
 As far as the overall TV error, the proposed method outperforms every alternative, for both party ID and turnout, at every geographic level.
-The OLS estimator outperforms the weighting estimator for party ID, but the situation is reversed for turnout.
+The OLS estimator outperforms the weighted estimator for party ID, but the situation is reversed for turnout.
 This suggests that compared to the effect of race on party ID, the effect of race on turnout is more strongly moderated by geography, reducing the size of the violation of Assumption \ref{a:indep-yr}.
 The thresholding estimator consistently performs poorly.
 
@@ -795,7 +800,7 @@ The results are more mixed for individual racial groups.
 It is important to remember that Black and White voters together comprise over 92% of the sample.
 The new model consistently outperforms the other estimators for Hispanic and Asian voters, and is either best or essentially tied for best for White, Black, and Native voters, across both outcomes and all geographic levels.
 All of the methods struggle for the Other category, likely due to its small size and the heterogeneity of its members.
-However, the weighting estimator is probably the "least bad" for this group.
+However, the weighted estimator is probably the "least bad" for this group.
 
 ```{r}
 x = readRDS("data/nc_bounds.rds")
