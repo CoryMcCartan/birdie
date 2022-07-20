@@ -145,7 +145,7 @@ Despite the best efforts of the Census Bureau, the decennial census has intrinsi
 And because of births, deaths, and moves, census data are often out-of-date from the moment of publication.
 These errors have led further extensions of the BISG estimator to account for some of this measurement error [@imai2022addressing], which can help with accuracy for smaller racial groups.
 
-Even though Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc} are never perfectly met, researchers find that BISG produces accurate and generally well-calibrated estimates in practice [@imai:khan:16; @kenny2021das; @deluca2022validating].
+Even though Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc} are never perfectly met, researchers find that BISG produces accurate and generally well-calibrated estimates in practice [@imai2016; @kenny2021das; @deluca2022validating].
 
 Under Assumption \ref{a:indep-sgx}, by Bayes' Rule, $$
     \Pr(R_i=r\mid G_i,X_i,S_i)
@@ -160,24 +160,19 @@ $\hat P_{ir} = \Pr(R_i=r\mid G_i,X_i,S_i)$.
 ```
 
 
-## Identification of Racial Disparities with BISG Probabilities
+## Bias of Racial Disparity Estimates based on BISG Probabilities
 
-Accurate and calibrated estimates of $\Pr(R\mid G,X,S)$ are one thing, but how can they be used to estimate $\Pr(Y\mid R)$?
-Two main approaches have been used to date:
-
--   A *thresholded* or *plurality* estimator, which deterministically assigns individuals to a predicted racial category based on the BISG estimates $\vb{\hat P}_i$ (either the largest $\hat P_{ir}$ or the one which exceeds a predetermined threshold). **CM: should we move the thresholded estimator to a footnote, since we don't discuss it further?**
-
--   A *weighted* estimator, which attempts to capture the uncertainty in $R_i$: $$
+Unfortunately, accurate and calibrated estimates of $\Pr(R\mid G,X,S)$ are not sufficient for identifying racial disparities.
+The reason is that the prediction error of race probabilities may be correlated with the outcome variable of interest.
+Specifically, we consider the following weighting estimator, which attempts to capture the uncertainty inherent in race prediction,^[An alternative is a classification estimator, which deterministically assigns individuals to a predicted racial category based on the BISG estimates $\vb{\hat P}_i$ (either the largest $\hat P_{ir}$ or the one which exceeds a predetermined threshold). Unlike the weighting estimator, this classification estimator does not take into account uncertainty.]
+$$
     \hat\mu^{(\text{wtd})}_{Y|R}(y\mid r) 
         = \frac{\sum_{i=1}^N \ind\{Y_i=y\}\hat P_{ir}}{
             \sum_{i=1}^N \hat P_{ir}}.
-    $$
+$$
 
-The quality of these two estimators has been extensively studied by \citet{chen2019fairness} and depends on the particular context and any assumptions one is willing to make.
-The thresholded estimator is in general incorrect, though the direction and magnitude of the bias is not easily characterized.
-
-While the weighted estimator is more natural, and avoids discarding information and uncertainty, it should raise suspicions as to being unbiased for $\Pr(Y\mid R)$, since we have made no assumptions about the relationship of $Y$ to any of $R$, $G$, $X$, or $S$.
-Indeed, the estimator can be biased, with the amount of bias controlled by the residual correlation of $Y$ and $R$ after controlling for $G$, $X$, and $S$.
+Formally, \citet{chen2019fairness} shows that the asymptotic bias of this weighting estimator is controlled by the residual correlation of $Y$ and $R$ after controlling for $G$, $X$, and $S$.
+We reproduce this result here.
 
 ```{=tex}
 \begin{theorem}[Theorem 3.1 of \citealt{chen2019fairness}]
@@ -187,23 +182,24 @@ If race is binary (so $\cR=\{0,1\}$), then as $N\to\infty$, \[
 \]
 \end{theorem}
 ```
-The following additional assumption is therefore sufficient for the weighted estimator to be asymptotically unbiased.
+This result implies that the conditional independence between individual's race and outcome given their surname, residence location, and other characteristics is sufficient to eliminate the bias of the weighting estimator.
 
 ```{=tex}
 \begin{assump}[Conditional independence of outcome and race] \label{a:indep-yr}
-For all individuals $i$, $Y_i\indep R_i\mid G_i,X_i,S_i$.
+For all individuals $i$, $Y_i\indep R_i\mid G_i,X_i,S_i$ holds.
 \end{assump}
 ```
+
+
 Figure \@ref(fig:dag)(a) shows a causal structure that satisfies Assumption \ref{a:indep-yr}.
-The DAG implies that $Y\indep R\mid G,X,S$.
-since all paths from $R$ to $Y$ are blocked by $G$, $X$, or $S$ (for more details, see \citealt{pearl1995causal}).
-Here, $R$ must satisfy a kind of exclusion restriction: its entire effect on the outcome is mediated through $S$, $G$, and $X$.
-There can be no confounding between $Y$ and the $Y$, such as through a latent socioeconomic status variable that isn't fully controlled by $X$.
-In most practical settings, this will not be the case---racial disparities in HMID claim rates arise from more than geographic variation and surnames.
-But in other settings, Assumption \ref{a:indep-yr} may be much more plausible.
+The DAG implies that $Y\indep R\mid G,X,S$ because all paths from $R$ to $Y$ are blocked by $G$, $X$, or $S$.
+The key causal assumption of this DAG is that the effect of race $R$ on the outcome $Y$ must be entirely mediated by surname $S$, residence location $G$, and other observed characteristics $X$.
+This type of exclusion restriction is difficult to satisfy in many practical settings because race may affect so many factors, biasing the weighting estimator.
+
+But in other settings, Assumption \ref{a:indep-yr} may be more plausible.
 For example, for a manager reviewing job applications on paper race is typically unobserved, but the manager may be influenced by racial or gender cues in a candidate's name or address [@park2009names; @aaslund2012names].
-The weighted estimator would give an asymptotically unbiased estimate in this kind of setting.
-But outside of these cases, the weighted estimator will fail, unless by pure luck biases for some combinations of the covariates cancel biases for other combinations of the covariates once the outer expectation is taken.
+So long as we observe all information used by the manager, the weighting estimator would give an asymptotically unbiased estimate.
+Outside of these cases, however, the weighting estimator is likely to be biased.
 
 ```{=tex}
 \begin{figure}[ht]
@@ -265,26 +261,32 @@ But outside of these cases, the weighted estimator will fail, unless by pure luc
 \label{fig:dag}
 \end{figure}
 ```
-We can identify $\Pr(Y\mid R)$ another way by relying on the following assumption instead.
+
+## Alternative Identification Strategy
+
+To reduce this potential bias of the weighting estimator, we propose an alternative identification assumption that may be applicable when Assumption \ref{a:indep-yr} is not credible.
+Specifically, we assume that surname, rather than race, satisfies the exclusion restriction conditional on (unobserved) race, residence location, and other observed characteristics.
 
 ```{=tex}
 \begin{assump}[Conditional independence of outcome and name] \label{a:indep-ys}
 For all individuals $i$, $Y_i\indep S_i\mid R_i,G_i,X_i$.
 \end{assump}
 ```
-Compared to Assumption \ref{a:indep-yr}, it is surname, rather than race, which must satisfy the exclusion restriction under Assumption \ref{a:indep-ys}.
+
 Figure \@ref(fig:dag)(b) shows one possible causal structure that meets this assumption.
-Race has a direct effect on the outcome $Y$, and on $G$ and $X$, while all paths from $S$ to $Y$ are blocked by $G$, $X$, or $R$.
-This structure is more representative of many real-world settings, such as our motivating examples of HMID claims and voter turnout.
+In this DAG, race can have a direct effect on the outcome $Y$ as well as on residence location $G$ and other observed chracteristics $X$, while all paths from $S$ to $Y$ are blocked by $G$, $X$, or $R$.
+
+This structure is plausible in many real-world settings, such as our motivating examples of HMID claims and voter turnout.
 In both these cases, we can rule out a direct effect of name on the outcome. (**CM: revisit this more carefully once we've settled on outcomes. Dan notes e.g. mortgage application success may depend on discrimination via names**.)
-Then as long as there is not an unobserved confounder that influences both name and the outcome, after controlling for race, location, and any covariates, Assumption \ref{a:indep-ys} will be satisfied.
+This assumption rules out the possibility that surname directly affects the outcome whereas such a direct effect is allowed under Assumption \ref{a:indep-yr}.
+In the above hiring example, if the manager directly relies upon surname to make the decision, our assumption will be violated.
+Assumption \ref{a:indep-ys} also implies that there is no unobserved confounder affecting both surname and outcome. **KI: What would be an example of this?**
+**KI: I think we should remove dotted arrows from the figure. I realized that they violate the BISG assumption.**
 
-Of course, other causal structures will also satisfy Assumption \ref{a:indep-ys}.
-For example, we could add additional unobserved confounding between $G$, $X$, and $R$ in Figure \ref{fig:dag}(b).
-In any particular application it is important to consider whether names have a causal effect on the outcome, or whether name and outcome are caused by an unobserved confounder that is not controlled for in $X$.
-In these cases, such as in the hiring example above, our proposed method may not be appropriate.
+In any particular application, therefore, it is important to consider whether it is more reasonable to rule out the direct effect of race on the outcome or the direct effect of surname on the outcome.
+In the former, Assumption \ref{a:indep-yr} is more appropriate whereas in the latter, Assumption \ref{a:indep-ys} is more credible.
 
-When Assumption \ref{a:indep-ys} is met, it is generally possible to identify racial disparities, as Theorem \ref{thm:id} records precicely.
+The following theorem shows that it is possible to identify racial disparities under Assumption \ref{a:indep-ys}.
 
 ```{=tex}
 \begin{theoremrep} \label{thm:id}
@@ -304,14 +306,16 @@ So for each $y\in\cY$, $g\in\cG$, and $x\in\cX$, this relation is a linear syste
 These parameters are identified if and only if this system has a unique solution, i.e. if the coefficient matrix $\vb P$ has rank $|\cR|$ and so does the augmented matrix $\mqty(\vb P&\vb b)$.
 \end{proof}
 ```
-The essence of the identification result is the following observation: under Assumption \ref{a:indep-ys}, we have, for all $y\in\cY$, $g\in\cG$, $x\in\cX$, and $s\in\cS$, \begin{equation} \label{eq:tprob}
+
+The essence of this identification result is the following observation: under Assumption \ref{a:indep-ys}, we have, for all $y\in\cY$, $g\in\cG$, $x\in\cX$, and $s\in\cS$, \begin{equation} \label{eq:tprob}
     \Pr(Y=y\mid G=g, X=x, S=s)
     = \sum_{r\in\cR} \Pr(Y=y\mid R=r, G=g, X=x)\Pr(R=r\mid G=g, X=x, S=s).
 \end{equation} The leftmost term is estimable from the data and corresponds to the vector $\vb b$ in Theorem \ref{thm:id}, while the rightmost term is the BISG estimand and corresponds to the matrix $\vb P$ in Theorem \ref{thm:id}.
-The remaining term in the middle can be solved for, since \eqref{eq:tprob} holds across all combinations of $Y$, $G$, $X$, and $S$, leading to a large system of equations.
-See @kuroki2014measurement and @miao2018identifying for similar ideas in the context of causal identification with noisy proxies of unmeasured confounders.
+Lastly, the remaining term in the middle can be solved for, since \eqref{eq:tprob} holds across all combinations of $Y$, $G$, $X$, and $S$, leading to a large system of equations.
+Our result is closely related to the causal identification based on proxy variables in the presence of unmeasured confounding [@kuroki2014measurement; @miao2018identifying].
+Here, we use surname as a proxy variable for race.
 
-# Model
+# Estimation
 
 The identifying equation \eqref{eq:tprob} shows that $\Pr(Y=y\mid G=g, X=x, S=s)$ is linear in the BISG estimands $\Pr(R=r\mid G=g, X=x, S=s)$.
 Thus it is possible to estimate $\Pr(Y=y\mid R)$ with a least-squares estimator $$
