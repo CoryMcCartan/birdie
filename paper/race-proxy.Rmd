@@ -403,84 +403,93 @@ Then by the above basis expansion, $\hat{\mu}^{(\text{ols})}_{Y|R}(y\mid j)=c_j$
 \end{proof}
 ```
 
-Despite potential advantages over the weighted estimator, $\hat{\vb*\mu}^{(\text{ols})}_{Y\mid R}$ is not well-suited to estimation in practice since it ignores the fact that the unknown parameters are probabilities and thus constrained to be nonnegative and sum to 1.
-As a result, in any particular sample, $\hat{\vb*\mu}^{(\text{ols})}_{Y\mid R}$ can produce impossible or contradictory estimates.
+Despite potential advantages over the weighted estimator, the OLS estimator is not well-suited to estimation in practice since it ignores the fact that the unknown parameters are probabilities and thus constrained to be nonnegative and sum to 1.
+As a result, in any particular sample, the estimator can produce impossible or contradictory estimates.
 This is particularly problematic because a large number of unique surnames make both $\vb P$ and $\vb b$ high-dimensional.
-To address this challenge, and to open the door to more flexible modeling, we propose a simple Bayesian model below.
+To address this challenge, and to open the door to more flexible modeling, we next propose a Bayesian modeling approach that is based on our identification strategy and yet satisfies necessary constraints.
 
 # Estimation
 
+In this section, we propose a Bayesian model that can be used to estimate racial disparities under the proposed alternative identification strategy.
+We first present the model and describe the choice of prior before briefly discussing computational issues.
 
-## General Bayesian model
+## Bayesian model
 
-We begin with a model for the outcome $Y$, depending on $R$, $G$, $X$.
-Following Assumption \ref{a:indep-ys}, we do not need to condition on $S$: \begin{equation*}
-    Y_i \mid R_i, G_i, X_i, \Theta \sim \Categorical_\cY(\vb*\theta_{\cdot R_i}(G_i,X_i))
-\end{equation*} 
-The parameters $\theta_{yr}(g,x)$ are the probabilities for each level of the outcome, which can vary by $R$, $G$, and $X$.
-As such, this component of the model places no restrictions on the outcome process.
-The dot $\cdot$ indicates a vector built up out of all possible values of that index---for example, $\vb*\theta_{\cdot R_i}(G_i,X_i)$ is a vector of length $|\cY|$ consisting of entries of $\theta_{yR_i}(G_i,X_i)$ for $y\in\cY$.
-We have written the parameters as $\theta_{yr}(g,x)$ rather than $\theta_{yrgx}$ to separate the conceptual role of $R$ and $G,X$ in the model: the distribution of $Y$ given $R$ is of primary interest, while $G$ and $X$ are mostly nuisance variables.
-Specifically, our main target of inference is the summary parameter $$
-    \bar\Theta 
-    = \frac{1}{N} \sum_{i=1}^N \Theta(G_i, X_i),
-$$ which is the conditional distribution of $Y$ given $R$ in the sample population.
-Since we marginalize out $G$ and $X$, we adopt the notation $\theta_{yr}(g,x)$.
+We consider modeling the conditional distribution of the outcome $Y$ given race $R$, residence location $G$, and other observed characteristics $X$.
+Under Assumption \ref{a:indep-ys}, we do not need to condition on $S$.
+The top part of the model places no restrictions on the outcome process.
+\begin{equation*}
+    Y_i \mid R_i, G_i, X_i, \Theta \sim \Categorical_\cY(\vb*\theta_{\cdot R_i}(G_i,X_i)),
+\end{equation*}
+where the parameters $\theta_{yr}(g,x)$ represent the probabilities for each level of the outcome $Y$, which can vary by $R$, $G$, and $X$.
+We have written the parameters as $\theta_{yr}(g,x)$ rather than $\theta_{yrgx}$ to separate the conceptual role of $R$ and $G,X$ in the model.
+The dot $\cdot$ indicates a vector built up out of all possible values of that index.
+For example, $\vb*\theta_{\cdot R_i}(G_i,X_i)$ is a vector of length $|\cY|$ consisting of entries of $\theta_{yR_i}(G_i,X_i)$ for $y\in\cY$.
+The conditional distribution of $Y$ given $R$ is of primary interest, which can be written as,
+$$
+    \bar\theta_{yr} 
+    = \mathbb{E} (\theta_{yr}(G_i, X_i)),
+$$
+where the expectation is taken over the joint distribution of $G$ and $X$.
 
-Next, we model $G$, $X$, and $S$ given $R$.
-We adopt the BISG model, modeling $S$ and $(G,X)$ separately (Assumptions \ref{a:indep-sgx}) and treating the Census tables $\vb q$ as accurate (Assumption \ref{a:cens-acc}): \begin{align*}
+Next, we model $G$, $X$, and $S$ given $R$ using the BISG methodology.
+Specifically, we model $S$ and $(G,X)$ separately given $R$ using the Census data under Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc}): 
+\begin{align*}
     (G_i, X_i) \mid R_i &\sim \Categorical_{\cG\times\cX}(\vb q_{GX|R_i}) \\
     S_i \mid R_i &\sim \Categorical_\cS(\vb q_{S|R_i}) \\
     R_i &\iid \Categorical_\cR(\vb q_R)
 \end{align*}
+Finally, the model is completed with the prior distribution for $\Theta$, which is denoted by $\pi(\Theta)$ and discussed in detail below.
 
-Finally, the parameter $\Theta$ requires a prior model, we denote $\pi(\Theta)$.
-The details of $\pi(\Theta)$ are discussed in the next section.
-The posterior can then be written as \begin{align*}
+Putting all together, the posterior distribution can then be written as 
+\begin{align*}
     \pi(\Theta, \vb R\mid \vb Y, \vb G, \vb X, \vb S)
     &\propto \pi(\Theta)\prod_{i=1}^N \pi(Y_i\mid G_i, X_i, R_i, \Theta)
             \pi(G_i, X_i\mid R_i)\pi(S_i\mid R_i)\pi(R_i) \\
     &= \pi(\Theta) \prod_{i=1}^N \theta_{Y_iR_i}(G_i, X_i) q_{G_iX_i\mid R_i} q_{S_i\mid R_i} q_{R_i} \\
     &\propto \pi(\Theta) \prod_{i=1}^N \theta_{Y_iR_i}(G_i, X_i)\hat{P_i}_{R_i},
-\end{align*} where as above $\hat{\vb P_i}$ are the BISG probability estimates for individual $i$, which depend on Census data represented in $\vb q_{GX\mid R}$, $\vb q_{S\mid R}$, and $\vb q_R$, but not on the parameters $\Theta$ and $\vb R$.
+\end{align*} 
+where as above $\hat{\vb P_i}$ are the BISG probability estimates for individual $i$, which depend on Census data represented in $\vb q_{GX\mid R}$, $\vb q_{S\mid R}$, and $\vb q_R$, but not on the parameters $\Theta$ and individual race $\vb R$.
 <!--# Notice the similarities between the final form of the posterior and the identifying equation \eqref{eq:tprob}. -->
 
-Since $\vb R$ is high-dimensional, discrete, and not of primary interest, we can easily marginalize it out: \begin{align*}
-    \pi(\Theta\mid \vb Y, \vb G, \vb X, \vb S)
-    &\propto \pi(\Theta) \prod_{i=1}^N \pi(Y_i,G_i,X_i,S_i\mid \Theta) \\
-    &\propto \pi(\Theta) \prod_{i=1}^N \sum_{r\in\cR} \pi(Y_i,R_i,G_i,X_i,S_i\mid \Theta) \\
-    &= \pi(\Theta) \prod_{i=1}^N \sum_{r\in\cR} \theta_{Y_i r}(G_i, X_i)\hat{P}_{ir}
-    = \pi(\Theta) \prod_{i=1}^N \vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i.
-    \numberthis \label{eq:post-marg}
-\end{align*} This makes it much easier to sample from the model, as the number of parameters is now a function only of the sizes of $\cY$, $\cR$, $\cG$, and $\cX$, and not the sample size $N$.
-
-## Prior on $\Theta$
+## Prior distribution
 
 The final but critical component of the model is the prior $\pi(\Theta)$.
 A natural prior would be to allow for maximum flexibility with a *fully saturated* specification: \begin{align*}
     \Theta_{yr}(g, \vb x) &= \theta_{yrg\vb x},  \\
-    \vb*\theta_{\cdot rgx}&\iid\Dirichlet(\alpha)
-\end{align*} This prior places no additional assumptions on the outcome model.
-However, it suffers from the curse of dimensionality as more covariates are added to $X$, especially since in practice $G$ will be quite large, covering many blocks or ZIP codes.
+    \vb*\theta_{\cdot rgx}&\iid\Dirichlet(\alpha).
+\end{align*}
+This prior, however, suffers from the curse of dimensionality as more covariates are added to $X$, especially since in practice $G$ will be quite large, covering many blocks or ZIP codes.
 For example, for a binary outcome and nationwide data, if we use block-level race data, five racial categories, and just four binary covariates, the model has over 650 *million* parameters, which is nearly double the entire U.S. population.
-With all of these parameters *a priori* independent under the fully saturated prior, there is no opportunity for sharing statistical strength; the prior will dominate the likelihood for individual parameters.
+With all of these parameters *a priori* independent under the fully saturated prior, there is no opportunity for sharing information across parameters with the prior dominating the likelihood for individual parameters.
 This problem could be partially remedied by adding some hierarchical structure to the priors on $\vb*\theta_{\cdot rgx}$, e.g., by grouping parameters at the county or state level.
 
-We take a slightly different approach, motivated in part by the fact that we are primarily interested only in $\bar\Theta$, and by a belief that the interaction structure is primarily low-dimensional.
-It is reasonable to assume that the relationship between $Y$ and $R$ could vary widely by geographies, or within demographic subgroups.
-But we do not believe that the magnitude of higher-order interactions is particularly large; while $Y\mid R$ could be more extreme within some demographic subgroups, any further variation in this across small geographic units is unlikely to be substantial.
-This leads us to the following *additive* prior specification, which can be thought about as a random intercept model, \begin{align*}
+We take a slightly different approach, motivated by the fact that we are primarily interested in $\bar\Theta$.
+We assume that the relationship between the outcome $Y$ and race $R$ could vary widely by geographies, or within demographic subgroups but the structure of this interaction is relatively low-dimensional.
+Under this assumption of no higher-order interaction, we propose the following *additive* prior specification, which can be thought about as a random intercept model, \begin{align*}
     \Theta_{yr}(g, \vb x) &= g^{-1}\qty(\log\theta_{yr} + \beta^{(0)}_{yrg} + 
         \sum_{k=1}^{K} \beta^{(k)}_{yrx_k})\\
         \vb*\theta_{\cdot r} &\iid \Dirichlet(\alpha) \\
         \vb*\beta^{(k)}\mid\sigma^2_k &\iid \Norm(0, \sigma^2_k), \quad k=0,1,\dots,K \\
         \sigma^2_k &\iid \Cauchy^+(0, L), \quad k=0,1,\dots,K,
 \end{align*} where $K$ is the number of covariates, $\alpha$ and $L$ are hyperparameters, and $g^{-1}$ is a softmax link function.
-The hierarchical priors on the $\vb*\beta^{(k)}$ allow the model to shrink towards zero covariates which are not predictive of a varying relationship between $Y$ and $R$.
+The hierarchical priors on the $\vb*\beta^{(k)}$ allow the model to shrink towards zero for covariates which are not predictive of a varying relationship between $Y$ and $R$.
 To the extent one wishes to model higher-order interactions, those can be added as additional random intercepts; the key efficiency gain is in separating the large number of geographic parameters $\beta^{(0)}_{yrg}$ from the other covariates.
-We have found, on smaller datasets where fitting both the additive and fully saturated specifications is possible, that both give similar inferences for $\bar\Theta$, but the additive specification quickly becomes more accurate even for medium-sized problems.
+We have found, on smaller datasets where fitting both the additive and fully saturated specifications is possible, that both specifications give similar inferences for $\bar\Theta$, but the additive specification tends to be more accurate even for medium-sized problems.
 
 ## Computation
+
+**KI: Two things that need to be done here.  First, it is unclear how marginalization needs to incorporate the prior, which has $R$.  Second, we should include some experiments you mention here.** 
+
+Since $\vb R$ is high-dimensional, discrete, and not of primary interest, we can marginalize it out as follows: 
+\begin{align*}
+    \pi(\Theta\mid \vb Y, \vb G, \vb X, \vb S)
+    &= \pi(\Theta) \prod_{i=1}^N \sum_{r\in\cR} \theta_{Y_i r}(G_i, X_i)\hat{P}_{ir}
+    = \pi(\Theta) \prod_{i=1}^N \vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i.
+    \numberthis \label{eq:post-marg}
+\end{align*} 
+This makes it much easier to sample from the model, as the number of parameters is now a function only of the sizes of $\cY$, $\cR$, $\cG$, and $\cX$, and not the sample size $N$.
+
 
 The marginalized posterior \eqref{eq:post-marg} is simple, but not conjugate to any prior distribution.
 It has only continuous parameters, but these are constrained to be nonnegative and to sum to 1 across certain dimensions.
