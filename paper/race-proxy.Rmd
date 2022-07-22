@@ -442,13 +442,13 @@ Specifically, we model $S$ and $(G,X)$ separately given $R$ using the Census dat
 Finally, the model is completed with the prior distribution for $\Theta$, which is denoted by $\pi(\Theta)$ and discussed in detail below.
 
 Putting all together, the posterior distribution can then be written as 
-\begin{align*}
+\begin{align}
     \pi(\Theta, \vb R\mid \vb Y, \vb G, \vb X, \vb S)
     &\propto \pi(\Theta)\prod_{i=1}^N \pi(Y_i\mid G_i, X_i, R_i, \Theta)
-            \pi(G_i, X_i\mid R_i)\pi(S_i\mid R_i)\pi(R_i) \\
-    &= \pi(\Theta) \prod_{i=1}^N \theta_{Y_iR_i}(G_i, X_i) q_{G_iX_i\mid R_i} q_{S_i\mid R_i} q_{R_i} \\
-    &\propto \pi(\Theta) \prod_{i=1}^N \theta_{Y_iR_i}(G_i, X_i)\hat{P_i}_{R_i},
-\end{align*} 
+            \pi(G_i, X_i\mid R_i)\pi(S_i\mid R_i)\pi(R_i) \nonumber \\
+    &= \pi(\Theta) \prod_{i=1}^N \theta_{Y_iR_i}(G_i, X_i) q_{G_iX_i\mid R_i} q_{S_i\mid R_i} q_{R_i} \nonumber \\
+    &\propto \pi(\Theta) \prod_{i=1}^N \theta_{Y_iR_i}(G_i, X_i)\hat{P_i}_{R_i}, \label{eq:posterior}
+\end{align} 
 where as above $\hat{\vb P_i}$ are the BISG probability estimates for individual $i$, which depend on Census data represented in $\vb q_{GX\mid R}$, $\vb q_{S\mid R}$, and $\vb q_R$, but not on the parameters $\Theta$ and individual race $\vb R$.
 <!--# Notice the similarities between the final form of the posterior and the identifying equation \eqref{eq:tprob}. -->
 
@@ -490,7 +490,6 @@ Since $\vb R$ is high-dimensional, discrete, and not of primary interest, we can
 \end{align*} 
 This makes it much easier to sample from the model, as the number of parameters is now a function only of the sizes of $\cY$, $\cR$, $\cG$, and $\cX$, and not the sample size $N$.
 
-
 The marginalized posterior \eqref{eq:post-marg} is simple, but not conjugate to any prior distribution.
 It has only continuous parameters, but these are constrained to be nonnegative and to sum to 1 across certain dimensions.
 The model can be fit with any general Bayesian inference procedure such as Markov chain Monte Carlo (MCMC).
@@ -501,22 +500,27 @@ When the number of parameters is not too large relative to the data size, simple
 
 # Sensitivity Analysis
 
-The model introduced in this section, like the OLS and weighted estimators, relies on the two BISG assumptions, \ref{a:indep-sgx} and \ref{a:cens-acc}, which are known to not hold exactly.
-It is therefore important to understand how sensitive the model's inferences are to violations of these two assumptions.
-Both assumptions enter the model solely through the BISG probabilities $\hat{\vb P}$.
-If the Census data are inaccurate, or if $S\notindep G,X\mid R$, then the calculated probabilities $\hat{\vb P}$ will differ from the "true" individual race probabilities $\vb P^*$.
-The question then becomes one of quantifying how a particular error in these probabilities $\vb P^* - \hat{\vb P}$ translates into error in the posterior.
+The proposed model, like the weighted and OLS estimators, relies upon Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc}, which are required for the BISG race probabilities to be accurate.
+Unfortunately, these assumptions do not exactly hold in practice.
+In this section, we address this challenge by developing a sensitivity analysis that assesses how the bias in BISG race probabilities affect the estimates of racial disparities.
 
-Denote by $\pi_{\vb*\delta}$ the posterior constructed using $\hat{\vb P}_i+\vb*\delta_i$ as the probabilities, so $\pi_{\vb*\delta^*}$ is the "true" posterior with $\vb*\delta_i^* \dfeq \vb P^*_i - \hat{\vb P}_i$.
-Estimating how $\pi$ and $\pi_{\vb*\delta}$ differ in general is difficult, but we can gain insight by focusing on "small enough" $\vb*\delta$, such that a linear approximation is appropriate.
+We begin by pointing out that both Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc} enter our model solely through the BISG race probabilities $\hat{\vb P}$.
+If the Census data are inaccurate, or if the conditional independence relation does not hold $S\notindep G,X\mid R$, then the calculated probabilities $\hat{\vb P}$ will differ from the "true" individual race probabilities $\vb P^*$.
+Our goal is to quantify how an error in these probabilities $\vb P^* - \hat{\vb P}$ shifts the posterior and hence the estimates of racial disparities.
 
-Defining perturbation weights $$
+Denote by $\pi_{\vb*\delta}$ the posterior constructed using the error-corrected BISG race probabilities $\hat{\vb P}_i+\vb*\delta_i$ as the input probabilities for the model (see Equation \eqref{eq:posterior}), where $\pi_{\vb*\delta^*}$ is the true posterior with $\vb*\delta_i^* \dfeq \vb P^*_i - \hat{\vb P}_i$.
+Estimating how $\pi$ and $\pi_{\vb*\delta}$ differ in general is difficult, but we focus on the settings where $\vb*\delta$ is small enough to make a linear approximation appropriate.
+In sum, we aim to quantify how the small error in BISG probabilities can alter the estimates of racial disparities.
+
+Define the following perturbation weight, which represents the ratio of posterior based on the biased and error-corrected BISG race probabilities: 
+$$
     w(\Theta,\vb*\delta^*) \dfeq 
     \prod_{i=1}^N 
     \qty(1 + \frac{\vb*\theta_{Y_i}(G_i, X_i)^\top \vb*\delta_i^*}{
     \vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i})
     \propto \frac{\pi_{\vb*\delta^*}(\Theta\mid\vb Y,\vb G,\vb X,\vb S)}{\pi(\Theta\mid\vb Y,\vb G,\vb X,\vb S)},
-$$ we can write the bias for a particular quantity of interest $g(\Theta)$ as \begin{align*}
+$$ 
+Then, using linear approximation, we write the bias for a particular quantity of interest $g(\Theta)$ as \begin{align*}
     \E_{\pi_{\vb*\delta^*}}[g(\Theta)] - \E_\pi[g(\Theta)]
     &= \eval{\dv{\E_{\pi_{\vb*\delta}}[g(\Theta)]}{\vb*\delta}}_{\vb*\delta=0}^\top
         \vb*\delta^* + o(\norm{\vb*\delta^*}) \\
@@ -524,8 +528,10 @@ $$ we can write the bias for a particular quantity of interest $g(\Theta)$ as \b
         \eval{\dv{\log w(\Theta,\vb*\delta)}{\vb*\delta}}_{\vb*\delta=0})^\top
         \vb*\delta^* + o(\norm{\vb*\delta^*}),
         \numberthis\label{eq:bias-dv}
-\end{align*} where the second equality is Theorem 2.1 of @giordano2018cov [see also the idea of *local sensitivity* from @gustafson1996local].
-With this representation, we can bound the total error in $\E_\pi[g(\Theta)]$ for small $\vb*\delta$.
+\end{align*} 
+where the second equality is due to Theorem 2.1 of @giordano2018cov [see also the idea of *local sensitivity* from @gustafson1996local].
+
+With this representation, we can bound the total error in $\E_\pi[g(\Theta)]$ for sufficiently small $\vb*\delta$ as the following theorem shows.
 
 ```{=tex}
 \begin{theoremrep} \label{thm:bound}
@@ -559,14 +565,17 @@ This is immediate from \eqref{eq:bias-dv} once we compute
 and evaluate at $\vb*\delta=0$, since the worst-case bias for a fixed total error can be obtained by having the maximum allowable $\vb*\delta$ point in the direction of the gradient of $\log w(\Theta,\vb*\delta)$.
 \end{proof}
 ```
-The bound provided by Theorem \ref{thm:bound} may be computed readily from posterior draws.
-However, it obscures the qualitative features of how the error depends on $\vb*\delta^*$, and in particular the sample size.
-Both $\vb*\delta^*$ and $\Cov_\pi(g(\Theta), \tilde\vartheta)$ are vectors whose dimension depends on the sample size $N$, and so, all else being equal, their norms will each grow as $\sqrt{N}$.
-However, each entry $\Cov_\pi(g(\Theta), \tilde\vartheta_{ir})$ will tend to shrink as $N$ increases, since each observation exerts less leverage on the overall posterior.
-Thus the overall impact of the sample size on the bound \eqref{eq:covbound} is unclear and may depend on specific features of the data.
-In particular, and as should be expected, the error is not guaranteed to vanish as $N\to\infty$.
-Practitioners should evaluate \eqref{eq:covbound} under a range of plausible $\Delta$ to understand how robust their findings are to worst-case linear violations of Assumptions $\ref{a:indep-sgx}$ and $\ref{a:cens-acc}$.
+The theorem shows that once researchers choose the amount of total error $\Delta$, then the bound on the shift in a quantity of interest can be computed readily from posterior draws.
+This bound is proportional to the covariance between the conditional probability of the outcome $Y$ given race $R$ and residence location $G$ and its normalized version. **KI: any intuition here??**
 
+It is important to note that both $\vb*\delta^*$ and $\Cov_\pi(g(\Theta), \tilde\vartheta)$ are vectors whose dimension depends on the sample size $N$.
+Thus, all else being equal, their norms will each grow as $\sqrt{N}$.
+However, each entry $\Cov_\pi(g(\Theta), \tilde\vartheta_{ir})$ will tend to shrink as $N$ increases, since each observation exerts less leverage on the overall posterior.
+Thus the overall impact of the sample size on the bound in Equation \eqref{eq:covbound} is unclear and may depend on specific features of the data.
+In particular, and as should be expected, the error is not guaranteed to vanish as $N\to\infty$.
+Practitioners should evaluate Equation \eqref{eq:covbound} under a range of plausible $\Delta$ to understand how robust their findings are to worst-case linear violations of Assumptions $\ref{a:indep-sgx}$ and $\ref{a:cens-acc}$.
+
+**KI: I'm thinking of getting rid of the following result. It seems to me that the above result subsumes the latter.  What do you think?**
 For a more qualitative understanding of the effect of a particular $\vb\delta$, we can derive results on the direction of the error in $\E_\pi[g(\Theta)]$ for linear $g(\Theta)=\vec(\Theta)^\top\vb d$ and particular configurations of $\vb\delta$.
 
 ```{=tex}
