@@ -479,7 +479,7 @@ We have found, on smaller datasets where fitting both the additive and fully sat
 
 ## Computation
 
-**KI: Two things that need to be done here.  First, it is unclear how marginalization needs to incorporate the prior, which has $R$.  Second, we should include some experiments you mention here.** 
+**KI: Two things that need to be done here.  First, it is unclear how marginalization incorporates the prior, which has $R$.  Second, we should include some experiments you mention here (the results could be given in the appendix).** 
 
 Since $\vb R$ is high-dimensional, discrete, and not of primary interest, we can marginalize it out as follows: 
 \begin{align*}
@@ -500,8 +500,6 @@ Experiments at small sample sizes confirmed the accuracy of this approach relati
 When the number of parameters is not too large relative to the data size, simpler methods such as a Laplace approximation centered at the maximum a posteriori estimate would likely be applicable, too.
 
 # Sensitivity Analysis
-
-**CM: how readable is this section?** 
 
 The model introduced in this section, like the OLS and weighted estimators, relies on the two BISG assumptions, \ref{a:indep-sgx} and \ref{a:cens-acc}, which are known to not hold exactly.
 It is therefore important to understand how sensitive the model's inferences are to violations of these two assumptions.
