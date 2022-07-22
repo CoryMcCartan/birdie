@@ -796,7 +796,7 @@ d_\text{TV}(\hat{\vb*\mu}_{Y|R}, \vb*\mu_{Y|R})
 $$The TV distance is an upper bound on the error in *any* probability calculated from the estimated joint distribution, and as such is useful general-purpose measure of estimation error. **KI: Can we also compute other measures? What about putting false negative and false positive rates into Appendix.**
 Figures \@ref(fig:nc-fit-party) and \@ref(fig:nc-fit-turnout) show the TV distance for each estimator across the range of geographic levels used in the BISG calculation.
 The figures also show the TV distance for each conditional distribution by race, to illuminate how the estimators perform on each subgroup.
-**KI: We should start with the estimates of racial disparities themselves. Then, measure errors via TV distance. **
+**KI: We should start with the estimates of racial disparities themselves. I think that partisanship and turnout differentials would be good things to show. Then, measure errors via TV distance. **
 
 As far as the overall TV error, the proposed method outperforms every alternative, for both party ID and turnout, at every geographic level.
 The OLS estimator outperforms the weighted estimator for party ID, but the situation is reversed for turnout. **KI: How are you modeling the turnout?**
@@ -829,7 +829,7 @@ As noted above, the sampling error in all of these estimates is minimal---the wi
 This error results from a violation of Assumptions \ref{a:indep-sgx}--\ref{a:indep-ys}, likely in large part driven by outdated Census data and differences between the adult and registered voter populations.
 
 We can apply the theoretical bounds from Theorem \ref{thm:bound} to gain a better understanding of how these data issues, which lead to errors in the BISG probabilities, translate to errors in the proposed model's estimates.
-For the county-level party ID estimates, a total error of $\Delta=`r number(x[["tot_err_party"]], 0.001)`$ is sufficient to explain the largest error in the joint distribution. **KI: Not sure exactly what this means. I wonder if we can show a graph where we show how changing $\Delta$ leads to different estimates?**
+For the county-level party ID estimates, a total error of $\Delta=`r number(x[["tot_err_party"]], 0.001)`$ is sufficient to explain the largest error in the joint distribution. **KI: Not sure exactly what this means. Can we show via a graph how changing $\Delta$ leads to different estimates of disparities? I'm also worried about if this sensitivity analysis may not be too informative...**
 For the county-level turnout estimates, a total error of $\Delta=`r number(x[["tot_err_turnout"]], 0.001)`$ suffices.
 These total errors translate to an average error in the individual BISG probabilities, $||\vb*\delta_i||$, of `r number(100*x[["avg_err_party"]], 0.01)` and `r number(100*x[["avg_err_turnout"]], 0.01)` percentage points, respectively.
 The actual average error is almost certainly higher but is not in the worst-case direction (which is what Theorem \ref{thm:bound} assumes).
