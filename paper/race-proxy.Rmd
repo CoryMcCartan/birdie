@@ -499,7 +499,7 @@ In our applications here, and in our open-source software implementation of the 
 Experiments at small sample sizes confirmed the accuracy of this approach relative to full MCMC.
 When the number of parameters is not too large relative to the data size, simpler methods such as a Laplace approximation centered at the maximum a posteriori estimate would likely be applicable, too.
 
-## Error and Bias
+# Sensitivity Analysis
 
 **CM: how readable is this section?** 
 
