@@ -725,7 +725,7 @@ We recommend that practitioners other data sources, such as surveys, to estimate
 # Validation Study
 
 To better understand how the proposed model performs in real-world contexts, we apply it to a validation dataset where the "ground truth" relationship between outcome and race is known.
-We compare the method's error against existing estimators, and evaluate how the error depends on the level of geographic precision used in the BISG probabilities.
+We compare the performance of the proposed model against those of other estimators, and evaluate how the estimation error depends on the level of geographic precision used in the BISG probabilities.
 
 ## North Carolina Voter File
 
@@ -736,20 +736,23 @@ The voter file is an ideal validation setting for the proposed methodology.
 The two outcomes we examine here, party registration and turnout, are the product of many unobservable factors, and are almost guaranteed to exhibit at least some differences by race.
 Most importantly, since race is recorded, inferences about these differences using the estimators discussed here can be compared to the true values.
 
-We use a subset of the June 2022 voter file which could be linked to a proprietary voter file provided by L2, Inc. The L2 file geocoded each address to a Census block, which is necessary for the finest block-level BISG predictions.
-We also removed any records without individual race information.
-Since our goal is validation compared to some ground truth, and not inference about the overall population of North Carolina voters, these exclusions are not problematic.
+We use a subset of the June 2022 voter file which could be linked to a proprietary voter file provided by L2, Inc. a leading national non-partisan firm and the oldest organization in the United States that supplies voter data and related technology to candidates, political parties, pollsters, and consultants for use in campaigns.
+The L2 file geocoded each address to a Census block, which is necessary for the finest block-level BISG predictions.
+We also removed any records without individual race information since our goal is validation compared to some ground truth rather than inference about the entire population of registered North Carolina voters.
 
 ```{r nc-overview, fig.width=6.5}
 #| fig.cap: |
 #|     Distribution of party identification (left) and turnout (right) by race, 
-#|     for a sample of 500,000 North Carolina voters.
+#|     for a sample of 500,000 North Carolina voters. Parties are Libetarian (LIB),
+#|     Republican (REP), Independent (IND), and Democrat (DEM). Turnout ranges from 
+#|     0 to 10, indicating the number of November general elections from 2012 through 2021, 
+#|     in which a voter turned out.
 knitr::include_graphics("figures/nc_overview.pdf")
 ```
 
-The overall merged voter file contains 5,711,795 voters, 71.2% of which were White, 21.1% of which were black, and 7.7% of which belonged to another race.
-For analysis purposes, we further subsampled this file by selecting 500,000 records at random without replacement.
-A sample size of half a million is large enough to ensure that sampling error is essentially negligible, while reducing the overall computational burden.
+The overall merged voter file contains 5,711,795 voters, 71.2% of which are White, 21.1% of which are black, and 7.7% of which belong to another race.
+To reduce computational burden, we further subsampled this file by selecting 500,000 records at random without replacement.
+A sample size of half a million is large enough to ensure that sampling error is essentially negligible.
 
 Figure \@ref(fig:nc-overview) shows the distribution of party registration and turnout by race in this subsample.
 White voters disproportionately register as Republicans, while Black voters disproportionately register as Democrats.
@@ -769,8 +772,7 @@ score = number(x$score, 0.001)
 
 The BISG probabilities are broadly accurate.
 Using the maximum a posteriori racial category as a prediction is `r acc["county"]` accurate for the county probabilities, `r acc["zip"]` accurate for the ZIP code probabilities, `r acc["tract"]` accurate for the tract probabilities, and `r acc["block"]` accurate for the block probabilities.
-Accuracy isn't everything, of course.
-A better measure of the quality of the BISG probabilities is the logarithmic score, a proper scoring rule which rewards accurate and calibrated probabilistic estimates (higher values are better).
+An alternative measure of the quality of the BISG probabilities is the logarithmic score, a proper scoring rule which rewards accurate and calibrated probabilistic estimates (higher values are better).
 The logarithmic scores for the BISG probabilities are -`r score["county"]` for counties, -`r score["zip"]` for ZIP codes, -`r score["tract"]` for tracts, and -`r score["block"]` for blocks.
 For comparison, the prior-only logarithmic score (i.e., using no name or geographic information) is -`r number(x$base_score, 0.001)`.
 The worsened performance for block-level versus tract-level probabilities likely stems from the larger impact of census measurement error at smaller geographies, a problem that could be addressed using newer BISG methods such as those of @imai2022addressing.
@@ -791,12 +793,13 @@ Due to the large number of individual census blocks, we use tract random effects
 We measure the error in the estimated joint distribution with the total variation (TV) distance, calculated as$$
 d_\text{TV}(\hat{\vb*\mu}_{Y|R}, \vb*\mu_{Y|R}) 
 = \half\sum_{y\in\cY}\sum_{r\in\cR} |\hat{\mu}_{Y,R}(y, r) - \mu_{Y,R}(y, r)|.
-$$The TV distance is an upper bound on the error in *any* probability calculated from the estimated joint distribution, and as such is useful general-purpose measure of estimation error.
+$$The TV distance is an upper bound on the error in *any* probability calculated from the estimated joint distribution, and as such is useful general-purpose measure of estimation error. **KI: Can we also compute other measures? What about putting false negative and false positive rates into Appendix.**
 Figures \@ref(fig:nc-fit-party) and \@ref(fig:nc-fit-turnout) show the TV distance for each estimator across the range of geographic levels used in the BISG calculation.
 The figures also show the TV distance for each conditional distribution by race, to illuminate how the estimators perform on each subgroup.
+**KI: We should start with the estimates of racial disparities themselves. Then, measure errors via TV distance. **
 
 As far as the overall TV error, the proposed method outperforms every alternative, for both party ID and turnout, at every geographic level.
-The OLS estimator outperforms the weighted estimator for party ID, but the situation is reversed for turnout.
+The OLS estimator outperforms the weighted estimator for party ID, but the situation is reversed for turnout. **KI: How are you modeling the turnout?**
 This suggests that compared to the effect of race on party ID, the effect of race on turnout is more strongly moderated by geography, reducing the size of the violation of Assumption \ref{a:indep-yr}.
 The thresholding estimator consistently performs poorly.
 
@@ -825,8 +828,8 @@ x = readRDS("data/nc_bounds.rds")
 As noted above, the sampling error in all of these estimates is minimal---the widest 90% confidence interval in the block-level model estimates of party ID by race ranges from `r number(x$ci_min, 0.0001)` to `r number(x$ci_max, 0.0001)`---not enough to explain the residual TV error.
 This error results from a violation of Assumptions \ref{a:indep-sgx}--\ref{a:indep-ys}, likely in large part driven by outdated Census data and differences between the adult and registered voter populations.
 
-We can apply the theoretical bounds from Theorem \ref{thm:bound} to gain a better understanding of how these data issues, which lead to errors in the BISG probabilities, translate to errors in the proposed model"s estimates.
-For the county-level party ID estimates, a total error of $\Delta=`r number(x[["tot_err_party"]], 0.001)`$ is sufficient to explain the largest error in the joint distribution.
+We can apply the theoretical bounds from Theorem \ref{thm:bound} to gain a better understanding of how these data issues, which lead to errors in the BISG probabilities, translate to errors in the proposed model's estimates.
+For the county-level party ID estimates, a total error of $\Delta=`r number(x[["tot_err_party"]], 0.001)`$ is sufficient to explain the largest error in the joint distribution. **KI: Not sure exactly what this means. I wonder if we can show a graph where we show how changing $\Delta$ leads to different estimates?**
 For the county-level turnout estimates, a total error of $\Delta=`r number(x[["tot_err_turnout"]], 0.001)`$ suffices.
 These total errors translate to an average error in the individual BISG probabilities, $||\vb*\delta_i||$, of `r number(100*x[["avg_err_party"]], 0.01)` and `r number(100*x[["avg_err_turnout"]], 0.01)` percentage points, respectively.
 The actual average error is almost certainly higher but is not in the worst-case direction (which is what Theorem \ref{thm:bound} assumes).
