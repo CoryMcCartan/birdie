@@ -16,7 +16,7 @@ authors:
       affiliation: Harvard University
 date: '`r format(Sys.Date(), "%B %e, %Y")`'
 abstract: |
-    The estimation of racial disparities in health care, financial services, voting, and other contexts is often hampered by the lack of racial information in administrative records. As a result, many analysts have adopted Bayesian Improved Surname Geocoding (BISG), which uses individual names and addresses to predict race. Although BISG tend to produce well calibrated racial predictions, its prediction errors are often correlated with the outcomes of interest, yielding biased estimates of racial disparities. We propose a new identification strategy that corrects this bias in estimating racial disparity via BISG's race predictions.  The proposed strategy is applicable whenever one's surname is conditionally independent of the outcome given their (unobserved) race, residence location, and other observed characteristics. Leveraging this identification strategy, we introduce a new Bayesian model that estimates racial disparity while accounting for the high-dimensionality of surnames.  Lastly, we also develop a sensitivity analysis to address the potential violation of the required assumption that BISG's race predictions are well calibrated.  Our validation study based on voter files shows that the proposed model achieves 75% lower error than existing approaches in estimating turnout rates by race in North Carolina. A similarly substantial improvement is obtained in estimating racial disparities of partisan identification.  We also apply the model to large-scale IRS administrative data to produce the first-ever estimates of claim rates of the home mortgage interest deduction by race.  We find that ... Open-source software is available for implementing the proposed methodology.
+    The estimation of racial disparities in health care, financial services, voting, and other contexts is often hampered by the lack of racial information in administrative records. As a result, many analysts have adopted Bayesian Improved Surname Geocoding (BISG), which uses individual names and addresses to predict race. Although BISG tend to produce well calibrated racial predictions, its prediction errors are often correlated with the outcomes of interest, yielding biased estimates of racial disparities. We propose a new identification strategy that corrects this bias in estimating racial disparity via BISG's race predictions.  The proposed strategy is applicable whenever one's surname is conditionally independent of the outcome given their (unobserved) race, residence location, and other observed characteristics. Leveraging this identification strategy, we introduce a new Bayesian model that estimates racial disparity while accounting for the high-dimensionality of surnames.  Lastly, we also develop a sensitivity analysis to address the potential violation of the required assumption that BISG's race predictions are well calibrated.  Our validation study based on voter files shows that the proposed model achieves 76–85% lower error than existing approaches in estimating party identification by race in North Carolina, and 24–49% lower error for turnout rates by race. A similarly substantial improvement is obtained in estimating racial disparities of partisan identification.  We also apply the model to large-scale IRS administrative data to produce the first-ever estimates of claim rates of the home mortgage interest deduction by race.  We find that ... Open-source software is available for implementing the proposed methodology.
 keywords: 
     - BISG
     - ecological inference
@@ -50,7 +50,7 @@ opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE,
 options(bookdown.theorem.preamble = FALSE)
 ```
 
-**CM: from Dan: "Do we need a more informative title?  Or is our point that we're clarifying assumptions implicit in a range of existing approaches?"**
+**CM: from Dan: "Do we need a more informative title? Or is our point that we're clarifying assumptions implicit in a range of existing approaches?"**
 
 # Introduction
 
@@ -73,15 +73,14 @@ Proposed outline:
     1.  Provides a new identification condition for accurately estimating disparities
 
     2.  Introduces a Bayesian model to estimate disparities using this new condition
-    
+
     3.  Develops a sensitivity analysis for the potential violation of the required assumption
 
     4.  Validates the model on real-world data taken from the voter file in North Carolina
 
     5.  Applies the model to large-scale IRS administrative data to produce the first-ever estimates of claim rates of the home mortgage interest deduction (HMID) by race.
 
-    6.   Open-source software package
-
+    6.  Open-source software package
 
 # Identification
 
@@ -91,12 +90,12 @@ Specifically, we show that racial disparity is identifiable if one's surname is 
 ## Setup and BISG Procedure
 
 Suppose that we have an i.i.d. sample of $N$ individuals from a population of infinite size.
-For each individual $i=1,2,\ldots,N$, we define a tuple $\{Y_i, R_i, G_i, X_i, S_i\}$, where $Y_i\in\cY$ is the outcome of interest for individual $i$, $R_i\in \cR$ is the (unknown) race of the individual, $G_i\in\cG$ is the (geo)location of the individual's residence, $X_i\in\cX$ are other observed characteristics, and $S_i\in\cS$ is the individual's surname.
+**(CM: worth a footnote about the finite-pop. setting? Nothing we do necessarily requires an infinite superpop.)** For each individual $i=1,2,\ldots,N$, we define a tuple $(Y_i, R_i, G_i, X_i, S_i)$, where $Y_i\in\cY$ is the outcome of interest for individual $i$, $R_i\in \cR$ is the (unknown) race of the individual, $G_i\in\cG$ is the (geo)location of the individual's residence, $X_i\in\cX$ are other observed characteristics, and $S_i\in\cS$ is the individual's surname.
 When we are not referring to a particular individual, we will drop the subscripts.
-Note that individual's race is unobservable but all other variables are observed although the availability of $X$ is not required for the proposed methodology.
+Note that individual's race is unobservable but all other variables are observed, although the availability of particular (or any) $X$ is not required for the proposed methodology.
 
 We assume throughout that these variables are discrete, taking a finite set of values, i.e., $|\cY|=C_Y$, $|\cR|=C_R$, $|\cG|=C_G$, $|\cX|=C_X$, and $|\cS|=C_S$ where $C_Y$, $C_R$, $C_G$, $C_X$, and $C_S$ are constants.
-Note that typically $S$ is high-dimensional as there exist a large number of unique names. 
+Note that typically $S$ is high-dimensional as there exist a large number of unique names.
 In practice, residence location $G$ is also discrete, since joint information about location, race, and other variables is only available down to the Census block level.
 For the sake of simplicity, we assume that the outcome variable $Y$ is also discrete, though it is possible to extend the proposed methodology to continuous outcome variables.
 
@@ -104,12 +103,10 @@ BISG relies on data from the decennial Census or the American Community Survey (
 It then combines this information with data from the Census Bureau's surname tables [@censusnames], which provide information on the joint distribution of $R$ and $S$.
 We summarize this set of information from the Census by two conditional probabilities, $\vb q_{GX|R}$ and $\vb q_{S|R}$, and one marginal probability, $\vb q_R = P(R)$.
 
-The BISG estimator of the probability that individual $i$ belongs to race $r \in \cR$ can then be written as [@fiscella2006bisg; @elliott2008bisg] 
-\begin{equation} \label{eq:pr-bisg}
+The BISG estimator of the probability that individual $i$ belongs to race $r \in \cR$ can then be written as [@fiscella2006bisg; @elliott2008bisg] \begin{equation} \label{eq:pr-bisg}
     \hat{P}_{ir} \dfeq \frac{q_{G_iX_i|r}\, q_{S_i|r}\, q_r}{
         \sum_{j\in\cR}q_{G_iX_i|j}\, q_{S_i|j}\, q_j},
-\end{equation}
-where, for example, $q_{G_iX_i|r}$ indicates the estimated conditional probability of residence location $G_i$ and covariates $X_i$ given race $r$, taken from the Census table $\vb q_{GX|R}$.
+\end{equation} where, for example, $q_{G_iX_i|r}$ indicates the estimated conditional probability of residence location $G_i$ and covariates $X_i$ given race $r$, taken from the Census table $\vb q_{GX|R}$.
 
 The BISG estimator implicitly relies on two key assumptions.
 The first is the following conditional independence relation between an individual's surname and residence location (as well as other characteristics) given their unobserved race.
@@ -119,12 +116,11 @@ The first is the following conditional independence relation between an individu
     For all individuals $i$, $S_i\indep \{G_i, X_i\}\mid R_i$.
 \end{assump}
 ```
-
 Assumption \ref{a:indep-sgx} implies, for example, that once we know an individual is White, knowing their surname is Smith tell us nothing about their residence location and other characteristics.
 Although this assumption appears to be reasonable, the lack of granularity in the coding of race may lead to its violation.
 For example, people with Chinese, Indian, Filipino, Vietnamese, Korean, or Japanese are all coded as one racial group "Asian" in the census.
-These groups, however, have distinct sets of surnames and may have different demographic and geographic distributions.
-Unlike the Smith example, therefore, knowing that an Asian individual's surname is Gupta makes it much more likely that they have a higher income and live in the Eastern U.S [@budiman2019key].
+These groups, however, have distinct sets of surnames and have different demographic and geographic distributions.
+For instance, unlike the Smith example, knowing that an Asian individual's surname is Gupta makes it much more likely that they have a higher income and live in the Eastern U.S [@budiman2019key].
 <!--# Nevertheless, Assumption \ref{a:indep-sgx} appears to approximately hold in practice for White, Black, and Hispanic individuals, which make up a substantial majority of the U.S. population. -->
 
 The second assumption of BISG is that the Census tables reflect the true population distributions of $R$, $S$, $G$, and $X$.
@@ -139,7 +135,6 @@ The second assumption of BISG is that the Census tables reflect the true populat
     \end{align*}
 \end{assump}
 ```
-
 Like Assumption \ref{a:indep-sgx}, Assumption \ref{a:cens-acc} never holds exactly in practice.
 Despite the best efforts of the Census Bureau, the decennial census has intrinsic error, including undercounting minority racial groups [@census2022undercount; @censuscount; @racecounts], as well as error introduced by privacy-preserving mechanisms [@abowd2020].
 And because of births, deaths, and moves, census data are often out-of-date from the moment of publication.
@@ -158,18 +153,18 @@ Under Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc}, the BISG estimator is 
 $\hat P_{ir} = \Pr(R_i=r\mid G_i,X_i,S_i)$.
 \end{prop}
 ```
-
-
 ## Bias of Racial Disparity Estimates based on BISG Probabilities
 
 Unfortunately, accurate and calibrated estimates of $\Pr(R\mid G,X,S)$ are not sufficient for identifying racial disparities.
 The reason is that the prediction error of race probabilities may be correlated with the outcome variable of interest.
-Specifically, we consider the following weighted estimator, which attempts to capture the uncertainty inherent in race prediction,^[An alternative is a classification estimator, which deterministically assigns individuals to a predicted racial category based on the BISG estimates $\vb{\hat P}_i$ (either the largest $\hat P_{ir}$ or the one which exceeds a predetermined threshold). Unlike the weighted estimator, this classification estimator does not take into account uncertainty.]
-$$
+Specifically, we consider the following weighted estimator, which attempts to capture the uncertainty inherent in race prediction,[^1] $$
     \hat\mu^{(\text{wtd})}_{Y|R}(y\mid r) 
         = \frac{\sum_{i=1}^N \ind\{Y_i=y\}\hat P_{ir}}{
             \sum_{i=1}^N \hat P_{ir}}.
 $$
+
+[^1]: An alternative is a classification estimator, which deterministically assigns individuals to a predicted racial category based on the BISG estimates $\vb{\hat P}_i$ (either the largest $\hat P_{ir}$ or the one which exceeds a predetermined threshold).
+    Unlike the weighted estimator, this classification estimator does not take into account uncertainty.
 
 Formally, \citet{chen2019fairness} shows that the asymptotic bias of this weighted estimator is controlled by the residual correlation of $Y$ and $R$ after controlling for $G$, $X$, and $S$.
 We reproduce this result here.
@@ -189,7 +184,6 @@ This result implies that the conditional independence between individual's race 
 For all individuals $i$, $Y_i\indep R_i\mid G_i,X_i,S_i$ holds.
 \end{assump}
 ```
-
 Figure \@ref(fig:dag)(a) shows a causal structure that satisfies Assumption \ref{a:indep-yr} as well as Assumption \ref{a:indep-sgx}.
 The DAG implies that $Y\indep R\mid G,X,S$ because all paths from $R$ to $Y$ are blocked by $G$, $X$, or $S$.
 The key causal assumption of this DAG is that the effect of race $R$ on the outcome $Y$ must be entirely mediated by surname $S$, residence location $G$, and other observed characteristics $X$.
@@ -248,9 +242,9 @@ Outside of these cases, however, the weighted estimator is likely to be biased.
         (G) edge node  {} (Y)
         (X) edge node  {} (Y);
         
-        \path[every node/.style={font=\sffamily\small}, <->]
-        (G) edge [dashed, bend right] node  {} (S)
-        (X) edge [dashed, bend left] node  {} (S);
+        %\path[every node/.style={font=\sffamily\small}, <->]
+        %(G) edge [dashed, bend right] node  {} (S)
+        %(X) edge [dashed, bend left] node  {} (S);
     \end{tikzpicture}
     \caption{Assumption \ref{a:indep-ys}  (Conditional independence of outcome and name)}
 \end{subfigure}
@@ -260,7 +254,6 @@ Outside of these cases, however, the weighted estimator is likely to be biased.
 \label{fig:dag}
 \end{figure}
 ```
-
 ## Alternative Identification Strategy
 
 To reduce this potential bias of the weighted estimator, we propose an alternative identification assumption that may be applicable when Assumption \ref{a:indep-yr} is not credible.
@@ -271,15 +264,15 @@ Specifically, we assume that surname, rather than race, satisfies the exclusion 
 For all individuals $i$, $Y_i\indep S_i\mid R_i,G_i,X_i$.
 \end{assump}
 ```
-
-Figure \@ref(fig:dag)(b) shows one possible causal structure that meets this assumption as well as Assumption \ref{a:indep-sgx}.**KI: We should remove dotted arrows from the figure. I realized that they violate the BISG assumption.**
-In this DAG, race can have a direct effect on the outcome $Y$ as well as on residence location $G$ and other observed chracteristics $X$, while all paths from $S$ to $Y$ are blocked by $G$, $X$, or $R$.
+Figure \@ref(fig:dag)(b) shows one possible causal structure that meets this assumption as well as Assumption \ref{a:indep-sgx}.
+In this DAG, race can have a direct effect on the outcome $Y$ as well as on residence location $G$ and other observed characteristics $X$, while all paths from $S$ to $Y$ are blocked by $G$, $X$, or $R$.
 
 This structure is plausible in many real-world settings, such as our motivating examples of HMID claims and voter turnout.
-In both these cases, we can rule out a direct effect of name on the outcome. (**CM: revisit this more carefully once we've settled on outcomes. Dan notes e.g. mortgage application success may depend on discrimination via names**.)
-This assumption rules out the possibility that surname directly affects the outcome whereas such a direct effect is allowed under Assumption \ref{a:indep-yr}.
+In both these cases, we can rule out a direct effect of name on the outcome.
+(**CM: revisit this more carefully once we've settled on outcomes. Dan notes e.g. mortgage application success may depend on discrimination via names**.) This assumption rules out the possibility that surname directly affects the outcome whereas such a direct effect is allowed under Assumption \ref{a:indep-yr}.
 In the above hiring example, if the manager directly relies upon surname to make the decision, our assumption will be violated.
-Assumption \ref{a:indep-ys} also implies that there is no unobserved confounder affecting both surname and outcome. **KI: What would be an example of this?**
+Assumption \ref{a:indep-ys} also implies that there is no unobserved confounder affecting both surname and outcome.
+**KI: What would be an example of this? CM: I think most violations of** $Y\indep S\mid G, R$ **will take this form---something like income or the region in a country you immigrated from could affect your surname and the outcome.**
 
 In any particular application, therefore, it is important to consider whether it is more reasonable to rule out the direct effect of race on the outcome or the direct effect of surname on the outcome.
 In the former, Assumption \ref{a:indep-yr} is more appropriate whereas in the latter, Assumption \ref{a:indep-ys} is more credible.
@@ -304,7 +297,6 @@ So for each $y\in\cY$, $g\in\cG$, and $x\in\cX$, this relation is a linear syste
 These parameters are identified if and only if this system has a unique solution, i.e. if the coefficient matrix $\vb P$ has rank $|\cR|$ and so does the augmented matrix $\mqty(\vb P&\vb b)$.
 \end{proof}
 ```
-
 The essence of this identification result is the following observation: under Assumption \ref{a:indep-ys}, we have, for all $y\in\cY$, $g\in\cG$, $x\in\cX$, and $s\in\cS$, \begin{equation} \label{eq:tprob}
     \Pr(Y=y\mid G=g, X=x, S=s)
     = \sum_{r\in\cR} \Pr(Y=y\mid R=r, G=g, X=x)\Pr(R=r\mid G=g, X=x, S=s).
@@ -315,8 +307,7 @@ Here, we use surname as a proxy variable for race.
 
 Together with Proposition \ref{p:bisg}, Theorem \ref{thm:id} imply that racial disparities can be identified under Assumptions \ref{a:indep-sgx}, \ref{a:cens-acc}, and \ref{a:indep-ys}.
 The identifying equation \eqref{eq:tprob} shows that $\Pr(Y=y\mid G=g, X=x, S=s)$ is linear in the BISG estimands $\Pr(R=r\mid G=g, X=x, S=s)$.
-Thus, it is natural to consider the following least-squares estimator of $\Pr(Y=y\mid R)$ under this alternative identification strategy, 
-$$
+Thus, it is natural to consider the following least-squares estimator of $\Pr(Y=y\mid R)$ under this alternative identification strategy, $$
 \hat{\vb*\mu}^{(\text{ols})}_{Y\mid R}(y\mid \cdot) 
 = (\hat{\vb P}^\top \hat{\vb P})^{-1} \hat{\vb P}\,\ind\{\vb Y = y\},
 $$ where as above $\hat{\vb P}$ is the matrix of BISG probabilities.
@@ -337,9 +328,8 @@ ID equation -> linear model
 BISG accurate -> strict exogeneity
 \end{proof}
 ```
-
 It is worth comparing this OLS estimator with the weighted estimator $\hat{\mu}^{(\text{wtd})}_{y\mid r}$.
-The next theorem shows that these two estimators are guaranteed to disagree, unless either the BISG probabilities perfectly discriminate **KI: Doesn't this simply mean that one racial category has a probability of one and the other categories have a probability of zero?** or the weighted estimator is constant across races.
+The next theorem shows that these two estimators are guaranteed to disagree, unless either the BISG probabilities perfectly discriminate **(KI: Doesn't this simply mean that one racial category has a probability of one and the other categories have a probability of zero?** **CM: in the two-race case, yes; but you could split e.g. 50%/50%/0% and satisfy the preconditions for some of the pairs)** or the weighted estimator is constant across races.
 These two conditions are almost never met in practice.
 This underscores the importance of selecting the appropriate assumption (\ref{a:indep-yr} or \ref{a:indep-ys}) for a particular analysis, since they imply different estimators with different results.
 
@@ -402,7 +392,6 @@ Then by the above basis expansion, $\hat{\mu}^{(\text{ols})}_{Y|R}(y\mid j)=c_j$
 \]
 \end{proof}
 ```
-
 Despite potential advantages over the weighted estimator, the OLS estimator is not well-suited to estimation in practice since it ignores the fact that the unknown parameters are probabilities and thus constrained to be nonnegative and sum to 1.
 As a result, in any particular sample, the estimator can produce impossible or contradictory estimates.
 This is particularly problematic because a large number of unique surnames make both $\vb P$ and $\vb b$ high-dimensional.
@@ -420,36 +409,29 @@ Under Assumption \ref{a:indep-ys}, we do not need to condition on $S$.
 The top part of the model places no restrictions on the outcome process.
 \begin{equation*}
     Y_i \mid R_i, G_i, X_i, \Theta \sim \Categorical_\cY(\vb*\theta_{\cdot R_i}(G_i,X_i)),
-\end{equation*}
-where the parameters $\theta_{yr}(g,x)$ represent the probabilities for each level of the outcome $Y$, which can vary by $R$, $G$, and $X$.
+\end{equation*} where the parameters $\theta_{yr}(g,x)$ represent the probabilities for each level of the outcome $Y$, which can vary by $R$, $G$, and $X$.
 We have written the parameters as $\theta_{yr}(g,x)$ rather than $\theta_{yrgx}$ to separate the conceptual role of $R$ and $G,X$ in the model.
 The dot $\cdot$ indicates a vector built up out of all possible values of that index.
 For example, $\vb*\theta_{\cdot R_i}(G_i,X_i)$ is a vector of length $|\cY|$ consisting of entries of $\theta_{yR_i}(G_i,X_i)$ for $y\in\cY$.
-The conditional distribution of $Y$ given $R$ is of primary interest, which can be written as,
-$$
+The conditional distribution of $Y$ given $R$ is of primary interest, which can be written as, $$
     \bar\theta_{yr} 
     = \mathbb{E} (\theta_{yr}(G_i, X_i)),
-$$
-where the expectation is taken over the joint distribution of $G$ and $X$.
+$$ where the expectation is taken over the joint distribution of $G$ and $X$.
 
 Next, we model $G$, $X$, and $S$ given $R$ using the BISG methodology.
-Specifically, we model $S$ and $(G,X)$ separately given $R$ using the Census data under Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc}): 
-\begin{align*}
+Specifically, we model $S$ and $(G,X)$ separately given $R$ using the Census data under Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc}): \begin{align*}
     (G_i, X_i) \mid R_i &\sim \Categorical_{\cG\times\cX}(\vb q_{GX|R_i}) \\
     S_i \mid R_i &\sim \Categorical_\cS(\vb q_{S|R_i}) \\
     R_i &\iid \Categorical_\cR(\vb q_R)
-\end{align*}
-Finally, the model is completed with the prior distribution for $\Theta$, which is denoted by $\pi(\Theta)$ and discussed in detail below.
+\end{align*} Finally, the model is completed with the prior distribution for $\Theta$, which is denoted by $\pi(\Theta)$ and discussed in detail below.
 
-Putting all together, the posterior distribution can then be written as 
-\begin{align*}
+Putting all together, the posterior distribution can then be written as \begin{align*}
     \pi(\Theta, \vb R\mid \vb Y, \vb G, \vb X, \vb S)
     &\propto \pi(\Theta)\prod_{i=1}^N \pi(Y_i\mid G_i, X_i, R_i, \Theta)
             \pi(G_i, X_i\mid R_i)\pi(S_i\mid R_i)\pi(R_i) \\
     &= \pi(\Theta) \prod_{i=1}^N \theta_{Y_iR_i}(G_i, X_i) q_{G_iX_i\mid R_i} q_{S_i\mid R_i} q_{R_i} \\
     &\propto \pi(\Theta) \prod_{i=1}^N \theta_{Y_iR_i}(G_i, X_i)\hat{P_i}_{R_i},
-\end{align*} 
-where as above $\hat{\vb P_i}$ are the BISG probability estimates for individual $i$, which depend on Census data represented in $\vb q_{GX\mid R}$, $\vb q_{S\mid R}$, and $\vb q_R$, but not on the parameters $\Theta$ and individual race $\vb R$.
+\end{align*} where as above $\hat{\vb P_i}$ are the BISG probability estimates for individual $i$, which depend on Census data represented in $\vb q_{GX\mid R}$, $\vb q_{S\mid R}$, and $\vb q_R$, but not on the parameters $\Theta$ and individual race $\vb R$.
 <!--# Notice the similarities between the final form of the posterior and the identifying equation \eqref{eq:tprob}. -->
 
 ## Prior distribution
@@ -458,8 +440,7 @@ The final but critical component of the model is the prior $\pi(\Theta)$.
 A natural prior would be to allow for maximum flexibility with a *fully saturated* specification: \begin{align*}
     \Theta_{yr}(g, \vb x) &= \theta_{yrg\vb x},  \\
     \vb*\theta_{\cdot rgx}&\iid\Dirichlet(\alpha).
-\end{align*}
-This prior, however, suffers from the curse of dimensionality as more covariates are added to $X$, especially since in practice $G$ will be quite large, covering many blocks or ZIP codes.
+\end{align*} This prior, however, suffers from the curse of dimensionality as more covariates are added to $X$, especially since in practice $G$ will be quite large, covering many blocks or ZIP codes.
 For example, for a binary outcome and nationwide data, if we use block-level race data, five racial categories, and just four binary covariates, the model has over 650 *million* parameters, which is nearly double the entire U.S. population.
 With all of these parameters *a priori* independent under the fully saturated prior, there is no opportunity for sharing information across parameters with the prior dominating the likelihood for individual parameters.
 This problem could be partially remedied by adding some hierarchical structure to the priors on $\vb*\theta_{\cdot rgx}$, e.g., by grouping parameters at the county or state level.
@@ -479,17 +460,15 @@ We have found, on smaller datasets where fitting both the additive and fully sat
 
 ## Computation
 
-**KI: Two things that need to be done here.  First, it is unclear how marginalization incorporates the prior, which has $R$.  Second, we should include some experiments you mention here (the results could be given in the appendix).** 
+**KI: Two things that need to be done here. First, it is unclear how marginalization incorporates the prior, which has** $R$.
+Second, we should include some experiments you mention here (the results could be given in the appendix).
 
-Since $\vb R$ is high-dimensional, discrete, and not of primary interest, we can marginalize it out as follows: 
-\begin{align*}
+Since $\vb R$ is high-dimensional, discrete, and not of primary interest, we can marginalize it out as follows: \begin{align*}
     \pi(\Theta\mid \vb Y, \vb G, \vb X, \vb S)
     &= \pi(\Theta) \prod_{i=1}^N \sum_{r\in\cR} \theta_{Y_i r}(G_i, X_i)\hat{P}_{ir}
     = \pi(\Theta) \prod_{i=1}^N \vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i.
     \numberthis \label{eq:post-marg}
-\end{align*} 
-This makes it much easier to sample from the model, as the number of parameters is now a function only of the sizes of $\cY$, $\cR$, $\cG$, and $\cX$, and not the sample size $N$.
-
+\end{align*} This makes it much easier to sample from the model, as the number of parameters is now a function only of the sizes of $\cY$, $\cR$, $\cG$, and $\cX$, and not the sample size $N$.
 
 The marginalized posterior \eqref{eq:post-marg} is simple, but not conjugate to any prior distribution.
 It has only continuous parameters, but these are constrained to be nonnegative and to sum to 1 across certain dimensions.
@@ -524,7 +503,7 @@ $$ we can write the bias for a particular quantity of interest $g(\Theta)$ as \b
         \eval{\dv{\log w(\Theta,\vb*\delta)}{\vb*\delta}}_{\vb*\delta=0})^\top
         \vb*\delta^* + o(\norm{\vb*\delta^*}),
         \numberthis\label{eq:bias-dv}
-\end{align*} where the second equality is Theorem 2.1 of @giordano2018cov [see also the idea of *local sensitivity* from @gustafson1996local].
+\end{align*} where the second equality is Theorem 2.1 of [@giordano2018cov; see also the idea of *local sensitivity* from @gustafson1996local].
 With this representation, we can bound the total error in $\E_\pi[g(\Theta)]$ for small $\vb*\delta$.
 
 ```{=tex}
@@ -727,7 +706,8 @@ The voter file is an ideal validation setting for the proposed methodology.
 The two outcomes we examine here, party registration and turnout, are the product of many unobservable factors, and are almost guaranteed to exhibit at least some differences by race.
 Most importantly, since race is recorded, inferences about these differences using the estimators discussed here can be compared to the true values.
 
-We use a subset of the June 2022 voter file which could be linked to a proprietary voter file provided by L2, Inc. The L2 file geocoded each address to a Census block, which is necessary for the finest block-level BISG predictions.
+We use a subset of the June 2022 voter file which could be linked to a proprietary voter file provided by L2, Inc.
+The L2 file geocoded each address to a Census block, which is necessary for the finest block-level BISG predictions.
 We also removed any records without individual race information.
 Since our goal is validation compared to some ground truth, and not inference about the overall population of North Carolina voters, these exclusions are not problematic.
 
@@ -776,7 +756,7 @@ knitr::include_graphics("figures/nc_party_fit.pdf")
 ```
 
 For each set of BISG probabilities, we estimate the joint distribution of each outcome variable and race using the proposed method, the weighted estimator, the OLS estimator, and a thresholding estimator that deterministically assigns each individual the maximum *a posteriori* racial category.
-For the propsed method, we use the additive specification described above, using geographic random effects matching the geographic level used in the BISG probabilities (e.g., county random effects for the county-level BISG probabilities), except for the block-level probabilities.
+For the proposed method, we use the additive specification described above, using geographic random effects matching the geographic level used in the BISG probabilities (e.g., county random effects for the county-level BISG probabilities), except for the block-level probabilities.
 Due to the large number of individual census blocks, we use tract random effects instead for this particular model.
 
 We measure the error in the estimated joint distribution with the total variation (TV) distance, calculated as$$
@@ -813,10 +793,10 @@ However, the weighted estimator is probably the "least bad" for this group.
 x = readRDS("data/nc_bounds.rds")
 ```
 
-As noted above, the sampling error in all of these estimates is minimal---the widest 90% confidence interval in the block-level model estimates of party ID by race ranges from `r number(x$ci_min, 0.0001)` to `r number(x$ci_max, 0.0001)`---not enough to explain the residual TV error.
+As noted above, the sampling error in all of these estimates is minimal---the widest 90% confidence interval in the block-level model estimates of party ID by race is (`r percent(x$ci_min, 0.01)`, `r percent(x$ci_max, 0.01)`)---not enough to explain the residual TV error.
 This error results from a violation of Assumptions \ref{a:indep-sgx}--\ref{a:indep-ys}, likely in large part driven by outdated Census data and differences between the adult and registered voter populations.
 
-We can apply the theoretical bounds from Theorem \ref{thm:bound} to gain a better understanding of how these data issues, which lead to errors in the BISG probabilities, translate to errors in the proposed model"s estimates.
+We can apply the theoretical bounds from Theorem \ref{thm:bound} to gain a better understanding of how these data issues, which lead to errors in the BISG probabilities, translate to errors in the proposed model's estimates.
 For the county-level party ID estimates, a total error of $\Delta=`r number(x[["tot_err_party"]], 0.001)`$ is sufficient to explain the largest error in the joint distribution.
 For the county-level turnout estimates, a total error of $\Delta=`r number(x[["tot_err_turnout"]], 0.001)`$ suffices.
 These total errors translate to an average error in the individual BISG probabilities, $||\vb*\delta_i||$, of `r number(100*x[["avg_err_party"]], 0.01)` and `r number(100*x[["avg_err_turnout"]], 0.01)` percentage points, respectively.
@@ -830,8 +810,7 @@ Nevertheless, this kind of analysis can give an idea of the relative sensitivity
 
 # Discussion
 
-
--  In most real-world applications, the new model and identification condition are much appropriate and will produce much-improved estimates.
+-   In most real-world applications, the new model and identification condition are much appropriate and will produce much-improved estimates.
 
     1.  However, there is no one-size-fits-all approach for the estimation of disparities. Careful consideration of the underlying causal and information structure is required to choose the correct estimation approach and avoid making the wrong conclusions.
 

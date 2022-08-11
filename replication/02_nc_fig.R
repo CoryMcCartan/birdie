@@ -32,6 +32,14 @@ eval_fit = function(fits, X) {
 tv_party = eval_fit(fits_party, party)
 tv_turnout = eval_fit(fits_turnout, n_voted)
 
+bind_rows(party=tv_party, turnout=tv_turnout, .id="outcome") |>
+    filter(race == "overall", method %in% c("model", "weight")) |>
+    pivot_wider(names_from=method, values_from=tv) |>
+    group_by(outcome) |>
+    summarize(max_improvement = max(1 - model / weight),
+              min_improvement = min(1 - model / weight))
+
+
 # Overview plots -----
 
 p1 = ggplot(d, aes(y=factor(races[race], levels=rev(races)),
