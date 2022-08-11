@@ -140,7 +140,7 @@ Despite the best efforts of the Census Bureau, the decennial census has intrinsi
 And because of births, deaths, and moves, census data are often out-of-date from the moment of publication.
 These errors have led further extensions of the BISG estimator to account for some of this measurement error [@imai2022addressing], which can help with accuracy for smaller racial groups.
 
-Even though Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc} are never perfectly met, researchers find that BISG produces accurate and generally well-calibrated estimates in practice [@imai2016; @kenny2021das; @deluca2022validating].
+Even though Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc} are never perfectly met, researchers find that BISG produces accurate and generally well-calibrated estimates in practice [@imai2016improving; @kenny2021das; @deluca2022validating].
 
 Under Assumption \ref{a:indep-sgx}, by Bayes' Rule, $$
     \Pr(R_i=r\mid G_i,X_i,S_i)
@@ -425,13 +425,15 @@ Specifically, we model $S$ and $(G,X)$ separately given $R$ using the Census dat
     R_i &\iid \Categorical_\cR(\vb q_R)
 \end{align*} Finally, the model is completed with the prior distribution for $\Theta$, which is denoted by $\pi(\Theta)$ and discussed in detail below.
 
-Putting all together, the posterior distribution can then be written as \begin{align*}
+Putting all together, the posterior distribution can then be written as 
+\begin{align}
     \pi(\Theta, \vb R\mid \vb Y, \vb G, \vb X, \vb S)
     &\propto \pi(\Theta)\prod_{i=1}^N \pi(Y_i\mid G_i, X_i, R_i, \Theta)
-            \pi(G_i, X_i\mid R_i)\pi(S_i\mid R_i)\pi(R_i) \\
-    &= \pi(\Theta) \prod_{i=1}^N \theta_{Y_iR_i}(G_i, X_i) q_{G_iX_i\mid R_i} q_{S_i\mid R_i} q_{R_i} \\
-    &\propto \pi(\Theta) \prod_{i=1}^N \theta_{Y_iR_i}(G_i, X_i)\hat{P_i}_{R_i},
-\end{align*} where as above $\hat{\vb P_i}$ are the BISG probability estimates for individual $i$, which depend on Census data represented in $\vb q_{GX\mid R}$, $\vb q_{S\mid R}$, and $\vb q_R$, but not on the parameters $\Theta$ and individual race $\vb R$.
+            \pi(G_i, X_i\mid R_i)\pi(S_i\mid R_i)\pi(R_i) \nonumber \\
+    &= \pi(\Theta) \prod_{i=1}^N \theta_{Y_iR_i}(G_i, X_i) q_{G_iX_i\mid R_i} q_{S_i\mid R_i} q_{R_i} \nonumber \\
+    &\propto \pi(\Theta) \prod_{i=1}^N \theta_{Y_iR_i}(G_i, X_i)\hat{P_i}_{R_i}, \label{eq:posterior}
+\end{align} 
+where as above $\hat{\vb P_i}$ are the BISG probability estimates for individual $i$, which depend on Census data represented in $\vb q_{GX\mid R}$, $\vb q_{S\mid R}$, and $\vb q_R$, but not on the parameters $\Theta$ and individual race $\vb R$.
 <!--# Notice the similarities between the final form of the posterior and the identifying equation \eqref{eq:tprob}. -->
 
 ## Prior distribution
@@ -468,7 +470,8 @@ Since $\vb R$ is high-dimensional, discrete, and not of primary interest, we can
     &= \pi(\Theta) \prod_{i=1}^N \sum_{r\in\cR} \theta_{Y_i r}(G_i, X_i)\hat{P}_{ir}
     = \pi(\Theta) \prod_{i=1}^N \vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i.
     \numberthis \label{eq:post-marg}
-\end{align*} This makes it much easier to sample from the model, as the number of parameters is now a function only of the sizes of $\cY$, $\cR$, $\cG$, and $\cX$, and not the sample size $N$.
+\end{align*}
+This makes it much easier to sample from the model, as the number of parameters is now a function only of the sizes of $\cY$, $\cR$, $\cG$, and $\cX$, and not the sample size $N$.
 
 The marginalized posterior \eqref{eq:post-marg} is simple, but not conjugate to any prior distribution.
 It has only continuous parameters, but these are constrained to be nonnegative and to sum to 1 across certain dimensions.
@@ -480,22 +483,27 @@ When the number of parameters is not too large relative to the data size, simple
 
 # Sensitivity Analysis
 
-The model introduced in this section, like the OLS and weighted estimators, relies on the two BISG assumptions, \ref{a:indep-sgx} and \ref{a:cens-acc}, which are known to not hold exactly.
-It is therefore important to understand how sensitive the model's inferences are to violations of these two assumptions.
-Both assumptions enter the model solely through the BISG probabilities $\hat{\vb P}$.
-If the Census data are inaccurate, or if $S\notindep G,X\mid R$, then the calculated probabilities $\hat{\vb P}$ will differ from the "true" individual race probabilities $\vb P^*$.
-The question then becomes one of quantifying how a particular error in these probabilities $\vb P^* - \hat{\vb P}$ translates into error in the posterior.
+The proposed model, like the weighted and OLS estimators, relies upon Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc}, which are required for the BISG race probabilities to be accurate.
+Unfortunately, these assumptions do not exactly hold in practice.
+In this section, we address this challenge by developing a sensitivity analysis that assesses how the bias in BISG race probabilities affect the estimates of racial disparities.
 
-Denote by $\pi_{\vb*\delta}$ the posterior constructed using $\hat{\vb P}_i+\vb*\delta_i$ as the probabilities, so $\pi_{\vb*\delta^*}$ is the "true" posterior with $\vb*\delta_i^* \dfeq \vb P^*_i - \hat{\vb P}_i$.
-Estimating how $\pi$ and $\pi_{\vb*\delta}$ differ in general is difficult, but we can gain insight by focusing on "small enough" $\vb*\delta$, such that a linear approximation is appropriate.
+We begin by pointing out that both Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc} enter our model solely through the BISG race probabilities $\hat{\vb P}$.
+If the Census data are inaccurate, or if the conditional independence relation does not hold $S\notindep G,X\mid R$, then the calculated probabilities $\hat{\vb P}$ will differ from the "true" individual race probabilities $\vb P^*$.
+Our goal is to quantify how an error in these probabilities $\vb P^* - \hat{\vb P}$ shifts the posterior and hence the estimates of racial disparities.
 
-Defining perturbation weights $$
+Denote by $\pi_{\vb*\delta}$ the posterior constructed using the error-corrected BISG race probabilities $\hat{\vb P}_i+\vb*\delta_i$ as the input probabilities for the model (see Equation \eqref{eq:posterior}), where $\pi_{\vb*\delta^*}$ is the true posterior with $\vb*\delta_i^* \dfeq \vb P^*_i - \hat{\vb P}_i$.
+Estimating how $\pi$ and $\pi_{\vb*\delta}$ differ in general is difficult, but we focus on the settings where $\vb*\delta$ is small enough to make a linear approximation appropriate.
+In sum, we aim to quantify how the small error in BISG probabilities can alter the estimates of racial disparities.
+
+Define the following perturbation weight, which represents the ratio of posterior based on the biased and error-corrected BISG race probabilities: 
+$$
     w(\Theta,\vb*\delta^*) \dfeq 
     \prod_{i=1}^N 
     \qty(1 + \frac{\vb*\theta_{Y_i}(G_i, X_i)^\top \vb*\delta_i^*}{
     \vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i})
     \propto \frac{\pi_{\vb*\delta^*}(\Theta\mid\vb Y,\vb G,\vb X,\vb S)}{\pi(\Theta\mid\vb Y,\vb G,\vb X,\vb S)},
-$$ we can write the bias for a particular quantity of interest $g(\Theta)$ as \begin{align*}
+$$ 
+Then, using linear approximation, we write the bias for a particular quantity of interest $g(\Theta)$ as \begin{align*}
     \E_{\pi_{\vb*\delta^*}}[g(\Theta)] - \E_\pi[g(\Theta)]
     &= \eval{\dv{\E_{\pi_{\vb*\delta}}[g(\Theta)]}{\vb*\delta}}_{\vb*\delta=0}^\top
         \vb*\delta^* + o(\norm{\vb*\delta^*}) \\
@@ -503,8 +511,10 @@ $$ we can write the bias for a particular quantity of interest $g(\Theta)$ as \b
         \eval{\dv{\log w(\Theta,\vb*\delta)}{\vb*\delta}}_{\vb*\delta=0})^\top
         \vb*\delta^* + o(\norm{\vb*\delta^*}),
         \numberthis\label{eq:bias-dv}
-\end{align*} where the second equality is Theorem 2.1 of [@giordano2018cov; see also the idea of *local sensitivity* from @gustafson1996local].
-With this representation, we can bound the total error in $\E_\pi[g(\Theta)]$ for small $\vb*\delta$.
+\end{align*} 
+where the second equality is due to Theorem 2.1 of @giordano2018cov [see also the idea of *local sensitivity* from @gustafson1996local].
+
+With this representation, we can bound the total error in $\E_\pi[g(\Theta)]$ for sufficiently small $\vb*\delta$ as the following theorem shows.
 
 ```{=tex}
 \begin{theoremrep} \label{thm:bound}
@@ -538,14 +548,17 @@ This is immediate from \eqref{eq:bias-dv} once we compute
 and evaluate at $\vb*\delta=0$, since the worst-case bias for a fixed total error can be obtained by having the maximum allowable $\vb*\delta$ point in the direction of the gradient of $\log w(\Theta,\vb*\delta)$.
 \end{proof}
 ```
-The bound provided by Theorem \ref{thm:bound} may be computed readily from posterior draws.
-However, it obscures the qualitative features of how the error depends on $\vb*\delta^*$, and in particular the sample size.
-Both $\vb*\delta^*$ and $\Cov_\pi(g(\Theta), \tilde\vartheta)$ are vectors whose dimension depends on the sample size $N$, and so, all else being equal, their norms will each grow as $\sqrt{N}$.
-However, each entry $\Cov_\pi(g(\Theta), \tilde\vartheta_{ir})$ will tend to shrink as $N$ increases, since each observation exerts less leverage on the overall posterior.
-Thus the overall impact of the sample size on the bound \eqref{eq:covbound} is unclear and may depend on specific features of the data.
-In particular, and as should be expected, the error is not guaranteed to vanish as $N\to\infty$.
-Practitioners should evaluate \eqref{eq:covbound} under a range of plausible $\Delta$ to understand how robust their findings are to worst-case linear violations of Assumptions $\ref{a:indep-sgx}$ and $\ref{a:cens-acc}$.
+The theorem shows that once researchers choose the amount of total error $\Delta$, then the bound on the shift in a quantity of interest can be computed readily from posterior draws.
+This bound is proportional to the covariance between the conditional probability of the outcome $Y$ given race $R$ and residence location $G$ and its normalized version. **KI: any intuition here??**
 
+It is important to note that both $\vb*\delta^*$ and $\Cov_\pi(g(\Theta), \tilde\vartheta)$ are vectors whose dimension depends on the sample size $N$.
+Thus, all else being equal, their norms will each grow as $\sqrt{N}$.
+However, each entry $\Cov_\pi(g(\Theta), \tilde\vartheta_{ir})$ will tend to shrink as $N$ increases, since each observation exerts less leverage on the overall posterior.
+Thus the overall impact of the sample size on the bound in Equation \eqref{eq:covbound} is unclear and may depend on specific features of the data.
+In particular, and as should be expected, the error is not guaranteed to vanish as $N\to\infty$.
+Practitioners should evaluate Equation \eqref{eq:covbound} under a range of plausible $\Delta$ to understand how robust their findings are to worst-case linear violations of Assumptions $\ref{a:indep-sgx}$ and $\ref{a:cens-acc}$.
+
+**KI: I'm thinking of getting rid of the following result. It seems to me that the above result subsumes the latter.  What do you think?**
 For a more qualitative understanding of the effect of a particular $\vb\delta$, we can derive results on the direction of the error in $\E_\pi[g(\Theta)]$ for linear $g(\Theta)=\vec(\Theta)^\top\vb d$ and particular configurations of $\vb\delta$.
 
 ```{=tex}
@@ -695,7 +708,7 @@ We recommend that practitioners other data sources, such as surveys, to estimate
 # Validation Study
 
 To better understand how the proposed model performs in real-world contexts, we apply it to a validation dataset where the "ground truth" relationship between outcome and race is known.
-We compare the method's error against existing estimators, and evaluate how the error depends on the level of geographic precision used in the BISG probabilities.
+We compare the performance of the proposed model against those of other estimators, and evaluate how the estimation error depends on the level of geographic precision used in the BISG probabilities.
 
 ## North Carolina Voter File
 
@@ -706,21 +719,23 @@ The voter file is an ideal validation setting for the proposed methodology.
 The two outcomes we examine here, party registration and turnout, are the product of many unobservable factors, and are almost guaranteed to exhibit at least some differences by race.
 Most importantly, since race is recorded, inferences about these differences using the estimators discussed here can be compared to the true values.
 
-We use a subset of the June 2022 voter file which could be linked to a proprietary voter file provided by L2, Inc.
+We use a subset of the June 2022 voter file which could be linked to a proprietary voter file provided by L2, Inc. a leading national non-partisan firm and the oldest organization in the United States that supplies voter data and related technology to candidates, political parties, pollsters, and consultants for use in campaigns.
 The L2 file geocoded each address to a Census block, which is necessary for the finest block-level BISG predictions.
-We also removed any records without individual race information.
-Since our goal is validation compared to some ground truth, and not inference about the overall population of North Carolina voters, these exclusions are not problematic.
+We also removed any records without individual race information, since our goal is validation compared to some ground truth, rather than inference about the entire population of registered North Carolina voters.
 
 ```{r nc-overview, fig.width=6.5}
 #| fig.cap: |
 #|     Distribution of party identification (left) and turnout (right) by race, 
-#|     for a sample of 500,000 North Carolina voters.
+#|     for a sample of 500,000 North Carolina voters. Parties are Libetarian (LIB),
+#|     Republican (REP), Independent (IND), and Democrat (DEM). Turnout ranges from 
+#|     0 to 10, indicating the number of November general elections from 2012 through 2021, 
+#|     in which a voter turned out.
 knitr::include_graphics("figures/nc_overview.pdf")
 ```
 
-The overall merged voter file contains 5,711,795 voters, 71.2% of which were White, 21.1% of which were black, and 7.7% of which belonged to another race.
-For analysis purposes, we further subsampled this file by selecting 500,000 records at random without replacement.
-A sample size of half a million is large enough to ensure that sampling error is essentially negligible, while reducing the overall computational burden.
+The overall merged voter file contains 5,711,795 voters, 71.2% of which are White, 21.1% of which are black, and 7.7% of which belong to another race.
+To reduce computational burden, we further subsampled this file by selecting 500,000 records at random without replacement.
+A sample size of half a million is large enough to ensure that sampling error is essentially negligible.
 
 Figure \@ref(fig:nc-overview) shows the distribution of party registration and turnout by race in this subsample.
 White voters disproportionately register as Republicans, while Black voters disproportionately register as Democrats.
@@ -740,8 +755,7 @@ score = number(x$score, 0.001)
 
 The BISG probabilities are broadly accurate.
 Using the maximum a posteriori racial category as a prediction is `r acc["county"]` accurate for the county probabilities, `r acc["zip"]` accurate for the ZIP code probabilities, `r acc["tract"]` accurate for the tract probabilities, and `r acc["block"]` accurate for the block probabilities.
-Accuracy isn't everything, of course.
-A better measure of the quality of the BISG probabilities is the logarithmic score, a proper scoring rule which rewards accurate and calibrated probabilistic estimates (higher values are better).
+An alternative measure of the quality of the BISG probabilities is the logarithmic score, a proper scoring rule which rewards accurate and calibrated probabilistic estimates (higher values are better).
 The logarithmic scores for the BISG probabilities are -`r score["county"]` for counties, -`r score["zip"]` for ZIP codes, -`r score["tract"]` for tracts, and -`r score["block"]` for blocks.
 For comparison, the prior-only logarithmic score (i.e., using no name or geographic information) is -`r number(x$base_score, 0.001)`.
 The worsened performance for block-level versus tract-level probabilities likely stems from the larger impact of census measurement error at smaller geographies, a problem that could be addressed using newer BISG methods such as those of @imai2022addressing.
@@ -762,12 +776,13 @@ Due to the large number of individual census blocks, we use tract random effects
 We measure the error in the estimated joint distribution with the total variation (TV) distance, calculated as$$
 d_\text{TV}(\hat{\vb*\mu}_{Y|R}, \vb*\mu_{Y|R}) 
 = \half\sum_{y\in\cY}\sum_{r\in\cR} |\hat{\mu}_{Y,R}(y, r) - \mu_{Y,R}(y, r)|.
-$$The TV distance is an upper bound on the error in *any* probability calculated from the estimated joint distribution, and as such is useful general-purpose measure of estimation error.
+$$The TV distance is an upper bound on the error in *any* probability calculated from the estimated joint distribution, and as such is useful general-purpose measure of estimation error. **KI: Can we also compute other measures? What about putting false negative and false positive rates into Appendix.**
 Figures \@ref(fig:nc-fit-party) and \@ref(fig:nc-fit-turnout) show the TV distance for each estimator across the range of geographic levels used in the BISG calculation.
 The figures also show the TV distance for each conditional distribution by race, to illuminate how the estimators perform on each subgroup.
+**KI: We should start with the estimates of racial disparities themselves. I think that partisanship and turnout differentials would be good things to show. Then, measure errors via TV distance. **
 
 As far as the overall TV error, the proposed method outperforms every alternative, for both party ID and turnout, at every geographic level.
-The OLS estimator outperforms the weighted estimator for party ID, but the situation is reversed for turnout.
+The OLS estimator outperforms the weighted estimator for party ID, but the situation is reversed for turnout. **KI: How are you modeling the turnout?**
 This suggests that compared to the effect of race on party ID, the effect of race on turnout is more strongly moderated by geography, reducing the size of the violation of Assumption \ref{a:indep-yr}.
 The thresholding estimator consistently performs poorly.
 
@@ -797,7 +812,8 @@ As noted above, the sampling error in all of these estimates is minimal---the wi
 This error results from a violation of Assumptions \ref{a:indep-sgx}--\ref{a:indep-ys}, likely in large part driven by outdated Census data and differences between the adult and registered voter populations.
 
 We can apply the theoretical bounds from Theorem \ref{thm:bound} to gain a better understanding of how these data issues, which lead to errors in the BISG probabilities, translate to errors in the proposed model's estimates.
-For the county-level party ID estimates, a total error of $\Delta=`r number(x[["tot_err_party"]], 0.001)`$ is sufficient to explain the largest error in the joint distribution.
+For the county-level party ID estimates, a total error of $\Delta=`r number(x[["tot_err_party"]], 0.001)`$ is sufficient to explain the largest error in the joint distribution. 
+**KI: Not sure exactly what this means. Can we show via a graph how changing $\Delta$ leads to different estimates of disparities? I'm also worried about if this sensitivity analysis may not be too informative...**
 For the county-level turnout estimates, a total error of $\Delta=`r number(x[["tot_err_turnout"]], 0.001)`$ suffices.
 These total errors translate to an average error in the individual BISG probabilities, $||\vb*\delta_i||$, of `r number(100*x[["avg_err_party"]], 0.01)` and `r number(100*x[["avg_err_turnout"]], 0.01)` percentage points, respectively.
 The actual average error is almost certainly higher but is not in the worst-case direction (which is what Theorem \ref{thm:bound} assumes).
