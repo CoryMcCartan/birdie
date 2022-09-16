@@ -6,8 +6,6 @@ data-raw/*.csv
 data-raw/*/
 data-out
 
-man/
-
 *.rds
 __pycache__
 *.pyc
@@ -25,7 +23,7 @@ __pycache__
 *.pdf
 *.html
 
-!data/names_2010_counts.rds
+!inst/extdata/*.rds
 data/censusData.rdata
 
 paper/race-proxy.tex

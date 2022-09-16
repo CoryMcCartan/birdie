@@ -1,13 +1,25 @@
 
 # Helper function to make an R|S table
-census_surname_table = function(S, S_name, p_r, counts=FALSE) {
+# `counts` returns counts
+# `flip` returns S|R rather than R|S
+census_surname_table = function(S, S_name, p_r, counts=FALSE, flip=FALSE) {
     if (length(p_r) != 6)
         cli_abort(c("Number of racial categories doesn't match the Census table.",
                     "i"="Categories should be White, Black, Hispanic, Asian,
                     American Indian/Alaska Native, and other."))
+    if (counts && flip)
+        cli_abort("{.arg flip} must be {.val FALSE} if {.arg counts} is {.val TRUE}")
 
     d_cens = readRDS(system.file("extdata", "names_2010_counts.rds",
-                                 package="raceproxy", mustWork=TRUE))
+                                 package="birdie", mustWork=TRUE))
+    if (!counts && flip) {
+        p_s = rowSums(d_cens[, -1])
+        p_s = p_s / sum(p_s)
+        for (r in names(d_cens)[-1]) {
+            d_cens[[r]] = d_cens[[r]] * p_s
+            d_cens[[r]] = d_cens[[r]] / sum(d_cens[[r]])
+        }
+    }
 
     out = data.frame(last_name = unique(proc_names(S))) %>%
         left_join(d_cens, by="last_name")
@@ -22,7 +34,8 @@ census_surname_table = function(S, S_name, p_r, counts=FALSE) {
 
     # neither matches
     na_ct = is.na(match_1st_idx) + is.na(match_2nd_idx)
-    bad = na.omit(c(bad, double_idx[which(na_ct == 2)]))
+    if (length(bad) > 0)
+        bad = na.omit(c(bad, double_idx[which(na_ct == 2)]))
 
     # one or the other matches: use it but with half confidence
     only_1st = which(!is.na(match_1st_idx) & is.na(match_2nd_idx))
@@ -40,8 +53,14 @@ census_surname_table = function(S, S_name, p_r, counts=FALSE) {
     out[double_idx[both], -1] =  0.5*new_totals*(pr_1st/sum1 + pr_2nd/sum2)
 
     # replace non-matches w/ <generic>
-    out = rbind(out[-bad, ], tail(d_cens, 1))
-    if (!counts) out[, -1] = out[, -1] / rowSums(out[, -1])
+    if (length(bad) > 0) {
+        out = rbind(out[-bad, ], tail(d_cens, 1))
+    } else {
+        out = rbind(out, tail(d_cens, 1))
+    }
+    if (!counts && !flip) {
+        out[, -1] = out[, -1] / rowSums(out[, -1])
+    }
 
     colnames(out) = c(S_name, "white", "black", "hisp", "asian", "aian", "other")
     as_tibble(out)
@@ -55,7 +74,7 @@ census_zip_table = function(G, G_name, p_r, counts=FALSE) {
                     American Indian/Alaska Native, and other."))
 
     d_cens = readRDS(system.file("extdata", "zip_race_2010.rds",
-                            package="raceproxy", mustWork=TRUE))
+                            package="birdie", mustWork=TRUE))
     if (!counts) {
         for (i in seq_along(p_r)) {
             d_cens[, 2+i] = d_cens[, 2+i] / d_cens[, 2]

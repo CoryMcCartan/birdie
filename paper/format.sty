@@ -24,12 +24,15 @@
 \flushbottom
 \sloppy
 
+\newcommand\@shorttitle{}
+\newcommand\shorttitle[1]{\renewcommand\@shorttitle{#1}}
+
 \usepackage{fancyhdr}
 \fancyhf{}
 \pagestyle{fancy}
 \renewcommand{\headrulewidth}{0pt}
 \fancyheadoffset{0pt}
-\lhead{\scshape \@title}
+\lhead{\scshape \@shorttitle}
 \rhead{\scshape\today}
 \cfoot{\thepage}
 

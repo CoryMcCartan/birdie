@@ -15,8 +15,10 @@
 \usepackage{graphicx}
 \usepackage{caption}
 \usepackage{subcaption}
+\usepackage{setspace}
 
 \title{$title$}
+\shorttitle{$shorttitle$}
 
 \author{
   $for(authors)$
@@ -99,10 +101,12 @@ $endif$
 
 $body$
 
-\bibliography{$bibliography$}
+%\bibliography{$bibliography$}
 
 $for(include-after)$
 $include-after$
 $endfor$
+
+\setcounter{section}{5}
 
 \end{document}

@@ -14,10 +14,10 @@ knitr::opts_chunk$set(
 )
 ```
 
-This document will walk you through how to use `raceproxy`. First, load in the package.
+This document will walk you through how to use `birdie`. First, load in the package.
 
 ```{r setup, message=FALSE}
-library(raceproxy)
+library(birdie)
 library(dplyr)
 ```
 
@@ -40,15 +40,15 @@ p_x = rowSums(p_xr)
 p_r = colSums(p_xr)
 ```
 
-There are two steps to applying the `raceproxy` methodology:
+There are two steps to applying the `birdie` methodology:
 
 1. Generate a first set of individual race probabilities using BISG.
-1. For a specific outcome variable of interest, run the `raceproxy` model to come up with estimated probabilities conditional on race.
+1. For a specific outcome variable of interest, run the `birdie` model to come up with estimated probabilities conditional on race.
 
 ## Generating BISG probabilities
 
 For the first step, you can use any BISG software, including the [`wru` R package](https://cran.r-project.org/package=wru).
-`raceproxy` provides its own `predict_race_sgz()` function to make this easy.
+`birdie` provides its own `predict_race_sgz()` function to make this easy.
 
 ```{r}
 r_probs = predict_race_sgz(last_name, zip, data=pseudo_vf, p_r=p_r, iterate=0)
@@ -82,14 +82,14 @@ str(fit)
 ```
 
 The arrays stored in `fit$draws` contains the actual estimates of the distribution of our outome given race.
-Since `raceproxy` fits a Bayesian model, we have one set of estimates for every random draw from our posterior.
+Since `birdie` fits a Bayesian model, we have one set of estimates for every random draw from our posterior.
 You are encouraged to use all of these draws, as they capture the uncertainty inherent in the estimation.
 For a  quick summary, you can take the mean across draws.
 
 ## Evaluating estimates
 
 To evaluate the turnout estimates, we'll first convert them into a single best guess of the *joint* distribution of turnout and race.
-`raceproxy` provides the `calc_joint_bisgz()` and `calc_joint_model()` functions to do this; the former computes weighted averages using the BISG probabilities, and the latter converts  the estimated conditional distribution into a joint one.
+`birdie` provides the `calc_joint_bisgz()` and `calc_joint_model()` functions to do this; the former computes weighted averages using the BISG probabilities, and the latter converts  the estimated conditional distribution into a joint one.
 You can use `calc_joint_model()` to build a credible interval around your estimates by passing in different quantiles to the second argument.
 
 ```{r}
@@ -127,4 +127,4 @@ eval_joints(xr$true, "tv",
             model = xr$model)
 ```
 
-The `raceproxy` methodology meaningfully improves on the other BISG estimators.
+The `birdie` methodology meaningfully improves on the other BISG estimators.

@@ -41,6 +41,10 @@ calc_joint_bisgz = function(r_probs, x, method=c("weight", "thresh", "mi", "ols"
         names(dimnames(out)) = NULL
         colnames(out) = colnames(r_probs)
     } else if (method == "ols") {
+        cli_inform("Use {.fn calc_joint_bisgz_ols} for the unbiased
+                    poststratified OLS estimator. This function implements
+                    a simpler OLS estimator that may be biased.",
+                   .frequency="once", .frequency_id="calc_joint")
         out = lapply(levels(x), function(l) {
             lm.fit(r_probs, x == l)$coefficients
         })
@@ -52,9 +56,56 @@ calc_joint_bisgz = function(r_probs, x, method=c("weight", "thresh", "mi", "ols"
     out
 }
 
+#' Estimate the joint distribution of R and X
+#'
+#' @param r_probs a matrix data frame of race probabilities
+#' @param x the variable X to tabulate against
+#' @param gz values of GZ variables. Usually exported as part of
+#'   [predict_race_sgz()]
+#' @param p_gzr a table giving Pr(GZ|R) for use in post-stratification. Columns
+#'   should sum to 1.
+#' @param prefix how to select the race probability columns from `r_probs`, if
+#'   if is a data frame
+#' @param truncate if `TRUE`, truncate results to lie in [0, 1].
+#'
+#' @returns a matrix
+#' @export
+calc_joint_bisgz_ols = function(r_probs, x, gz=attr(r_probs, "gz"),
+                                p_gzr=attr(r_probs, "p_gzr"),
+                                prefix="pr_", truncate=TRUE) {
+    x = as.factor(x)
+    N = length(x)
+    gz = as.factor(gz)
+    if (!is.matrix(r_probs)) {
+        r_probs = as.matrix(dplyr::select(r_probs, starts_with(prefix)))
+        colnames(r_probs) = substring(colnames(r_probs), nchar(prefix)+1L)
+    }
+    stopifnot(nrow(r_probs) == N)
+
+    out = do.call(rbind, lapply(levels(x), function(xval) {
+        ests_local = do.call(rbind, lapply(levels(gz), function(lvl) {
+            idx = which(gz == lvl)
+            tryCatch(
+                lm.fit(r_probs[idx, ], x[idx] == xval)$coefficients,
+            error = function(e) rep(0, 6))
+        }))
+        if (isTRUE(truncate)) {
+            ests_local[ests_local < 0] = 0
+            ests_local[ests_local > 1] = 1
+        }
+        colSums(p_gzr * ests_local, na.rm=TRUE)
+    }))
+
+    out = out %*% diag(colMeans(r_probs))
+    rownames(out) = levels(x)
+    colnames(out) = colnames(r_probs)
+
+    out
+}
+
 #' Calculate a posterior quantile of the joint distribution of R and X
 #'
-#' @param fit a `fit_raceproxy` object (the output of `model_race`)
+#' @param fit a `fit_birdie` object (the output of `model_race`)
 #' @param which if `condition` was used in `model_race`, which estimates to extract.
 #' @param q the quantile
 #' @param p_r a vector containing the marginal probabilities for each value of
@@ -88,7 +139,8 @@ eval_joints = function(tgt, metric=c("tv", "tv_col", "tv_row", "mad", "rmse"), .
 
     n_out = 1
     if (metric == "tv") {
-        score_fn = function(x) sum(abs(tgt - x)) / 2
+        # score_fn = function(x) sum(abs(tgt - x)) / 2
+        score_fn = function(x) sum(abs(tgt[, 1:5] - x[, 1:5])) / 2
     } else if (metric == "tv_col") {
         score_fn = function(x) list(colSums(abs(tgt - x)) / 2 / colSums(tgt))
         n_out = ncol(tgt)

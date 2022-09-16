@@ -1,4 +1,5 @@
-eval_fit = function(fits, X) {
+make_xr = function(fits, X, d) {
+    X_name = deparse(substitute(X))
     X = eval_tidy(enquo(X), d)
 
     xr = list(true = prop.table(table(X, d$race)))
@@ -11,10 +12,37 @@ eval_fit = function(fits, X) {
         out = list()
         out[[str_c("weight_", level)]] = calc_joint_bisgz(d_pr, X, method="weight")
         out[[str_c("thresh_", level)]] = calc_joint_bisgz(d_pr, X, method="thresh")
-        out[[str_c("ols_", level)]] = calc_joint_bisgz(d_pr, X, method="ols")
+        out[[str_c("ols_", level)]] = calc_joint_bisgz_ols(
+            d_pr, X, attr(d_pr, "gz"), attr(d_pr, "p_gzr"), truncate=TRUE)
         out
     })))
+    attr(xr, "X_name") = X_name
+    xr
+}
 
+eval_fit_disp = function(xr) {
+    X_name = attr(xr, "X_name")
+
+    m_to_cond = diag(1/p_r)
+    rownames(m_to_cond) = names(p_r)
+    colnames(m_to_cond) = names(p_r)
+
+    x_disp = imap_dfr(xr, function(x, nm) {
+        x = x %*% m_to_cond
+        tibble(alg = nm,
+               {{ X_name }} := rownames(x),
+               disp_wb = x[, "white"] - x[, "black"],
+               disp_wh = x[, "white"] - x[, "hisp"])
+    })
+    x_disp_true = filter(x_disp, alg == "true") |>
+        select(-alg)
+    x_disp |>
+        filter(alg != "true") |>
+        separate(alg, c("method", "level"), sep="_") |>
+        left_join(x_disp_true, by=X_name, suffix=c("", "_true"))
+}
+
+eval_fit_tv = function(xr) {
     tv_overall = do.call(eval_joints, c(list(xr$true, "tv"), xr)) %>%
         filter(method != "true") %>%
         mutate(race = "overall") %>%
@@ -29,9 +57,18 @@ eval_fit = function(fits, X) {
         separate(method, c("method", "level"), sep="_")
 }
 
-tv_party = eval_fit(fits_party, party)
-tv_turnout = eval_fit(fits_turnout, n_voted)
+xr_party = make_xr(fits_party, party, d)
+xr_turnout = make_xr(fits_turnout, n_voted, d)
+write_rds(xr_party, here("data-out/nc_xr_party.rds"), compress="gz")
+write_rds(xr_turnout, here("data-out/nc_xr_turnout.rds"), compress="gz")
 
+disp_party = eval_fit_disp(xr_party)
+disp_turnout = eval_fit_disp(xr_turnout)
+
+tv_party = eval_fit_tv(xr_party)
+tv_turnout = eval_fit_tv(xr_turnout)
+
+# max improvement vs weighted
 bind_rows(party=tv_party, turnout=tv_turnout, .id="outcome") |>
     filter(race == "overall", method %in% c("model", "weight")) |>
     pivot_wider(names_from=method, values_from=tv) |>
@@ -39,6 +76,18 @@ bind_rows(party=tv_party, turnout=tv_turnout, .id="outcome") |>
     summarize(max_improvement = max(1 - model / weight),
               min_improvement = min(1 - model / weight))
 
+# weighted & turnout vs model (% worse)
+bind_rows(party=tv_party, turnout=tv_turnout, .id="outcome") |>
+    filter(race == "overall", method %in% c("model", "weight", "thresh")) |>
+    pivot_wider(names_from=method, values_from=tv) |>
+    group_by(outcome) |>
+    summarize(max_improvement = max(weight/model, thresh/model),
+              min_improvement = min(weight/model, thresh/model))
+
+filter(disp_party, level=="zip", party=="dem") |>
+    select(-level, -party) |>
+    split(~ method) |>
+    write_rds(here("paper/data/nc_disp_ex.rds"), compress="xz")
 
 # Overview plots -----
 
@@ -61,9 +110,9 @@ p2 = ggplot(d, aes(y=factor(races[race], levels=rev(races)),
 
 p = p1 + p2 & theme(legend.position="bottom",
                     legend.margin=margin())
-ggsave(here("paper/figures/nc_overview.pdf"), plot=p, width=7.5, height=3.5)
+ggsave(here("paper/figures/nc_overview.pdf"), plot=p1, width=7.5, height=2.5)
 
-# Fit quality plots -----
+# Disparity plots -----
 
 lbl_race = function(race) {
     str_c(races[race], " (", percent(as.numeric(p_r[race]), 0.1), ")")
@@ -71,7 +120,36 @@ lbl_race = function(race) {
 
 geos = c(county="County", zip="ZIP code", tract="Census tract", block="Census block")
 geos_short = c(county="County", zip="ZIP", tract="Tract", block="Block")
-methods = c(model="Model", ols="OLS", thresh="Threshold", weight="Weighted")
+methods = c(model="BIRDiE", ols="OLS", thresh="Threshold", weight="Weighted")
+
+make_disp_plot = function(d, x, y, title, xlab) {
+    filter(d, level=="zip") |>
+    ggplot(aes({{ x }}, {{ y }},
+               color=methods[method], shape=methods[method])) +
+        # facet_wrap(~ factor(geos[level], levels=geos)) +
+        geom_hline(yintercept=0.0, color="#00000077") +
+        geom_point(size=2.4, position=position_dodge(width=0.5)) +
+        scale_y_continuous("Error in disparity estimation",
+                           labels=label_number(1, scale=100, suffix="pp")) +
+        labs(x=xlab, title=title, color="Method", shape="Method") +
+        theme_paper()
+}
+
+p1 = make_disp_plot(disp_party, str_to_upper(party), disp_wb - disp_wb_true,
+                    "White-Black disparity error (party)", "Party")
+p2 = make_disp_plot(disp_party, str_to_upper(party), disp_wh - disp_wh_true,
+                    "White-Hispanic disparity error (party)", "Party")
+p3 = make_disp_plot(disp_turnout, fct_inorder(n_voted), disp_wb - disp_wb_true,
+                    "White-Black disparity error (turnout)", "Number of elections voted")
+p4 = make_disp_plot(disp_turnout, fct_inorder(n_voted), disp_wh - disp_wh_true,
+                    "White-Hispanic disparity error (turnout)", "Number of elections voted")
+
+p = p1 + p2 + p3 + p4 + plot_layout(guides="collect")
+p = p1 + p2 + plot_layout(guides="collect")
+ggsave(here("paper/figures/nc_disp.pdf"), plot=p, width=8, height=3.5) # old height 5
+
+
+# TV plots -----
 
 ## Party fit quality -----
 p1 = filter(tv_party, race=="overall") %>%
@@ -80,17 +158,16 @@ ggplot(aes(x=factor(geos[level], levels=geos), y=tv,
     geom_textline(aes(label=methods[method]),
                   position=position_dodge(width=0.25),
                   linewidth=0.7, size=3.5, family="Times", hjust=0.08) +
-    geom_point(size=2.0, position=position_dodge(width=0.25)) +
+    geom_point(size=2.4, position=position_dodge(width=0.25)) +
     scale_color_wa_d() +
     scale_x_discrete(expand=c(0.07, 0, 0.06, 0)) +
     scale_y_log10("Overall total variation distance") +
-    labs(x="BISG geographic precision", title="Party identification") +
+    labs(x="BISG geographic precision", title="Party Identification") +
     guides(color="none", shape="none") +
     theme_paper() +
-    theme(plot.margin=unit(c(0, 0.1, 0, 0), "cm"),
-          plot.title=element_text(margin=margin(0, 0, -12, 0)))
+    theme(plot.margin=unit(c(0, 0.1, 0, 0), "cm"))
 
-p2 = filter(tv_party, race!="overall") %>%
+p1b = filter(tv_party, race!="overall") %>%
 ggplot(aes(x=factor(geos_short[level], levels=geos_short), y=tv,
            color=methods[method], shape=methods[method], group=methods[method])) +
     facet_wrap(~ factor(lbl_race(race), levels=lbl_race(names(races)))) +
@@ -98,33 +175,31 @@ ggplot(aes(x=factor(geos_short[level], levels=geos_short), y=tv,
     geom_point(size=2.0, position=position_dodge(width=0.25)) +
     scale_color_wa_d() +
     scale_y_log10("Total variation distance") +
-    labs(x="BISG geographic precision") +
-    guides(color="none", shape="none") +
+    labs(x="BISG geographic precision", title="Party",
+         color="Method", shape="Method") +
+    # guides(color="none", shape="none") +
     theme_paper() +
     theme(plot.margin=unit(c(0, 0, 0, 0), "cm"))
 
-p = p1 + p2 + plot_layout(widths=c(0.4, 0.6))
-ggsave(here("paper/figures/nc_party_fit.pdf"), plot=p, width=8, height=3.75)
 
 ## Turnout fit quality -----
-p1 = filter(tv_turnout, race=="overall") %>%
+p2 = filter(tv_turnout, race=="overall") %>%
 ggplot(aes(x=factor(geos[level], levels=geos), y=tv,
            color=methods[method], shape=methods[method], group=methods[method])) +
     geom_textline(aes(label=methods[method],
                       hjust=c(model=0.08, weight=0.08, thresh=0.52, ols=0.1)[method]),
                   position=position_dodge(width=0.25),
                   linewidth=0.7, size=3.5, family="Times") +
-    geom_point(size=2.0, position=position_dodge(width=0.25)) +
+    geom_point(size=2.4, position=position_dodge(width=0.25)) +
     scale_color_wa_d() +
     scale_x_discrete(expand=c(0.07, 0, 0.06, 0)) +
     scale_y_log10("Overall total variation distance") +
     labs(x="BISG geographic precision", title="Turnout") +
     guides(color="none", shape="none") +
     theme_paper() +
-    theme(plot.margin=unit(c(0, 0.1, 0, 0), "cm"),
-          plot.title=element_text(margin=margin(0, 0, -12, 0)))
+    theme(plot.margin=unit(c(0, 0.1, 0, 0), "cm"))
 
-p2 = filter(tv_turnout, race!="overall") %>%
+p2b = filter(tv_turnout, race!="overall") %>%
 ggplot(aes(x=factor(geos_short[level], levels=geos_short), y=tv,
            color=methods[method], shape=methods[method], group=methods[method])) +
     facet_wrap(~ factor(lbl_race(race), levels=lbl_race(names(races)))) +
@@ -132,43 +207,15 @@ ggplot(aes(x=factor(geos_short[level], levels=geos_short), y=tv,
     geom_point(size=2.0, position=position_dodge(width=0.25)) +
     scale_color_wa_d() +
     scale_y_log10("Total variation distance") +
-    labs(x="BISG geographic precision") +
+    labs(x="BISG geographic precision", title="Turnout") +
     guides(color="none", shape="none") +
     theme_paper() +
     theme(plot.margin=unit(c(0, 0, 0, 0), "cm"))
 
-p = p1 + p2 + plot_layout(widths=c(0.4, 0.6))
-ggsave(here("paper/figures/nc_turnout_fit.pdf"), plot=p, width=8, height=3.75)
+p = p1 + p2
+p = p1
+ggsave(here("paper/figures/nc_tv.pdf"), plot=p, width=5, height=3.75) # old 8 x 3.75
 
-
-# Poster plots -----
-# bind_rows(`Party ID`=tv_party, `Turnout`=tv_turnout, .id="outcome") |>
-tv_party |>
-    filter(method %in% c("model", "weight"), level == "zip") |>
-    mutate(race = fct_inorder(c(overall="Overall", races)[race])) |>
-ggplot(aes(race, tv, fill=c(model="New model", weight="Weighting")[method])) +
-    geom_hline(yintercept=0) +
-    geom_col(position=position_dodge()) +
-    labs(title="Party registration", x=NULL,
-         y="TV distance\n(lower is better)", fill="Method") +
-    scale_fill_wa_d("palouse", which=c("snake", "hills")) +
-    coord_cartesian(expand=FALSE) +
-    theme_minimal(base_family="IBM Plex Sans Medium", base_size=24) +
-    theme(plot.margin=margin(0, 0, 0, 0),
-          legend.position=c(0.3, 0.75),
-          panel.grid.major.x=element_blank())
-ggsave("~/Desktop/chart1.png", width=12, height=4.5, dpi=250)
-
-tv_turnout |>
-    filter(method %in% c("model", "weight"), level == "zip") |>
-    mutate(race = fct_inorder(c(overall="Overall", races)[race])) |>
-ggplot(aes(race, tv, fill=c(model="New model", weight="Weighting")[method])) +
-    geom_hline(yintercept=0) +
-    geom_col(position=position_dodge()) +
-    labs(title="Turnout", x=NULL, y=NULL, fill="Method") +
-    scale_fill_wa_d("palouse", which=c("snake", "hills"), guide="none") +
-    coord_cartesian(expand=FALSE) +
-    theme_minimal(base_family="IBM Plex Sans Medium", base_size=24) +
-    theme(plot.margin=margin(0, 0, 0, 0),
-          panel.grid.major.x=element_blank())
-ggsave("~/Desktop/chart2.png", width=11, height=4.5, dpi=250)
+p = p1b + p2b + plot_layout(ncol=1, guides="collect")
+p = p1b
+ggsave(here("paper/figures/nc_tv_detailed.pdf"), plot=p, width=6.5, height=4) # old 8 x 3.75
