@@ -151,3 +151,96 @@ print.fit_raceproxy = function(x, ...) {
     rownames(m) = x$x_lev
     print(m)
 }
+
+
+model_race_hmc = function(r_probs, X, G, Z=NULL, condition=NULL,
+                          data=NULL, prefix="pr_", method=c("svi", "mle"),
+                          config=list(), silent=FALSE, reload_py=FALSE) {
+    if (missing(data)) cli_abort("{.arg data} must be provided.")
+    X_vec = eval_tidy(enquo(X), data)
+    G_vec = eval_tidy(enquo(G), data)
+    Z_df = data[, eval_select(enquo(Z), data)]
+    if (!is.matrix(r_probs)) {
+        r_probs = as.matrix(dplyr::select(r_probs, starts_with(prefix)))
+        colnames(r_probs) = substring(colnames(r_probs), nchar(prefix)+1L)
+    }
+
+    if (!check_vec(X_vec)) cli_abort("{.arg X} must be a character or factor with no missing values.")
+    if (nrow(data) != nrow(r_probs))
+        cli_abort("{.arg data} and {.arg r_probs} must have the same number of rows.")
+    if (!is.character(G_vec) && !is.factor(G_vec))
+        cli_abort("{.arg G} must be a character or factor vector.")
+    if (!all(vapply(Z_df, class, character(1)) %in% c("character", "factor"))) {
+        cli_abort("{.arg Z} must contain only character or factor columns.")
+    }
+    if (any(is.na(Z_df))) cli_abort("Missing values found in {.arg Z}")
+
+    X_vec = as.factor(X_vec)
+    G_vec = coalesce(G_vec, "<none>")
+    GZ = cbind(as.factor(G_vec), Z_df)
+    GZ_levels = vapply(GZ, nlevels, integer(1))
+    # set up matrix
+    GZ_var = inverse.rle(list(lengths=GZ_levels, values=1:ncol(GZ)))
+    suppressWarnings({
+        GZ_mat = do.call(cbind, lapply(GZ, function(x) {
+            out = matrix(0L, nrow=length(x), ncol=nlevels(x))
+            out[cbind(seq_along(x), as.integer(x))] = 1L
+            out
+        }))
+    })
+
+
+    # prepare prediction matrices
+    GZ_names = c(
+        names(eval_select(enquo(G), data)),
+        names(eval_select(enquo(Z), data))
+    )
+    cond_name = names(eval_select(enquo(condition), data))
+
+    preds = list(global = colMeans(GZ_mat))
+    if (length(cond_name) == 1) {
+        col_idx = match(cond_name, GZ_names)
+        cols = which(GZ_var == col_idx)
+        col_lvls = levels(GZ[[col_idx]])
+        for (i in seq_along(cols)) {
+            lab = paste0(cond_name, ": ", col_lvls[i])
+            preds[[lab]] = colMeans(GZ_mat[GZ_mat[, cols[i]] == 1, , drop=FALSE])
+        }
+    }
+
+
+    if (isTRUE(reload_py)) {
+        reticulate::py_run_string("if 'py.utils' in sys.modules.keys(): del sys.modules['py.utils']")
+        reticulate::py_run_string("if 'py.fit' in sys.modules.keys(): del sys.modules['py.fit']")
+        reticulate::py_run_string("from tqdm import tqdm; tqdm._instances.clear()")
+        py_path = system.file("py", package="raceproxy")
+        py_code <<- reticulate::import_from_path("raceproxy", path=py_path, delay_load=FALSE)
+    }
+
+    method = match.arg(method)
+
+    defaults = list(warmup = 1000,
+                    draws = 1000)
+    for (i in names(defaults)) {
+        if (is.null(config[[i]]))
+            config[[i]] = defaults[[i]]
+    }
+
+    prior = list(x = 5.00, xr = 0.75, beta = 1.00)
+
+    ts1 = proc.time()
+    out = py_code$pyro$hmc_additive(
+        as.integer(X_vec), GZ_mat, as.integer(GZ_var), r_probs, preds,
+        nlevels(X_vec), as.integer(max(GZ_var)), prior,
+        it=as.integer(config$warmup),
+        n_draws=as.integer(config$draws),
+        silent=silent)
+    if (isFALSE(silent)) print(structure(proc.time() - ts1, class="proc_time")[3])
+
+    class(out) = "fit_raceproxy"
+    out$N = length(X_vec)
+    out$vars = GZ_names
+    out$x_lev = levels(X_vec)
+    out$r_lev = colnames(r_probs)
+    out
+}

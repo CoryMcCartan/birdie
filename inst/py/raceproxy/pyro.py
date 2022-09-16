@@ -4,7 +4,7 @@ import pyro
 import numpy as np
 from scipy.special import softmax
 import pyro.distributions as dist
-from pyro.infer import SVI
+from pyro.infer import SVI, MCMC, NUTS
 import pyro.infer.autoguide as autoguide
 import pyro.poutine as poutine
 import raceproxy.utils as utils
@@ -114,6 +114,7 @@ def fit_additive(X, GZ, GZ_var, pr_base, preds, n_x=2, n_gz_var=1,
     beta_raw = draws["beta_raw"].numpy()
     
     beta = beta_scale[..., GZ_var.detach().numpy(), :, :] * beta_raw 
+    print(beta.shape, flush=True)
     zero_row = np.zeros((p_x.shape[0], 1, 1, n_r, 1))
     lp_xr = np.log(p_x) + np.concatenate((zero_row, lp_xr_raw), -1) 
             
@@ -163,3 +164,52 @@ def fit_additive(X, GZ, GZ_var, pr_base, preds, n_x=2, n_gz_var=1,
         "beta_scale": beta_scale.squeeze()
         }
 
+
+def hmc_additive(X, GZ, GZ_var, pr_base, preds, n_x=2, n_gz_var=1,
+        prior_scale={"x": 5.0, "xr": 0.75, "beta": 1.0},
+        it=2000, n_draws=1000, silent=False):
+    # convert data from R to torch
+    X = torch.tensor(X, dtype=torch.int16) - 1
+    GZ = torch.tensor(GZ, dtype=torch.float)[:, :, None, None]
+    GZ_var = torch.tensor(GZ_var, dtype=torch.long) - 1
+    pr_base = torch.tensor(pr_base, dtype=torch.float)[:, None, :]
+    n_gz = GZ.shape[1]
+    N = X.shape[0]
+    n_r = pr_base.shape[-1]
+    
+    pyro.enable_validation(False)
+    # setup args once since they are reused
+    m_args = (X, GZ, GZ_var, pr_base)
+    m_kwargs = {"N": N, "n_r": n_r, "n_x": n_x, "n_gz": n_gz, "n_gz_var": n_gz_var,
+                "prior_scale": prior_scale, "subsamp": N}
+    
+    nuts_kernel = NUTS(model_additive, adapt_step_size=True)
+    mcmc = MCMC(nuts_kernel, num_samples=n_draws, warmup_steps=it)
+    mcmc.run(*m_args, **m_kwargs)
+
+    draws = mcmc.get_samples()
+    # Average p_xr over GZ
+    p_x = draws["p_x"].numpy()
+    lp_xr_raw = draws["lp_xr_raw"].numpy()
+    beta_scale = draws["beta_scale"].numpy()
+    beta_raw = draws["beta_raw"].numpy()
+    
+    beta = beta_scale[..., GZ_var.detach().numpy(), :, :] * beta_raw 
+    print(beta.shape, flush=True)
+    zero_row = np.zeros((p_x.shape[0], 1, 1, 1, n_r, 1))
+    lp_xr = np.log(p_x) + np.concatenate((zero_row, lp_xr_raw), -1) 
+            
+    draws_out = {}
+    
+    for key in preds:
+        GZ_mean = np.array(preds[key], dtype=np.single)[:, None, None]
+        
+        p_xr = np.tensordot(GZ_mean, beta, (-3, -3)).squeeze() + lp_xr.squeeze()
+        p_xr = np.exp(p_xr - p_xr.max(-1, keepdims=True))
+        p_xr /= p_xr.sum(-1, keepdims=True)
+        draws_out[key] = p_xr.transpose((0, 2, 1))
+    
+    return {
+        "draws": draws_out,
+        "beta_scale": beta_scale.squeeze()
+        }
