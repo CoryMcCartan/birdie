@@ -75,15 +75,6 @@ model_race = function(r_probs, X, G, Z=NULL, condition=NULL,
         }
     }
 
-
-    if (isTRUE(reload_py)) {
-        reticulate::py_run_string("if 'py.utils' in sys.modules.keys(): del sys.modules['py.utils']")
-        reticulate::py_run_string("if 'py.fit' in sys.modules.keys(): del sys.modules['py.fit']")
-        reticulate::py_run_string("from tqdm import tqdm; tqdm._instances.clear()")
-        py_path = system.file("py", package="raceproxy")
-        py_code <<- reticulate::import_from_path("raceproxy", path=py_path, delay_load=FALSE)
-    }
-
     method = match.arg(method)
 
     defaults = list(max_iter = 5000,
@@ -92,6 +83,7 @@ model_race = function(r_probs, X, G, Z=NULL, condition=NULL,
                     draws = if_else(method == "svi", 1000, 2),
                     lr = if_else(method == "svi", 0.25, 0.3),
                     n_err = 100,
+                    prior = list(x = 5.00, xr = 0.75, beta = 1.00),
                     it_avgs = if_else(method == "svi", 400, 600),
                     tol_rhat = if_else(method == "svi", 1.2, 1.1))
     for (i in names(defaults)) {
@@ -99,23 +91,11 @@ model_race = function(r_probs, X, G, Z=NULL, condition=NULL,
             config[[i]] = defaults[[i]]
     }
 
-    prior = list(x = 5.00, xr = 0.75, beta = 1.00)
 
     ts1 = proc.time()
-    out = py_code$pyro$fit_additive(
-        as.integer(X_vec), GZ_mat, as.integer(GZ_var), r_probs, preds,
-        nlevels(X_vec), as.integer(max(GZ_var)), prior,
-        it=as.integer(config$max_iter),
-        epoch=as.integer(config$epoch),
-        subsamp=min(length(X_vec), as.integer(config$subsamp)),
-        n_draws=as.integer(config$draws),
-        it_avgs=as.integer(config$it_avgs),
-        n_err=as.integer(min(config$n_err, length(X_vec))),
-        lr=config$lr, tol_rhat=config$tol_rhat,
-        method=method, silent=silent)
-    if (isFALSE(silent)) print(structure(proc.time() - ts1, class="proc_time")[3])
+    out = list()
 
-    class(out) = "fit_raceproxy"
+    class(out) = "fit_birdie"
     out$N = length(X_vec)
     out$vars = GZ_names
     out$x_lev = levels(X_vec)
@@ -124,8 +104,8 @@ model_race = function(r_probs, X, G, Z=NULL, condition=NULL,
 }
 
 #' @export
-print.fit_raceproxy = function(x, ...) {
-    cli::cli_text("A {.pkg raceproxy} model fit with
+print.fit_birdie = function(x, ...) {
+    cli::cli_text("A {.pkg BIRDiE} model fit with
                   {format(x$N, big.mark=',')} observations and
                   {format(dim(x$draws$global)[1], big.mark=',')} draws")
     # cli::cli_text("{dim(fit$draws$global)[2]} outcome and
@@ -151,3 +131,4 @@ print.fit_raceproxy = function(x, ...) {
     rownames(m) = x$x_lev
     print(m)
 }
+

@@ -63,8 +63,9 @@ make_nc_df = function(county="Dare") {
                city = res_city_desc,
                county_name = county,
                county = paste0("37", tigris::fips_codes$county_code[county_i]),
+               reg_date = lubridate::mdy(registr_dt),
                lic = drivers_lic == "Y") %>%
-        select(regnum=voter_reg_num,
+        select(regnum=voter_reg_num, reg_date,
                last_name:middle_name, suffix=name_suffix_lbl,
                address, city, zip=zip_code, county, county_name,
                race, gender, age, birth_state, party, lic) %>%

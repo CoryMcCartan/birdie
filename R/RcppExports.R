@@ -2,6 +2,6 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 gibbs_me <- function(iter, warmup, S, GZ, M_sr, N_gzr, alpha_gzr, beta_sr, verbosity) {
-    .Call(`_raceproxy_gibbs_me`, iter, warmup, S, GZ, M_sr, N_gzr, alpha_gzr, beta_sr, verbosity)
+    .Call(`_birdie_gibbs_me`, iter, warmup, S, GZ, M_sr, N_gzr, alpha_gzr, beta_sr, verbosity)
 }
 

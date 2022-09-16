@@ -8,3 +8,4 @@ __pycache__
 .*\.pyc$
 ^data-raw$
 ^data-out$
+^README\.Rmd$
