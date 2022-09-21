@@ -58,7 +58,7 @@ d = slice_sample(voters, n=500e3) %>%
            GEOID_block = if_else(is.na(block), GEOID_county, str_c(county, tract, block)),
            GEOID_zip = if_else(is.na(zip), str_c("cty", county), as.character(zip)),
            n_voted = factor(n_voted))
-# rm(voters)
+rm(voters)
 
 p_r = prop.table(table(d$race))
 

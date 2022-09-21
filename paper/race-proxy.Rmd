@@ -48,41 +48,56 @@ opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE,
                fig.path=here("paper/figures/"), fig.align="center",
                fig.width=(8.5-2*1)/2, out.width="100%", fig.asp=0.8)
 options(bookdown.theorem.preamble = FALSE)
+
+x = readRDS(here("paper/data/nc_disp_ex.rds"))
 ```
 
-**CM: from Dan: "Do we need a more informative title? Or is our point that we're clarifying assumptions implicit in a range of existing approaches?"**
+**from Dan: "Do we need a more informative title? Or is our point that we're clarifying assumptions implicit in a range of existing approaches?" (CM: I think the latter)**
 
 # Introduction
 
-Proposed outline:
+The identification and estimation of racial disparities is of critical importance to researchers, policymakers and organizations in areas including public health [@van2003paved; @williams2005social], employment [@conway1983reverse; @greene1984reverse], voting [@gay2001effect; @hajnal2005turnout; @barreto2007isi], criminal justice [@berk2021fairness; @chouldechova2017fair; @dressel2018accuracy], taxation [@black2022algorithmic], housing [@kermani2021racial], and lending [@chen2018fair].
+Within the U.S. government, efforts to identify and remedy racial disparities have taken on greater urgency with the recent issuance of Executive Order 13985, which in part directs agencies to develop methods to assess equity and conduct equity assessments.
 
-1.  Identification and estimation of racial disparities is of critical importance.
-    But in many settings, individual race data are not available.
-    Often the law requires one not to collect racial information (so that one cannot discriminate) but the same law demands the evaluation of racial disparity.
+But for data in many of these areas, racial information is not present at the individual level.
+This prevents analysts from simply tabulating variables of interest against race to identify disparities.
+In fact, in some areas, the law prohibits the collection of racial information even as it demands fair treatment on the basis of race (see, e.g. the U.S. Equal Credit Opportunity Act).
+This creates a dilemma for organizations who wish to measure possible disparities in order to monitor the fairness of their decisionmaking or service provision.
 
-2.  One existing solution is the use of ecological inference, but this faces other challenges such as unverifiable assumptions.
+To estimate racial disparities without individual-level racial data, may researchers turn to ecological inference methods [@goodman1953ecological; @king1997solution; @king2004ecological; @wakefield2004ecological; @imai2008bayesian; @greiner2009r].
+However, these methods require sometimes-strong assumptions which can be difficult to verify.
+Additionally, they all rely on accurate marginal information about race, which may not always be available.
 
-3.  Where large-scale administrative data are available, many analysts have adopted BISG [@fiscella2006bisg; @elliott2008bisg].
+Where the analysis of racial disparities involves large-scale administrative data, many analysts have adopted Bayesian Improved Surname Geocoding (BISG), which generates individual probabilities of belonging to different racial groups based on last names and geolocation [@fiscella2006bisg; @elliott2008bisg].
+BISG leverages residential racial segregation and the hereditary association between race and surname to produce generally accurate and calibrated predictions of individual race [@imai2016improving; @deluca2022validating].
 
-4.  BISG produces accurate racial predictions, but these are not sufficient for estimating disparities accurately.
-    The most common disparity estimation techniques are biased [@chen2019fairness].
-    These biased estimators are widely used, with potentially large real-world consequences.
+While BISG produces accurate racial predictions, these are not sufficient for estimating disparities accurately.
+The most common techniques for estimating disparities using BISG probabilities are known to be biased [@chen2019fairness].
+These biased estimators are widely used, with potentially large real-world consequences.
 
-5.  This article:
+Bias arises in the use of BISG probabilities because of a disconnect between the relationship between the variables in real-world data and the implicit assumptions that underlie common BISG-based disparity estimators.
+In Section \@ref(sec:id), we clarify these implicit assumptions and relate them to the causal structure underlying the data.
+We discuss how the assumptions needed for the most common BISG disparity estimator to be unbiased are unlikely to be met in practice.
+Instead, we offer an alternative assumption and a new identification condition for the joint distribution of an outcome variable and race when the latter is unobserved.
 
-    1.  Provides a new identification condition for accurately estimating disparities
+In Section \@ref(sec:est), we develop a Bayesian model that uses this new identification condition to accurately estimating racial disparities.
+We can fit the model on large administrative datasets using stochastic variational inference.
+This is implemented in open-source software that is made available with the paper.
 
-    2.  Introduces a Bayesian model to estimate disparities using this new condition
+In large datasets, sampling-based uncertainty is overwhelmed by error that arises from violations of our assumptions about the data.
+This is particularly true in this context where the key variable of interest is unobserved.
+Section \@ref(sec:sens) proposes a method to evaluate the sensitivity of inferences about racial disparities to model assumptions.
 
-    3.  Develops a sensitivity analysis for the potential violation of the required assumption
+Section \@ref(sec:valid) validates the proposed methods on real-world data taken from the voter file in North Carolina, where individual-race is observed and can be used as a ground-truth baseline.
+The proposed model substantially outperforms existing estimators across different error measures, two different outcome variables, and multiple levels of geolocation specificity.
+For example, the most popular existing BISG disparity estimator pegs the gap at Democratic party registration between White and Black voters at `r round(-100*x$weight$disp_wb)` percentage points, while the actual gap is `r round(-100*x$weight$disp_wb_true)` percentage points---more than double.
+The proposed method yields an estimate of `r round(-100*x$model$disp_wb)` percentage points.
 
-    4.  Validates the model on real-world data taken from the voter file in North Carolina
+In Section \@ref(sec:appl), we apply the proposed method to large-scale administrative data from the U.S. Internal Revenue Service.
+We produce the first-ever estimates of claim rates of the home mortgage interest deduction (HMID) by race.... [fill in].
+Section \@ref(sec:disc) concludes.
 
-    5.  Applies the model to large-scale IRS administrative data to produce the first-ever estimates of claim rates of the home mortgage interest deduction (HMID) by race.
-
-    6.  Open-source software package
-
-# Identification
+# Identification {#sec:id}
 
 In this section, we discuss the proposed identification strategy.
 Specifically, we show that racial disparity is identifiable if one's surname is conditionally independent of the outcome given their race, residence geolocation, and other observed information, assuming that BISG can accurately identify race probabilities.
@@ -397,7 +412,7 @@ As a result, in any particular sample, the estimator can produce impossible or c
 This is particularly problematic because a large number of unique surnames make both $\vb P$ and $\vb b$ high-dimensional.
 To address this challenge, and to open the door to more flexible modeling, we next propose a Bayesian modeling approach that is based on our identification strategy and yet satisfies necessary constraints.
 
-# Estimation
+# Estimation {#sec:est}
 
 In this section, we propose a Bayesian model that can be used to estimate racial disparities under the proposed alternative identification strategy.
 We first present the model and describe the choice of prior before briefly discussing computational issues.
@@ -479,7 +494,7 @@ In the appendix, we perform a comparison at a small sample size which confirms t
 Both the posterior location and uncertainty are well-approximated with SVI.
 When the number of parameters is not too large relative to the data size, simpler methods such as a Laplace approximation centered at the maximum a posteriori estimate would likely be applicable, too.
 
-# Sensitivity Analysis
+# Sensitivity Analysis {#sec:sens}
 
 The proposed model, like the weighted and OLS estimators, relies upon Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc}, which are required for the BISG race probabilities to be accurate.
 Unfortunately, these assumptions do not exactly hold in practice.
@@ -544,9 +559,6 @@ and evaluate at $\vb*\delta=0$, since the worst-case bias for a fixed total erro
 \end{proof}
 ```
 The theorem shows that once researchers choose the amount of total error $\Delta$, then the bound on the shift in a quantity of interest can be computed readily from posterior draws.
-This bound is proportional to the covariance between the conditional probability of the outcome $Y$ given race $R$ and residence location $G$ and its normalized version.
-**KI: any intuition here??**
-
 It is important to note that both $\vb*\delta^*$ and $\Cov_\pi(g(\Theta), \tilde\vartheta)$ are vectors whose dimension depends on the sample size $N$.
 Thus, all else being equal, their norms will each grow as $\sqrt{N}$.
 However, each entry $\Cov_\pi(g(\Theta), \tilde\vartheta_{ir})$ will tend to shrink as $N$ increases, since each observation exerts less leverage on the overall posterior.
@@ -554,7 +566,9 @@ Thus the overall impact of the sample size on the bound in Equation \eqref{eq:co
 In particular, and as should be expected, the error is not guaranteed to vanish as $N\to\infty$.
 Practitioners should evaluate Equation \eqref{eq:covbound} under a range of plausible $\Delta$ to understand how robust their findings are to worst-case linear violations of Assumptions $\ref{a:indep-sgx}$ and $\ref{a:cens-acc}$.
 
-**KI: I'm thinking of getting rid of the following result. It seems to me that the above result subsumes the latter. What do you think?** For a more qualitative understanding of the effect of a particular $\vb\delta$, we can derive results on the direction of the error in $\E_\pi[g(\Theta)]$ for linear $g(\Theta)=\vec(\Theta)^\top\vb d$ and particular configurations of $\vb\delta$.
+**KI: I'm thinking of getting rid of the following result. It seems to me that the above result subsumes the latter. What do you think? CM: I added clarification that these results are *not* asymptotic but rather exact inequalities. I think that makes them helpful.** 
+For a more qualitative understanding of the effect of a particular $\vb\delta$, we can derive results on the direction of the error in $\E_\pi[g(\Theta)]$ for linear $g(\Theta)=\vec(\Theta)^\top\vb d$ and particular configurations of $\vb*\delta$.
+Unlike Theorem \ref{thm:bound}, these results hold across all sizes of $\vb*\delta$, and not just asymptotically as $\norm{\vb*\delta}\to 0$. 
 
 ```{=tex}
 \begin{toappendix}
@@ -700,7 +714,7 @@ But a pattern of uniform bias will arise when the prior $\vb q_R$ doesn't match 
 When the target population differs from the entire U.S. population that is enumerated by the census, or if the census is out of date, a $\vb q_R$ taken from census tables alone will be incorrect and will lead to exactly the kind of bias described in Corollaries \ref{cor:errdir1} and \ref{cor:errdir2}.
 We recommend that practitioners other data sources, such as surveys, to estimate the overall race distribution, and use this instead of the national census estimates for $\vb q_R$.
 
-# Validation Study
+# Validation Study {#sec:valid}
 
 To better understand how the proposed model performs in real-world contexts, we apply it to a validation dataset where the "ground truth" relationship between outcome and race is known.
 We compare the performance of the proposed model against those of other estimators, and evaluate how the estimation error depends on the level of geographic precision used in the BISG probabilities.
@@ -735,6 +749,7 @@ A sample size of half a million is large enough to ensure that sampling error is
 Figure \@ref(fig:nc-overview) shows the distribution of party registration and turnout by race in this subsample.
 White voters disproportionately register as Republicans, while Black voters disproportionately register as Democrats.
 We measure turnout as the number of November general elections each individual voted in from 2012 through 2021, ranging from 0 to 10.
+For analysis with the methods discussed here, we treat turnout as a categorical variable.
 Turnout rates are highest for Black and White voters, and lowest for Hispanic voters.
 
 ## Results
@@ -755,49 +770,56 @@ The logarithmic scores for the BISG probabilities are -`r score["county"]` for c
 For comparison, the prior-only logarithmic score (i.e., using no name or geographic information) is -`r number(x$base_score, 0.001)`.
 The worsened performance for block-level versus tract-level probabilities likely stems from the larger impact of census measurement error at smaller geographies, a problem that could be addressed using newer BISG methods such as those of @imai2022addressing.
 
-```{r nc-fit-party, fig.width=6.75}
-#| fig.cap: |
-#|     Total variation distance (on a logarithmic scale)
-#|     between the estimated and actual distribution of
-#|     party identification, by estimation method, level of geographic detail 
-#|     used in the BISG predictions, and, on the right, also by race.
-knitr::include_graphics("figures/nc_party_fit.pdf")
-```
-
 For each set of BISG probabilities, we estimate the joint distribution of each outcome variable and race using the proposed method, the weighted estimator, the OLS estimator, and a thresholding estimator that deterministically assigns each individual the maximum *a posteriori* racial category.
 For the proposed method, we use the additive specification described above, using geographic random effects matching the geographic level used in the BISG probabilities (e.g., county random effects for the county-level BISG probabilities), except for the block-level probabilities.
 Due to the large number of individual census blocks, we use tract random effects instead for this particular model.
 
-We measure the error in the estimated joint distribution with the total variation (TV) distance, calculated as$$
+```{r nc-disp, fig.width=6.75}
+#| fig.cap: |
+#|     Error in the White-Black and White-Hispanic disparity estimates for
+#|     party identification and turnout, by estimation method.
+#|     All methods used block-level data for this figure; the results 
+#|     for coarser levels of geographic detail are very similar.
+#|     Estimation uncertainty is minimal and hence suppressed from 
+#|     the figure for clarity.
+x = readRDS(here("paper/data/nc_disp_ex.rds"))
+knitr::include_graphics("figures/nc_disp.pdf")
+```
+
+We first examine the accuracy of the various methods in estimating the disparity between White and Black, and White and Hispanic voters, in party identification and turnout.
+For example, the true difference in Democratic identification between White and Black voters in the sample is -`r percent(-x$model$disp_wb_true)`, meaning Black voters register Democratic at a much higher rate.
+However, the standard weighting approach produces an estimate of only -`r percent(-x$weight$disp_wb)` for this disparity---less than half the true value.
+In contrast, the proposed model produces an estimate of -`r percent(-x$model$disp_wb)`.
+Figure \@ref(fig:nc-disp) compares all the methods across all of these possible disparity measurements, using the Census block-level BISG predictions.
+The true disparity is subtracted off for ease of comparison.
+Across both party and turnout, and both inter-racial comparisons, the proposed method outperforms the other three estimators.
+
+```{r nc-tv, fig.width=6.75}
+#| fig.cap: |
+#|     Total variation distance (on a logarithmic scale)
+#|     between the estimated and actual distribution of
+#|     party identification and turnout, 
+#|     by estimation method and level of geographic detail 
+#|     used in the BISG predictions.
+knitr::include_graphics("figures/nc_tv.pdf")
+```
+
+For a more comprehensive look at the error in the estimated joint distribution, we turn to the total variation (TV) distance, which is calculated as$$
 d_\text{TV}(\hat{\vb*\mu}_{Y|R}, \vb*\mu_{Y|R}) 
 = \half\sum_{y\in\cY}\sum_{r\in\cR} |\hat{\mu}_{Y,R}(y, r) - \mu_{Y,R}(y, r)|.
 $$The TV distance is an upper bound on the error in *any* probability calculated from the estimated joint distribution, and as such is useful general-purpose measure of estimation error.
-**KI: Can we also compute other measures? What about putting false negative and false positive rates into Appendix.** Figures \@ref(fig:nc-fit-party) and \@ref(fig:nc-fit-turnout) show the TV distance for each estimator across the range of geographic levels used in the BISG calculation.
-The figures also show the TV distance for each conditional distribution by race, to illuminate how the estimators perform on each subgroup.
-**KI: We should start with the estimates of racial disparities themselves. I think that partisanship and turnout differentials would be good things to show. Then, measure errors via TV distance.**
+**KI: Can we also compute other measures? What about putting false negative and false positive rates into Appendix.**
+**CM: What do you mean by FNR and FPR in this context?**
+Figure \@ref(fig:nc-tv) shows the TV distance for each estimator, not just for the Census block-level BISG estimates used in Figure \@ref(fig:nc-disp) but also across the range of geographic levels used in the BISG calculation.
+Figure \@ref(fig:nc-tv-detail) in the appendix also shows the TV distance for each conditional distribution by race, to illuminate how the estimators perform on each subgroup.
 
 As far as the overall TV error, the proposed method outperforms every alternative, for both party ID and turnout, at every geographic level.
 The OLS estimator outperforms the weighted estimator for party ID, but the situation is reversed for turnout.
-**KI: How are you modeling the turnout?** This suggests that compared to the effect of race on party ID, the effect of race on turnout is more strongly moderated by geography, reducing the size of the violation of Assumption \ref{a:indep-yr}.
+This suggests that compared to the effect of race on party ID, the effect of race on turnout is more strongly moderated by geography, reducing the size of the violation of Assumption \ref{a:indep-yr}.
 The thresholding estimator consistently performs poorly.
 
 While finer geographic data translates to improved accuracy for the OLS and model-based estimates for party ID, there is no clear trend for the other estimators or for the turnout analysis.
 While it is difficult to know exactly why this is the case, it suggests that when fully geocoded addresses are not available, using ZIP codes or counties alone may suffice---something that has already been suggested for BISG estimation alone [@clark2021minmaxing].
-
-```{r nc-fit-turnout, fig.width=6.75}
-#| fig.cap: |
-#|     Total variation distance (on a logarithmic scale)
-#|     between the estimated and actual distribution of
-#|     turnout, by estimation method, level of geographic detail 
-#|     used in the BISG predictions, and, on the right, also by race.
-knitr::include_graphics("figures/nc_turnout_fit.pdf")
-```
-
-The results are more mixed for individual racial groups.
-It is important to remember that Black and White voters together comprise over 92% of the sample.
-The new model consistently outperforms the other estimators for Hispanic and Asian voters, and is either best or essentially tied for best for White, Black, and Native voters, across both outcomes and all geographic levels.
-All of the methods struggle for the Other category, likely due to its small size and the heterogeneity of its members.
-However, the weighted estimator is probably the "least bad" for this group.
 
 ```{r}
 x = readRDS("data/nc_bounds.rds")
@@ -808,18 +830,19 @@ This error results from a violation of Assumptions \ref{a:indep-sgx}--\ref{a:ind
 
 We can apply the theoretical bounds from Theorem \ref{thm:bound} to gain a better understanding of how these data issues, which lead to errors in the BISG probabilities, translate to errors in the proposed model's estimates.
 For the county-level party ID estimates, a total error of $\Delta=`r number(x[["tot_err_party"]], 0.001)`$ is sufficient to explain the largest error in the joint distribution.
-**KI: Not sure exactly what this means. Can we show via a graph how changing** $\Delta$ leads to different estimates of disparities?
-I'm also worried about if this sensitivity analysis may not be too informative... For the county-level turnout estimates, a total error of $\Delta=`r number(x[["tot_err_turnout"]], 0.001)`$ suffices.
+**KI: Not sure exactly what this means. Can we show via a graph how changing $\Delta$ leads to different estimates of disparities? I'm also worried about if this sensitivity analysis may not be too informative...**
+**CM: probably worth discussing this section in person.**
+For the county-level turnout estimates, a total error of $\Delta=`r number(x[["tot_err_turnout"]], 0.001)`$ suffices.
 These total errors translate to an average error in the individual BISG probabilities, $||\vb*\delta_i||$, of `r number(100*x[["avg_err_party"]], 0.01)` and `r number(100*x[["avg_err_turnout"]], 0.01)` percentage points, respectively.
 The actual average error is almost certainly higher but is not in the worst-case direction (which is what Theorem \ref{thm:bound} assumes).
 Moreover, the bounds on the individual entries of the joint distributions implied by even these small $\Delta$ are only useful for the larger racial groups; they are vacuous for the "Other" category, for instance.
 Nevertheless, this kind of analysis can give an idea of the relative sensitivity of the party ID and turnout estimates to data error (namely, that the turnout estimates are more sensitive).
 
-# Application
+# Application {#sec:appl}
 
 -   Treasury data, no covariates
 
-# Discussion
+# Discussion {#sec:disc}
 
 -   In most real-world applications, the new model and identification condition are much appropriate and will produce much-improved estimates.
 
@@ -860,4 +883,23 @@ As Figure \@ref(fig:valid-nuts-compare) shows, even with just 100 observations, 
 #|     Posterior distributions for the model fit to a 100-person sample, 
 #|     obtained with SVI (approximate) and NUTS ("gold standard") inference routines.
 knitr::include_graphics("figures/valid_nuts_compare.pdf")
+```
+
+# Appendix: Total Variation Decomposition by Racial Group
+
+Figure \@ref(fig:nc-tv-detail) below is the same as Figure \@ref(fig:nc-tv) but with the total variation distance decomposed by racial group.
+Compared to Figure \@ref(fig:nc-tv), the results are more mixed for individual racial groups.
+It is important to remember that Black and White voters together comprise over 92% of the sample.
+The new model consistently outperforms the other estimators for Hispanic and Asian voters, and is either best or essentially tied for best for White, Black, and Native voters, across both outcomes and all geographic levels.
+All of the methods struggle for the Other category, likely due to its small size and the heterogeneity of its members.
+However, the weighted estimator is probably the "least bad" for this group.
+
+```{r nc-tv-detail, fig.width=6}
+#| fig.cap: |
+#|     Total variation distance (on a logarithmic scale)
+#|     between the estimated and actual distribution of
+#|     party identification and turnout, 
+#|     by estimation method, level of geographic detail 
+#|     used in the BISG predictions, and race.
+knitr::include_graphics("figures/nc_tv_detailed.pdf")
 ```
