@@ -1,5 +1,5 @@
 ---
-title: "Estimating Racial Disparities when Race is Not Observed"
+title: "Estimating Racial Disparities when Race is Not Observed, with Application to U.S. Tax Claims Data"
 authors: 
     - name: Cory McCartan
       department: Department of Statistics
@@ -17,7 +17,7 @@ authors:
       thanks: "Corresponding author. Email: imai@harvard.edu, URL: https://imai.fas.harvard.edu"
 date: '`r format(Sys.Date(), "%B %e, %Y")`'
 abstract: |
-    The estimation of racial disparities in health care, financial services, voting, and other contexts is often hampered by the lack of individual-level racial information in administrative records.  In many cases, the law prohibits the collection of such information to prevent direct racial discrimination. As a result, many analysts have adopted Bayesian Improved Surname Geocoding (BISG), which combines individual names and addresses with the Census data to predict race. Although BISG tends to produce well calibrated racial predictions, its prediction errors are often correlated with the outcomes of interest, yielding biased estimates of racial disparities. We propose a more credible identification strategy that corrects this bias in estimating racial disparity via BISG's race predictions.  The proposed strategy is applicable whenever one's surname is conditionally independent of the outcome given their (unobserved) race, residence location, and other observed characteristics. Leveraging this identification strategy, we introduce a new Bayesian model that estimates racial disparity while accounting for the high-dimensionality of surnames.  Lastly, we also develop a sensitivity analysis to address the potential violation of the required assumption that BISG's race predictions are well calibrated.  Our validation study based on North Carolina voter files shows that the proposed model reduces error by about 75--85% in comparison to existing approaches in estimating party identification by race, and roughtly 25–50% lower error for turnout rates by race. A similarly substantial improvement is obtained in estimating racial disparities of partisan identification.  We also apply the model to large-scale IRS administrative data to produce the first-ever estimates of claim rates of the home mortgage interest deduction by race.  We find that ... Open-source software is available for implementing the proposed methodology.
+    The estimation of racial disparities in health care, financial services, voting, and other contexts is often hampered by the lack of individual-level racial information in administrative records.  In many cases, the law prohibits the collection of such information to prevent direct racial discrimination. As a result, many analysts have adopted Bayesian Improved Surname Geocoding (BISG), which combines individual names and addresses with the Census data to predict race. Although BISG tends to produce well calibrated racial predictions, its prediction errors are often correlated with the outcomes of interest, yielding biased estimates of racial disparities. We propose a more credible identification strategy that corrects this bias.  The proposed strategy is applicable whenever one's surname is conditionally independent of the outcome given their (unobserved) race, residence location, and other observed characteristics. Leveraging this identification strategy, we introduce a new Bayesian model that estimates racial disparity while accounting for the high-dimensionality of surnames.  We also develop a sensitivity analysis to address the potential violation of the required assumption that BISG's race predictions are well calibrated.  Our validation study based on North Carolina voter files shows that the proposed model reduces error by about 75--85% in comparison to existing approaches in estimating party identification by race, and roughtly 25–50% lower error for turnout rates by race. A similarly substantial improvement is obtained in estimating racial disparities of partisan identification.  We also apply the model to large-scale U.S. tax records to produce the first-ever estimates of claim rates of the home mortgage interest deduction by race.  We find that ... Open-source software is available for implementing the proposed methodology.
 keywords: 
     - BISG
     - ecological inference
@@ -72,30 +72,29 @@ BISG leverages residential racial segregation and the hereditary association bet
 
 Unfortunately, the accuracy BISG racial predictions alone is not sufficient for estimating disparities without bias.
 Indeed, the most common techniques for estimating disparities using BISG probabilities are known to be biased when prediction errors are correlated with the outcome variable [@chen2019fairness].
-As formally presented in Section \@ref(sec:id), the standard methodology of racial disparity estimation based on BISG predictions also requires individual's race to be conditionally independent of the outcome given their residence location, surnames, and other observable attributes.
+As formally discussed in Section \@ref(sec:id), the standard methodology of racial disparity estimation based on BISG predictions also requires individual's race to be conditionally independent of the outcome given their residence location, surnames, and other observable attributes.
 This key identification assumption, however, is unlikely to hold because race affects many aspects of today's society even after accounting for residence location, surnames, and other observable attributes.
 
-To address this challenge, we propose an alternative identification strategy.
+To address this challenge, in Section \@ref(sec:est), we propose an alternative identification strategy.
 Specifically, we assume that the outcome is conditionally independent of surname given (unobserved) individual's race, residence location, and other observed attributes.
 The assumption implies that for two individuals who live in the same area, belong to the same racial group, and share the observable attributes, their surnames have no predictive power of the outcome.
 We argue that this new identification assumption is more credible unless surname is directly used to determine the outcome of interest (i.e., name-based discrimination).
-
-In Section \@ref(sec:est), we develop a Bayesian model that uses this new identification condition to accurately estimating racial disparities.
-We can fit the model on large administrative datasets using stochastic variational inference.
-This is implemented in open-source software that is made available with the paper.
+Based on this identification strategy, we develop a Bayesian model that overcomes the high-dimensionality of surnames to accurately estimate racial disparities.
+We derive a stochastic variational inference algorithm to fit the model to large administrative datasets.
 
 In large datasets, sampling-based uncertainty is overwhelmed by error that arises from violations of our assumptions about the data.
 This is particularly true in this context where the key variable of interest is unobserved.
-Section \@ref(sec:sens) proposes a method to evaluate the sensitivity of inferences about racial disparities to model assumptions.
+Section \@ref(sec:sens) proposes a method to evaluate the sensitivity of estimates about racial disparities to the potential violation of model assumptions.
+All of the proposed methodology is implemented in open-source software that is made available with the paper.
 
-Section \@ref(sec:valid) validates the proposed methods on real-world data taken from the voter file in North Carolina, where individual-race is observed and can be used as a ground-truth baseline.
+In Section \@ref(sec:valid), we validate the proposed methodology using real-world data taken from the voter file in North Carolina, where self-reported individual-race is observed and can be used to construct the ground-truth of racial disparities.
 The proposed model substantially outperforms existing estimators across different error measures, two different outcome variables, and multiple levels of geolocation specificity.
 For example, the most popular existing BISG disparity estimator pegs the gap at Democratic party registration between White and Black voters at `r round(-100*x$weight$disp_wb)` percentage points, while the actual gap is `r round(-100*x$weight$disp_wb_true)` percentage points---more than double.
 The proposed method yields an estimate of `r round(-100*x$model$disp_wb)` percentage points.
 
 In Section \@ref(sec:appl), we apply the proposed method to large-scale administrative data from the U.S. Internal Revenue Service.
-We produce the first-ever estimates of claim rates of the home mortgage interest deduction (HMID) by race.... [fill in].
-Section \@ref(sec:disc) concludes.
+We produce the first-ever estimates of claim rates of the home mortgage interest deduction (HMID) by race.... [fill in]. **KI: I would like to introduce this application in Section 2 as a motivating example.  Then, we can come back to its analysis in Section \@ref(sec:appl).**
+Section \@ref(sec:disc) gives concluding remarks.
 
 # Identification {#sec:id}
 
