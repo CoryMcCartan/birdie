@@ -200,8 +200,9 @@ This result implies that the conditional independence between individual's race 
 $$Y_i\indep R_i\mid G_i,X_i,S_i.$$
 \end{assump}
 ```
-Figure \@ref(fig:dag)(a) shows a causal structure that satisfies Assumption \ref{a:indep-yr} as well as Assumption \ref{a:indep-sgx}.
-The DAG implies that $Y\indep R\mid G,X,S$ because all paths from $R$ to $Y$ are blocked by $G$, $X$, or $S$.
+
+Figure \@ref(fig:dag)(a) shows a causal directed asyclic graph (DAG) that satisfies Assumption \ref{a:indep-yr} as well as Assumption \ref{a:indep-sgx}.
+This causal structure implies that $Y\indep R\mid G,X,S$ because all paths from $R$ to $Y$ are blocked by $G$, $X$, or $S$.
 The key causal assumption of this DAG is that the effect of race $R$ on the outcome $Y$ must be entirely mediated by surname $S$, residence location $G$, and other observed characteristics $X$.
 This type of exclusion restriction is difficult to satisfy in many practical settings because race may affect the outcome through so many factors, biasing the weighted estimator.
 
@@ -234,7 +235,7 @@ Outside of these cases, however, the weighted estimator is likely to be biased.
         (G) edge node  {} (Y)
         (X) edge node  {} (Y);
     \end{tikzpicture}
-    \caption{Assumption \ref{a:indep-yr} (Conditional independence of outcome and race)}
+    \caption{Assumption \ref{a:indep-yr}: Conditional independence of $Y$ and $R$ given $(G, S, X)$}
 \end{subfigure}
 \hspace{1em}
 \begin{subfigure}[b]{0.4\textwidth}
@@ -262,28 +263,30 @@ Outside of these cases, however, the weighted estimator is likely to be biased.
         %(G) edge [dashed, bend right] node  {} (S)
         %(X) edge [dashed, bend left] node  {} (S);
     \end{tikzpicture}
-    \caption{Assumption \ref{a:indep-ys}  (Conditional independence of outcome and surname)}
+    \caption{Assumption \ref{a:indep-ys}: Conditional independence of $Y$ and $S$ given $(G, R, X)$}
 \end{subfigure}
 \end{center}
 
-\caption{Possible causal structures for which each of the labeled assumptions is satisfied, represented as a directed acyclic graph. Dashed edges connect nodes confounded by an unobserved variable.}
+\caption{Possible causal structures for which each of the labeled assumptions is satisfied, represented as a directed acyclic graph (DAG) where $G$ is residence location, $R$ is race, $S$ is surname, $X$ is observed covariates, and $Y$ is the outcome. Both DAGs also satisfy Assumption \ref{a:indep-sgx}: Conditional independence of $S$ and $(G,X)$ given $R$.}
 \label{fig:dag}
 \end{figure}
 ```
 
 # The Proposed Methodology {#sec:est}
 
-In this section, we discuss the proposed identification strategy.
+In this section, we propose an alternative identification strategy.
 Specifically, we show that racial disparity is identifiable if one's surname is conditionally independent of the outcome given their race, residence geolocation, and other observed information, assuming that BISG can accurately identify race probabilities.
+We then develop a statistical model that estimates racial disparity under this identification condition while accounting for the high-dimensionality of surnames.
+Finally, we propose a sensitivity analysis that addresses the potential existence of unobserved confounders.
 
-## Alternative Identification Strategy
+## Identification Strategy
 
 To reduce this potential bias of the weighted estimator, we propose an alternative identification assumption that may be applicable when Assumption \ref{a:indep-yr} is not credible.
 Specifically, we assume that surname, rather than race, satisfies the exclusion restriction conditional on (unobserved) race, residence location, and other observed characteristics.
 
 ```{=tex}
 \begin{assump}[Conditional independence of outcome and name] \label{a:indep-ys}
-For all individuals $i$, $Y_i\indep S_i\mid R_i,G_i,X_i$.
+$$Y_i\indep S_i\mid R_i,G_i,X_i.$$
 \end{assump}
 ```
 Figure \@ref(fig:dag)(b) shows one possible causal structure that meets this assumption as well as Assumption \ref{a:indep-sgx}.
