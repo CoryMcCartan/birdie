@@ -281,7 +281,7 @@ Finally, we propose a sensitivity analysis that addresses the potential existenc
 
 ## Identification Strategy
 
-To reduce this potential bias of the weighted estimator, we propose an alternative identification assumption that may be applicable when Assumption \ref{a:indep-yr} is not credible.
+To reduce the potential bias of the weighted estimator, we propose an alternative identification assumption that may be applicable when Assumption \ref{a:indep-yr} is not credible.
 Specifically, we assume that surname, rather than race, satisfies the exclusion restriction conditional on (unobserved) race, residence location, and other observed characteristics.
 
 ```{=tex}
@@ -289,23 +289,25 @@ Specifically, we assume that surname, rather than race, satisfies the exclusion 
 $$Y_i\indep S_i\mid R_i,G_i,X_i.$$
 \end{assump}
 ```
-Figure \@ref(fig:dag)(b) shows one possible causal structure that meets this assumption as well as Assumption \ref{a:indep-sgx}.
+
+Figure \@ref(fig:dag)(b) shows one possible causal DAG that meets this assumption as well as Assumption \ref{a:indep-sgx}.
 In this DAG, race can have a direct effect on the outcome $Y$ as well as on residence location $G$ and other observed characteristics $X$, while all paths from $S$ to $Y$ are blocked by $G$, $X$, or $R$.
 
-This structure is plausible in many real-world settings, such as our motivating examples of HMID claims and voter turnout.
-In both these cases, we can rule out a direct effect of name on the outcome.
-(**CM: revisit this more carefully once we've settled on outcomes. Dan notes e.g. mortgage application success may depend on discrimination via names**.) This assumption rules out the possibility that surname directly affects the outcome whereas such a direct effect is allowed under Assumption \ref{a:indep-yr}.
+This causal structure is plausible in many real-world settings, such as our motivating example of HMID claims.
+In this case, we can rule out a direct effect of name on the outcome.
+(**CM: revisit this more carefully once we've settled on outcomes. Dan notes e.g. mortgage application success may depend on discrimination via names**.) 
+This assumption rules out the possibility that surname directly affects the outcome whereas such a direct effect is allowed under Assumption \ref{a:indep-yr}.
 In the above hiring example, if the manager directly relies upon surname to make the decision, our assumption will be violated.
-Assumption \ref{a:indep-ys} also implies that there is no unobserved confounder affecting both surname and outcome.
-**KI: What would be an example of this? CM: I think most violations of** $Y\indep S\mid G, R$ **will take this form---something like income or the region in a country you immigrated from could affect your surname and the outcome.**
-
-In any particular application, therefore, it is important to consider whether it is more reasonable to rule out the direct effect of race on the outcome or the direct effect of surname on the outcome.
-In the former, Assumption \ref{a:indep-yr} is more appropriate whereas in the latter, Assumption \ref{a:indep-ys} is more credible.
+Similarly, if campaigns use the surnames of individual voters to decide whether to mobilize them, Assumption \ref{a:indep-ys} will be violated.
+Yet another possible violation of the assumption is the existence of unobserved confounder that affects both outcome and surname.
+For example, the country of origin for an immigrant may represent such a confounder.
+Even in these cases, however, conditioning on (unobserved) race is likely to reduce the magnitude of association between outcome and surnames.
+In Section \ref{sec:sens}, we develop a sensitivity analysis for potential violation of this assumption.
 
 The following theorem shows that it is possible to identify racial disparities under Assumption \ref{a:indep-ys}.
 
 ```{=tex}
-\begin{theoremrep} \label{thm:id}
+\begin{theoremrep}[Identification] \label{thm:id}
 For all $g\in\cG$, $x\in\cX$, and $y\in\cY$, define a matrix $\vb P$ with entries $p_{rs}=\Pr(R=r\mid G=g, X=x, S=s)$  and a vector $\vb b$ with entries $b_s=\Pr(Y=y\mid G=g, X=x, S=s)$.
 Then under Assumption~\ref{a:indep-ys}, and assuming knowledge of the joint distribution $\Pr(R,G,X,S)$, the conditional probabilities $\Pr(Y=y\mid R, G=g, X=x)$ are identified if and only if both $\vb P$ and the augmented matrix $\mqty(\vb P&\vb b)$ have rank $|\cR|$.
 \end{theoremrep}
@@ -322,13 +324,14 @@ So for each $y\in\cY$, $g\in\cG$, and $x\in\cX$, this relation is a linear syste
 These parameters are identified if and only if this system has a unique solution, i.e. if the coefficient matrix $\vb P$ has rank $|\cR|$ and so does the augmented matrix $\mqty(\vb P&\vb b)$.
 \end{proof}
 ```
-The essence of this identification result is the following observation: under Assumption \ref{a:indep-ys}, we have, for all $y\in\cY$, $g\in\cG$, $x\in\cX$, and $s\in\cS$, \begin{equation} \label{eq:tprob}
+The essence of this identification result is the following key observation.
+Under Assumption \ref{a:indep-ys}, we have, for all $y\in\cY$, $g\in\cG$, $x\in\cX$, and $s\in\cS$, \begin{equation} \label{eq:tprob}
     \Pr(Y=y\mid G=g, X=x, S=s)
     = \sum_{r\in\cR} \Pr(Y=y\mid R=r, G=g, X=x)\Pr(R=r\mid G=g, X=x, S=s).
 \end{equation} The leftmost term is estimable from the data and corresponds to the vector $\vb b$ in Theorem \ref{thm:id}, while the rightmost term is the BISG estimand and corresponds to the matrix $\vb P$ in Theorem \ref{thm:id}.
 Lastly, the remaining term in the middle can be solved for, since \eqref{eq:tprob} holds across all combinations of $Y$, $G$, $X$, and $S$, leading to a large system of equations.
 Our result is closely related to the causal identification based on proxy variables in the presence of unmeasured confounding [@kuroki2014measurement; @miao2018identifying].
-Here, we use surname as a proxy variable for race.
+Here, we use surname as a proxy variable for (unobserved) race to identify racial disparities.
 
 Together with Proposition \ref{p:bisg}, Theorem \ref{thm:id} imply that racial disparities can be identified under Assumptions \ref{a:indep-sgx}, \ref{a:cens-acc}, and \ref{a:indep-ys}.
 The identifying equation \eqref{eq:tprob} shows that $\Pr(Y=y\mid G=g, X=x, S=s)$ is linear in the BISG estimands $\Pr(R=r\mid G=g, X=x, S=s)$.
@@ -340,7 +343,7 @@ $$ where as above $\hat{\vb P}$ is the matrix of BISG probabilities.
 **CM: cite to Dan & Jacob's working paper around here.**
 
 ```{=tex}
-\begin{theoremrep} \label{thm:ols-bias}
+\begin{theoremrep}[Least Squares Estimator] \label{thm:ols-bias}
 If Assumptions \ref{a:indep-sgx}, \ref{a:cens-acc}, and \ref{a:indep-ys} hold, 
 and the identification conditions in Theorem~\ref{thm:id} are satisfied,
 then for all $y\in\cY$ and $r\in\cR$, \[
@@ -354,12 +357,12 @@ BISG accurate -> strict exogeneity
 \end{proof}
 ```
 It is worth comparing this OLS estimator with the weighted estimator $\hat{\mu}^{(\text{wtd})}_{y\mid r}$.
-The next theorem shows that these two estimators are guaranteed to disagree, unless either the BISG probabilities perfectly discriminate **(KI: Doesn't this simply mean that one racial category has a probability of one and the other categories have a probability of zero?** **CM: in the two-race case, yes; but you could split e.g. 50%/50%/0% and satisfy the preconditions for some of the pairs)** or the weighted estimator is constant across races.
-These two conditions are almost never met in practice.
-This underscores the importance of selecting the appropriate assumption (\ref{a:indep-yr} or \ref{a:indep-ys}) for a particular analysis, since they imply different estimators with different results.
+The next theorem shows that these two estimators are guaranteed to disagree, unless either the BISG probabilities perfectly discriminate or the weighted estimator is constant across races.
+Unfortunately, these two conditions are almost never met in practice.
+This underscores the importance of selecting the appropriate assumption (Assumption \ref{a:indep-yr} or \ref{a:indep-ys}) for a particular analysis, since they imply different estimators with different results.
 
 ```{=tex}
-\begin{theoremrep} \label{thm:wtd-vs-ols}
+\begin{theoremrep}[Necessary and Sufficient Condition for Equality of the Weighted and OLS Estimators] \label{thm:wtd-vs-ols}
 For any $y\in\cY$, $\hat{\vb*\mu}^{(\text{wtd})}_{Y|R}(y\mid\cdot) = \hat{\vb*\mu}^{(\text{ols})}_{Y|R}(y\mid\cdot)$
 if and only if for every pair $j,k\in\cR$, either the BISG probabilities perfectly discriminate 
 (i.e., $\Pr(R_i=j\mid G_i,X_i,S_i)>0$ implies $\Pr(R_i=k\mid G_i,X_i,S_i)=0$ and vice versa) or 
@@ -422,13 +425,9 @@ As a result, in any particular sample, the estimator can produce impossible or c
 This is particularly problematic because a large number of unique surnames make both $\vb P$ and $\vb b$ high-dimensional.
 To address this challenge, and to open the door to more flexible modeling, we next propose a Bayesian modeling approach that is based on our identification strategy and yet satisfies necessary constraints.
 
-## Estimation
-
-In this section, we propose a Bayesian model that can be used to estimate racial disparities under the proposed alternative identification strategy.
-We first present the model and describe the choice of prior before briefly discussing computational issues.
-
 ## Bayesian model
 
+We first present the model and describe the choice of prior before briefly discussing computational issues.
 We consider modeling the conditional distribution of the outcome $Y$ given race $R$, residence location $G$, and other observed characteristics $X$.
 Under Assumption \ref{a:indep-ys}, we do not need to condition on $S$.
 The top part of the model places no restrictions on the outcome process.
@@ -459,8 +458,6 @@ Putting all together, the posterior distribution can then be written as \begin{a
 \end{align} where as above $\hat{\vb P_i}$ are the BISG probability estimates for individual $i$, which depend on Census data represented in $\vb q_{GX\mid R}$, $\vb q_{S\mid R}$, and $\vb q_R$, but not on the parameters $\Theta$ and individual race $\vb R$.
 <!--# Notice the similarities between the final form of the posterior and the identifying equation \eqref{eq:tprob}. -->
 
-## Prior distribution
-
 The final but critical component of the model is the prior $\pi(\Theta)$.
 A natural prior would be to allow for maximum flexibility with a *fully saturated* specification: \begin{align*}
     \Theta_{yr}(g, \vb x) &= \theta_{yrg\vb x},  \\
@@ -480,15 +477,12 @@ Under this assumption of no higher-order interaction, we propose the following *
         \sigma^2_k &\iid \Cauchy^+(0, L), \quad k=0,1,\dots,K,
 \end{align*} where $K$ is the number of covariates, $\alpha$ and $L$ are hyperparameters, and $g^{-1}$ is a softmax link function.
 The hierarchical priors on the $\vb*\beta^{(k)}$ allow the model to shrink towards zero for covariates which are not predictive of a varying relationship between $Y$ and $R$.
-To the extent one wishes to model higher-order interactions, those can be added as additional random intercepts; the key efficiency gain is in separating the large number of geographic parameters $\beta^{(0)}_{yrg}$ from the other covariates.
+To the extent one wishes to model higher-order interactions, those can be included as additional random intercepts; the key efficiency gain is in separating the large number of geographic parameters $\beta^{(0)}_{yrg}$ from the other covariates.
 We have found, on smaller datasets where fitting both the additive and fully saturated specifications is possible, that both specifications give similar inferences for $\bar\Theta$, but the additive specification tends to be more accurate even for medium-sized problems.
 
 ## Computation
 
-**KI: Two things that need to be done here. First, it is unclear how marginalization incorporates the prior, which has $R$.**
-**CM: The prior is subsumed into $\hat{P}_{ir}$, which is maintained through the equations below. I think originally I had broken out the marginalization in to more steps, which might help explain it better.**
-
-Since $\vb R$ is high-dimensional, discrete, and not of primary interest, we can marginalize it out as follows: \begin{align*}
+Since the individual race $\vb R$ is high-dimensional, discrete, and not of primary interest, we can marginalize it out as follows: \begin{align*}
     \pi(\Theta\mid \vb Y, \vb G, \vb X, \vb S)
     &= \pi(\Theta) \prod_{i=1}^N \sum_{r\in\cR} \theta_{Y_i r}(G_i, X_i)\hat{P}_{ir}
     = \pi(\Theta) \prod_{i=1}^N \vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i.
@@ -504,14 +498,18 @@ In the appendix, we perform a comparison at a small sample size which confirms t
 Both the posterior location and uncertainty are well-approximated with SVI.
 When the number of parameters is not too large relative to the data size, simpler methods such as a Laplace approximation centered at the maximum a posteriori estimate would likely be applicable, too.
 
-# Sensitivity Analysis {#sec:sens}
+## Sensitivity Analysis {#sec:sens}
 
 The proposed model, like the weighted and OLS estimators, relies upon Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc}, which are required for the BISG race probabilities to be accurate.
-Unfortunately, these assumptions do not exactly hold in practice.
+Unfortunately, these assumptions may not exactly hold in practice.
 In this section, we address this challenge by developing a sensitivity analysis that assesses how the bias in BISG race probabilities affect the estimates of racial disparities.
 
-We begin by pointing out that both Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc} enter our model solely through the BISG race probabilities $\hat{\vb P}$.
-If the Census data are inaccurate, or if the conditional independence relation does not hold $S\notindep G,X\mid R$, then the calculated probabilities $\hat{\vb P}$ will differ from the "true" individual race probabilities $\vb P^*$.
+In particular, we consider a setting where Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc} may be violated but Assumption \ref{a:indep-ys} still holds.
+For example, consider the existence of unobserved confounder that affects some or all of the variables except the outcome, i.e., $(R,S,G,X)$.
+This leads to the violation of Assumption \ref{a:indep-sgx}, but Assumption \ref{a:indep-ys} continues to be satisfied so long as such unobserved confounder does not affect the outcome.
+Unfortunately, inaccurate BISG predictions still lead to biased estimates of racial disparity.
+
+Specifically, if either the Census data are inaccurate, or the conditional independence relation does not hold $S\notindep G,X\mid R$, then the BISG predictions $\hat{\vb P}$ will differ from the "true" individual race probabilities $\vb P^*$.
 Our goal is to quantify how an error in these probabilities $\vb P^* - \hat{\vb P}$ shifts the posterior and hence the estimates of racial disparities.
 
 Denote by $\pi_{\vb*\delta}$ the posterior constructed using the error-corrected BISG race probabilities $\hat{\vb P}_i+\vb*\delta_i$ as the input probabilities for the model (see Equation \eqref{eq:posterior}), where $\pi_{\vb*\delta^*}$ is the true posterior with $\vb*\delta_i^* \dfeq \vb P^*_i - \hat{\vb P}_i$.
@@ -537,7 +535,7 @@ $$ Then, using linear approximation, we write the bias for a particular quantity
 With this representation, we can bound the total error in $\E_\pi[g(\Theta)]$ for sufficiently small $\vb*\delta$ as the following theorem shows.
 
 ```{=tex}
-\begin{theoremrep} \label{thm:bound}
+\begin{theoremrep}[Bias Bound] \label{thm:bound}
 Define $\tilde\vartheta_{ir}\dfeq 
 \frac{\theta_{Y_ir}(G_i,X_i)}{\vb*\theta_{Y_i}(G_i,X_i)^\top\hat{\vb P}_i}$.
 Then for any input probabilities with total error $\norm{\vb*\delta^*}^2
@@ -572,11 +570,10 @@ The theorem shows that once researchers choose the amount of total error $\Delta
 It is important to note that both $\vb*\delta^*$ and $\Cov_\pi(g(\Theta), \tilde\vartheta)$ are vectors whose dimension depends on the sample size $N$.
 Thus, all else being equal, their norms will each grow as $\sqrt{N}$.
 However, each entry $\Cov_\pi(g(\Theta), \tilde\vartheta_{ir})$ will tend to shrink as $N$ increases, since each observation exerts less leverage on the overall posterior.
-Thus the overall impact of the sample size on the bound in Equation \eqref{eq:covbound} is unclear and may depend on specific features of the data.
+Thus the overall impact of the sample size on the bound in Equation \eqref{eq:covbound} may depend on specific features of the data.
 In particular, and as should be expected, the error is not guaranteed to vanish as $N\to\infty$.
 Practitioners should evaluate Equation \eqref{eq:covbound} under a range of plausible $\Delta$ to understand how robust their findings are to worst-case linear violations of Assumptions $\ref{a:indep-sgx}$ and $\ref{a:cens-acc}$.
 
-**KI: I'm thinking of getting rid of the following result. It seems to me that the above result subsumes the latter. What do you think? CM: I added clarification that these results are *not* asymptotic but rather exact inequalities. I think that makes them helpful.** 
 For a more qualitative understanding of the effect of a particular $\vb\delta$, we can derive results on the direction of the error in $\E_\pi[g(\Theta)]$ for linear $g(\Theta)=\vec(\Theta)^\top\vb d$ and particular configurations of $\vb*\delta$.
 Unlike Theorem \ref{thm:bound}, these results hold across all sizes of $\vb*\delta$, and not just asymptotically as $\norm{\vb*\delta}\to 0$. 
 
