@@ -574,7 +574,9 @@ Thus the overall impact of the sample size on the bound in Equation \eqref{eq:co
 In particular, and as should be expected, the error is not guaranteed to vanish as $N\to\infty$.
 Practitioners should evaluate Equation \eqref{eq:covbound} under a range of plausible $\Delta$ to understand how robust their findings are to worst-case linear violations of Assumptions $\ref{a:indep-sgx}$ and $\ref{a:cens-acc}$.
 
+**KI: I'm thinking that this sensitivity analysis is too unrealistic as you note below. I think we can cut it out (or put it in the appendix). I like the first sensitivity analysis and I think that's sufficient for this paper. **
 For a more qualitative understanding of the effect of a particular $\vb\delta$, we can derive results on the direction of the error in $\E_\pi[g(\Theta)]$ for linear $g(\Theta)=\vec(\Theta)^\top\vb d$ and particular configurations of $\vb*\delta$.
+**KI: I think we need a better explanation to help readers understand it.  How about mentioning one or two examples of $\vb d$? **
 Unlike Theorem \ref{thm:bound}, these results hold across all sizes of $\vb*\delta$, and not just asymptotically as $\norm{\vb*\delta}\to 0$. 
 
 ```{=tex}
@@ -637,7 +639,7 @@ $\hat r_{ij}\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} - \delta_{ij}\hat{\vb P}_i^
 ```
 ```{=tex}
 \begin{theoremrep}
-Let $r\in\cR$, $I\subseteq\{1,\dots,N\}$, and $\vb d$ a vector such that $\vb d_{Y_i\cdot G_iX_i}= c\vb e_r$ for all $i\in I$ and $0$ elsewhere, where $\vb e_r\in\R^{|\cR|}$ is the standard basis vector in the $r$ direction and $c>0$.
+Let $r\in\cR$, $I\subseteq\{1,\dots,N\}$, and $\vb d$ a vector such that $\vb d_{Y_i\cdot G_iX_i}= c\vb e_r$ for all $i\in I$ and $0$ elsewhere, where $\vb e_r\in\R^{|\cR|}$ is the standard basis vector in the $r$ direction and $c>0$. {\bf KI: Should this $\vb d_{Y_i\cdot G_iX_i}$ be $\vb d_{y\cdot g x}$? If not, are you averaging over some population?  Explaining $\vb d$ before the theorem would make it easier to understand this.}
 Then if for all $i\in I$, $\delta_{ir}>0$ and $\delta_{ij}<\delta_{ir}$ for $j\neq r$, \[
     \E_{\pi_{\vb*\delta^*}}[\vec(\Theta)^\top\vb d\mid\vb Y] \ge \E_{\pi}[\vec(\Theta)^\top\vb d\mid\vb Y].
 \]
@@ -673,10 +675,13 @@ Then for any $y\in\cY$, the model-based estimate of $\Pr[Y=y\mid R=1]$, denoted 
 will be biased downwards (upwards) if, for all $i$ with $Y_i=y$, the BISG probability $\hat r_{i1}$ is biased downwards (upwards).
 \end{corollary}
 ```
+
+**KI: We should again help readers understand the next result better by giving an example of $\vb d$. **
+
 ```{=tex}
 \begin{theoremrep}
 Let $r,s\in\cR$, $I\subseteq\{1,\dots,N\}$, and $\vb d$ a vector such that $\vb d_{Y_i\cdot G_iX_i}= c_1(\vb e_r-\vb e_s)$ for all $i\in I$ and $0$ elsewhere, for some $c_1>0$.
-Then if for all $i\in I$, $\vb*\delta_i=c_{2i}(e_r-e_s)$ for some $c_{2i}>0$, \[
+Then if for all $i\in I$, $\vb*\delta_i=c_{2i}(\vb e_r-\vb e_s)$ for some $c_{2i}>0$, \[
     \E_{\pi_{\vb*\delta^*}}[\vec(\Theta)^\top\vb d\mid\vb Y] \ge \E_{\pi}[\vec(\Theta)^\top\vb d\mid\vb Y].
 \]
 \end{theoremrep}
@@ -723,7 +728,7 @@ We recommend that practitioners other data sources, such as surveys, to estimate
 
 # Validation Study {#sec:valid}
 
-To better understand how the proposed model performs in real-world contexts, we apply it to a validation dataset where the "ground truth" relationship between outcome and race is known.
+To better understand how the proposed model performs in real-world contexts, we apply it to a North Carolina voter file which contains individual-level self-reported race and hence the "ground truth" relationship between outcome and race is known.
 We compare the performance of the proposed model against those of other estimators, and evaluate how the estimation error depends on the level of geographic precision used in the BISG probabilities.
 
 ## North Carolina Voter File
