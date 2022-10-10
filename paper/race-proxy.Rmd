@@ -574,157 +574,11 @@ Thus the overall impact of the sample size on the bound in Equation \eqref{eq:co
 In particular, and as should be expected, the error is not guaranteed to vanish as $N\to\infty$.
 Practitioners should evaluate Equation \eqref{eq:covbound} under a range of plausible $\Delta$ to understand how robust their findings are to worst-case linear violations of Assumptions $\ref{a:indep-sgx}$ and $\ref{a:cens-acc}$.
 
-**KI: I'm thinking that this sensitivity analysis is too unrealistic as you note below. I think we can cut it out (or put it in the appendix). I like the first sensitivity analysis and I think that's sufficient for this paper. **
-For a more qualitative understanding of the effect of a particular $\vb\delta$, we can derive results on the direction of the error in $\E_\pi[g(\Theta)]$ for linear $g(\Theta)=\vec(\Theta)^\top\vb d$ and particular configurations of $\vb*\delta$.
-**KI: I think we need a better explanation to help readers understand it.  How about mentioning one or two examples of $\vb d$? **
-Unlike Theorem \ref{thm:bound}, these results hold across all sizes of $\vb*\delta$, and not just asymptotically as $\norm{\vb*\delta}\to 0$. 
-
-```{=tex}
-\begin{toappendix}
-For the proofs of the results about the direction of the bias, we can write the bias for a particular quantity of interest $g(\Theta)$ as
-\begin{align*}
-    \E_{\pi_{\vb*\delta^*}}[g(\Theta)] - \E_\pi[g(\Theta)]
-    &= \frac{\E_\pi[w(\Theta,\vb*\delta^*)g(\Theta)]}{\E_\pi[w(\Theta,\vb*\delta^*)]} - 
-        \E_\pi[g(\Theta)] \\
-    &= \Cov_\pi\qty(\frac{w(\Theta,\vb*\delta^*)}{\E_\pi[w(\Theta,\vb*\delta^*)]}, g(\Theta)),
-\end{align*}
-where $\vb Y=(\vb Y,\vb G, \vb X,\vb S)$ is the observed data.
-This holds exactly, and is not just a linear approximations (notice the absence of a logarithm around the perturbation weights). 
-
-\begin{lemma} \label{lem:biassign}
-For a vector $\vb d$, if \[
-    \hat r_{ij}\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} -
-    \delta_{ij}\hat{\vb P}_i^\top\vb d_{Y_i\cdot G_iX_i} \ge 0
-\] for all $1\le i\le N$ and $j\in\cR$, then \[
-    \Cov_\pi\qty(\frac{w(\Theta,\vb*\delta)}{\E_\pi[w(\Theta,\vb*\delta)\mid\vb Y]}, 
-        \vec(\Theta)^\top\vb d\gvn\vb Y) \ge 0.
-\] Conversely, if \(
-    \hat r_{ij}\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} -
-    \delta_{ij}\hat{\vb P}_i^\top\vb d_{Y_i\cdot G_iX_i} \le 0
-\) for all $1\le i\le N$ and $j\in\cR$, then \[
-    \Cov_\pi\qty(\frac{w(\Theta,\vb*\delta)}{\E_\pi[w(\Theta,\vb*\delta)\mid\vb Y]}, 
-        \vec(\Theta)^\top\vb d\gvn\vb Y) \le 0.
-\]
-\end{lemma}
-\begin{proof}
-We will leverage the covariance inequality, which states that for a monotonically increasing function $g$ and monotonically increasing (decreasing) functions $f$, and any random variable $Y$, $\Cov(f(Y),g(Y))$ is nonnegative (nonpositive).
-Since $w$ is nonnegative, we need only consider $\Cov_\pi\qty(w(\Theta,\vb*\delta), \vec(\Theta)^\top\vb d\mid\vb Y)$, without the normalization constant $\E_\pi[w(\Theta,\vb*\delta)\mid\vb Y]$.
-In fact, since $w$ is a product of nonnegative terms, and the product of nonnegative monotonic functions is again monotonic, by the covariance inequality it suffices to show that each term \[
-    w_i \dfeq 1 + \frac{\vb*\theta_{Y_i}(G_i, X_i)^\top \vb*\delta_i}{
-        \vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i} 
-\] is monotonic in $\vec(\Theta)^\top\vb d$.
-
-Partial derivatives with respect to elements of $\vec(\Theta)$ are clearly zero except for those corresponding to $\vec(\Theta)_{Y_i\cdot G_iX_i}$. These are \[
-    \pdv{w_i}{\vec(\Theta)_{Y_irG_iX_i}}
-    = \frac{\vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i\delta_{ir} -
-        \vb*\theta_{Y_i}(G_i, X_i)^\top \vb*\delta_i \hat r_{ir}}{
-        \vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i}.
-\] The directional derivative along $\vb d$ is then 
-\begin{align*}
-    \partial_{\vb d}w_i 
-    &= \frac{\vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i
-                \vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} - 
-                \vb*\theta_{Y_i}(G_i, X_i)^\top \vb*\delta_i
-                \hat{\vb P}_i^\top\vb d_{Y_i\cdot G_iX_i}}{
-            (\vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i)^2} \\
-    &= \frac{\vb*\theta_{Y_i}(G_i, X_i)^\top}{
-            (\vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i)^2}
-            (\hat{\vb P}_i\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} - 
-            \vb*\delta_i\hat{\vb P}_i^\top\vb d_{Y_i\cdot G_iX_i}).
-\end{align*}
-Since $\vb*\theta_{Y_i}(G_i, X_i)$ is nonnegative, a sufficient condition for the directional derivative to be nonnegative, and thus for $w_i$ to be monotonically increasing in $\vec(\Theta)^\top\vb d$, is for
-$\hat r_{ij}\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} - \delta_{ij}\hat{\vb P}_i^\top\vb d_{Y_i\cdot G_iX_i} \ge 0$ for all $j\in\cR$. Similarly, by reversing this inequality, we have a sufficient condition for $w_i$ to be monotonically decreasing in $\vec(\Theta)^\top\vb d$.
-\end{proof}
-\end{toappendix}
-```
-```{=tex}
-\begin{theoremrep}
-Let $r\in\cR$, $I\subseteq\{1,\dots,N\}$, and $\vb d$ a vector such that $\vb d_{Y_i\cdot G_iX_i}= c\vb e_r$ for all $i\in I$ and $0$ elsewhere, where $\vb e_r\in\R^{|\cR|}$ is the standard basis vector in the $r$ direction and $c>0$. {\bf KI: Should this $\vb d_{Y_i\cdot G_iX_i}$ be $\vb d_{y\cdot g x}$? If not, are you averaging over some population?  Explaining $\vb d$ before the theorem would make it easier to understand this.}
-Then if for all $i\in I$, $\delta_{ir}>0$ and $\delta_{ij}<\delta_{ir}$ for $j\neq r$, \[
-    \E_{\pi_{\vb*\delta^*}}[\vec(\Theta)^\top\vb d\mid\vb Y] \ge \E_{\pi}[\vec(\Theta)^\top\vb d\mid\vb Y].
-\]
-\end{theoremrep}
-\begin{proof}
-Let $i\in I$. Then by assumption $\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i}=c\delta_{ir}>0$. 
-Let $j\in\cR$. If $j=r$, \[
-    \hat r_{ir}\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} -
-    \delta_{ir}\hat{\vb P}_i^\top\vb d_{Y_i\cdot G_iX_i}
-    = \hat r_{ir}c\delta_{ir} - \delta_{ir}\hat r_{ir}c = 0,
-\]
-If $j\neq r$, we have \[
-    \hat r_{ij}\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} -
-    \delta_{ij}\hat{\vb P}_i^\top\vb d_{Y_i\cdot G_iX_i}
-    = \hat r_{ij}c\delta_{ir} - \delta_{ij}\hat r_{ij}c
-    = c\hat r_{ij}(\delta_{ir} - \delta_{ij})\ge 0.
-\]
-So the condition of Lemma~\ref{lem:biassign} is satisfied for all $j\in\cR$, and
-thus by the lemma we conclude that \[
-    \E_{\pi_{\vb*\delta^*}}[\vec(\Theta)^\top\vb d\mid\vb Y] - \E_{\pi}[\vec(\Theta)^\top\vb d\mid\vb Y]
-    = \Cov_\pi\qty(\frac{w(\Theta,\vb*\delta)}{\E_\pi[w(\Theta,\vb*\delta)]}, 
-    \vec(\Theta)^\top\vb d \gvn\vb Y) \ge 0. \qedhere
-\]
-\end{proof}
-```
-By reversing the sign of $\vb*\delta_i$, we can reverse the direction of the bias.
-For the binary race case, we have the following translation of this result.
-
-```{=tex}
-\begin{corollary} \label{cor:errdir1}
-Suppose that race is binary, i.e., $\cR=\{0,1\}$.
-Then for any $y\in\cY$, the model-based estimate of $\Pr[Y=y\mid R=1]$, denoted $\E_\pi[\bar\Theta_{y1}\mid\vb Y]$, 
-will be biased downwards (upwards) if, for all $i$ with $Y_i=y$, the BISG probability $\hat r_{i1}$ is biased downwards (upwards).
-\end{corollary}
-```
-
-**KI: We should again help readers understand the next result better by giving an example of $\vb d$. **
-
-```{=tex}
-\begin{theoremrep}
-Let $r,s\in\cR$, $I\subseteq\{1,\dots,N\}$, and $\vb d$ a vector such that $\vb d_{Y_i\cdot G_iX_i}= c_1(\vb e_r-\vb e_s)$ for all $i\in I$ and $0$ elsewhere, for some $c_1>0$.
-Then if for all $i\in I$, $\vb*\delta_i=c_{2i}(\vb e_r-\vb e_s)$ for some $c_{2i}>0$, \[
-    \E_{\pi_{\vb*\delta^*}}[\vec(\Theta)^\top\vb d\mid\vb Y] \ge \E_{\pi}[\vec(\Theta)^\top\vb d\mid\vb Y].
-\]
-\end{theoremrep}
-\begin{proof}
-Let $i\in I$. Then by assumption $\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i}=c(|\delta_{ir}|+|\delta_{is}|)>0$. 
-Let $j\in\cR$. If $j=r$ we have \[
-    \hat r_{ir}\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} -
-    \delta_{ir}\hat{\vb P}_i^\top\vb d_{Y_i\cdot G_iX_i}
-    = \hat r_{ir}c_1(2c_{2i}) - c_{2i}c(\hat r_{ir}-\hat r_{is}) 
-    = c_1c_{2i}(\hat r_{ir} +\hat r_{is}) \ge 0.
-\]
-If $j=s$ we have \[
-    \hat r_{is}\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} -
-    \delta_{is}\hat{\vb P}_i^\top\vb d_{Y_i\cdot G_iX_i}
-    = \hat r_{is}c_1(2c_{2i}) + c_{2i}c(\hat r_{ir}-\hat r_{is}) 
-    = c_1c_{2i}(\hat r_{is} +\hat r_{i+}) \ge 0.
-\] If $j\not\in\{r,s\}$ then $\delta_{ij}=0$, so \[
-    \hat r_{ij}\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} -
-    \delta_{ij}\hat{\vb P}_i^\top\vb d_{Y_i\cdot G_iX_i}
-    = \hat r_{ij}c_1(2c_{2i}) \ge 0.
-\] So the condition of Lemma~\ref{lem:biassign} is satisfied for all $j\in\cR$, and
-thus by the lemma we conclude that \[
-    \E_{\pi_{\vb*\delta^*}}[\vec(\Theta)^\top\vb d\mid\vb Y] - \E_{\pi}[\vec(\Theta)^\top\vb d\mid\vb Y]
-    = \Cov_\pi\qty(\frac{w(\Theta,\vb*\delta)}{\E_\pi[w(\Theta,\vb*\delta)]}, 
-    \vec(\Theta)^\top\vb d \gvn\vb Y) \ge 0. \qedhere
-\]
-\end{proof}
-```
-As above, we can reverse the direction of the bias by reversing the sign of $\vb*\delta_i$.
-
-```{=tex}
-\begin{corollary} \label{cor:errdir2}
-Suppose both the race and outcome variables are binary, i.e., $\cY=\cR=\{0,1\}$.
-Suppose that race is binary, i.e., $\cR=\{0,1\}$.
-Then for any $y\in\cY$, the model-based estimate of the disparity $\Pr[Y=y\mid R=1]-\Pr[Y=y\mid R=0]$, denoted $\E_\pi[\bar\Theta_{11}-\bar\Theta_{10}\mid\vb Y]$, 
-will be biased downwards (upwards) if, for all $i$ with $Y_i=y$, the BISG probability $\hat r_{i1}$ is biased downwards (upwards).
-\end{corollary}
-```
-Taken together, Corollaries \ref{cor:errdir1} and \ref{cor:errdir2} show that if the individual probabilities of belonging to a racial group are uniformly biased, so too will be the corresponding estimates of the conditional probabilities and disparities.
-Most of the time, these bias in the BISG probabilities will not be be so one-sided, and the error patterns will be more complex.
-But a pattern of uniform bias will arise when the prior $\vb q_R$ doesn't match the population distribution of race.
-When the target population differs from the entire U.S. population that is enumerated by the census, or if the census is out of date, a $\vb q_R$ taken from census tables alone will be incorrect and will lead to exactly the kind of bias described in Corollaries \ref{cor:errdir1} and \ref{cor:errdir2}.
+The appendix contains further results which are more qualitative but also do not require asymptotics.
+The key takeaway is that a pattern of uniform bias can arise when the prior $\vb q_R$ doesn't match the population distribution of race.
+Specifically, when the target population differs from the entire U.S. population that is enumerated by the census, or if the census is out of date, a $\vb q_R$ taken from census tables alone will be incorrect.
 We recommend that practitioners other data sources, such as surveys, to estimate the overall race distribution, and use this instead of the national census estimates for $\vb q_R$.
+
 
 # Validation Study {#sec:valid}
 
@@ -801,8 +655,8 @@ knitr::include_graphics("figures/nc_disp.pdf")
 
 We first examine the accuracy of the various methods in estimating the disparity between White and Black, and White and Hispanic voters, in party identification and turnout.
 For example, the true difference in Democratic identification between White and Black voters in the sample is -`r percent(-x$model$disp_wb_true)`, meaning Black voters register Democratic at a much higher rate.
-However, the standard weighting approach produces an estimate of only $-$`r percent(-x$weight$disp_wb)` for this disparity---less than half the true value.
-In contrast, the proposed model produces an estimate of $-$`r percent(-x$model$disp_wb)`.
+However, the standard weighting approach produces an estimate of only -`r percent(-x$weight$disp_wb)` for this disparity---less than half the true value.
+In contrast, the proposed model produces an estimate of -`r percent(-x$model$disp_wb)`.
 Figure \@ref(fig:nc-disp) compares all the methods across all of these possible disparity measurements, using the Census block-level BISG predictions.
 The true disparity is subtracted off for ease of comparison.
 Across both party and turnout, and both inter-racial comparisons, the proposed method outperforms the other three estimators.
@@ -916,3 +770,158 @@ However, the weighting estimator is probably the "least bad" for this group.
 #|     used in the BISG predictions, and race.
 knitr::include_graphics("figures/nc_tv_detailed.pdf")
 ```
+
+# Appendix: Nonasymptotic Sensitivity Analysis
+
+For a more qualitative understanding of the effect of a particular $\vb\delta$, we can derive results on the direction of the error in $\E_\pi[g(\Theta)]$ for linear $g(\Theta)=\vec(\Theta)^\top\vb d$ and particular configurations of $\vb*\delta$.
+Unlike Theorem \ref{thm:bound}, these results hold across all sizes of $\vb*\delta$, and not just asymptotically as $\norm{\vb*\delta}\to 0$. 
+
+The class of linear $g$ is still large enough to contain many of the usual estimands of interest.
+For example, estimating conditional expectations of $Y$ for certain racial groups can be achieved by setting the entries of $\vb d$ to 1 for those combinations of $Y$ and $R$.
+The first theorem below establishes results for this case, and the subsequent corollary translates a common special case.
+
+First, however, we establish an important lemma.
+We can write the bias for a particular quantity of interest $g(\Theta)$ as
+\begin{align*}
+    \E_{\pi_{\vb*\delta^*}}[g(\Theta)] - \E_\pi[g(\Theta)]
+    &= \frac{\E_\pi[w(\Theta,\vb*\delta^*)g(\Theta)]}{\E_\pi[w(\Theta,\vb*\delta^*)]} - 
+        \E_\pi[g(\Theta)] \\
+    &= \Cov_\pi\qty(\frac{w(\Theta,\vb*\delta^*)}{\E_\pi[w(\Theta,\vb*\delta^*)]}, g(\Theta)),
+\end{align*}
+where $\vb Y=(\vb Y,\vb G, \vb X,\vb S)$ is the observed data.
+This holds exactly, and is not just a linear approximations (notice the absence of a logarithm around the perturbation weights). 
+
+```{=tex}
+\begin{lemma} \label{lem:biassign}
+For a vector $\vb d$, if \[
+    \hat r_{ij}\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} -
+    \delta_{ij}\hat{\vb P}_i^\top\vb d_{Y_i\cdot G_iX_i} \ge 0
+\] for all $1\le i\le N$ and $j\in\cR$, then \[
+    \Cov_\pi\qty(\frac{w(\Theta,\vb*\delta)}{\E_\pi[w(\Theta,\vb*\delta)\mid\vb Y]}, 
+        \vec(\Theta)^\top\vb d\gvn\vb Y) \ge 0.
+\] Conversely, if \(
+    \hat r_{ij}\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} -
+    \delta_{ij}\hat{\vb P}_i^\top\vb d_{Y_i\cdot G_iX_i} \le 0
+\) for all $1\le i\le N$ and $j\in\cR$, then \[
+    \Cov_\pi\qty(\frac{w(\Theta,\vb*\delta)}{\E_\pi[w(\Theta,\vb*\delta)\mid\vb Y]}, 
+        \vec(\Theta)^\top\vb d\gvn\vb Y) \le 0.
+\]
+\end{lemma}
+\begin{proof}
+We will leverage the covariance inequality, which states that for a monotonically increasing function $g$ and monotonically increasing (decreasing) functions $f$, and any random variable $Y$, $\Cov(f(Y),g(Y))$ is nonnegative (nonpositive).
+Since $w$ is nonnegative, we need only consider $\Cov_\pi\qty(w(\Theta,\vb*\delta), \vec(\Theta)^\top\vb d\mid\vb Y)$, without the normalization constant $\E_\pi[w(\Theta,\vb*\delta)\mid\vb Y]$.
+In fact, since $w$ is a product of nonnegative terms, and the product of nonnegative monotonic functions is again monotonic, by the covariance inequality it suffices to show that each term \[
+    w_i \dfeq 1 + \frac{\vb*\theta_{Y_i}(G_i, X_i)^\top \vb*\delta_i}{
+        \vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i} 
+\] is monotonic in $\vec(\Theta)^\top\vb d$.
+
+Partial derivatives with respect to elements of $\vec(\Theta)$ are clearly zero except for those corresponding to $\vec(\Theta)_{Y_i\cdot G_iX_i}$. These are \[
+    \pdv{w_i}{\vec(\Theta)_{Y_irG_iX_i}}
+    = \frac{\vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i\delta_{ir} -
+        \vb*\theta_{Y_i}(G_i, X_i)^\top \vb*\delta_i \hat r_{ir}}{
+        \vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i}.
+\] The directional derivative along $\vb d$ is then 
+\begin{align*}
+    \partial_{\vb d}w_i 
+    &= \frac{\vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i
+                \vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} - 
+                \vb*\theta_{Y_i}(G_i, X_i)^\top \vb*\delta_i
+                \hat{\vb P}_i^\top\vb d_{Y_i\cdot G_iX_i}}{
+            (\vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i)^2} \\
+    &= \frac{\vb*\theta_{Y_i}(G_i, X_i)^\top}{
+            (\vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i)^2}
+            (\hat{\vb P}_i\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} - 
+            \vb*\delta_i\hat{\vb P}_i^\top\vb d_{Y_i\cdot G_iX_i}).
+\end{align*}
+Since $\vb*\theta_{Y_i}(G_i, X_i)$ is nonnegative, a sufficient condition for the directional derivative to be nonnegative, and thus for $w_i$ to be monotonically increasing in $\vec(\Theta)^\top\vb d$, is for
+$\hat r_{ij}\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} - \delta_{ij}\hat{\vb P}_i^\top\vb d_{Y_i\cdot G_iX_i} \ge 0$ for all $j\in\cR$. Similarly, by reversing this inequality, we have a sufficient condition for $w_i$ to be monotonically decreasing in $\vec(\Theta)^\top\vb d$.
+\end{proof}
+```
+```{=tex}
+\begin{theorem}
+Let $r\in\cR$, $I\subseteq\{1,\dots,N\}$, and $\vb d$ a vector such that $\vb d_{Y_i\cdot G_iX_i}= c\vb e_r$ for all $i\in I$ and $0$ elsewhere, where $\vb e_r\in\R^{|\cR|}$ is the standard basis vector in the $r$ direction and $c>0$.
+Then if for all $i\in I$, $\delta_{ir}>0$ and $\delta_{ij}<\delta_{ir}$ for $j\neq r$, \[
+    \E_{\pi_{\vb*\delta^*}}[\vec(\Theta)^\top\vb d\mid\vb Y] \ge \E_{\pi}[\vec(\Theta)^\top\vb d\mid\vb Y].
+\]
+\end{theorem}
+\begin{proof}
+Let $i\in I$. Then by assumption $\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i}=c\delta_{ir}>0$. 
+Let $j\in\cR$. If $j=r$, \[
+    \hat r_{ir}\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} -
+    \delta_{ir}\hat{\vb P}_i^\top\vb d_{Y_i\cdot G_iX_i}
+    = \hat r_{ir}c\delta_{ir} - \delta_{ir}\hat r_{ir}c = 0,
+\]
+If $j\neq r$, we have \[
+    \hat r_{ij}\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} -
+    \delta_{ij}\hat{\vb P}_i^\top\vb d_{Y_i\cdot G_iX_i}
+    = \hat r_{ij}c\delta_{ir} - \delta_{ij}\hat r_{ij}c
+    = c\hat r_{ij}(\delta_{ir} - \delta_{ij})\ge 0.
+\]
+So the condition of Lemma~\ref{lem:biassign} is satisfied for all $j\in\cR$, and
+thus by the lemma we conclude that \[
+    \E_{\pi_{\vb*\delta^*}}[\vec(\Theta)^\top\vb d\mid\vb Y] - \E_{\pi}[\vec(\Theta)^\top\vb d\mid\vb Y]
+    = \Cov_\pi\qty(\frac{w(\Theta,\vb*\delta)}{\E_\pi[w(\Theta,\vb*\delta)]}, 
+    \vec(\Theta)^\top\vb d \gvn\vb Y) \ge 0. \qedhere
+\]
+\end{proof}
+```
+By reversing the sign of $\vb*\delta_i$, we can reverse the direction of the bias.
+For the binary race case, we have the following translation of this result.
+
+```{=tex}
+\begin{corollary} \label{cor:errdir1}
+Suppose that race is binary, i.e., $\cR=\{0,1\}$.
+Then for any $y\in\cY$, the model-based estimate of $\Pr[Y=y\mid R=1]$, denoted $\E_\pi[\bar\Theta_{y1}\mid\vb Y]$, 
+will be biased downwards (upwards) if, for all $i$ with $Y_i=y$, the BISG probability $\hat r_{i1}$ is biased downwards (upwards).
+\end{corollary}
+```
+
+Racial disparities can be similarly estimated by setting entries of $\vb d$ to $-1$ and $1$, to contrast racial groups.
+The next theorem provides results for this case, and the subsequent corollary translates the common special case.
+
+```{=tex}
+\begin{theorem}
+Let $r,s\in\cR$, $I\subseteq\{1,\dots,N\}$, and $\vb d$ a vector such that $\vb d_{Y_i\cdot G_iX_i}= c_1(\vb e_r-\vb e_s)$ for all $i\in I$ and $0$ elsewhere, for some $c_1>0$.
+Then if for all $i\in I$, $\vb*\delta_i=c_{2i}(\vb e_r-\vb e_s)$ for some $c_{2i}>0$, \[
+    \E_{\pi_{\vb*\delta^*}}[\vec(\Theta)^\top\vb d\mid\vb Y] \ge \E_{\pi}[\vec(\Theta)^\top\vb d\mid\vb Y].
+\]
+\end{theorem}
+\begin{proof}
+Let $i\in I$. Then by assumption $\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i}=c(|\delta_{ir}|+|\delta_{is}|)>0$. 
+Let $j\in\cR$. If $j=r$ we have \[
+    \hat r_{ir}\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} -
+    \delta_{ir}\hat{\vb P}_i^\top\vb d_{Y_i\cdot G_iX_i}
+    = \hat r_{ir}c_1(2c_{2i}) - c_{2i}c(\hat r_{ir}-\hat r_{is}) 
+    = c_1c_{2i}(\hat r_{ir} +\hat r_{is}) \ge 0.
+\]
+If $j=s$ we have \[
+    \hat r_{is}\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} -
+    \delta_{is}\hat{\vb P}_i^\top\vb d_{Y_i\cdot G_iX_i}
+    = \hat r_{is}c_1(2c_{2i}) + c_{2i}c(\hat r_{ir}-\hat r_{is}) 
+    = c_1c_{2i}(\hat r_{is} +\hat r_{i+}) \ge 0.
+\] If $j\not\in\{r,s\}$ then $\delta_{ij}=0$, so \[
+    \hat r_{ij}\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} -
+    \delta_{ij}\hat{\vb P}_i^\top\vb d_{Y_i\cdot G_iX_i}
+    = \hat r_{ij}c_1(2c_{2i}) \ge 0.
+\] So the condition of Lemma~\ref{lem:biassign} is satisfied for all $j\in\cR$, and
+thus by the lemma we conclude that \[
+    \E_{\pi_{\vb*\delta^*}}[\vec(\Theta)^\top\vb d\mid\vb Y] - \E_{\pi}[\vec(\Theta)^\top\vb d\mid\vb Y]
+    = \Cov_\pi\qty(\frac{w(\Theta,\vb*\delta)}{\E_\pi[w(\Theta,\vb*\delta)]}, 
+    \vec(\Theta)^\top\vb d \gvn\vb Y) \ge 0. \qedhere
+\]
+\end{proof}
+```
+As above, we can reverse the direction of the bias by reversing the sign of $\vb*\delta_i$.
+
+```{=tex}
+\begin{corollary} \label{cor:errdir2}
+Suppose both the race and outcome variables are binary, i.e., $\cY=\cR=\{0,1\}$.
+Suppose that race is binary, i.e., $\cR=\{0,1\}$.
+Then for any $y\in\cY$, the model-based estimate of the disparity $\Pr[Y=y\mid R=1]-\Pr[Y=y\mid R=0]$, denoted $\E_\pi[\bar\Theta_{11}-\bar\Theta_{10}\mid\vb Y]$, 
+will be biased downwards (upwards) if, for all $i$ with $Y_i=y$, the BISG probability $\hat r_{i1}$ is biased downwards (upwards).
+\end{corollary}
+```
+Taken together, Corollaries \ref{cor:errdir1} and \ref{cor:errdir2} show that if the individual probabilities of belonging to a racial group are uniformly biased, so too will be the corresponding estimates of the conditional probabilities and disparities.
+Most of the time, these bias in the BISG probabilities will not be be so one-sided, and the error patterns will be more complex.
+As noted in the main text, a pattern of uniform bias will arise when the prior $\vb q_R$ doesn't match the population distribution of race.
+When the target population differs from the entire U.S. population that is enumerated by the census, or if the census is out of date, a $\vb q_R$ taken from census tables alone will be incorrect and will lead to exactly the kind of bias described in Corollaries \ref{cor:errdir1} and \ref{cor:errdir2}.
