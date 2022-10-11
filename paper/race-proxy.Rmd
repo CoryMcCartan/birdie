@@ -129,7 +129,7 @@ The first is the following conditional independence relation between an individu
 
 ```{=tex}
 \begin{assump}[Conditional independence of name and other proxy variables] \label{a:indep-sgx}
-    $$S_i \indep \{G_i, X_i\}\mid R_i.$$
+    For all $i$, $$S_i \indep \{G_i, X_i\}\mid R_i.$$
 \end{assump}
 ```
 Assumption \ref{a:indep-sgx} implies, for example, that once we know an individual is White, knowing their surname is Smith tells us nothing about their residence location and other observed characteristics.
@@ -143,6 +143,7 @@ The second assumption required by BISG is that the Census tables reflect the tru
 
 ```{=tex}
 \begin{assump}[Data accuracy] \label{a:cens-acc}
+    For all $i$, 
     \begin{align*}
         \Pr(R_i=r) &= q_r \\
         \Pr(S_i=s\mid R_i) &= q_{s|r} \\
@@ -197,7 +198,7 @@ This result implies that the conditional independence between individual's race 
 
 ```{=tex}
 \begin{assump}[Conditional independence of outcome and race] \label{a:indep-yr}
-$$Y_i\indep R_i\mid G_i,X_i,S_i.$$
+For all $i$, $$Y_i\indep R_i\mid G_i,X_i,S_i.$$
 \end{assump}
 ```
 
@@ -286,7 +287,7 @@ Specifically, we assume that surname, rather than race, satisfies the exclusion 
 
 ```{=tex}
 \begin{assump}[Conditional independence of outcome and name] \label{a:indep-ys}
-$$Y_i\indep S_i\mid R_i,G_i,X_i.$$
+For all $i$, $$Y_i\indep S_i\mid R_i,G_i,X_i.$$
 \end{assump}
 ```
 
@@ -330,7 +331,7 @@ Under Assumption \ref{a:indep-ys}, we have, for all $y\in\cY$, $g\in\cG$, $x\in\
     = \sum_{r\in\cR} \Pr(Y=y\mid R=r, G=g, X=x)\Pr(R=r\mid G=g, X=x, S=s).
 \end{equation} The leftmost term is estimable from the data and corresponds to the vector $\vb b$ in Theorem \ref{thm:id}, while the rightmost term is the BISG estimand and corresponds to the matrix $\vb P$ in Theorem \ref{thm:id}.
 Lastly, the remaining term in the middle can be solved for, since \eqref{eq:tprob} holds across all combinations of $Y$, $G$, $X$, and $S$, leading to a large system of equations.
-Our result is closely related to the causal identification based on proxy variables in the presence of unmeasured confounding [@kuroki2014measurement; @miao2018identifying].
+Our result is closely related to causal identification based on proxy variables in the presence of unmeasured confounding [@kuroki2014measurement; @miao2018identifying].
 Here, we use surname as a proxy variable for (unobserved) race to identify racial disparities.
 
 Together with Proposition \ref{p:bisg}, Theorem \ref{thm:id} imply that racial disparities can be identified under Assumptions \ref{a:indep-sgx}, \ref{a:cens-acc}, and \ref{a:indep-ys}.
@@ -339,11 +340,11 @@ Thus, it is natural to consider the following least-squares estimator of $\Pr(Y=
 \hat{\vb*\mu}^{(\text{ols})}_{Y\mid R}(y\mid \cdot) 
 = (\hat{\vb P}^\top \hat{\vb P})^{-1} \hat{\vb P}\,\ind\{\vb Y = y\},
 $$ where as above $\hat{\vb P}$ is the matrix of BISG probabilities.
-<!-- and where $\vb Y_{gx}$ is the vector of outcome variables for the individuals with $G_i=g$ and $X_i=x$. --> Indeed, this estimator is unbiased as the following theorem shows.
+<!-- and where $\vb Y_{gx}$ is the vector of outcome variables for the individuals with $G_i=g$ and $X_i=x$. --> Indeed, this estimator is unbiased, as the following theorem shows.
 **CM: cite to Dan & Jacob's working paper around here.**
 
 ```{=tex}
-\begin{theoremrep}[Least Squares Estimator] \label{thm:ols-bias}
+\begin{theoremrep}[OLS Estimator Unbiased] \label{thm:ols-bias}
 If Assumptions \ref{a:indep-sgx}, \ref{a:cens-acc}, and \ref{a:indep-ys} hold, 
 and the identification conditions in Theorem~\ref{thm:id} are satisfied,
 then for all $y\in\cY$ and $r\in\cR$, \[
@@ -351,6 +352,9 @@ then for all $y\in\cY$ and $r\in\cR$, \[
 \]
 \end{theoremrep}
 \begin{proof}
+Fix $y\in\cY$.
+
+
 ID equation -> linear model
 
 BISG accurate -> strict exogeneity
@@ -362,7 +366,7 @@ Unfortunately, these two conditions are almost never met in practice.
 This underscores the importance of selecting the appropriate assumption (Assumption \ref{a:indep-yr} or \ref{a:indep-ys}) for a particular analysis, since they imply different estimators with different results.
 
 ```{=tex}
-\begin{theoremrep}[Necessary and Sufficient Condition for Equality of the weighting and OLS Estimators] \label{thm:wtd-vs-ols}
+\begin{theoremrep}[Necessary and Sufficient Condition for Equality of the Weighting and OLS Estimators] \label{thm:wtd-vs-ols}
 For any $y\in\cY$, $\hat{\vb*\mu}^{(\text{wtd})}_{Y|R}(y\mid\cdot) = \hat{\vb*\mu}^{(\text{ols})}_{Y|R}(y\mid\cdot)$
 if and only if for every pair $j,k\in\cR$, either the BISG probabilities perfectly discriminate 
 (i.e., $\Pr(R_i=j\mid G_i,X_i,S_i)>0$ implies $\Pr(R_i=k\mid G_i,X_i,S_i)=0$ and vice versa) or 
