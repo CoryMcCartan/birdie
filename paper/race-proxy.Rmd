@@ -641,7 +641,7 @@ The logarithmic scores for the BISG probabilities are -`r score["county"]` for c
 For comparison, the prior-only logarithmic score (i.e., using no name or geographic information) is -`r number(x$base_score, 0.001)`.
 The worsened performance for block-level versus tract-level probabilities likely stems from the larger impact of census measurement error at smaller geographies, a problem that could be addressed using newer BISG methods such as those of @imai2022addressing.
 
-For each set of BISG probabilities, we estimate the joint distribution of each outcome variable and race using the proposed method, the weighting estimator, the OLS estimator, and a thresholding estimator that deterministically assigns each individual the maximum *a posteriori* racial category.
+For a given set of BISG probabilities, we estimate the joint distribution of each outcome variable and race using the proposed method, the weighting estimator, the OLS estimator, and a thresholding estimator that deterministically assigns each individual the maximum *a posteriori* racial category.
 For the proposed method, we use the additive specification described above, using geographic random effects matching the geographic level used in the BISG probabilities (e.g., county random effects for the county-level BISG probabilities), except for the block-level probabilities.
 Due to the large number of individual census blocks, we use tract random effects instead for this particular model.
 
@@ -657,13 +657,17 @@ x = readRDS(here("paper/data/nc_disp_ex.rds"))
 knitr::include_graphics("figures/nc_disp.pdf")
 ```
 
+
 We first examine the accuracy of the various methods in estimating the disparity between White and Black, and White and Hispanic voters, in party identification and turnout.
-For example, the true difference in Democratic identification between White and Black voters in the sample is -`r percent(-x$model$disp_wb_true)`, meaning Black voters register Democratic at a much higher rate.
-However, the standard weighting approach produces an estimate of only -`r percent(-x$weight$disp_wb)` for this disparity---less than half the true value.
-In contrast, the proposed model produces an estimate of -`r percent(-x$model$disp_wb)`.
-Figure \@ref(fig:nc-disp) compares all the methods across all of these possible disparity measurements, using the Census block-level BISG predictions.
+For example, the true difference in Democratic identification between Black and White voters in the sample is $`r percent(-x$model$disp_wb_true)`$ percentage points, meaning Black voters register Democratic at a much higher rate.
+However, the standard weighting approach produces an estimate of only $`r percent(-x$weight$disp_wb)`$ percentage points for this disparity---less than half the true value.
+In contrast, the proposed model produces an estimate of $`r percent(-x$model$disp_wb)`$ percentage points.
+
+Figure \@ref(fig:nc-disp) compares all the methods across all of these possible disparity measurements, using the Census block-level BISG predictions.**KI: Can you change the legend to "Proposed", "OLS", "Weighting", "Thresholding" **
 The true disparity is subtracted off for ease of comparison.
-Across both party and turnout, and both inter-racial comparisons, the proposed method outperforms the other three estimators.
+Across both party and turnout, and both inter-racial comparisons, the proposed model (blue dots) outperforms the other three estimators.
+The two commonly used estimators -- weighting (green crosses) and thresholding (brown squares) -- exhibit greater estimation errors than the proposed model for almost all cases.
+The OLS estimator (yellow triangles), which is based on our new identification strategy but, unlike the proposed model, does not account for certain probability constraints, gives erroneous results especially for Hispanics which represents a small minority in North Carolina.
 
 ```{r nc-tv, fig.width=6.75}
 #| fig.cap: |
@@ -679,24 +683,25 @@ For a more comprehensive look at the error in the estimated joint distribution, 
 d_\text{TV}(\hat{\vb*\mu}_{Y|R}, \vb*\mu_{Y|R}) 
 = \half\sum_{y\in\cY}\sum_{r\in\cR} |\hat{\mu}_{Y,R}(y, r) - \mu_{Y,R}(y, r)|.
 $$The TV distance is an upper bound on the error in *any* probability calculated from the estimated joint distribution, and as such is useful general-purpose measure of estimation error.
-**KI: Can we also compute other measures? What about putting false negative and false positive rates into Appendix.**
-**CM: What do you mean by FNR and FPR in this context?**
-Figure \@ref(fig:nc-tv) shows the TV distance for each estimator, not just for the Census block-level BISG estimates used in Figure \@ref(fig:nc-disp) but also across the range of geographic levels used in the BISG calculation.
+
+Figure \@ref(fig:nc-tv) shows the TV distance for each estimator, not just for the Census block-level BISG estimates used in Figure \@ref(fig:nc-disp) but also across the range of geographic levels used in the BISG calculation (x-axis). **KI: Again, change the labels of the estimators. Can you also add the label for the lowest line in y-axis of the left plot?**
+We find that the proposed method (blue circles) outperforms every alternative, for both party ID and turnout, at every geographic level.
+The conventional estimators (green crosses for the weighting estimator and brown squares for the thresholding estimator) exhibit much larger errors than the proposed methodology.
+When compared to the error of the proposed estimator, their errors range from XX% to XX% greater for party registration and from XX% to XX% more for turnout, depending on the geography used for BISG predictions. **KI: Please fill in**
+The OLS estimator (yellow triangles) outperforms the weighting and threshold estimators for party ID, but performs significantly worse for turnout than the weighting estimator. 
+
+Finer geographic data translates to improved accuracy for the proposed model-based estimates for party ID.
+For turnout, the proposed method yields accurate estimates, indicated by substantively small TV errors, in all cases except that the TV error of the tract-level estimates is somewhat greater than the other three.
+While the weighting estimator also becomes more accurate as BISG predictions use finer geographical data, no clear pattern exists for the OLS and thresholding estimators. 
+Although it is difficult to explain these patterns, the findings suggest that the use of finer geographical data is appropriate at least for the proposed model-based estimator.
 Figure \@ref(fig:nc-tv-detail) in the appendix also shows the TV distance for each conditional distribution by race, to illuminate how the estimators perform on each subgroup.
 
-As far as the overall TV error, the proposed method outperforms every alternative, for both party ID and turnout, at every geographic level.
-The OLS estimator outperforms the weighting estimator for party ID, but the situation is reversed for turnout.
-This suggests that compared to the effect of race on party ID, the effect of race on turnout is more strongly moderated by geography, reducing the size of the violation of Assumption \ref{a:indep-yr}.
-The thresholding estimator consistently performs poorly.
-
-While finer geographic data translates to improved accuracy for the OLS and model-based estimates for party ID, there is no clear trend for the other estimators or for the turnout analysis.
-While it is difficult to know exactly why this is the case, it suggests that when fully geocoded addresses are not available, using ZIP codes or counties alone may suffice---something that has already been suggested for BISG estimation alone [@clark2021minmaxing].
 
 ```{r}
 x = readRDS("data/nc_bounds.rds")
 ```
 
-As noted above, the sampling error in all of these estimates is minimal---the widest 90% confidence interval in the block-level model estimates of party ID by race is (`r percent(x$ci_min, 0.01)`, `r percent(x$ci_max, 0.01)`)---not enough to explain the residual TV error.
+As noted above, the sampling error in all of these estimates is minimal---the widest 90% confidence interval in the block-level model estimates of party ID by race is $(`r percent(x$ci_min, 0.01)`, `r percent(x$ci_max, 0.01)`)$---not enough to explain the residual TV error.
 This error results from a violation of Assumptions \ref{a:indep-sgx}--\ref{a:indep-ys}, likely in large part driven by outdated Census data and differences between the adult and registered voter populations.
 
 We can apply the theoretical bounds from Theorem \ref{thm:bound} to gain a better understanding of how these data issues, which lead to errors in the BISG probabilities, translate to errors in the proposed model's estimates.
