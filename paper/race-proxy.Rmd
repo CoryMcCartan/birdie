@@ -352,12 +352,29 @@ then for all $y\in\cY$ and $r\in\cR$, \[
 \]
 \end{theoremrep}
 \begin{proof}
-Fix $y\in\cY$.
-
-
-ID equation -> linear model
-
-BISG accurate -> strict exogeneity
+Fix $y\in\cY$ and define $m_{gxr} = \E[\ind\{Y=y\}\mid R=r, G=g, X=x)]$.
+Then under Assumptions \ref{a:indep-sgx}, \ref{a:cens-acc}, and \ref{a:indep-ys},
+\begin{align*}
+    \E[\ind\{Y=y\}\mid G, X, S] &= 
+    \sum_{r\in\cR} \E[\ind\{Y=y\}\mid R=r, G,X)]\Pr(R=r\mid G,X,S) \\
+    &= \sum_{r\in\cR} m_{GXr} \hat p_r,
+\end{align*}
+where as in the main text $\vb{\hat p}$ is the (random) vector of BISG probabilities.
+Now, taking conditional expectations given $G$, $X$, and $\vb{\hat P}$, we can rewrite
+the above equality as \[
+    \E[\ind\{Y=y\}\mid G, X, \vb{\hat p}] = \sum_{r\in\cR} m_{GXr} \hat p_r
+    = \sum_{g\in\cG}\sum_{x\in\cX}\sum_{r\in\cR} m_{gxr}\ind\{X=x,G=g\}\hat p_r,
+\] since $\E[\ind\{Y=y\}\mid G, X, S]$ depends only on $S$ through $\vb{\hat p}$.
+Then averaging over $G$ and $X$, we obtain 
+\begin{align*}
+    \E[\ind\{Y=y\}\mid \vb{\hat p}] = \E[\ind\{Y=y\}\mid G, X, \vb{\hat p}] 
+    &= \sum_{g\in\cG}\sum_{x\in\cX}\sum_{r\in\cR} m_{gxr}\Pr(X=x,G=g\mid\vb{\hat p})\hat p_r \\
+    &= \sum_{r\in\cR}\qty(\sum_{g\in\cG}\sum_{x\in\cX}m_{gxr}\Pr(X=x,G=g\mid\vb{\hat p}))\hat p_r \\
+    &= \sum_{r\in\cR}\E[m_{GXr}\mid\vb{\hat p}]\hat p_r.
+\end{align*}
+So the conditional expectation of $\ind\{Y=y\}$ given the BISG probabilities $\vb{\hat p}$ is linear in those probabilities,
+with coefficients $\vb*\beta$, defined as $\beta_r=\E[m_{GXr}\mid\vb{\hat p}]$.
+Consequently, the OLS estimate $(\vb{\hat P}^\top\vb{\hat P})^{-1}\vb{\hat P}\ind\{\vb Y=y\}$ will be unbiased for $\vb*\beta$, by the standard results.
 \end{proof}
 ```
 It is worth comparing this OLS estimator with the weighting estimator $\hat{\mu}^{(\text{wtd})}_{y\mid r}$.
@@ -373,7 +390,7 @@ if and only if for every pair $j,k\in\cR$, either the BISG probabilities perfect
 $\hat{\mu}^{(\text{wtd})}_{Y|R}(y\mid j)=\hat{\mu}^{(\text{wtd})}_{Y|R}(y\mid k)$.
 \end{theoremrep}
 \begin{proof}
-Fix an $y\in\cY$.
+Fix a $y\in\cY$.
 The weighting estimator of $\Pr[Y=y\mid R=r]$ may be written $$
     \hat\mu^{(\text{wtd})}_{Y|R}(y\mid r) 
     = \frac{\hat{\vb P}_{\cdot r}^\top \ind\{\vb Y=y\}}{\hat{\vb P}_{\cdot r}^\top \vb 1}
