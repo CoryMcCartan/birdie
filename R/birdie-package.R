@@ -12,7 +12,7 @@
 #' @importFrom reticulate py
 #' @importFrom stats na.omit quantile lm.fit
 #' @importFrom utils tail
-#' @useDynLib raceproxy, .registration = TRUE
+#' @useDynLib birdie, .registration = TRUE
 ## usethis namespace: end
 NULL
 
@@ -21,6 +21,6 @@ py_code = NULL
 
 .onLoad <- function(libname, pkgname) {
     reticulate::configure_environment(pkgname)
-    py_path = system.file("py", package="raceproxy")
-    py_code <<- reticulate::import_from_path("raceproxy", path=py_path, delay_load=FALSE)
+    py_path = system.file("py", package="birdie")
+    py_code <<- reticulate::import_from_path("birdie", path=py_path, delay_load=FALSE)
 }

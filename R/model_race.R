@@ -80,8 +80,8 @@ model_race = function(r_probs, X, G, Z=NULL, condition=NULL,
         reticulate::py_run_string("if 'py.utils' in sys.modules.keys(): del sys.modules['py.utils']")
         reticulate::py_run_string("if 'py.fit' in sys.modules.keys(): del sys.modules['py.fit']")
         reticulate::py_run_string("from tqdm import tqdm; tqdm._instances.clear()")
-        py_path = system.file("py", package="raceproxy")
-        py_code <<- reticulate::import_from_path("raceproxy", path=py_path, delay_load=FALSE)
+        py_path = system.file("py", package="birdie")
+        py_code <<- reticulate::import_from_path("birdie", path=py_path, delay_load=FALSE)
     }
 
     method = match.arg(method)
@@ -115,7 +115,7 @@ model_race = function(r_probs, X, G, Z=NULL, condition=NULL,
         method=method, silent=silent)
     if (isFALSE(silent)) print(structure(proc.time() - ts1, class="proc_time")[3])
 
-    class(out) = "fit_raceproxy"
+    class(out) = "fit_birdie"
     out$N = length(X_vec)
     out$vars = GZ_names
     out$x_lev = levels(X_vec)
@@ -124,8 +124,8 @@ model_race = function(r_probs, X, G, Z=NULL, condition=NULL,
 }
 
 #' @export
-print.fit_raceproxy = function(x, ...) {
-    cli::cli_text("A {.pkg raceproxy} model fit with
+print.fit_birdie = function(x, ...) {
+    cli::cli_text("A {.pkg birdie} model fit with
                   {format(x$N, big.mark=',')} observations and
                   {format(dim(x$draws$global)[1], big.mark=',')} draws")
     # cli::cli_text("{dim(fit$draws$global)[2]} outcome and
@@ -213,8 +213,8 @@ model_race_hmc = function(r_probs, X, G, Z=NULL, condition=NULL,
         reticulate::py_run_string("if 'py.utils' in sys.modules.keys(): del sys.modules['py.utils']")
         reticulate::py_run_string("if 'py.fit' in sys.modules.keys(): del sys.modules['py.fit']")
         reticulate::py_run_string("from tqdm import tqdm; tqdm._instances.clear()")
-        py_path = system.file("py", package="raceproxy")
-        py_code <<- reticulate::import_from_path("raceproxy", path=py_path, delay_load=FALSE)
+        py_path = system.file("py", package="birdie")
+        py_code <<- reticulate::import_from_path("birdie", path=py_path, delay_load=FALSE)
     }
 
     method = match.arg(method)
@@ -237,7 +237,7 @@ model_race_hmc = function(r_probs, X, G, Z=NULL, condition=NULL,
         silent=silent)
     if (isFALSE(silent)) print(structure(proc.time() - ts1, class="proc_time")[3])
 
-    class(out) = "fit_raceproxy"
+    class(out) = "fit_birdie"
     out$N = length(X_vec)
     out$vars = GZ_names
     out$x_lev = levels(X_vec)

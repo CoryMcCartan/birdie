@@ -7,7 +7,7 @@ census_surname_table = function(S, S_name, p_r, counts=FALSE) {
                     American Indian/Alaska Native, and other."))
 
     d_cens = readRDS(system.file("extdata", "names_2010_counts.rds",
-                                 package="raceproxy", mustWork=TRUE))
+                                 package="birdie", mustWork=TRUE))
 
     out = data.frame(last_name = unique(proc_names(S))) %>%
         left_join(d_cens, by="last_name")
@@ -55,7 +55,7 @@ census_zip_table = function(G, G_name, p_r, counts=FALSE) {
                     American Indian/Alaska Native, and other."))
 
     d_cens = readRDS(system.file("extdata", "zip_race_2010.rds",
-                            package="raceproxy", mustWork=TRUE))
+                            package="birdie", mustWork=TRUE))
     if (!counts) {
         for (i in seq_along(p_r)) {
             d_cens[, 2+i] = d_cens[, 2+i] / d_cens[, 2]

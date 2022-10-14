@@ -2,9 +2,9 @@
 
 
 // [[Rcpp::export]]
-mat gibbs_me(int iter, int warmup, const uvec &S, const uvec &GZ,
-             const mat &M_sr, const mat &N_gzr,
-             const mat &alpha_gzr, const mat &beta_sr,
+arma::mat gibbs_me(int iter, int warmup, const arma::uvec &S, const arma::uvec &GZ,
+             const arma::mat &M_sr, const arma::mat &N_gzr,
+             const arma::mat &alpha_gzr, const arma::mat &beta_sr,
              int verbosity) {
     // setup sizes and inits
     int N = S.size();

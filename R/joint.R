@@ -54,7 +54,7 @@ calc_joint_bisgz = function(r_probs, x, method=c("weight", "thresh", "mi", "ols"
 
 #' Calculate a posterior quantile of the joint distribution of R and X
 #'
-#' @param fit a `fit_raceproxy` object (the output of `model_race`)
+#' @param fit a `fit_birdie` object (the output of `model_race`)
 #' @param which if `condition` was used in `model_race`, which estimates to extract.
 #' @param q the quantile
 #' @param p_r a vector containing the marginal probabilities for each value of

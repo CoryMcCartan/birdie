@@ -1,4 +1,5 @@
-eval_fit_disp = function(fits, X) {
+eval_fit_disp = function(fits, X, d, idx=seq_len(nrow(d))) {
+    d = d[idx, ]
     X_name = deparse(substitute(X))
     X = eval_tidy(enquo(X), d)
 
@@ -9,6 +10,7 @@ eval_fit_disp = function(fits, X) {
         out
     })))
     xr = c(xr, flatten(imap(r_probs, function(d_pr, level) {
+        d_pr = d_pr[idx, ]
         out = list()
         out[[str_c("weight_", level)]] = calc_joint_bisgz(d_pr, X, method="weight")
         out[[str_c("thresh_", level)]] = calc_joint_bisgz(d_pr, X, method="thresh")
@@ -35,7 +37,8 @@ eval_fit_disp = function(fits, X) {
         left_join(x_disp_true, by=X_name, suffix=c("", "_true"))
 }
 
-eval_fit_tv = function(fits, X) {
+eval_fit_tv = function(fits, X, d, idx=seq_len(nrow(d))) {
+    d = d[idx, ]
     X = eval_tidy(enquo(X), d)
 
     xr = list(true = prop.table(table(X, d$race)))
@@ -45,6 +48,7 @@ eval_fit_tv = function(fits, X) {
         out
     })))
     xr = c(xr, flatten(imap(r_probs, function(d_pr, level) {
+        d_pr = d_pr[idx, ]
         out = list()
         out[[str_c("weight_", level)]] = calc_joint_bisgz(d_pr, X, method="weight")
         out[[str_c("thresh_", level)]] = calc_joint_bisgz(d_pr, X, method="thresh")
@@ -66,11 +70,11 @@ eval_fit_tv = function(fits, X) {
         separate(method, c("method", "level"), sep="_")
 }
 
-disp_party = eval_fit_disp(fits_party, party)
-disp_turnout = eval_fit_disp(fits_turnout, n_voted)
+disp_party = eval_fit_disp(fits_party, party, d)
+disp_turnout = eval_fit_disp(fits_turnout, n_voted, d, pre12)
 
-tv_party = eval_fit_tv(fits_party, party)
-tv_turnout = eval_fit_tv(fits_turnout, n_voted)
+tv_party = eval_fit_tv(fits_party, party, d)
+tv_turnout = eval_fit_tv(fits_turnout, n_voted, d, pre12)
 
 bind_rows(party=tv_party, turnout=tv_turnout, .id="outcome") |>
     filter(race == "overall", method %in% c("model", "weight")) |>
@@ -115,7 +119,7 @@ lbl_race = function(race) {
 
 geos = c(county="County", zip="ZIP code", tract="Census tract", block="Census block")
 geos_short = c(county="County", zip="ZIP", tract="Tract", block="Block")
-methods = c(model="Model", ols="OLS", thresh="Threshold", weight="Weighted")
+methods = c(model="BIRDiE", ols="OLS", thresh="Threshold", weight="Weighted")
 
 make_disp_plot = function(d, x, y, title, xlab) {
     filter(d, level=="block") |>
@@ -169,7 +173,8 @@ ggplot(aes(x=factor(geos_short[level], levels=geos_short), y=tv,
     geom_point(size=2.0, position=position_dodge(width=0.25)) +
     scale_color_wa_d() +
     scale_y_log10("Total variation distance") +
-    labs(x="BISG geographic precision", title="Party") +
+    labs(x="BISG geographic precision", title="Party",
+         color="Method", shape="Method") +
     guides(color="none", shape="none") +
     theme_paper() +
     theme(plot.margin=unit(c(0, 0, 0, 0), "cm"))
@@ -199,7 +204,8 @@ ggplot(aes(x=factor(geos_short[level], levels=geos_short), y=tv,
     geom_point(size=2.0, position=position_dodge(width=0.25)) +
     scale_color_wa_d() +
     scale_y_log10("Total variation distance") +
-    labs(x="BISG geographic precision", title="Turnout") +
+    labs(x="BISG geographic precision", title="Turnout",
+         color="Method", shape="Method") +
     theme_paper() +
     theme(plot.margin=unit(c(0, 0, 0, 0), "cm"))
 

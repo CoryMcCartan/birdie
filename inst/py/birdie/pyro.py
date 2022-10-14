@@ -7,8 +7,8 @@ import pyro.distributions as dist
 from pyro.infer import SVI, MCMC, NUTS
 import pyro.infer.autoguide as autoguide
 import pyro.poutine as poutine
-import raceproxy.utils as utils
-import raceproxy.fit as fit
+import birdie.utils as utils
+import birdie.fit as fit
 
 from torch.profiler import profile, record_function, ProfilerActivity
 
@@ -114,7 +114,6 @@ def fit_additive(X, GZ, GZ_var, pr_base, preds, n_x=2, n_gz_var=1,
     beta_raw = draws["beta_raw"].numpy()
     
     beta = beta_scale[..., GZ_var.detach().numpy(), :, :] * beta_raw 
-    print(beta.shape, flush=True)
     zero_row = np.zeros((p_x.shape[0], 1, 1, n_r, 1))
     lp_xr = np.log(p_x) + np.concatenate((zero_row, lp_xr_raw), -1) 
             
@@ -195,7 +194,6 @@ def hmc_additive(X, GZ, GZ_var, pr_base, preds, n_x=2, n_gz_var=1,
     beta_raw = draws["beta_raw"].numpy()
     
     beta = beta_scale[..., GZ_var.detach().numpy(), :, :] * beta_raw 
-    print(beta.shape, flush=True)
     zero_row = np.zeros((p_x.shape[0], 1, 1, 1, n_r, 1))
     lp_xr = np.log(p_x) + np.concatenate((zero_row, lp_xr_raw), -1) 
             

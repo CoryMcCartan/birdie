@@ -1,5 +1,6 @@
 ---
 title: "Estimating Racial Disparities when Race is Not Observed, with Application to U.S. Tax Claims Data"
+shorttitle: "Estimating Racial Disparities when Race is Not Observed"
 authors: 
     - name: Cory McCartan
       department: Department of Statistics
@@ -17,7 +18,18 @@ authors:
       thanks: "Corresponding author. Email: imai@harvard.edu, URL: https://imai.fas.harvard.edu.  We thank Bruce Willsie, CEO of L2, Inc., for providing us with the geocoded voter file we use in this paper."
 date: '`r format(Sys.Date(), "%B %e, %Y")`'
 abstract: |
-    The estimation of racial disparities in health care, financial services, voting, and other contexts is often hampered by the lack of individual-level racial information in administrative records.  In many cases, the law prohibits the collection of such information to prevent direct racial discrimination. As a result, many analysts have adopted Bayesian Improved Surname Geocoding (BISG), which combines individual names and addresses with the Census data to predict race. Although BISG tends to produce well calibrated racial predictions, its prediction errors are often correlated with the outcomes of interest, yielding biased estimates of racial disparities. We propose a more credible identification strategy that corrects this bias.  The proposed strategy is applicable whenever one's surname is conditionally independent of the outcome given their (unobserved) race, residence location, and other observed characteristics. Leveraging this identification strategy, we introduce a new Bayesian model that estimates racial disparity while accounting for the high-dimensionality of surnames.  We also develop a sensitivity analysis to address the potential violation of the required assumption that BISG's race predictions are well calibrated.  Our validation study based on North Carolina voter files shows that the proposed model reduces error by about 75--85% in comparison to existing approaches in estimating party identification by race, and roughtly 25–50% lower error for turnout rates by race. A similarly substantial improvement is obtained in estimating racial disparities of partisan identification.  We also apply the model to large-scale U.S. tax records to produce the first-ever estimates of claim rates of the home mortgage interest deduction by race.  We find that ... Open-source software is available for implementing the proposed methodology.
+    The estimation of racial disparities in health care, financial services, voting, and other contexts is often hampered by the lack of individual-level racial information in administrative records.
+    In many cases, the law prohibits the collection of such information to prevent direct racial discrimination.
+    As a result, many analysts have adopted Bayesian Improved Surname Geocoding (BISG), which combines individual names and addresses with the Census data to predict race.
+    Although BISG tends to produce well-calibrated racial predictions, its prediction errors are often correlated with the outcomes of interest, yielding biased estimates of racial disparities.
+    We propose a more credible identification strategy that corrects this bias.
+    The proposed strategy is applicable whenever one's surname is conditionally independent of the outcome given their (unobserved) race, residence location, and other observed characteristics.
+    Leveraging this identification strategy, we introduce a new model, Bayesian Instrumental Regression for Disparity Estimation (BIRDiE), that estimates racial disparity while accounting for the high-dimensionality of surnames.
+    We also develop a sensitivity analysis to address the potential violation of the required assumption that BISG's race predictions are well calibrated.
+    Our validation study based on North Carolina voter files shows that BIRDiE reduces error by about 75--85% in comparison to existing approaches in estimating party identification by race, and roughtly 25–50% lower error for turnout rates by race.
+    A similarly substantial improvement is obtained in estimating racial disparities of partisan identification.
+    We also apply BIRDiE to large-scale U.S. tax records to produce the first-ever estimates of claim rates of the home mortgage interest deduction by race.
+    We find that ... Open-source software is available for applying BIRDiE in practice.
 keywords: 
     - BISG
     - ecological inference
@@ -616,9 +628,11 @@ This feature makes the voter file an ideal validation setting for the proposed m
 The two outcomes we examine here, party registration and turnout, are the product of many unobservable factors, and are known to differ across racial groups.
 Since self-reported race is available, inferences about these racial disparities using the estimators discussed here can be compared to the corresponding true values.
 
-We use a subset of the June 2022 voter file which could be linked to a proprietary voter file provided by L2, Inc., a leading national non-partisan firm and the oldest organization in the United States that supplies voter data and related technology to candidates, political parties, pollsters, and consultants for use in campaigns.
+We use a subset of the October 2022 voter file which could be linked to a proprietary voter file provided by L2, Inc., a leading national non-partisan firm and the oldest organization in the United States that supplies voter data and related technology to candidates, political parties, pollsters, and consultants for use in campaigns.
 The L2 file geocoded each address to a Census block, which allows for the finest block-level BISG predictions.
-We also removed any records without individual race information **KI: Let's add the information of missing data proportion**, since our goal is validation compared to some ground truth, rather than inference about the entire population of registered North Carolina voters.
+We also removed any records without individual race information, since our goal is validation compared to some ground truth, rather than inference about the entire population of registered North Carolina voters.
+Alltogether, `r percent(1 - 5754912/7389159, 0.1)` of records either had missing race information or could not be linked to the L2 file.
+
 
 ```{r nc-overview, fig.width=6.5}
 #| fig.cap: |
@@ -630,7 +644,7 @@ We also removed any records without individual race information **KI: Let's add 
 knitr::include_graphics("figures/nc_overview.pdf")
 ```
 
-The overall merged voter file contains 5,711,795 voters, 71.2% of which are White, 21.1% of which are black, and 7.7% of which belong to another race.
+The overall merged voter file contains 5,754,912 voters, 71.2% of which are White, 21.1% of which are black, and 7.7% of which belong to another race.
 To reduce computational burden, we further subsampled this file by selecting 500,000 records at random without replacement.
 A sample size of half a million is large enough to ensure that sampling error is essentially negligible.
 

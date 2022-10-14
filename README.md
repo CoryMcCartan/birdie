@@ -3,10 +3,10 @@
 To install the software, run
 ```r
 # install.packages("remotes")
-remotes::install_github("CoryMcCartan/raceproxy")
+remotes::install_github("CoryMcCartan/birdie")
 ```
 
 To see how to use the software, run
 ```r
-vignette("raceproxy")
+vignette("birdie")
 ```

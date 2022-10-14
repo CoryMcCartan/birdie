@@ -7,7 +7,7 @@ import pyro.poutine as poutine
 from pyro.infer.enum import get_importance_trace
 #from pyro.infer.importance import vectorized_importance_weights, psis_diagnostic
 from pyro.infer.importance import psis_diagnostic
-import raceproxy.utils as utils
+import birdie.utils as utils
 
 def run_svi(svi, scheduler, model, guide, m_args, m_kwargs, N,
             nesting=0, it=5000, epoch=100, n_draws=1000, 
