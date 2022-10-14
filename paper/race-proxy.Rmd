@@ -175,7 +175,7 @@ $\hat P_{ir} = \Pr(R_i=r\mid G_i,X_i,S_i)$.
 Unfortunately, accurate and calibrated estimates of individual race predictions alone are not sufficient for identifying racial disparities.
 The reason is that the prediction error of race probabilities may be correlated with the outcome variable of interest.
 Specifically, we consider the following weighting estimator, which attempts to capture the uncertainty inherent in race prediction and is most commonly used by researchers,[^1] $$
-    \hat\mu^{(\text{wtd})}_{Y|R}(y\mid r) 
+    \hat\mu^{(\text{wt})}_{Y|R}(y\mid r) 
         = \frac{\sum_{i=1}^N \ind\{Y_i=y\}\hat P_{ir}}{
             \sum_{i=1}^N \hat P_{ir}}.
 $$
@@ -189,7 +189,7 @@ We reproduce this result here.
 ```{=tex}
 \begin{theorem}[Theorem 3.1 of \citealt{chen2019fairness}]
 If race is binary (so $\cR=\{0,1\}$), then as $N\to\infty$, \[
-    \hat\mu^{(\text{wtd})}_{Y|R}(y\mid r) - \Pr(Y=y\mid R=r)
+    \hat\mu^{(\text{wt})}_{Y|R}(y\mid r) - \Pr(Y=y\mid R=r)
     \cvas -\frac{\E[\Cov(\ind\{Y=y\}, \ind\{R=r\}\mid G,X,S)]}{\Pr(R=r)}.
 \]
 \end{theorem}
@@ -377,22 +377,22 @@ with coefficients $\vb*\beta$, defined as $\beta_r=\E[m_{GXr}\mid\vb{\hat p}]$.
 Consequently, the OLS estimate $(\vb{\hat P}^\top\vb{\hat P})^{-1}\vb{\hat P}\ind\{\vb Y=y\}$ will be unbiased for $\vb*\beta$, by the standard results.
 \end{proof}
 ```
-It is worth comparing this OLS estimator with the weighting estimator $\hat{\mu}^{(\text{wtd})}_{y\mid r}$.
+It is worth comparing this OLS estimator with the weighting estimator $\hat{\mu}^{(\text{wt})}_{y\mid r}$.
 The next theorem shows that these two estimators are guaranteed to disagree, unless either the BISG probabilities perfectly discriminate or the weighting estimator is constant across races.
 Unfortunately, these two conditions are almost never met in practice.
 This underscores the importance of selecting the appropriate assumption (Assumption \ref{a:indep-yr} or \ref{a:indep-ys}) for a particular analysis, since they imply different estimators with different results.
 
 ```{=tex}
 \begin{theoremrep}[Necessary and Sufficient Condition for Equality of the Weighting and OLS Estimators] \label{thm:wtd-vs-ols}
-For any $y\in\cY$, $\hat{\vb*\mu}^{(\text{wtd})}_{Y|R}(y\mid\cdot) = \hat{\vb*\mu}^{(\text{ols})}_{Y|R}(y\mid\cdot)$
+For any $y\in\cY$, $\hat{\vb*\mu}^{(\text{wt})}_{Y|R}(y\mid\cdot) = \hat{\vb*\mu}^{(\text{ols})}_{Y|R}(y\mid\cdot)$
 if and only if for every pair $j,k\in\cR$, either the BISG probabilities perfectly discriminate 
 (i.e., $\Pr(R_i=j\mid G_i,X_i,S_i)>0$ implies $\Pr(R_i=k\mid G_i,X_i,S_i)=0$ and vice versa) or 
-$\hat{\mu}^{(\text{wtd})}_{Y|R}(y\mid j)=\hat{\mu}^{(\text{wtd})}_{Y|R}(y\mid k)$.
+$\hat{\mu}^{(\text{wt})}_{Y|R}(y\mid j)=\hat{\mu}^{(\text{wt})}_{Y|R}(y\mid k)$.
 \end{theoremrep}
 \begin{proof}
 Fix a $y\in\cY$.
 The weighting estimator of $\Pr[Y=y\mid R=r]$ may be written $$
-    \hat\mu^{(\text{wtd})}_{Y|R}(y\mid r) 
+    \hat\mu^{(\text{wt})}_{Y|R}(y\mid r) 
     = \frac{\hat{\vb P}_{\cdot r}^\top \ind\{\vb Y=y\}}{\hat{\vb P}_{\cdot r}^\top \vb 1}
     = \frac{\norm{\proj_{\hat{\vb P}_{\cdot r}}(\ind\{\vb Y=y\})}}{
         \norm{\proj_{\hat{\vb P}_{\cdot r}}(\vb 1)}},
@@ -403,7 +403,7 @@ We can write the OLS estimator as $$
 $$ where $\mathrm{coord}_{\hat{\vb P}}$ is the function that returns the coordinates of its input vector in the $\hat{\vb P}$ basis (by assumption $\hat{\vb P}$ has rank $|\cR|$ and so its columns are linearly independent).
 To make the comparison even easier, notice that we can break the projection $\proj_{\hat{\vb P}_{\cdot r}}$ into two steps, writing it instead as $\proj_{\hat{\vb P}_{\cdot r}} = \proj_{\hat{\vb P}_{\cdot r}} \circ \proj_{\hat{\vb P}}$.
 Letting $\vb Y_{\proj}=\proj_{\hat{\vb P}}(\ind\{\vb Y=y\})$, then, we can rewrite our estimators as $$
-    \hat\mu^{(\text{wtd})}_{Y|R}(y\mid r) 
+    \hat\mu^{(\text{wt})}_{Y|R}(y\mid r) 
     = \frac{\norm{\proj_{\hat{\vb P}_{\cdot r}}(\vb Y_\proj)}}{
         \norm{\proj_{\hat{\vb P}_{\cdot r}}(\vb 1)}}  \qand
     \hat{\vb\mu}^{(\text{ols})}_{Y|R}(y\mid r)
@@ -419,7 +419,7 @@ We can also expand $\vb 1$ in the same basis. Since the individual probabilities
     \vb 1 = \sum_{j\in\cR} \hat{\vb P}_{\cdot j}.
 \)
 
-For the forward direction, we assume $\hat{\mu}^{(\text{wtd})}_{Y|R}(y\mid j)=\hat{\mu}^{(\text{ols})}_{Y|R}(y\mid j)=c_j$;
+For the forward direction, we assume $\hat{\mu}^{(\text{wt})}_{Y|R}(y\mid j)=\hat{\mu}^{(\text{ols})}_{Y|R}(y\mid j)=c_j$;
 multiplying out the denominator of the weighting estimator, we have $\hat{\vb P}_{\cdot j}^\top \vb Y=c_j\hat{\vb P}_{\cdot j}^\top\vb 1$ for all $j$; substituting the basis expansions of $\vb Y_\proj$ and $\vb 1$, this yields \[
     \sum_{k\in\cR} c_k \hat{\vb P}_{\cdot j}^\top\hat{\vb P}_{\cdot k}
     = \sum_{k\in\cR} c_j \hat{\vb P}_{\cdot j}^\top\hat{\vb P}_{\cdot k}, \qq{so}
@@ -432,7 +432,7 @@ Proceeding this way through all sets of common values in the $c_j$ we find that 
 
 For the reverse direction, fix $j\in\cR$ and let $J=\{k\in\cR:c_k=c_j\}$, so that by assumption $\hat{\vb P}_{\cdot j}^\top\hat{\vb P}_{\cdot k}=0$ for all $k\not\in J$.
 Then by the above basis expansion, $\hat{\mu}^{(\text{ols})}_{Y|R}(y\mid j)=c_j$, and \[
-    \hat{\mu}^{(\text{wtd})}_{Y|R}(y\mid j) 
+    \hat{\mu}^{(\text{wt})}_{Y|R}(y\mid j) 
     = \frac{\sum_{k\in\cR} c_k \hat{\vb P}_{\cdot j}^\top\hat{\vb P}_{\cdot k}}{
         \sum_{k\in\cR}\hat{\vb P}_{\cdot j}^\top\hat{\vb P}_{\cdot k}}
     = \frac{c_j \sum_{k\in J} \hat{\vb P}_{\cdot j}^\top\hat{\vb P}_{\cdot k}}{
