@@ -344,7 +344,7 @@ $$ where as above $\hat{\vb P}$ is the matrix of BISG probabilities.
 **CM: cite to Dan & Jacob's working paper around here.**
 
 ```{=tex}
-\begin{theoremrep}[OLS Estimator Unbiased] \label{thm:ols-bias}
+\begin{theoremrep}[Unbiasedness of OLS Estimator] \label{thm:ols-bias}
 If Assumptions \ref{a:indep-sgx}, \ref{a:cens-acc}, and \ref{a:indep-ys} hold, 
 and the identification conditions in Theorem~\ref{thm:id} are satisfied,
 then for all $y\in\cY$ and $r\in\cR$, \[
