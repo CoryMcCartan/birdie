@@ -367,7 +367,7 @@ the above equality as \[
 \] since $\E[\ind\{Y=y\}\mid G, X, S]$ depends only on $S$ through $\vb{\hat p}$.
 Then averaging over $G$ and $X$, we obtain 
 \begin{align*}
-    \E[\ind\{Y=y\}\mid \vb{\hat p}] = \E[\ind\{Y=y\}\mid G, X, \vb{\hat p}] 
+    \E[\ind\{Y=y\}\mid \vb{\hat p}] & = \E[\E[\ind\{Y=y\}\mid G, X] \mid \vb{\hat p}] \\
     &= \sum_{g\in\cG}\sum_{x\in\cX}\sum_{r\in\cR} m_{gxr}\Pr(X=x,G=g\mid\vb{\hat p})\hat p_r \\
     &= \sum_{r\in\cR}\qty(\sum_{g\in\cG}\sum_{x\in\cX}m_{gxr}\Pr(X=x,G=g\mid\vb{\hat p}))\hat p_r \\
     &= \sum_{r\in\cR}\E[m_{GXr}\mid\vb{\hat p}]\hat p_r.
