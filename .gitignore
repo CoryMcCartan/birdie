@@ -25,7 +25,7 @@ __pycache__
 *.pdf
 *.html
 
-!data/names_2010_counts.rds
+!inst/extdata/*.rds
 data/censusData.rdata
 
 paper/race-proxy.tex

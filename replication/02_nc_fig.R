@@ -98,7 +98,7 @@ p1 = ggplot(d, aes(y=factor(races[race], levels=rev(races)),
     labs(y=NULL, fill="Party") +
     theme_paper()
 
-p2 = ggplot(d, aes(y=factor(races[race], levels=rev(races)),
+p2 = ggplot(d[pre12, ], aes(y=factor(races[race], levels=rev(races)),
                    fill=as.numeric(as.character(n_voted)),
                    group=fct_rev(n_voted))) +
     geom_bar(position="fill") +
@@ -160,7 +160,7 @@ ggplot(aes(x=factor(geos[level], levels=geos), y=tv,
     scale_color_wa_d() +
     scale_x_discrete(expand=c(0.07, 0, 0.06, 0)) +
     scale_y_log10("Overall total variation distance") +
-    labs(x="BISG geographic precision", title="Party identification") +
+    labs(x="BISG geographic precision", title="Party Identification") +
     guides(color="none", shape="none") +
     theme_paper() +
     theme(plot.margin=unit(c(0, 0.1, 0, 0), "cm"))
@@ -173,8 +173,7 @@ ggplot(aes(x=factor(geos_short[level], levels=geos_short), y=tv,
     geom_point(size=2.0, position=position_dodge(width=0.25)) +
     scale_color_wa_d() +
     scale_y_log10("Total variation distance") +
-    labs(x="BISG geographic precision", title="Party",
-         color="Method", shape="Method") +
+    labs(x="BISG geographic precision", title="Party") +
     guides(color="none", shape="none") +
     theme_paper() +
     theme(plot.margin=unit(c(0, 0, 0, 0), "cm"))
@@ -193,6 +192,7 @@ ggplot(aes(x=factor(geos[level], levels=geos), y=tv,
     scale_x_discrete(expand=c(0.07, 0, 0.06, 0)) +
     scale_y_log10("Overall total variation distance") +
     labs(x="BISG geographic precision", title="Turnout") +
+    guides(color="none", shape="none") +
     theme_paper() +
     theme(plot.margin=unit(c(0, 0.1, 0, 0), "cm"))
 
@@ -204,8 +204,8 @@ ggplot(aes(x=factor(geos_short[level], levels=geos_short), y=tv,
     geom_point(size=2.0, position=position_dodge(width=0.25)) +
     scale_color_wa_d() +
     scale_y_log10("Total variation distance") +
-    labs(x="BISG geographic precision", title="Turnout",
-         color="Method", shape="Method") +
+    labs(x="BISG geographic precision", title="Turnout") +
+    guides(color="none", shape="none") +
     theme_paper() +
     theme(plot.margin=unit(c(0, 0, 0, 0), "cm"))
 

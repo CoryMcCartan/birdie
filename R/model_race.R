@@ -125,7 +125,7 @@ model_race = function(r_probs, X, G, Z=NULL, condition=NULL,
 
 #' @export
 print.fit_birdie = function(x, ...) {
-    cli::cli_text("A {.pkg birdie} model fit with
+    cli::cli_text("A {.pkg BIRDiE} model fit with
                   {format(x$N, big.mark=',')} observations and
                   {format(dim(x$draws$global)[1], big.mark=',')} draws")
     # cli::cli_text("{dim(fit$draws$global)[2]} outcome and
