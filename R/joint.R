@@ -88,7 +88,8 @@ eval_joints = function(tgt, metric=c("tv", "tv_col", "tv_row", "mad", "rmse"), .
 
     n_out = 1
     if (metric == "tv") {
-        score_fn = function(x) sum(abs(tgt - x)) / 2
+        # score_fn = function(x) sum(abs(tgt - x)) / 2
+        score_fn = function(x) sum(abs(tgt[, 1:5] - x[, 1:5])) / 2
     } else if (metric == "tv_col") {
         score_fn = function(x) list(colSums(abs(tgt - x)) / 2 / colSums(tgt))
         n_out = ncol(tgt)

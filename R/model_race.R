@@ -92,6 +92,7 @@ model_race = function(r_probs, X, G, Z=NULL, condition=NULL,
                     draws = if_else(method == "svi", 1000, 2),
                     lr = if_else(method == "svi", 0.25, 0.3),
                     n_err = 100,
+                    prior = list(x = 5.00, xr = 0.75, beta = 1.00),
                     it_avgs = if_else(method == "svi", 400, 600),
                     tol_rhat = if_else(method == "svi", 1.2, 1.1))
     for (i in names(defaults)) {
@@ -99,12 +100,11 @@ model_race = function(r_probs, X, G, Z=NULL, condition=NULL,
             config[[i]] = defaults[[i]]
     }
 
-    prior = list(x = 5.00, xr = 0.75, beta = 1.00)
 
     ts1 = proc.time()
     out = py_code$pyro$fit_additive(
         as.integer(X_vec), GZ_mat, as.integer(GZ_var), r_probs, preds,
-        nlevels(X_vec), as.integer(max(GZ_var)), prior,
+        nlevels(X_vec), as.integer(max(GZ_var)), config$prior,
         it=as.integer(config$max_iter),
         epoch=as.integer(config$epoch),
         subsamp=min(length(X_vec), as.integer(config$subsamp)),
@@ -220,18 +220,18 @@ model_race_hmc = function(r_probs, X, G, Z=NULL, condition=NULL,
     method = match.arg(method)
 
     defaults = list(warmup = 1000,
+                    prior = list(x = 5.00, xr = 0.75, beta = 1.00),
                     draws = 1000)
     for (i in names(defaults)) {
         if (is.null(config[[i]]))
             config[[i]] = defaults[[i]]
     }
 
-    prior = list(x = 5.00, xr = 0.75, beta = 1.00)
 
     ts1 = proc.time()
     out = py_code$pyro$hmc_additive(
         as.integer(X_vec), GZ_mat, as.integer(GZ_var), r_probs, preds,
-        nlevels(X_vec), as.integer(max(GZ_var)), prior,
+        nlevels(X_vec), as.integer(max(GZ_var)), config$prior,
         it=as.integer(config$warmup),
         n_draws=as.integer(config$draws),
         silent=silent)

@@ -160,6 +160,7 @@ def fit_additive(X, GZ, GZ_var, pr_base, preds, n_x=2, n_gz_var=1,
         "raw_error": raw_error,
         "raw_cov": raw_cov,
         "err_ind": ind,
+        "lp_xr": lp_xr,
         "beta_scale": beta_scale.squeeze()
         }
 
