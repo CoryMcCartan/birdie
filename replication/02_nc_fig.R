@@ -71,10 +71,10 @@ eval_fit_tv = function(fits, X, d, idx=seq_len(nrow(d))) {
 }
 
 disp_party = eval_fit_disp(fits_party, party, d)
-disp_turnout = eval_fit_disp(fits_turnout, n_voted, d, pre12)
+disp_turnout = eval_fit_disp(fits_turnout, n_voted, d)
 
 tv_party = eval_fit_tv(fits_party, party, d)
-tv_turnout = eval_fit_tv(fits_turnout, n_voted, d, pre12)
+tv_turnout = eval_fit_tv(fits_turnout, n_voted, d)
 
 bind_rows(party=tv_party, turnout=tv_turnout, .id="outcome") |>
     filter(race == "overall", method %in% c("model", "weight")) |>
@@ -98,7 +98,7 @@ p1 = ggplot(d, aes(y=factor(races[race], levels=rev(races)),
     labs(y=NULL, fill="Party") +
     theme_paper()
 
-p2 = ggplot(d[pre12, ], aes(y=factor(races[race], levels=rev(races)),
+p2 = ggplot(d, aes(y=factor(races[race], levels=rev(races)),
                    fill=as.numeric(as.character(n_voted)),
                    group=fct_rev(n_voted))) +
     geom_bar(position="fill") +
@@ -122,7 +122,7 @@ geos_short = c(county="County", zip="ZIP", tract="Tract", block="Block")
 methods = c(model="BIRDiE", ols="OLS", thresh="Threshold", weight="Weighted")
 
 make_disp_plot = function(d, x, y, title, xlab) {
-    filter(d, level=="block") |>
+    filter(d, level=="county") |>
     ggplot(aes({{ x }}, {{ y }},
                color=methods[method], shape=methods[method])) +
         # facet_wrap(~ factor(geos[level], levels=geos)) +
