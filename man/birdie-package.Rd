@@ -6,6 +6,8 @@
 \alias{birdie-package}
 \title{birdie: Bayesian Instrumental Regression for Disparity Estimation}
 \description{
+\if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
+
 A Bayesian model for accurately estimating conditional distributions by race, using Bayesian Improved Surname Geocoding (BISG) probability estimates of individual race. Implements the methdos described in McCartan, Fisher, Goldin, Ho and Imai (2022) <arXiv:>.
 }
 \author{
@@ -14,6 +16,13 @@ A Bayesian model for accurately estimating conditional distributions by race, us
 Authors:
 \itemize{
   \item Kosuke Imai \email{imai@harvard.edu}
+}
+
+Other contributors:
+\itemize{
+  \item Daniel Ho \email{dho@law.stanford.edu} [contributor]
+  \item Jacob Goldin \email{jsgoldin@uchicago.edu} [contributor]
+  \item Robin Fisher \email{robin.fisher@treasury.gov} [contributor]
 }
 
 }

@@ -3,7 +3,10 @@ Title: Bayesian Instrumental Regression for Disparity Estimation
 Version: 0.2.0
 Authors@R: c(
     person("Cory", "McCartan", role=c("aut", "cre"), email="cmccartan@g.harvard.edu"),
-    person("Kosuke", "Imai", role="aut", email="imai@harvard.edu")
+    person("Kosuke", "Imai", role="aut", email="imai@harvard.edu"),
+    person("Daniel", "Ho", role="ctb", email="dho@law.stanford.edu"),
+    person("Jacob", "Goldin", role="ctb", email="jsgoldin@uchicago.edu"),
+    person("Robin", "Fisher", role="ctb", email="robin.fisher@treasury.gov")
     )
 Description: A Bayesian model for accurately estimating conditional 
     distributions by race, using Bayesian Improved Surname Geocoding (BISG) 

@@ -36,9 +36,6 @@ produce X|R estimates for each gender.}
 \item{prefix}{how to select the race probability columns from \code{r_probs}, if
 if is a data frame}
 
-\item{method}{whether to use stochastic variational inference ("svi") or a
-Laplace approximation ("mle") for inference.}
-
 \item{config}{a list containing extra arguments to the Pyro model}
 
 \item{silent}{whether to suppress output}

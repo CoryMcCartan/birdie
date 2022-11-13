@@ -13,7 +13,9 @@ predict_race_sgz(
   p_rgz = NULL,
   p_r = c(white = 0.63, black = 0.121, hisp = 0.173, asian = 0.0478, aian = 0.0072, other
     = 0.021),
-  iterate = 10L
+  est_r_gz = TRUE,
+  iterate = 8L * (!est_r_gz && nrow(data) > 100),
+  return_gzr = TRUE
 )
 }
 \arguments{
@@ -34,9 +36,15 @@ each value of \code{R} giving the conditional probabilities of R given Z and G.
 Defaults to a ZIP code table from the 2010 decennial census.}
 
 \item{p_r}{a vector containing the marginal probabilities for each value of
-\code{R}. Defaults to the demographics of the US.}
+\code{R}. Defaults to the demographics of the US if \code{est_r_gz} is \code{FALSE}.}
+
+\item{est_r_gz}{If \code{TRUE} estimate race prior \code{p_r} from distribution of \code{G} and \code{Z} in sample}
 
 \item{iterate}{how much to iteratively refine the race prior from the data. Set to 0 to disable.}
+
+\item{return_gzr}{whether to return an estimated p(G,Z|R) matrix as the
+\code{p_gzr} attribute. Set to \code{FALSE} to save space if this matrix is not
+needed.}
 }
 \value{
 a tibble, with rows matching \code{data} and columns for the race probabilities
