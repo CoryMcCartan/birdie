@@ -511,7 +511,7 @@ This problem could be partially remedied by adding some hierarchical structure t
 
 We take a slightly different approach, motivated by the fact that we are primarily interested in $\bar\Theta$.
 We assume that the relationship between the outcome $Y$ and race $R$ could vary widely by geographies, or within demographic subgroups but the structure of this interaction is relatively low-dimensional.
-Under this assumption of no higher-order interaction, we propose the following *additive* prior specification, which can be viewed as a random intercept model, \begin{align*}
+Under this assumption of no higher-order interaction, we propose the following *additive* prior specification, which can be viewed as a random intercept model: \begin{align*}
     \Theta_{yr}(g, \vb x) &= g^{-1}\qty(\log\theta_{yr} + \beta^{(0)}_{yrg} + 
         \sum_{k=1}^{K} \beta^{(k)}_{yrx_k})\\
         \vb*\theta_{\cdot r} &\iid \Dirichlet(\alpha) \\
