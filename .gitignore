@@ -6,8 +6,6 @@ data-raw/*.csv
 data-raw/*/
 data-out
 
-man/
-
 *.rds
 __pycache__
 *.pyc
