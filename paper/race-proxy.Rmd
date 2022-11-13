@@ -1,5 +1,5 @@
 ---
-title: "Estimating Racial Disparities when Race is Not Observed, with Application to U.S. Tax Claims Data"
+title: "Estimating Racial Disparities when Race is Not Observed"
 shorttitle: "Estimating Racial Disparities when Race is Not Observed"
 authors: 
     - name: Cory McCartan
@@ -24,12 +24,10 @@ abstract: |
     Although BISG tends to produce well-calibrated racial predictions, its prediction errors are often correlated with the outcomes of interest, yielding biased estimates of racial disparities.
     We propose a more credible identification strategy that corrects this bias.
     The proposed strategy is applicable whenever one's surname is conditionally independent of the outcome given their (unobserved) race, residence location, and other observed characteristics.
-    Leveraging this identification strategy, we introduce a new model, Bayesian Instrumental Regression for Disparity Estimation (BIRDiE), that estimates racial disparity while accounting for the high-dimensionality of surnames.
+    Leveraging this identification strategy, we introduce a new model, Bayesian Instrumental Regression for Disparity Estimation (BIRDiE), that estimates racial disparity while using surnames as a kind of high-dimensional instrument for race.
     We also develop a sensitivity analysis to address the potential violation of the required assumption that BISG's race predictions are well calibrated.
-    Our validation study based on North Carolina voter files shows that BIRDiE reduces error by about 75--85% in comparison to existing approaches in estimating party identification by race, and roughtly 25–50% lower error for turnout rates by race.
+    Our validation study based on North Carolina voter files shows that BIRDiE reduces error by about 75--85% in comparison to existing approaches in estimating party identification by race.
     A similarly substantial improvement is obtained in estimating racial disparities of partisan identification.
-    We also apply BIRDiE to large-scale U.S. tax records to produce the first-ever estimates of claim rates of the home mortgage interest deduction by race.
-    We find that ... Open-source software is available for applying BIRDiE in practice.
 keywords: 
     - BISG
     - ecological inference
@@ -89,23 +87,26 @@ This key identification assumption, however, is unlikely to hold because race af
 
 To address this challenge, in Section \@ref(sec:est), we propose an alternative identification strategy.
 Specifically, we assume that the outcome is conditionally independent of surname given (unobserved) individual's race, residence location, and other observed attributes.
-The assumption implies that for two individuals who live in the same area, belong to the same racial group, and share the observable attributes, their surnames have no predictive power of the outcome.
+This assumption is an exclusion restriction, treating surname as an instrument for the outcome.
+It implies that for two individuals who live in the same area, belong to the same racial group, and share the observable attributes, their surnames have no predictive power of the outcome.
 We argue that this new identification assumption is more credible unless surname is directly used to determine the outcome of interest (i.e., name-based discrimination).
-Based on this identification strategy, we develop a Bayesian model that overcomes the high-dimensionality of surnames to accurately estimate racial disparities.
-We derive a stochastic variational inference algorithm to fit the model to large administrative datasets.
+Leveraging this identification strategy, we introduce a new model, Bayesian Instrumental Regression for Disparity Estimation (BIRDiE), that overcomes the high-dimensionality of surnames to accurately estimate racial disparities.
+We propose using off-the-shelf stochastic variational inference to fit the model to large administrative datasets.
 
 In large datasets, sampling-based uncertainty is overwhelmed by error that arises from violations of our assumptions about the data.
 This is particularly true in this context where the key variable of interest is unobserved.
 Section \@ref(sec:sens) proposes a method to evaluate the sensitivity of estimates about racial disparities to the potential violation of model assumptions.
-All of the proposed methodology is implemented in open-source software that is made available with the paper.
+<!-- All of the proposed methodology is implemented in open-source software that is made available with the paper. -->
 
 In Section \@ref(sec:valid), we validate the proposed methodology using real-world data taken from the voter file in North Carolina, where self-reported individual-race is observed and can be used to construct the ground-truth of racial disparities.
-The proposed model substantially outperforms existing estimators across different error measures, two different outcome variables, and multiple levels of geolocation specificity.
+BIRDiE substantially outperforms existing estimators across different error measures, two different outcome variables, and multiple levels of geolocation specificity.
 For example, the most popular existing BISG disparity estimator pegs the gap at Democratic party registration between White and Black voters at `r round(-100*x$weight$disp_wb)` percentage points, while the actual gap is `r round(-100*x$weight$disp_wb_true)` percentage points---more than double.
-The proposed method yields an estimate of `r round(-100*x$model$disp_wb)` percentage points.
+BIRDiE yields an estimate of `r round(-100*x$model$disp_wb)` percentage points.
 
-In Section \@ref(sec:appl), we apply the proposed method to large-scale administrative data from the U.S. Internal Revenue Service.
+<!--
+In Section \@ref(sec:appl), we apply BIRDiE to large-scale administrative data from the U.S. Internal Revenue Service.
 We produce the first-ever estimates of claim rates of the home mortgage interest deduction (HMID) by race.... [fill in]. **KI: I would like to introduce this application in Section 2 as a motivating example.  Then, we can come back to its analysis in Section \@ref(sec:appl).**
+-->
 Section \@ref(sec:disc) gives concluding remarks.
 
 # Bias of the Standard Methodology {#sec:id}
@@ -289,8 +290,8 @@ Outside of these cases, however, the weighting estimator is likely to be biased.
 
 In this section, we propose an alternative identification strategy.
 Specifically, we show that racial disparity is identifiable if one's surname is conditionally independent of the outcome given their race, residence geolocation, and other observed information, assuming that BISG can accurately identify race probabilities.
-We then develop a statistical model that estimates racial disparity under this identification condition while accounting for the high-dimensionality of surnames.
-Finally, we propose a sensitivity analysis that addresses the potential existence of unobserved confounders.
+We then develop a statistical model, BIRDiE, that estimates racial disparity under this identification condition while accounting for the high-dimensionality of surnames.
+Finally, we propose a sensitivity analysis that addresses the potential violation of several of the key assumptions.
 
 ## Identification Strategy
 
@@ -306,9 +307,12 @@ For all $i$, $$Y_i\indep S_i\mid R_i,G_i,X_i.$$
 Figure \@ref(fig:dag)(b) shows one possible causal DAG that meets this assumption as well as Assumption \ref{a:indep-sgx}.
 In this DAG, race can have a direct effect on the outcome $Y$ as well as on residence location $G$ and other observed characteristics $X$, while all paths from $S$ to $Y$ are blocked by $G$, $X$, or $R$.
 
+This causal structure is plausible in many real-world settings.
+<!--
 This causal structure is plausible in many real-world settings, such as our motivating example of HMID claims.
 In this case, we can rule out a direct effect of name on the outcome.
 (**CM: revisit this more carefully once we've settled on outcomes. Dan notes e.g. mortgage application success may depend on discrimination via names**.) 
+-->
 This assumption rules out the possibility that surname directly affects the outcome whereas such a direct effect is allowed under Assumption \ref{a:indep-yr}.
 In the above hiring example, if the manager directly relies upon surname to make the decision, our assumption will be violated.
 Similarly, if campaigns use the surnames of individual voters to decide whether to mobilize them, Assumption \ref{a:indep-ys} will be violated.
@@ -348,107 +352,112 @@ Here, we use surname as a proxy variable for (unobserved) race to identify racia
 
 Together with Proposition \ref{p:bisg}, Theorem \ref{thm:id} imply that racial disparities can be identified under Assumptions \ref{a:indep-sgx}, \ref{a:cens-acc}, and \ref{a:indep-ys}.
 The identifying equation \eqref{eq:tprob} shows that $\Pr(Y=y\mid G=g, X=x, S=s)$ is linear in the BISG estimands $\Pr(R=r\mid G=g, X=x, S=s)$.
-Thus, it is natural to consider the following least-squares estimator of $\Pr(Y=y\mid R)$ under this alternative identification strategy, $$
-\hat{\vb*\mu}^{(\text{ols})}_{Y\mid R}(y\mid \cdot) 
-= (\hat{\vb P}^\top \hat{\vb P})^{-1} \hat{\vb P}\,\ind\{\vb Y = y\},
-$$ where as above $\hat{\vb P}$ is the matrix of BISG probabilities.
-<!-- and where $\vb Y_{gx}$ is the vector of outcome variables for the individuals with $G_i=g$ and $X_i=x$. --> Indeed, this estimator is unbiased, as the following theorem shows.
+Thus, it is natural to consider the following least-squares estimator of $\Pr(Y=y\mid R, G=g, X=x)$ under this alternative identification strategy, $$
+    \hat{\vb*\mu}^{(\text{ols})}_{Y\mid RGX}(y\mid \cdot, g,x) 
+    =  (\hat{\vb P}_{\cI(xg)}^\top \hat{\vb P}_{\cI(xg)})^{-1}\hat{\vb P}_{\cI(xg)}\,\ind\{{\vb Y}_{\cI(xg)} = y\},
+$$
+where as above $\hat{\vb P}$ is the matrix of BISG probabilities, and $\cI(xg)$ is the set of individuals $i$ with $X_i=x$ and $G_i=g$.
+By post-stratifying this estimator across the $(G,X)$ cells, we arrive at an estimator of $\Pr(Y=y\mid R)$, $$
+\hat{\vb*\mu}^{(\text{p-ols})}_{Y\mid R}(y\mid r) 
+= \sum_{x\in\cX,g\in\cG} (\hat{\vb P}_{\cI(xg)}^\top \hat{\vb P}_{\cI(xg)})^{-1} 
+\hat{\vb P}_{\cI(xg)}\,\ind\{{\vb Y}_{\cI(xg)} = y\})_r q_{gx|r} ,
+$$ since $q_{gx|r}=\Pr(G=g,X=x\mid R=r)$ under Assumption \ref{a:cens-acc}.
+<!-- and where $\vb Y_{gx}$ is the vector of outcome variables for the individuals with $G_i=g$ and $X_i=x$. -->
+This estimator is unbiased, as the following theorem shows.
 **CM: cite to Dan & Jacob's working paper around here.**
 
 ```{=tex}
-\begin{theoremrep}[OLS Estimator Unbiased] \label{thm:ols-bias}
+\begin{theoremrep}[Unbiasedness of OLS Estimator] \label{thm:ols-bias}
 If Assumptions \ref{a:indep-sgx}, \ref{a:cens-acc}, and \ref{a:indep-ys} hold, 
 and the identification conditions in Theorem~\ref{thm:id} are satisfied,
 then for all $y\in\cY$ and $r\in\cR$, \[
-    \E[\hat{\mu}^{(\text{ols})}_{Y\mid R}(y\mid r)] = \Pr(Y=y\mid R=r).
+    \E[\hat{\mu}^{(\text{p-ols})}_{Y\mid R}(y\mid r)] = \Pr(Y=y\mid R=r).
 \]
 \end{theoremrep}
 \begin{proof}
 Fix $y\in\cY$ and define $m_{gxr} = \E[\ind\{Y=y\}\mid R=r, G=g, X=x)]$.
 Then under Assumptions \ref{a:indep-sgx}, \ref{a:cens-acc}, and \ref{a:indep-ys},
 \begin{align*}
-    \E[\ind\{Y=y\}\mid G, X, S] &= 
-    \sum_{r\in\cR} \E[\ind\{Y=y\}\mid R=r, G,X)]\Pr(R=r\mid G,X,S) \\
-    &= \sum_{r\in\cR} m_{GXr} \hat p_r,
+    \E[\ind\{Y=y\}\mid G=g, X=x, S=s] &= 
+    \sum_{r\in\cR} \E[\ind\{Y=y\}\mid R=r, G=g,X=x)]\Pr(R=r\mid G=g,X=x,S=s) \\
+    &= \sum_{r\in\cR} m_{gxr} \hat p_r,
 \end{align*}
 where as in the main text $\vb{\hat p}$ is the (random) vector of BISG probabilities.
-Now, taking conditional expectations given $G$, $X$, and $\vb{\hat P}$, we can rewrite
-the above equality as \[
-    \E[\ind\{Y=y\}\mid G, X, \vb{\hat p}] = \sum_{r\in\cR} m_{GXr} \hat p_r
-    = \sum_{g\in\cG}\sum_{x\in\cX}\sum_{r\in\cR} m_{gxr}\ind\{X=x,G=g\}\hat p_r,
-\] since $\E[\ind\{Y=y\}\mid G, X, S]$ depends only on $S$ through $\vb{\hat p}$.
-Then averaging over $G$ and $X$, we obtain 
-\begin{align*}
-    \E[\ind\{Y=y\}\mid \vb{\hat p}] = \E[\ind\{Y=y\}\mid G, X, \vb{\hat p}] 
-    &= \sum_{g\in\cG}\sum_{x\in\cX}\sum_{r\in\cR} m_{gxr}\Pr(X=x,G=g\mid\vb{\hat p})\hat p_r \\
-    &= \sum_{r\in\cR}\qty(\sum_{g\in\cG}\sum_{x\in\cX}m_{gxr}\Pr(X=x,G=g\mid\vb{\hat p}))\hat p_r \\
-    &= \sum_{r\in\cR}\E[m_{GXr}\mid\vb{\hat p}]\hat p_r.
-\end{align*}
-So the conditional expectation of $\ind\{Y=y\}$ given the BISG probabilities $\vb{\hat p}$ is linear in those probabilities,
-with coefficients $\vb*\beta$, defined as $\beta_r=\E[m_{GXr}\mid\vb{\hat p}]$.
-Consequently, the OLS estimate $(\vb{\hat P}^\top\vb{\hat P})^{-1}\vb{\hat P}\ind\{\vb Y=y\}$ will be unbiased for $\vb*\beta$, by the standard results.
+In fact, since the right-hand side depends on $S$  only through $\hat{\vb p}$, we have \[
+    \E[\ind\{Y=y\}\mid G=g, X=x, \hat{\vb p}] 
+    = \sum_{r\in\cR} m_{gxr} \hat p_r.
+\]
+So the conditional expectation of $\ind\{Y=y\}$ given $X$, $G$, and the BISG probabilities $\vb{\hat p}$ is linear in those probabilities, with coefficients $m_{gxr}$.
+Consequently, the OLS estimate $\hat{\vb*\mu}^{(\text{ols})}_{Y\mid RGX}(y\mid\cdot,g,x)$ will be unbiased for $m_{gxr}$, by the standard results.
+
+Now, we can expand $\Pr(Y=y\mid R=r)$ as \[
+    \Pr(Y=y\mid R=r) = \sum_{x\in\cX,g\in\cG} \Pr(Y=y\mid R=r, G=g, X=x)\Pr(G=g, X=x\mid R=r)
+    = \sum_{x\in\cX,g\in\cG} m_{gxr} q_{gx|r}.
+\]
+Since $\hat{\vb*\mu}^{(\text{ols})}_{Y\mid RGX}(y\mid \cdot, g,x)$ is unbiased for $m_{gxr}$,  by the linearity of expectation the poststratified estimator $\hat{\mu}^{(\text{p-ols})}_{Y\mid R}(y\mid r)$ is unbiased for $\Pr(Y=y\mid R=r)$.
 \end{proof}
 ```
 It is worth comparing this OLS estimator with the weighting estimator $\hat{\mu}^{(\text{wtd})}_{y\mid r}$.
-The next theorem shows that these two estimators are guaranteed to disagree, unless either the BISG probabilities perfectly discriminate or the weighting estimator is constant across races.
+The next theorem shows that within the $(G,X)$ cells these two estimators are guaranteed to disagree, unless either the BISG probabilities perfectly discriminate or the weighting estimator is constant across races.
 Unfortunately, these two conditions are almost never met in practice.
 This underscores the importance of selecting the appropriate assumption (Assumption \ref{a:indep-yr} or \ref{a:indep-ys}) for a particular analysis, since they imply different estimators with different results.
 
 ```{=tex}
 \begin{theoremrep}[Necessary and Sufficient Condition for Equality of the Weighting and OLS Estimators] \label{thm:wtd-vs-ols}
-For any $y\in\cY$, $\hat{\vb*\mu}^{(\text{wtd})}_{Y|R}(y\mid\cdot) = \hat{\vb*\mu}^{(\text{ols})}_{Y|R}(y\mid\cdot)$
+For any $y\in\cY$, $g\in\cG$ and $x\in\cX$, within the set of individuals with $G_i=g$ and $X_i=x$, we have that $\hat{\vb*\mu}^{(\text{wtd})}_{Y|R}(y\mid\cdot) = \hat{\vb*\mu}^{(\text{ols})}_{Y|R}(y\mid\cdot)$
 if and only if for every pair $j,k\in\cR$, either the BISG probabilities perfectly discriminate 
 (i.e., $\Pr(R_i=j\mid G_i,X_i,S_i)>0$ implies $\Pr(R_i=k\mid G_i,X_i,S_i)=0$ and vice versa) or 
 $\hat{\mu}^{(\text{wtd})}_{Y|R}(y\mid j)=\hat{\mu}^{(\text{wtd})}_{Y|R}(y\mid k)$.
 \end{theoremrep}
 \begin{proof}
-Fix a $y\in\cY$.
-The weighting estimator of $\Pr[Y=y\mid R=r]$ may be written $$
-    \hat\mu^{(\text{wtd})}_{Y|R}(y\mid r) 
-    = \frac{\hat{\vb P}_{\cdot r}^\top \ind\{\vb Y=y\}}{\hat{\vb P}_{\cdot r}^\top \vb 1}
-    = \frac{\norm{\proj_{\hat{\vb P}_{\cdot r}}(\ind\{\vb Y=y\})}}{
-        \norm{\proj_{\hat{\vb P}_{\cdot r}}(\vb 1)}},
+Fix a $y\in\cY$, $g\in\cG$ and $x\in\cX$.
+The weighting estimator of $\Pr[Y=y\mid R=r]$ within the set of individuals with $G_i=g$ and $X_i=x$ may be written $$
+    \hat\mu^{(\text{wtd})}_{Y|RGX}(y\mid r,g,x) 
+    = \frac{\hat{\vb P}_{\cI(xg) r}^\top \ind\{\vb Y_{\cI(xg)}=y\}}{\hat{\vb P}_{\cI(xg) r}^\top \vb 1}
+    = \frac{\norm{\proj_{\hat{\vb P}_{\cI(xg) r}}(\ind\{\vb Y_{\cI(xg)}=y\})}}{
+        \norm{\proj_{\hat{\vb P}_{\cI(xg) r}}(\vb 1)}},
 $$ the ratio of the projected length of the outcome vector $\ind\{\vb Y=y\}$ and the constant vector $\vb 1$ onto $\hat{\vb P}_{\cdot r}$.
 We can write the OLS estimator as $$
-    \hat{\vb*\mu}^{(\text{ols})}_{Y|R} = (\hat{\vb P}^\top\hat{\vb P})^{-1}\hat{\vb P}^\top \ind\{\vb Y=y\}
-    = \mathrm{coord}_{\hat{\vb P}}(\proj_{\hat{\vb P}}(\ind\{\vb Y=y\}),
-$$ where $\mathrm{coord}_{\hat{\vb P}}$ is the function that returns the coordinates of its input vector in the $\hat{\vb P}$ basis (by assumption $\hat{\vb P}$ has rank $|\cR|$ and so its columns are linearly independent).
-To make the comparison even easier, notice that we can break the projection $\proj_{\hat{\vb P}_{\cdot r}}$ into two steps, writing it instead as $\proj_{\hat{\vb P}_{\cdot r}} = \proj_{\hat{\vb P}_{\cdot r}} \circ \proj_{\hat{\vb P}}$.
-Letting $\vb Y_{\proj}=\proj_{\hat{\vb P}}(\ind\{\vb Y=y\})$, then, we can rewrite our estimators as $$
+    \hat{\vb*\mu}^{(\text{ols})}_{Y|R} = (\hat{\vb P}_{\cI(xg)}^\top\hat{\vb P}_{\cI(xg)})^{-1}
+            \hat{\vb P}_{\cI(xg)}^\top \ind\{{\vb Y}_{\cI(xg)}=y\}
+    = \mathrm{coord}_{\hat{\vb P}_{\cI(xg)}}(\proj_{\hat{\vb P}_{\cI(xg)}}(\ind\{{\vb Y}_{\cI(xg)}=y\}),
+$$ where $\mathrm{coord}_{\hat{\vb P}_{\cI(xg)}}$ is the function that returns the coordinates of its input vector in the $\hat{\vb P}_{\cI(xg)}$ basis (by assumption $\hat{\vb P}_{\cI(xg)}$ has rank $|\cR|$ and so its columns are linearly independent).
+To make the comparison even easier, notice that we can break the projection $\proj_{\hat{\vb P}_{\cI(xg) r}}$ into two steps, writing it instead as $\proj_{\hat{\vb P}_{\cI(xg) r}} = \proj_{\hat{\vb P}_{\cI(xg) r}} \circ \proj_{\hat{\vb P}}$.
+Letting $\vb Y_{\proj}=\proj_{\hat{\vb P}_{\cI(xg)}}(\ind\{{\vb Y}_{\cI(xg)}=y\})$, then, we can rewrite our estimators as $$
     \hat\mu^{(\text{wtd})}_{Y|R}(y\mid r) 
-    = \frac{\norm{\proj_{\hat{\vb P}_{\cdot r}}(\vb Y_\proj)}}{
-        \norm{\proj_{\hat{\vb P}_{\cdot r}}(\vb 1)}}  \qand
+    = \frac{\norm{\proj_{\hat{\vb P}_{\cI(xg) r}}(\vb Y_\proj)}}{
+        \norm{\proj_{\hat{\vb P}_{\cI(xg) r}}(\vb 1)}}  \qand
     \hat{\vb\mu}^{(\text{ols})}_{Y|R}(y\mid r)
-    = \mathrm{coord}_{\hat{\vb P}}(\vb Y_\proj)_r.
+    = \mathrm{coord}_{\hat{\vb P}_{\cI(xg)}}(\vb Y_\proj)_r.
 $$ 
 
-Now, since the individual BISG probabilities are nonnegative and sum to 1, a pair $j,k\in\cR$ of races has perfectly discriminating BISG probabilities if and only if the corresponding columns of $\hat{\vb P}$ are orthogonal, i.e., $\hat{\vb P}_{\cdot j}^\top\hat{\vb P}_{\cdot k}$.
-Begin by writing $\vb Y_\proj$ in terms of the $\hat{\vb P}$ basis, so \[
-    \vb Y_\proj = \sum_{j\in\cR} c_j\hat{\vb P}_{\cdot j},
+Now, since the individual BISG probabilities are nonnegative and sum to 1, a pair $j,k\in\cR$ of races has perfectly discriminating BISG probabilities if and only if the corresponding columns of $\hat{\vb P}$ are orthogonal, i.e., $\hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}$.
+Begin by writing $\vb Y_\proj$ in terms of the $\hat{\vb P}_{\cI(xg)}$ basis, so \[
+    \vb Y_\proj = \sum_{j\in\cR} c_j\hat{\vb P}_{\cI(xg) j},
 \] and thus $\hat{\vb\mu}^{(\text{ols})}_{Y|R}(y\mid j)=c_j$.
 Without loss of generality, suppose the $c_j$ are numbered as $c_1\ge c_2\ge \cdots\ge c_{|\cR|}$.
 We can also expand $\vb 1$ in the same basis. Since the individual probabilities must sum to one, in fact we have \(
-    \vb 1 = \sum_{j\in\cR} \hat{\vb P}_{\cdot j}.
+    \vb 1 = \sum_{j\in\cR} \hat{\vb P}_{\cI(xg) j}.
 \)
 
 For the forward direction, we assume $\hat{\mu}^{(\text{wtd})}_{Y|R}(y\mid j)=\hat{\mu}^{(\text{ols})}_{Y|R}(y\mid j)=c_j$;
-multiplying out the denominator of the weighting estimator, we have $\hat{\vb P}_{\cdot j}^\top \vb Y=c_j\hat{\vb P}_{\cdot j}^\top\vb 1$ for all $j$; substituting the basis expansions of $\vb Y_\proj$ and $\vb 1$, this yields \[
-    \sum_{k\in\cR} c_k \hat{\vb P}_{\cdot j}^\top\hat{\vb P}_{\cdot k}
-    = \sum_{k\in\cR} c_j \hat{\vb P}_{\cdot j}^\top\hat{\vb P}_{\cdot k}, \qq{so}
-    \sum_{k\in\cR} (c_j-c_k) \hat{\vb P}_{\cdot j}^\top\hat{\vb P}_{\cdot k}=0.
+multiplying out the denominator of the weighting estimator, we have $\hat{\vb P}_{\cI(xg) j}^\top \vb Y=c_j\hat{\vb P}_{\cI(xg) j}^\top\vb 1$ for all $j$; substituting the basis expansions of $\vb Y_\proj$ and $\vb 1$, this yields \[
+    \sum_{k\in\cR} c_k \hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}
+    = \sum_{k\in\cR} c_j \hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}, \qq{so}
+    \sum_{k\in\cR} (c_j-c_k) \hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}=0.
 \] Now fix $j\in J_1=\argmax_j c_j$; this relation still holds, but now every term in the sum is nonnegative and in particular $c_j>c_k$ for all $k\not\in J_1$.
-Therefore we must have $\hat{\vb P}_{\cdot j}^\top\hat{\vb P}_{\cdot k}=0$ for all $k\not\in J_1$.
-Then fix $j\in J_2=\argmax_{j\not\in J_1} c_j$; since $\hat{\vb P}_{\cdot j}^\top\hat{\vb P}_{\cdot l}=0$ for all $l\in J_1$, every term in the sum is still nonnegative and in particular $c_j>c_k$ for all $k\not\in J_1\cup J_2$.
-Therefore we must have $\hat{\vb P}_{\cdot j}^\top\hat{\vb P}_{\cdot k}=0$ for all $k\not\in J_1\cup J_2$.
-Proceeding this way through all sets of common values in the $c_j$ we find that for all $j,k\in\cR$, either $c_j=c_k$ or  $\hat{\vb P}_{\cdot j}^\top\hat{\vb P}_{\cdot k}=0$.
+Therefore we must have $\hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}=0$ for all $k\not\in J_1$.
+Then fix $j\in J_2=\argmax_{j\not\in J_1} c_j$; since $\hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) l}=0$ for all $l\in J_1$, every term in the sum is still nonnegative and in particular $c_j>c_k$ for all $k\not\in J_1\cup J_2$.
+Therefore we must have $\hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}=0$ for all $k\not\in J_1\cup J_2$.
+Proceeding this way through all sets of common values in the $c_j$ we find that for all $j,k\in\cR$, either $c_j=c_k$ or  $\hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}=0$.
 
-For the reverse direction, fix $j\in\cR$ and let $J=\{k\in\cR:c_k=c_j\}$, so that by assumption $\hat{\vb P}_{\cdot j}^\top\hat{\vb P}_{\cdot k}=0$ for all $k\not\in J$.
-Then by the above basis expansion, $\hat{\mu}^{(\text{ols})}_{Y|R}(y\mid j)=c_j$, and \[
+For the reverse direction, fix $j\in\cR$ and let $J=\{k\in\cR:c_k=c_j\}$, so that by assumption $\hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}=0$ for all $k\not\in J$.
+Then by the above basis expansion, $\hat{\mu}^{(\text{ols})}_{Y|RGX}(y\mid j)=c_j$, and \[
     \hat{\mu}^{(\text{wtd})}_{Y|R}(y\mid j) 
-    = \frac{\sum_{k\in\cR} c_k \hat{\vb P}_{\cdot j}^\top\hat{\vb P}_{\cdot k}}{
-        \sum_{k\in\cR}\hat{\vb P}_{\cdot j}^\top\hat{\vb P}_{\cdot k}}
-    = \frac{c_j \sum_{k\in J} \hat{\vb P}_{\cdot j}^\top\hat{\vb P}_{\cdot k}}{
-        \sum_{k\in J}\hat{\vb P}_{\cdot j}^\top\hat{\vb P}_{\cdot k}}
+    = \frac{\sum_{k\in\cR} c_k \hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg)k}}{
+        \sum_{k\in\cR}\hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}}
+    = \frac{c_j \sum_{k\in J} \hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}}{
+        \sum_{k\in J}\hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}}
     = c_j = \hat{\mu}^{(\text{ols})}_{Y|R}(y\mid j). \qedhere
 \]
 \end{proof}
@@ -458,9 +467,9 @@ As a result, in any particular sample, the estimator can produce impossible or c
 This is particularly problematic because a large number of unique surnames make both $\vb P$ and $\vb b$ high-dimensional.
 To address this challenge, and to open the door to more flexible modeling, we next propose a Bayesian modeling approach that is based on our identification strategy and yet satisfies necessary constraints.
 
-## Bayesian model
+## Bayesian Instrumental Regression for Disparity Estimation
 
-We first present the model and describe the choice of prior before briefly discussing computational issues.
+We first present the BIRDiE model and describe the choice of prior before briefly discussing computational issues.
 We consider modeling the conditional distribution of the outcome $Y$ given race $R$, residence location $G$, and other observed characteristics $X$.
 Under Assumption \ref{a:indep-ys}, we do not need to condition on $S$.
 The top part of the model places no restrictions on the outcome process.
@@ -491,7 +500,7 @@ Putting all together, the posterior distribution can then be written as \begin{a
 \end{align} where as above $\hat{\vb P_i}$ are the BISG probability estimates for individual $i$, which depend on Census data represented in $\vb q_{GX\mid R}$, $\vb q_{S\mid R}$, and $\vb q_R$, but not on the parameters $\Theta$ and individual race $\vb R$.
 <!--# Notice the similarities between the final form of the posterior and the identifying equation \eqref{eq:tprob}. -->
 
-The final but critical component of the model is the prior $\pi(\Theta)$.
+The final but critical component of the BIRDiE model is the prior $\pi(\Theta)$.
 A natural prior would be to allow for maximum flexibility with a *fully saturated* specification: \begin{align*}
     \Theta_{yr}(g, \vb x) &= \theta_{yrg\vb x},  \\
     \vb*\theta_{\cdot rgx}&\iid\Dirichlet(\alpha).
@@ -502,7 +511,7 @@ This problem could be partially remedied by adding some hierarchical structure t
 
 We take a slightly different approach, motivated by the fact that we are primarily interested in $\bar\Theta$.
 We assume that the relationship between the outcome $Y$ and race $R$ could vary widely by geographies, or within demographic subgroups but the structure of this interaction is relatively low-dimensional.
-Under this assumption of no higher-order interaction, we propose the following *additive* prior specification, which can be thought about as a random intercept model, \begin{align*}
+Under this assumption of no higher-order interaction, we propose the following *additive* prior specification, which can be viewed as a random intercept model, \begin{align*}
     \Theta_{yr}(g, \vb x) &= g^{-1}\qty(\log\theta_{yr} + \beta^{(0)}_{yrg} + 
         \sum_{k=1}^{K} \beta^{(k)}_{yrx_k})\\
         \vb*\theta_{\cdot r} &\iid \Dirichlet(\alpha) \\
@@ -520,20 +529,20 @@ Since the individual race $\vb R$ is high-dimensional, discrete, and not of prim
     &= \pi(\Theta) \prod_{i=1}^N \sum_{r\in\cR} \theta_{Y_i r}(G_i, X_i)\hat{P}_{ir}
     = \pi(\Theta) \prod_{i=1}^N \vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i.
     \numberthis \label{eq:post-marg}
-\end{align*} This makes it much easier to sample from the model, as the number of parameters is now a function only of the sizes of $\cY$, $\cR$, $\cG$, and $\cX$, and not the sample size $N$.
+\end{align*} This makes it much easier to sample from the BIRDiE model, as the number of parameters is now a function only of the sizes of $\cY$, $\cR$, $\cG$, and $\cX$, and not the sample size $N$.
 
 The marginalized posterior \eqref{eq:post-marg} is simple, but not conjugate to any prior distribution.
 It has only continuous parameters, but these are constrained to be nonnegative and to sum to 1 across certain dimensions.
-The model can be fit with any general Bayesian inference procedure such as Markov chain Monte Carlo (MCMC).
+The BIRDiE  model can be fit with any general Bayesian inference procedure such as Markov chain Monte Carlo (MCMC).
 However, the large amount of data and moderate-to-high dimensionality in practical settings makes MCMC algorithms computationally infeasible.
-In our applications here, and in our open-source software implementation of the proposed method, we use stochastic variational inference (SVI) with a mean-field approximation to fit the model instead [@hoffman2013stochastic], as implemented in the Pyro probabilistic programming language [@bingham2018pyro].
+In our applications here, <!--and in our open-source software implementation,--> we use stochastic variational inference (SVI) with a mean-field approximation to fit the BIRDiE model instead [@hoffman2013stochastic], as implemented in the Pyro probabilistic programming language [@bingham2018pyro].
 In the appendix, we perform a comparison at a small sample size which confirms the accuracy of this approach relative to full MCMC.
 Both the posterior location and uncertainty are well-approximated with SVI.
 When the number of parameters is not too large relative to the data size, simpler methods such as a Laplace approximation centered at the maximum a posteriori estimate would likely be applicable, too.
 
 ## Sensitivity Analysis {#sec:sens}
 
-The proposed model, like the weighting and OLS estimators, relies upon Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc}, which are required for the BISG race probabilities to be accurate.
+BIRDiE, like the weighting and OLS estimators, relies upon Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc}, which are required for the BISG race probabilities to be accurate.
 Unfortunately, these assumptions may not exactly hold in practice.
 In this section, we address this challenge by developing a sensitivity analysis that assesses how the bias in BISG race probabilities affect the estimates of racial disparities.
 
@@ -615,9 +624,9 @@ We recommend that practitioners other data sources, such as surveys, to estimate
 
 # Validation Study {#sec:valid}
 
-To better understand how the proposed model performs in real-world contexts, we apply it to the North Carolina voter registration data.
+To better understand how BIRDiE performs in real-world contexts, we apply it to the North Carolina voter registration data.
 This voter file contains individual-level self-reported race and hence the "ground truth" relationship between outcome and race is known.
-We compare the performance of the proposed model against those of other estimators.
+We compare the performance of BIRDiE against those of other estimators.
 We also evaluate how the estimation error depends on the level of geographic precision used in the BISG probabilities.
 
 ## North Carolina Voter File
@@ -625,7 +634,10 @@ We also evaluate how the estimation error depends on the level of geographic pre
 Like most other Southern states with a history of disenfranchising minority voters, the state of North Carolina asks (and previously required) every voter to self-report their race upon registration.
 This data, along with voters' names, addresses, gender, party registration (if any), and voting history, is part of the voter file that the secretary of state makes publicly available.
 This feature makes the voter file an ideal validation setting for the proposed methodology.
+The outcome we examine here, party registration, is the product of many unobservable factors, and are known to differ across racial groups.
+<!--
 The two outcomes we examine here, party registration and turnout, are the product of many unobservable factors, and are known to differ across racial groups.
+-->
 Since self-reported race is available, inferences about these racial disparities using the estimators discussed here can be compared to the corresponding true values.
 
 We use a subset of the October 2022 voter file which could be linked to a proprietary voter file provided by L2, Inc., a leading national non-partisan firm and the oldest organization in the United States that supplies voter data and related technology to candidates, political parties, pollsters, and consultants for use in campaigns.
@@ -636,23 +648,27 @@ Alltogether, `r percent(1 - 5754912/7389159, 0.1)` of records either had missing
 
 ```{r nc-overview, fig.width=6.5}
 #| fig.cap: |
-#|     Distribution of party identification (left) and turnout (right) by race, 
+#|     Distribution of party identification  by race, 
 #|     for a sample of 500,000 North Carolina voters. Parties are Libetarian (LIB),
-#|     Republican (REP), Independent (IND), and Democrat (DEM). Turnout ranges from 
-#|     0 to 10, indicating the number of November general elections from 2012 through 2021, 
-#|     in which a voter turned out.
+#|     Republican (REP), Independent (IND), and Democrat (DEM). 
+#     Distribution of party identification (left) and turnout (right) by race, 
+#     for a sample of 500,000 North Carolina voters. Parties are Libetarian (LIB),
+#     Republican (REP), Independent (IND), and Democrat (DEM). Turnout ranges from 
+#     0 to 10, indicating the number of November general elections from 2012 through 2021, 
+#     in which a voter turned out.
 knitr::include_graphics("figures/nc_overview.pdf")
 ```
 
 The overall merged voter file contains 5,754,912 voters, 71.2% of which are White, 21.1% of which are black, and 7.7% of which belong to another race.
-To reduce computational burden, we further subsampled this file by selecting 500,000 records at random without replacement.
+To reduce computational burden, we further subsampled this file by selecting 200,000 records at random without replacement.
 A sample size of half a million is large enough to ensure that sampling error is essentially negligible.
 
-Figure \@ref(fig:nc-overview) shows the distribution of party registration and turnout by race in this subsample.
+Figure \@ref(fig:nc-overview) shows the distribution of party registration <!--and turnout--> by race in this subsample.
 White voters disproportionately register as Republicans, while Black voters disproportionately register as Democrats.
-We measure turnout as the number of November general elections each individual voted in from 2012 through 2021, ranging from 0 to 10. **KI: For the turnout analysis, we need to further subset to those whose registration date is before the 2012 election.  If that's too few, we can reduce the number of elections we look at. **
+<!--
+We measure turnout as the number of November general elections each individual voted in from 2012 through 2021, ranging from 0 to 10. 
 For analysis with the methods discussed here, we treat turnout as a categorical variable.
-Turnout rates are highest for Black and White voters, and lowest for Hispanic voters.
+Turnout rates are highest for Black and White voters, and lowest for Hispanic voters.-->
 
 ## Results
 
@@ -665,38 +681,39 @@ acc = percent(x$acc, 0.1)
 score = number(x$score, 0.001)
 ```
 
-The BISG probabilities are broadly accurate. **KI: Can we add a table of BISG accuracy (false negative and positives) and calibration plots to the appendix?**
+The BISG probabilities are broadly accurate. 
 Using the maximum a posteriori racial category as a prediction, we obtain the accuracy of `r acc["county"]` for the county probabilities, `r acc["zip"]` for the ZIP code probabilities, `r acc["tract"]` for the tract probabilities, and `r acc["block"]` for the block probabilities.
 An alternative measure of the quality of the BISG probabilities is the logarithmic score, a proper scoring rule which rewards accurate and calibrated probabilistic estimates (higher values are better).
 The logarithmic scores for the BISG probabilities are -`r score["county"]` for counties, -`r score["zip"]` for ZIP codes, -`r score["tract"]` for tracts, and -`r score["block"]` for blocks.
 For comparison, the prior-only logarithmic score (i.e., using no name or geographic information) is -`r number(x$base_score, 0.001)`.
 The worsened performance for block-level versus tract-level probabilities likely stems from the larger impact of census measurement error at smaller geographies, a problem that could be addressed using newer BISG methods such as those of @imai2022addressing.
 
-For a given set of BISG probabilities, we estimate the joint distribution of each outcome variable and race using the proposed method, the weighting estimator, the OLS estimator, and a thresholding estimator that deterministically assigns each individual the maximum *a posteriori* racial category.
+For a given set of BISG probabilities, we estimate the joint distribution of each outcome variable and race using the proposed method, the weighting estimator, the post-stratified OLS estimator, and a thresholding estimator that deterministically assigns each individual the maximum *a posteriori* racial category.
 For the proposed method, we use the additive specification described above, using geographic random effects matching the geographic level used in the BISG probabilities (e.g., county random effects for the county-level BISG probabilities), except for the block-level probabilities.
 Due to the large number of individual census blocks, we use tract random effects instead for this particular model.
 
 ```{r nc-disp, fig.width=6.75}
 #| fig.cap: |
 #|     Error in the White-Black and White-Hispanic disparity estimates for
-#|     party identification and turnout, by estimation method.
+#|     party identification, by estimation method.
 #|     All methods used block-level data for this figure; the results 
 #|     for coarser levels of geographic detail are very similar.
 #|     Estimation uncertainty is minimal and hence suppressed from 
 #|     the figure for clarity.
+#     party identification and turnout, by estimation method.
 x = readRDS(here("paper/data/nc_disp_ex.rds"))
 knitr::include_graphics("figures/nc_disp.pdf")
 ```
 
 
-We first examine the accuracy of the various methods in estimating the disparity between White and Black, and White and Hispanic voters, in party identification and turnout.
+We first examine the accuracy of the various methods in estimating the disparity between White and Black, and White and Hispanic voters, in party identification<!-- and turnout-->.
 For example, the true difference in Democratic identification between Black and White voters in the sample is $`r percent(-x$model$disp_wb_true)`$ percentage points, meaning Black voters register Democratic at a much higher rate.
 However, the standard weighting approach produces an estimate of only $`r percent(-x$weight$disp_wb)`$ percentage points for this disparity---less than half the true value.
 In contrast, the proposed model produces an estimate of $`r percent(-x$model$disp_wb)`$ percentage points.
 
-Figure \@ref(fig:nc-disp) compares all the methods across all of these possible disparity measurements, using the Census block-level BISG predictions.**KI: Can you change the legend to "Proposed", "OLS", "Weighting", "Thresholding" **
+Figure \@ref(fig:nc-disp) compares all the methods across all of these possible disparity measurements, using the Census block-level BISG predictions.
 The true disparity is subtracted off for ease of comparison.
-Across both party and turnout, and both inter-racial comparisons, the proposed model (blue dots) outperforms the other three estimators.
+Across both <!--party and turnout, and both -->inter-racial comparisons, the proposed model (blue dots) outperforms the other three estimators.
 The two commonly used estimators -- weighting (green crosses) and thresholding (brown squares) -- exhibit greater estimation errors than the proposed model for almost all cases.
 The OLS estimator (yellow triangles), which is based on our new identification strategy but, unlike the proposed model, does not account for certain probability constraints, gives erroneous results especially for Hispanics which represents a small minority in North Carolina.
 
@@ -704,9 +721,10 @@ The OLS estimator (yellow triangles), which is based on our new identification s
 #| fig.cap: |
 #|     Total variation distance (on a logarithmic scale)
 #|     between the estimated and actual distribution of
-#|     party identification and turnout, 
+#|     party identification,
 #|     by estimation method and level of geographic detail 
 #|     used in the BISG predictions.
+#     party identification and turnout, 
 knitr::include_graphics("figures/nc_tv.pdf")
 ```
 
@@ -716,11 +734,12 @@ d_\text{TV}(\hat{\vb*\mu}_{Y|R}, \vb*\mu_{Y|R})
 $$The TV distance is an upper bound on the error in *any* probability calculated from the estimated joint distribution, and as such is useful general-purpose measure of estimation error.
 
 Figure \@ref(fig:nc-tv) shows the TV distance for each estimator, not just for the Census block-level BISG estimates used in Figure \@ref(fig:nc-disp) but also across the range of geographic levels used in the BISG calculation (x-axis). **KI: Again, change the labels of the estimators. Can you also add the label for the lowest line in y-axis of the left plot?**
-We find that the proposed method (blue circles) outperforms every alternative, for both party ID and turnout, at every geographic level.
+We find that the proposed method (blue circles) outperforms every alternative<!--, for both party ID and turnout,--> at every geographic level.
 The conventional estimators (green crosses for the weighting estimator and brown squares for the thresholding estimator) exhibit much larger errors than the proposed methodology.
-When compared to the error of the proposed estimator, their errors range from XX% to XX% greater for party registration and from XX% to XX% more for turnout, depending on the geography used for BISG predictions. **KI: Please fill in**
-The OLS estimator (yellow triangles) outperforms the weighting and threshold estimators for party ID, but performs significantly worse for turnout than the weighting estimator. 
+When compared to the error of the proposed estimator, their errors range from XX% to XX% greater<!-- for party registration and from XX% to XX% more for turnout-->, depending on the geography used for BISG predictions. **KI: Please fill in**
+The OLS estimator (yellow triangles) outperforms the weighting and threshold estimators for party ID, but performs significantly worse for turnout than the weighting estimator. **CM CHECK NEW**
 
+**CM CHECK HERE TOO**
 Finer geographic data translates to improved accuracy for the proposed model-based estimates for party ID.
 For turnout, the proposed method yields accurate estimates, indicated by substantively small TV errors, in all cases except that the TV error of the tract-level estimates is somewhat greater than the other three.
 While the weighting estimator also becomes more accurate as BISG predictions use finer geographical data, no clear pattern exists for the OLS and thresholding estimators. 
@@ -745,27 +764,27 @@ The actual average error is almost certainly higher but is not in the worst-case
 Moreover, the bounds on the individual entries of the joint distributions implied by even these small $\Delta$ are only useful for the larger racial groups; they are vacuous for the "Other" category, for instance.
 Nevertheless, this kind of analysis can give an idea of the relative sensitivity of the party ID and turnout estimates to data error (namely, that the turnout estimates are more sensitive).
 
+<!--
 # Application {#sec:appl}
 
 -   Treasury data, no covariates
+-->
 
 # Discussion {#sec:disc}
 
--   In most real-world applications, the new model and identification condition are much appropriate and will produce much-improved estimates.
+We have clarified the assumptions implicit in current approaches to disparity estimation from proxy data, and have introduced a new identifying assumption and accompanying model, BIRDiE.
+In most real-world applications, we believe the new model and identification condition are much appropriate and will produce significantly improved estimates.
+However, there is no one-size-fits-all approach for the estimation of disparities.
+Careful consideration of the underlying causal and information structure is required to choose the correct estimation approach and avoid making the wrong conclusions.
 
-    1.  However, there is no one-size-fits-all approach for the estimation of disparities. Careful consideration of the underlying causal and information structure is required to choose the correct estimation approach and avoid making the wrong conclusions.
+Much work remains to be done in accurately and reliably measuring racial disparities.
+First, the BISG probabilities themselves can be improved.
+One approach to doing so is given by @imai2022addressing, which accounts for some Census measurement error while remaining computationally tractable.
+Beyond the BISG probabilities, further empirical analyses could determine useful additional variables to condition on which could allow analysts to weaken Assumption \ref{a:indep-ys}.
+The BIRDiE model too could be extended---to include additional covariates, or to directly model a continuous outcome variable.
+Finally, there likely remain significant opportunities to improve computation for the existing BIRDiE model, so it can be fit more efficiently and robustly.
 
--   Future work:
-
-    -   empirical analysis to determine useful additional variables to condition on to weaken \ref{a:indep-ys}
-
-    -   incorporating measurement error model of @imai2022addressing while staying computationally tractable
-
-    -   incorporating continuous variables
-
-    -   computational improvements
-
--   Reiterate importance of specific causal structure
+\bibliography{references.bib}
 
 # (APPENDIX) Appendix {.unnumbered}
 

@@ -52,6 +52,58 @@ calc_joint_bisgz = function(r_probs, x, method=c("weight", "thresh", "mi", "ols"
     out
 }
 
+#' Estimate the joint distribution of R and X
+#'
+#' @param r_probs a matrix data frame of race probabilities
+#' @param x the variable X to tabulate against
+#' @param method the estimation method: a weighted-mean estimator, a
+#'   thresholding estimator, or a multiple-imputation estimator.
+#' @param prefix how to select the race probability columns from `r_probs`, if
+#'   if is a data frame
+#' @param n_mi if `method == "mi"`, how many imputations to produce.
+#'
+#' @returns a matrix
+#' @export
+calc_joint_bisgz_ols = function(r_probs, x, p_GZ, prefix="pr_", n_mi=8) {
+    x = as.factor(x)
+    N = length(x)
+    if (!is.matrix(r_probs)) {
+        r_probs = as.matrix(dplyr::select(r_probs, starts_with(prefix)))
+        colnames(r_probs) = substring(colnames(r_probs), nchar(prefix)+1L)
+    }
+    stopifnot(nrow(r_probs) == N)
+
+    method = match.arg(method)
+    if (method == "weight") {
+        out = lapply(levels(x), function(l) colMeans(r_probs * (x == l)))
+        out = do.call(rbind, out)
+        rownames(out) = levels(x)
+    } else if (method == "thresh") {
+        r_est = factor(max.col(r_probs), levels=seq_len(ncol(r_probs)))
+        out = table(x, r_est) / N
+        names(dimnames(out)) = NULL
+        colnames(out) = colnames(r_probs)
+    } else if (method == "mi") {
+        n_race = ncol(r_probs)
+        out = matrix(0, nrow=nlevels(x), ncol=n_race)
+        for (i in seq_len(n_mi)) {
+            r_est = apply(r_probs, 1, function(x) sample(n_race, 1, prob=x))
+            out = out + table(x, r_est) / N / n_mi
+        }
+        names(dimnames(out)) = NULL
+        colnames(out) = colnames(r_probs)
+    } else if (method == "ols") {
+        out = lapply(levels(x), function(l) {
+            lm.fit(r_probs, x == l)$coefficients
+        })
+        out = do.call(rbind, out)
+        out = out %*% diag(colMeans(r_probs))
+        rownames(out) = levels(x)
+        colnames(out) = colnames(r_probs)
+    }
+    out
+}
+
 #' Calculate a posterior quantile of the joint distribution of R and X
 #'
 #' @param fit a `fit_birdie` object (the output of `model_race`)

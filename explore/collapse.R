@@ -59,7 +59,7 @@ d = slice_sample(voters, n=600e3) %>%
            GEOID_block = if_else(is.na(block), GEOID_county, str_c(county, tract, block)),
            GEOID_zip = if_else(is.na(zip), str_c("cty", county), as.character(zip)),
            n_voted = factor(voted_2016_11 + voted_2017_11 + voted_2018_11 +
-                            voted_2019_11 + voted_2020_11 + voted_2021_11),
+                                voted_2019_11 + voted_2020_11 + voted_2021_11),
            # n_voted = factor(1*voted_2020_11),
            party=coalesce(party, "ind")) |>
     slice_sample(n=200e3)
@@ -67,6 +67,7 @@ rm(voters)
 print(head(d$last_name)) # ensure seed is working
 
 p_r = prop.table(table(d$race))
+p_xr = prop.table(with(d, table(party, race)), margin=2)
 
 geo_levels = c("county", "zip", "tract", "block")
 
@@ -78,61 +79,19 @@ r_probs = map(geo_levels, function(level) {
     set_names(geo_levels)
 rm(d_cens)
 
-# BISG quality
-log_score_baseline = mean(log(p_r[as.integer(d$race)]))
-log_scores = map_dbl(r_probs, function(x) {
-    pr_act = as.matrix(x)[cbind(1:nrow(x), as.integer(d$race))]
-    pr_act[pr_act == 0] = 1e-6
-    mean(log(pr_act))
-})
-acc_thresh = map_dbl(r_probs, ~ mean(max.col(.) == as.integer(d$race)))
+dd = bind_cols(d, r_probs$county)
 
-list(base_score = log_score_baseline,
-     score = log_scores,
-     acc = acc_thresh) |>
-    write_rds(here("paper/data/nc_bisg.rds"))
+est_global = lm(I(party=="dem") ~ pr_white + pr_black + pr_hisp +
+                    pr_asian + pr_aian + pr_other + 0, data=dd) |>
+    coef()
 
+ests_local = map(levels(d$county), possibly(function(cty) {
+    lm(I(party=="dem") ~ pr_white + pr_black + pr_hisp +
+           pr_asian + pr_aian + pr_other + 0, data=filter(dd, county == cty)) |>
+        coef()
+}, rep(0, 6))) |>
+    do.call(rbind, args=_) |>
+    `rownames<-`(levels(d$county))
 
-# Party ID -----------
-
-if (!file.exists(path <- here("data-out/nc_fits_party.rds"))) {
-    fits_party = imap(r_probs, function(d_pr, level) {
-        gc()
-        cat(level, "\n")
-
-        lr = 0.4
-        if (level == "block") level = "tract"
-        if (level == "county") lr = 0.7
-        if (level == "zip") lr = 0.5
-
-        model_race(d_pr, party, !!rlang::sym(str_c("GEOID_", level)),
-                   data=d, config=list(lr=lr, tol_rhat=1.15, it_avgs=500))
-    })
-
-    write_rds(fits_party, path, compress="xz")
-} else {
-    fits_party <- read_rds(path)
-}
-
-
-# Turnout -----------
-
-if (!file.exists(path <- here("data-out/nc_fits_turnout.rds"))) {
-    fits_turnout = imap(r_probs, function(d_pr, level) {
-        gc()
-        cat(level, "\n")
-
-        lr = 0.5
-        if (level == "block" || level == "tract") level = "zip"
-        if (level == "county") lr = 0.65
-
-        model_race(d_pr[1:1e4,], n_voted, !!rlang::sym(str_c("GEOID_", level)),
-                   data=d[1:1e4,], config=list(lr=lr, tol_rhat=1.15, draws=1000, it_avgs=500,
-                                       prior = list(x = 25.0, xr = 0.02, beta = 0.10)))
-    })
-
-    write_rds(fits_turnout, path, compress="xz")
-} else {
-    fits_turnout <- read_rds(path)
-}
-
+p_gr = prop.table(with(d, table(county, race)), margin=2)
+est_local = colSums(p_gr * ests_local)
