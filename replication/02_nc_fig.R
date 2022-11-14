@@ -1,5 +1,4 @@
-eval_fit_disp = function(fits, X, d, idx=seq_len(nrow(d))) {
-    d = d[idx, ]
+make_xr = function(fits, X, d) {
     X_name = deparse(substitute(X))
     X = eval_tidy(enquo(X), d)
 
@@ -10,13 +9,19 @@ eval_fit_disp = function(fits, X, d, idx=seq_len(nrow(d))) {
         out
     })))
     xr = c(xr, flatten(imap(r_probs, function(d_pr, level) {
-        d_pr = d_pr[idx, ]
         out = list()
         out[[str_c("weight_", level)]] = calc_joint_bisgz(d_pr, X, method="weight")
         out[[str_c("thresh_", level)]] = calc_joint_bisgz(d_pr, X, method="thresh")
-        out[[str_c("ols_", level)]] = calc_joint_bisgz(d_pr, X, method="ols")
+        out[[str_c("ols_", level)]] = calc_joint_bisgz_ols(
+            d_pr, X, attr(d_pr, "gz"), attr(d_pr, "p_gzr"), truncate=TRUE)
         out
     })))
+    attr(xr, "X_name") = X_name
+    xr
+}
+
+eval_fit_disp = function(xr) {
+    X_name = attr(xr, "X_name")
 
     m_to_cond = diag(1/p_r)
     rownames(m_to_cond) = names(p_r)
@@ -37,25 +42,7 @@ eval_fit_disp = function(fits, X, d, idx=seq_len(nrow(d))) {
         left_join(x_disp_true, by=X_name, suffix=c("", "_true"))
 }
 
-eval_fit_tv = function(fits, X, d, idx=seq_len(nrow(d))) {
-    d = d[idx, ]
-    X = eval_tidy(enquo(X), d)
-
-    xr = list(true = prop.table(table(X, d$race)))
-    xr = c(xr, flatten(imap(fits, function(f, level) {
-        out = list()
-        out[[str_c("model_", level)]] = calc_joint_model(f, "global", 0.5, p_r)
-        out
-    })))
-    xr = c(xr, flatten(imap(r_probs, function(d_pr, level) {
-        d_pr = d_pr[idx, ]
-        out = list()
-        out[[str_c("weight_", level)]] = calc_joint_bisgz(d_pr, X, method="weight")
-        out[[str_c("thresh_", level)]] = calc_joint_bisgz(d_pr, X, method="thresh")
-        out[[str_c("ols_", level)]] = calc_joint_bisgz(d_pr, X, method="ols")
-        out
-    })))
-
+eval_fit_tv = function(xr) {
     tv_overall = do.call(eval_joints, c(list(xr$true, "tv"), xr)) %>%
         filter(method != "true") %>%
         mutate(race = "overall") %>%
@@ -70,12 +57,16 @@ eval_fit_tv = function(fits, X, d, idx=seq_len(nrow(d))) {
         separate(method, c("method", "level"), sep="_")
 }
 
-disp_party = eval_fit_disp(fits_party, party, d)
-disp_turnout = eval_fit_disp(fits_turnout, n_voted, d)
+xr_party = make_xr(fits_party, party, d)
+xr_turnout = make_xr(fits_turnout, n_voted, d)
 
-tv_party = eval_fit_tv(fits_party, party, d)
-tv_turnout = eval_fit_tv(fits_turnout, n_voted, d)
+disp_party = eval_fit_disp(xr_party)
+disp_turnout = eval_fit_disp(xr_turnout)
 
+tv_party = eval_fit_tv(xr_party)
+tv_turnout = eval_fit_tv(xr_turnout)
+
+# max improvement vs weighted
 bind_rows(party=tv_party, turnout=tv_turnout, .id="outcome") |>
     filter(race == "overall", method %in% c("model", "weight")) |>
     pivot_wider(names_from=method, values_from=tv) |>
@@ -83,7 +74,15 @@ bind_rows(party=tv_party, turnout=tv_turnout, .id="outcome") |>
     summarize(max_improvement = max(1 - model / weight),
               min_improvement = min(1 - model / weight))
 
-filter(disp_party, level=="block", party=="dem") |>
+# weighted & turnout vs model (% worse)
+bind_rows(party=tv_party, turnout=tv_turnout, .id="outcome") |>
+    filter(race == "overall", method %in% c("model", "weight", "thresh")) |>
+    pivot_wider(names_from=method, values_from=tv) |>
+    group_by(outcome) |>
+    summarize(max_improvement = max(weight/model, thresh/model),
+              min_improvement = min(weight/model, thresh/model))
+
+filter(disp_party, level=="zip", party=="dem") |>
     select(-level, -party) |>
     split(~ method) |>
     write_rds(here("paper/data/nc_disp_ex.rds"), compress="xz")
@@ -109,7 +108,7 @@ p2 = ggplot(d, aes(y=factor(races[race], levels=rev(races)),
 
 p = p1 + p2 & theme(legend.position="bottom",
                     legend.margin=margin())
-ggsave(here("paper/figures/nc_overview.pdf"), plot=p, width=7.5, height=2.5)
+ggsave(here("paper/figures/nc_overview.pdf"), plot=p1, width=7.5, height=2.5)
 
 # Disparity plots -----
 
@@ -122,7 +121,7 @@ geos_short = c(county="County", zip="ZIP", tract="Tract", block="Block")
 methods = c(model="BIRDiE", ols="OLS", thresh="Threshold", weight="Weighted")
 
 make_disp_plot = function(d, x, y, title, xlab) {
-    filter(d, level=="county") |>
+    filter(d, level=="zip") |>
     ggplot(aes({{ x }}, {{ y }},
                color=methods[method], shape=methods[method])) +
         # facet_wrap(~ factor(geos[level], levels=geos)) +
@@ -144,7 +143,8 @@ p4 = make_disp_plot(disp_turnout, fct_inorder(n_voted), disp_wh - disp_wh_true,
                     "White-Hispanic disparity error (turnout)", "Number of elections voted")
 
 p = p1 + p2 + p3 + p4 + plot_layout(guides="collect")
-ggsave(here("paper/figures/nc_disp.pdf"), plot=p, width=8, height=5)
+p = p1 + p2 + plot_layout(guides="collect")
+ggsave(here("paper/figures/nc_disp.pdf"), plot=p, width=8, height=3.5) # old height 5
 
 
 # TV plots -----
@@ -173,8 +173,9 @@ ggplot(aes(x=factor(geos_short[level], levels=geos_short), y=tv,
     geom_point(size=2.0, position=position_dodge(width=0.25)) +
     scale_color_wa_d() +
     scale_y_log10("Total variation distance") +
-    labs(x="BISG geographic precision", title="Party") +
-    guides(color="none", shape="none") +
+    labs(x="BISG geographic precision", title="Party",
+         color="Method", shape="Method") +
+    # guides(color="none", shape="none") +
     theme_paper() +
     theme(plot.margin=unit(c(0, 0, 0, 0), "cm"))
 
@@ -210,7 +211,9 @@ ggplot(aes(x=factor(geos_short[level], levels=geos_short), y=tv,
     theme(plot.margin=unit(c(0, 0, 0, 0), "cm"))
 
 p = p1 + p2
-ggsave(here("paper/figures/nc_tv.pdf"), plot=p, width=8, height=3.75)
+p = p1
+ggsave(here("paper/figures/nc_tv.pdf"), plot=p, width=5, height=3.75) # old 8 x 3.75
 
 p = p1b + p2b + plot_layout(ncol=1, guides="collect")
-ggsave(here("paper/figures/nc_tv_detailed.pdf"), plot=p, width=6.5, height=8)
+p = p1b
+ggsave(here("paper/figures/nc_tv_detailed.pdf"), plot=p, width=6.5, height=4) # old 8 x 3.75

@@ -26,7 +26,7 @@ abstract: |
     The proposed strategy is applicable whenever one's surname is conditionally independent of the outcome given their (unobserved) race, residence location, and other observed characteristics.
     Leveraging this identification strategy, we introduce a new model, Bayesian Instrumental Regression for Disparity Estimation (BIRDiE), that estimates racial disparity while using surnames as a kind of high-dimensional instrument for race.
     We also develop a sensitivity analysis to address the potential violation of the required assumption that BISG's race predictions are well calibrated.
-    Our validation study based on North Carolina voter files shows that BIRDiE reduces error by about 75--85% in comparison to existing approaches in estimating party identification by race.
+    Our validation study based on North Carolina voter files shows that BIRDiE reduces error by about 74--79% in comparison to existing approaches in estimating party identification by race.
     A similarly substantial improvement is obtained in estimating racial disparities of partisan identification.
 keywords: 
     - BISG
@@ -100,8 +100,8 @@ Section \@ref(sec:sens) proposes a method to evaluate the sensitivity of estimat
 
 In Section \@ref(sec:valid), we validate the proposed methodology using real-world data taken from the voter file in North Carolina, where self-reported individual-race is observed and can be used to construct the ground-truth of racial disparities.
 BIRDiE substantially outperforms existing estimators across different error measures, two different outcome variables, and multiple levels of geolocation specificity.
-For example, the most popular existing BISG disparity estimator pegs the gap at Democratic party registration between White and Black voters at `r round(-100*x$weight$disp_wb)` percentage points, while the actual gap is `r round(-100*x$weight$disp_wb_true)` percentage points---more than double.
-BIRDiE yields an estimate of `r round(-100*x$model$disp_wb)` percentage points.
+For example, the most popular existing BISG disparity estimator pegs the gap at Democratic party registration between White and Black voters at `r round(-100*x$weight$disp_wb, 1)` percentage points, while the actual gap is `r round(-100*x$weight$disp_wb_true, 1)` percentage points---more than double.
+BIRDiE yields an estimate of `r round(-100*x$model$disp_wb, 1)` percentage points.
 
 <!--
 In Section \@ref(sec:appl), we apply BIRDiE to large-scale administrative data from the U.S. Internal Revenue Service.
@@ -564,7 +564,7 @@ Define the following perturbation weight, which represents the ratio of posterio
     \qty(1 + \frac{\vb*\theta_{Y_i}(G_i, X_i)^\top \vb*\delta_i^*}{
     \vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i})
     \propto \frac{\pi_{\vb*\delta^*}(\Theta\mid\vb Y,\vb G,\vb X,\vb S)}{\pi(\Theta\mid\vb Y,\vb G,\vb X,\vb S)},
-$$ Then, using linear approximation, we write the bias for a particular quantity of interest $g(\Theta)$ as \begin{align*}
+$$ Then, using a local linear approximation, we write the bias for a particular quantity of interest $g(\Theta)$ as \begin{align*}
     \E_{\pi_{\vb*\delta^*}}[g(\Theta)] - \E_\pi[g(\Theta)]
     &= \eval{\dv{\E_{\pi_{\vb*\delta}}[g(\Theta)]}{\vb*\delta}}_{\vb*\delta=0}^\top
         \vb*\delta^* + o(\norm{\vb*\delta^*}) \\
@@ -619,7 +619,7 @@ Practitioners should evaluate Equation \eqref{eq:covbound} under a range of plau
 The appendix contains further results which are more qualitative but also do not require asymptotics.
 The key takeaway is that a pattern of uniform bias can arise when the prior $\vb q_R$ doesn't match the population distribution of race.
 Specifically, when the target population differs from the entire U.S. population that is enumerated by the census, or if the census is out of date, a $\vb q_R$ taken from census tables alone will be incorrect.
-We recommend that practitioners other data sources, such as surveys, to estimate the overall race distribution, and use this instead of the national census estimates for $\vb q_R$.
+We recommend that practitioners use other data sources, such as surveys, to estimate the overall race distribution, and use this instead of the national census estimates for $\vb q_R$.
 
 
 # Validation Study {#sec:valid}
@@ -661,7 +661,7 @@ knitr::include_graphics("figures/nc_overview.pdf")
 
 The overall merged voter file contains 5,754,912 voters, 71.2% of which are White, 21.1% of which are black, and 7.7% of which belong to another race.
 To reduce computational burden, we further subsampled this file by selecting 200,000 records at random without replacement.
-A sample size of half a million is large enough to ensure that sampling error is essentially negligible.
+This sample size is large enough to ensure that sampling error is essentially negligible.
 
 Figure \@ref(fig:nc-overview) shows the distribution of party registration <!--and turnout--> by race in this subsample.
 White voters disproportionately register as Republicans, while Black voters disproportionately register as Democrats.
@@ -696,8 +696,8 @@ Due to the large number of individual census blocks, we use tract random effects
 #| fig.cap: |
 #|     Error in the White-Black and White-Hispanic disparity estimates for
 #|     party identification, by estimation method.
-#|     All methods used block-level data for this figure; the results 
-#|     for coarser levels of geographic detail are very similar.
+#|     All methods used ZIP code-level data for this figure; the results 
+#|     for other levels of geographic detail are very similar.
 #|     Estimation uncertainty is minimal and hence suppressed from 
 #|     the figure for clarity.
 #     party identification and turnout, by estimation method.
@@ -707,17 +707,17 @@ knitr::include_graphics("figures/nc_disp.pdf")
 
 
 We first examine the accuracy of the various methods in estimating the disparity between White and Black, and White and Hispanic voters, in party identification<!-- and turnout-->.
-For example, the true difference in Democratic identification between Black and White voters in the sample is $`r percent(-x$model$disp_wb_true)`$ percentage points, meaning Black voters register Democratic at a much higher rate.
-However, the standard weighting approach produces an estimate of only $`r percent(-x$weight$disp_wb)`$ percentage points for this disparity---less than half the true value.
-In contrast, the proposed model produces an estimate of $`r percent(-x$model$disp_wb)`$ percentage points.
+For example, the true difference in Democratic identification between Black and White voters in the sample is $`r percent(-x$model$disp_wb_true, 0.1)`$ percentage points, meaning Black voters register Democratic at a much higher rate.
+However, the standard weighting approach produces an estimate of only $`r percent(-x$weight$disp_wb, 0.1)`$ percentage points for this disparity---less than half the true value.
+In contrast, the proposed model produces an estimate of $`r percent(-x$model$disp_wb, 0.1)`$ percentage points.
 
-Figure \@ref(fig:nc-disp) compares all the methods across all of these possible disparity measurements, using the Census block-level BISG predictions.
+Figure \@ref(fig:nc-disp) compares all the methods across all of these possible disparity measurements, using the ZIP code-level BISG predictions.
 The true disparity is subtracted off for ease of comparison.
 Across both <!--party and turnout, and both -->inter-racial comparisons, the proposed model (blue dots) outperforms the other three estimators.
-The two commonly used estimators -- weighting (green crosses) and thresholding (brown squares) -- exhibit greater estimation errors than the proposed model for almost all cases.
-The OLS estimator (yellow triangles), which is based on our new identification strategy but, unlike the proposed model, does not account for certain probability constraints, gives erroneous results especially for Hispanics which represents a small minority in North Carolina.
+The two commonly used estimators---weighting (green crosses) and thresholding (brown squares)---exhibit greater estimation errors than the proposed model for almost all cases.
+The OLS estimator (yellow triangles), which is based on our new identification strategy but, unlike the proposed model, does not account for certain probability constraints, gives erroneous results---especially for Hispanics, which represent a small minority in North Carolina.
 
-```{r nc-tv, fig.width=6.75}
+```{r nc-tv, out.width="4.25in"}
 #| fig.cap: |
 #|     Total variation distance (on a logarithmic scale)
 #|     between the estimated and actual distribution of
@@ -733,36 +733,55 @@ d_\text{TV}(\hat{\vb*\mu}_{Y|R}, \vb*\mu_{Y|R})
 = \half\sum_{y\in\cY}\sum_{r\in\cR} |\hat{\mu}_{Y,R}(y, r) - \mu_{Y,R}(y, r)|.
 $$The TV distance is an upper bound on the error in *any* probability calculated from the estimated joint distribution, and as such is useful general-purpose measure of estimation error.
 
-Figure \@ref(fig:nc-tv) shows the TV distance for each estimator, not just for the Census block-level BISG estimates used in Figure \@ref(fig:nc-disp) but also across the range of geographic levels used in the BISG calculation (x-axis). **KI: Again, change the labels of the estimators. Can you also add the label for the lowest line in y-axis of the left plot?**
-We find that the proposed method (blue circles) outperforms every alternative<!--, for both party ID and turnout,--> at every geographic level.
+Figure \@ref(fig:nc-tv) shows the TV distance for each estimator, not just for the ZIP code-level BISG estimates used in Figure \@ref(fig:nc-disp) but also across the range of geographic levels used in the BISG calculation (x-axis). 
+We find that BIRDiE (blue circles) outperforms every alternative<!--, for both party ID and turnout,--> at every geographic level.
 The conventional estimators (green crosses for the weighting estimator and brown squares for the thresholding estimator) exhibit much larger errors than the proposed methodology.
-When compared to the error of the proposed estimator, their errors range from XX% to XX% greater<!-- for party registration and from XX% to XX% more for turnout-->, depending on the geography used for BISG predictions. **KI: Please fill in**
-The OLS estimator (yellow triangles) outperforms the weighting and threshold estimators for party ID, but performs significantly worse for turnout than the weighting estimator. **CM CHECK NEW**
+When compared to the error of BIRDiE, their errors range from 169% to 368% greater<!-- for party registration and from XX% to XX% more for turnout-->, depending on the geography used for BISG predictions. 
+The OLS estimator (yellow triangles) generally outperforms the weighting and threshold estimators for party ID, but <!--performs significantly worse for turnout than the weighting estimator--> still performs significantly worse than BIRDiE.
 
-**CM CHECK HERE TOO**
-Finer geographic data translates to improved accuracy for the proposed model-based estimates for party ID.
-For turnout, the proposed method yields accurate estimates, indicated by substantively small TV errors, in all cases except that the TV error of the tract-level estimates is somewhat greater than the other three.
-While the weighting estimator also becomes more accurate as BISG predictions use finer geographical data, no clear pattern exists for the OLS and thresholding estimators. 
-Although it is difficult to explain these patterns, the findings suggest that the use of finer geographical data is appropriate at least for the proposed model-based estimator.
-Figure \@ref(fig:nc-tv-detail) in the appendix also shows the TV distance for each conditional distribution by race, to illuminate how the estimators perform on each subgroup.
+We do not find that finer geographic data necessarily translates to improved accuracy for the BIRDiE or conventional estimates.
+While possibly counterintuitive, this finding underscores the fact that calibrated BISG probabilities, rather than highly precise probabilities, are all that is needed for accurate disparity estimation.
 
+It is also possible to measure the TV distance for each conditional distribution by race: $$
+d_\text{TV}^{(r)}(\hat{\vb*\mu}_{Y|r}, \vb*\mu_{Y|r}) 
+= \half\sum_{y\in\cY} |\hat{\mu}_{Y,r}(y, r) - \mu_{Y,r}(y, r)|.
+$$
+Figure \@ref(fig:nc-tv-detail) in the appendix also shows these within-race TV distances, to illuminate how the estimators perform on each subgroup.
+In general, BIRDiE is more accurate than the other methods for every racial group except "Other," though no method performs particularly well for that group.
+In this example the BIRDiE model ran into some numerical issues and tended to generate estimates for the "Other" group on the boundary (i.e., assigning all of the "Other" group to a single party).
+This likely explains the worsened accuracy for BIRDiE among this group, which makes up around 1.7% of the sample.
 
 ```{r}
 x = readRDS("data/nc_bounds.rds")
 ```
 
-As noted above, the sampling error in all of these estimates is minimal---the widest 90% confidence interval in the block-level model estimates of party ID by race is $(`r percent(x$ci_min, 0.01)`, `r percent(x$ci_max, 0.01)`)$---not enough to explain the residual TV error.
+## Sensitivity Analysis
+
+As noted above, the sampling error in all of these estimates is minimal---the widest 90% confidence interval in the ZIP code-level model estimates of the joint distribution of party ID by race is $(`r percent(x$ci_min, 0.01, suffix="\\%")`, `r percent(x$ci_max, 0.01, suffix="\\%")`)$---not enough to explain the residual TV error.
 This error results from a violation of Assumptions \ref{a:indep-sgx}--\ref{a:indep-ys}, likely in large part driven by outdated Census data and differences between the adult and registered voter populations.
 
 We can apply the theoretical bounds from Theorem \ref{thm:bound} to gain a better understanding of how these data issues, which lead to errors in the BISG probabilities, translate to errors in the proposed model's estimates.
-For the county-level party ID estimates, a total error of $\Delta=`r number(x[["tot_err_party"]], 0.001)`$ is sufficient to explain the largest error in the joint distribution.
-**KI: Not sure exactly what this means. Can we show via a graph how changing $\Delta$ leads to different estimates of disparities? I'm also worried about if this sensitivity analysis may not be too informative...**
-**CM: probably worth discussing this section in person.**
-For the county-level turnout estimates, a total error of $\Delta=`r number(x[["tot_err_turnout"]], 0.001)`$ suffices.
-These total errors translate to an average error in the individual BISG probabilities, $||\vb*\delta_i||$, of `r number(100*x[["avg_err_party"]], 0.01)` and `r number(100*x[["avg_err_turnout"]], 0.01)` percentage points, respectively.
-The actual average error is almost certainly higher but is not in the worst-case direction (which is what Theorem \ref{thm:bound} assumes).
-Moreover, the bounds on the individual entries of the joint distributions implied by even these small $\Delta$ are only useful for the larger racial groups; they are vacuous for the "Other" category, for instance.
-Nevertheless, this kind of analysis can give an idea of the relative sensitivity of the party ID and turnout estimates to data error (namely, that the turnout estimates are more sensitive).
+In particular, we can examine how large the average error in the individual BISG probabilities, $||\vb*\delta_i||$, would have to be in order to eliminate confidence in the estimated party ID disparity between voters.
+
+```{r nc-bounds}
+#| fig.cap: |
+#|     Worst-case sensitivity analysis bounds, indicated by shaded areas,
+#|     for estimated disparities between racial groups in party identification.
+#|     ZIP code-level estimates are used.
+#|     When the shaded region meets the x-axis, a worst-case error of the 
+#|     indicated magnitude would be enough to eliminate the estimated disparity.
+knitr::include_graphics("figures/nc_bounds.pdf")
+```
+
+Figure \@ref(fig:nc-bounds) shows how worst-case error in the individual BISG probabilities could change the estimated White--Black and White--Hispanic disparities in party identification.
+Where the shaded regions meets the x-axis indicate the minimum error needed to eliminate the estimated disparity.
+For example, a worst-case total error $\Delta$ corresponding to an average individual error $||\vb*\delta_i||$ of `r round(100*x$max_err_party_wb["dem"], 1)` percentage points would be enough to wipe out the estimated disparity in Democratic registration between White and Black voters.
+In other words, the observed disparity of over 50 percentage points is robust to at least an error of this magnitude in the BISG probabilities.
+
+Since the bounds are for worst-case error, the actual robustness to realistic modes and magnitudes of BISG error is likely significantly higher.
+But these bounds provide a useful guarantee, and can can give an idea of the relative sensitivity of the estimates to data error.
+For example, even though the estimated gap between White and Black voters in Republican registration is smaller than the gap for Democratic registration, both disparities are roughly equally robust to error.
+In contrast, the disparity in independent registration could be eliminated by worst-case error on the order of `r round(100*x$max_err_party_wb["ind"], 1)` percentage points.
 
 <!--
 # Application {#sec:appl}
@@ -807,7 +826,7 @@ As Figure \@ref(fig:valid-nuts-compare) shows, even with just 100 observations, 
 ```{r valid-nuts-compare, fig.width=6.75}
 #| fig.cap: |
 #|     Posterior distributions for the model fit to a 100-person sample, 
-#|     obtained with SVI (approximate) and NUTS ("gold standard") inference routines.
+#|     obtained with SVI (approximate) and NUTS (“gold standard”) inference routines.
 knitr::include_graphics("figures/valid_nuts_compare.pdf")
 ```
 
@@ -824,9 +843,10 @@ However, the weighting estimator is probably the "least bad" for this group.
 #| fig.cap: |
 #|     Total variation distance (on a logarithmic scale)
 #|     between the estimated and actual distribution of
-#|     party identification and turnout, 
+#|     party identification,
 #|     by estimation method, level of geographic detail 
 #|     used in the BISG predictions, and race.
+#     party identification and turnout, 
 knitr::include_graphics("figures/nc_tv_detailed.pdf")
 ```
 

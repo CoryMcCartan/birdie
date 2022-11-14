@@ -18,15 +18,16 @@
 #' @param est_r_gz If `TRUE` estimate race prior `p_r` from distribution of `G` and `Z` in sample
 #' @param iterate how much to iteratively refine the race prior from the data. Set to 0 to disable.
 #' @param return_gzr whether to return an estimated p(G,Z|R) matrix as the
-#'   `p_gzr` attribute. Set to `FALSE` to save space if this matrix is not
-#'   needed.
+#'   `p_gzr` attribute and combined G,Z vectors as the `gz` attribute.
+#'   Set to `FALSE` to save space if these values are not needed.
+#'   They are required to use [calc_joint_bisgz_ols]
 #'
 #' @return a tibble, with rows matching `data` and columns for the race probabilities
 #' @export
 predict_race_sgz = function(S, G, Z=NULL, data=NULL, p_rs=NULL, p_rgz=NULL,
                             p_r=c(white=0.630, black=0.121, hisp=0.173,
                                   asian=0.0478, aian=0.0072, other=0.0210),
-                            est_r_gz=TRUE, iterate=8L * (!est_r_gz && nrow(data) > 100),
+                            est_r_gz=TRUE, iterate=8L * (!est_r_gz & nrow(data) > 100),
                             return_gzr=TRUE) {
     ## Parse and check input data frame ----------------
     if (missing(data)) cli_abort("{.arg data} must be provided.")
@@ -85,7 +86,7 @@ predict_race_sgz = function(S, G, Z=NULL, data=NULL, p_rs=NULL, p_rgz=NULL,
         GZ_vec = G_vec
     }
 
-    # match ZIP codes
+    # match geographies
     if (!"<none>" %in% p_rgz[[G_name]]) {
         p_rgz = rbind(p_rgz, rlang::list2("{G_name}":="<none>",
                       white=p_r[1], black=p_r[2], hisp=p_r[3],
@@ -121,6 +122,7 @@ predict_race_sgz = function(S, G, Z=NULL, data=NULL, p_rs=NULL, p_rgz=NULL,
     if (isTRUE(return_gzr)) {
         rownames(p_gzr) = p_rgz[[G_name]]
         attr(out, "p_gzr") = p_gzr
+        attr(out, "gz") = GZ_vec
     }
     out
 }

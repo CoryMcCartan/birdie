@@ -73,7 +73,7 @@ geo_levels = c("county", "zip", "tract", "block")
 r_probs = map(geo_levels, function(level) {
     predict_race_sgz(last_name, GEOID,
                      data=rename(d, GEOID=str_c("GEOID_", level)),
-                     p_rgz=make_p_rgz(d, level), p_r=p_r)
+                     p_rgz=make_p_rgz(d, level), p_r=p_r, iterate=0)
 }) %>%
     set_names(geo_levels)
 rm(d_cens)
@@ -100,10 +100,10 @@ if (!file.exists(path <- here("data-out/nc_fits_party.rds"))) {
         gc()
         cat(level, "\n")
 
-        lr = 0.4
+        lr = 0.5
         if (level == "block") level = "tract"
         if (level == "county") lr = 0.7
-        if (level == "zip") lr = 0.5
+        # if (level == "zip") lr = 0.5
 
         model_race(d_pr, party, !!rlang::sym(str_c("GEOID_", level)),
                    data=d, config=list(lr=lr, tol_rhat=1.15, it_avgs=500))
