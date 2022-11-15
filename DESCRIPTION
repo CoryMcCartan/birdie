@@ -32,7 +32,7 @@ Suggests:
     knitr,
     rmarkdown
 LinkingTo: 
-    RcppArmadillo,
+    RcppEigen,
     Rcpp,
     cli
 License: MIT + file LICENSE

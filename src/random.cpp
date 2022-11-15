@@ -1,11 +1,11 @@
 #include "random.h"
 
-uvec rcat(int n, const vec probs) {
+ArrayXi rcat(int n, const ArrayXd probs) {
     int m = probs.size();
-    return as<uvec>(sample(m, n, TRUE, wrap(probs)));
+    return as<ArrayXi>(sample(m, n, TRUE, wrap(probs)));
 }
 
-int rcatp(vec probs, double u) {
+int rcatp(ArrayXd probs, double u) {
     int m = probs.size();
     int j;
     for (j = 1; j < m; j++) probs[j] += probs[j - 1];
@@ -18,11 +18,16 @@ int rcatp(vec probs, double u) {
     return j + 1;
 }
 
-mat rdirichlet(int n, const vec alpha) {
+MatrixXd rdirichlet(int n, const VectorXd alpha) {
     int m = alpha.size();
-    mat out(n, m);
+    MatrixXd out(n, m);
+    ArrayXd sums = ArrayXd::Zero(n);
     for (int i = 0; i < m; i++) {
-        out.col(i) = as<vec>(rgamma(n, alpha[i]));
+        out.col(i) = as<VectorXd>(rgamma(n, alpha[i]));
+        sums += out.col(i).array();
     }
-    return normalise(out, 1, 1);
+    for (int i = 0; i < m; i++) {
+        out.col(i) = out.col(i).array() / sums;
+    }
+    return out;
 }

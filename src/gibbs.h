@@ -2,7 +2,7 @@
 #define GIBBS_H
 
 #include <vector>
-#include "raceproxy_types.h"
+#include "birdie_types.h"
 #include "random.h"
 #include <cli/progress.h>
 
