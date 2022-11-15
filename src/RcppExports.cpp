@@ -12,6 +12,34 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// calc_bayes_bisg
+NumericMatrix calc_bayes_bisg(const IntegerVector S, const IntegerVector GX, const NumericMatrix p_sr, const NumericMatrix p_gxr, const NumericVector p_r);
+RcppExport SEXP _birdie_calc_bayes_bisg(SEXP SSEXP, SEXP GXSEXP, SEXP p_srSEXP, SEXP p_gxrSEXP, SEXP p_rSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const IntegerVector >::type S(SSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector >::type GX(GXSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix >::type p_sr(p_srSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix >::type p_gxr(p_gxrSEXP);
+    Rcpp::traits::input_parameter< const NumericVector >::type p_r(p_rSEXP);
+    rcpp_result_gen = Rcpp::wrap(calc_bayes_bisg(S, GX, p_sr, p_gxr, p_r));
+    return rcpp_result_gen;
+END_RCPP
+}
+// calc_bayes
+NumericMatrix calc_bayes(const IntegerVector Y, const NumericMatrix lik, const NumericMatrix prior);
+RcppExport SEXP _birdie_calc_bayes(SEXP YSEXP, SEXP likSEXP, SEXP priorSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const IntegerVector >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix >::type lik(likSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix >::type prior(priorSEXP);
+    rcpp_result_gen = Rcpp::wrap(calc_bayes(Y, lik, prior));
+    return rcpp_result_gen;
+END_RCPP
+}
 // gibbs_me
 Eigen::MatrixXd gibbs_me(int iter, int warmup, const Eigen::VectorXi& S, const Eigen::VectorXi& GZ, const Eigen::MatrixXd& M_sr, const Eigen::MatrixXd& N_gzr, const Eigen::MatrixXd& alpha_gzr, const Eigen::MatrixXd& beta_sr, int verbosity);
 RcppExport SEXP _birdie_gibbs_me(SEXP iterSEXP, SEXP warmupSEXP, SEXP SSEXP, SEXP GZSEXP, SEXP M_srSEXP, SEXP N_gzrSEXP, SEXP alpha_gzrSEXP, SEXP beta_srSEXP, SEXP verbositySEXP) {
@@ -33,6 +61,8 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_birdie_calc_bayes_bisg", (DL_FUNC) &_birdie_calc_bayes_bisg, 5},
+    {"_birdie_calc_bayes", (DL_FUNC) &_birdie_calc_bayes, 3},
     {"_birdie_gibbs_me", (DL_FUNC) &_birdie_gibbs_me, 9},
     {NULL, NULL, 0}
 };
