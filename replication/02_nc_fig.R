@@ -59,6 +59,8 @@ eval_fit_tv = function(xr) {
 
 xr_party = make_xr(fits_party, party, d)
 xr_turnout = make_xr(fits_turnout, n_voted, d)
+write_rds(xr_party, here("data-out/nc_xr_party.rds"), compress="gz")
+write_rds(xr_turnout, here("data-out/nc_xr_turnout.rds"), compress="gz")
 
 disp_party = eval_fit_disp(xr_party)
 disp_turnout = eval_fit_disp(xr_turnout)

@@ -1,5 +1,7 @@
 devtools::load_all(".")
 data(pseudo_vf)
+pseudo_vf = pseudo_vf |>
+    mutate(y = 1*(turnout == "yes"))
 
 form = turnout ~ 0 + white + black + hisp + asian + aian + other
 
@@ -23,8 +25,8 @@ xr_act = get_pred(m_true)
 yes = which(pseudo_vf$turnout == "yes")
 
 r_probs = predict_race_sgz(last_name, zip, data=pseudo_vf)
-r_probs2 = predict_race_sgz_me(last_name, zip, data=pseudo_vf)
-r_probs = r_probs2
+# r_probs2 = predict_race_sgz_me(last_name, zip, data=pseudo_vf)
+# r_probs = r_probs2
 m_race = as.matrix(r_probs)
 colnames(m_race) = races
 m_race0 = m_race
@@ -37,6 +39,7 @@ xr_est = colSums(m_race0[yes, ])/colSums(m_race0)
 # xr_est = rbind(px * colMeans(m_race[yes, ]), (1 - px) * colMeans(m_race[-yes, ]))
 # xr_est = (xr_est %*% diag(1/colSums(xr_est)))[1, ]
 ests = xr_est
+
 for (i in 1:25) {
     # E step
     m_race[yes, ] = m_race0[yes, ] %*% diag(xr_est)
