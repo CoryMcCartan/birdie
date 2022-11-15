@@ -21,7 +21,6 @@ Imports:
     stringr,
     tidyselect,
     vctrs,
-    reticulate (>= 1.14.0),
     Rcpp
 Suggests: 
     roxygen2,
@@ -36,13 +35,6 @@ LinkingTo:
     RcppArmadillo,
     Rcpp,
     cli
-Config/reticulate:
-    list(
-        packages = list(
-            list(package = "pyro-ppl"),
-            list(package = "scipy")
-        )
-    )
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

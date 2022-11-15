@@ -4,20 +4,30 @@
 \alias{calc_joint_bisgz_ols}
 \title{Estimate the joint distribution of R and X}
 \usage{
-calc_joint_bisgz_ols(r_probs, x, p_GZ, prefix = "pr_", n_mi = 8)
+calc_joint_bisgz_ols(
+  r_probs,
+  x,
+  gz = attr(r_probs, "gz"),
+  p_gzr = attr(r_probs, "p_gzr"),
+  prefix = "pr_",
+  truncate = TRUE
+)
 }
 \arguments{
 \item{r_probs}{a matrix data frame of race probabilities}
 
 \item{x}{the variable X to tabulate against}
 
+\item{gz}{values of GZ variables. Usually exported as part of
+\code{\link[=predict_race_sgz]{predict_race_sgz()}}}
+
+\item{p_gzr}{a table giving Pr(GZ|R) for use in post-stratification. Columns
+should sum to 1.}
+
 \item{prefix}{how to select the race probability columns from \code{r_probs}, if
 if is a data frame}
 
-\item{n_mi}{if \code{method == "mi"}, how many imputations to produce.}
-
-\item{method}{the estimation method: a weighted-mean estimator, a
-thresholding estimator, or a multiple-imputation estimator.}
+\item{truncate}{if \code{TRUE}, truncate results to lie in \link{0, 1}.}
 }
 \value{
 a matrix

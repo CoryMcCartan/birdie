@@ -14,7 +14,7 @@ predict_race_sgz(
   p_r = c(white = 0.63, black = 0.121, hisp = 0.173, asian = 0.0478, aian = 0.0072, other
     = 0.021),
   est_r_gz = TRUE,
-  iterate = 8L * (!est_r_gz && nrow(data) > 100),
+  iterate = 8L * (!est_r_gz & nrow(data) > 100),
   return_gzr = TRUE
 )
 }
@@ -43,8 +43,9 @@ Defaults to a ZIP code table from the 2010 decennial census.}
 \item{iterate}{how much to iteratively refine the race prior from the data. Set to 0 to disable.}
 
 \item{return_gzr}{whether to return an estimated p(G,Z|R) matrix as the
-\code{p_gzr} attribute. Set to \code{FALSE} to save space if this matrix is not
-needed.}
+\code{p_gzr} attribute and combined G,Z vectors as the \code{gz} attribute.
+Set to \code{FALSE} to save space if these values are not needed.
+They are required to use \link{calc_joint_bisgz_ols}}
 }
 \value{
 a tibble, with rows matching \code{data} and columns for the race probabilities
