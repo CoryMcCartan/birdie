@@ -2,27 +2,28 @@
 
 
 // [[Rcpp::export]]
-arma::mat gibbs_me(int iter, int warmup, const arma::uvec &S, const arma::uvec &GZ,
-             const arma::mat &M_sr, const arma::mat &N_gzr,
-             const arma::mat &alpha_gzr, const arma::mat &beta_sr,
-             int verbosity) {
+Eigen::MatrixXd gibbs_me(
+        int iter, int warmup, const Eigen::VectorXi &S, const Eigen::VectorXi &GZ,
+        const Eigen::MatrixXd &M_sr, const Eigen::MatrixXd &N_gzr,
+        const Eigen::MatrixXd &alpha_gzr, const Eigen::MatrixXd &beta_sr,
+        int verbosity) {
     // setup sizes and inits
     int N = S.size();
-    int n_r = M_sr.n_cols;
+    int n_r = M_sr.cols();
 
-    mat out(N, n_r, fill::zeros);
+    MatrixXd out = MatrixXd::Zero(N, n_r);
 
     // initialize R
-    uvec R(N);
-    vec p_r(n_r, fill::value(1.0 / n_r));
-    vec u = as<vec>(runif(N));
+    ArrayXi R(N);
+    ArrayXd p_r = ArrayXd::Constant(n_r, 1.0 / n_r);
+    VectorXd u = as<VectorXd>(runif(N));
     for (int i = 0; i < N; i++)
         R[i] = rcatp(p_r, u[i]);
 
     // initialize counts
-    mat m_sr = (M_sr + beta_sr).t();
-    vec m_r = sum(m_sr, 1);
-    mat n_gzr = (N_gzr + alpha_gzr).t();
+    MatrixXd m_sr = (M_sr + beta_sr).transpose();
+    ArrayXd m_r = m_sr.rowwise().sum();
+    MatrixXd n_gzr = (N_gzr + alpha_gzr).transpose();
     for (int i = 0; i < N; i++) {
         m_sr(R[i] - 1, S[i] - 1)++;
         n_gzr(R[i] - 1, GZ[i] - 1)++;
@@ -37,16 +38,16 @@ arma::mat gibbs_me(int iter, int warmup, const arma::uvec &S, const arma::uvec &
             if (CLI_SHOULD_TICK) cli_progress_set(bar, it);
 
             // R_i | R_{-i}
-            vec u = as<vec>(runif(N));
+            VectorXd u = as<VectorXd>(runif(N));
             for (int i = 0; i < N; i++) {
                 // compute n^{-i} and m^{-i}
-                vec m_i = m_sr.col(S[i] - 1);
-                vec n_i = n_gzr.col(GZ[i] - 1);
+                ArrayXd m_i = m_sr.col(S[i] - 1);
+                ArrayXd n_i = n_gzr.col(GZ[i] - 1);
                 n_i[R[i] - 1]--;
                 m_i[R[i] - 1]--;
                 m_r[R[i] - 1]--;
                 // compute Pr(R_i | R_{-i}, G, S, Z)
-                vec probs = n_i % m_i / m_r;
+                ArrayXd probs = n_i * m_i / m_r;
 
                 // sample R_i
                 R[i] = rcatp(probs, u[i]);

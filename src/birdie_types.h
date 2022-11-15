@@ -3,13 +3,14 @@
 
 // debug
 #define PRINTLN Rcout << __LINE__ << " [" << __func__ << "(), " << __FILE__ << "]\n";
+#define EIGEN_PERMANENTLY_DISABLE_STUPID_WARNINGS
 
-#include <RcppArmadillo.h>
+#include <RcppEigen.h>
 
-// [[Rcpp::depends(RcppArmadillo)]]
+// [[Rcpp::depends(RcppEigen)]]
 // [[Rcpp::plugins("cpp11")]]
 
 using namespace Rcpp;
-using namespace arma;
+using namespace Eigen;
 
 #endif
