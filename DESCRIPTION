@@ -13,7 +13,7 @@ Description: A Bayesian model for accurately estimating conditional
     probability estimates of individual race. Implements the methdos described
     in McCartan, Fisher, Goldin, Ho and Imai (2022) <arXiv:>.
 Depends: 
-    R (>= 3.5.0)
+    R (>= 3.6.0)
 Imports: 
     rlang (>= 0.1.2),
     cli,
