@@ -21,7 +21,7 @@ census_surname_table = function(S, S_name, p_r, counts=FALSE, flip=FALSE) {
         }
     }
 
-    out = data.frame(last_name = unique(proc_names(S))) %>%
+    out = data.frame(last_name = unique(S)) %>%
         left_join(d_cens, by="last_name")
     missing_idx = which(is.na(out$pr_white))
     double_idx = missing_idx[is_double_name(out$last_name[missing_idx])]

@@ -26,10 +26,7 @@ Imports:
 Suggests: 
     roxygen2,
     easycensus,
-    glue,
-    readr,
-    withr,
-    tigris,
+    wru,
     knitr,
     rmarkdown,
     testthat (>= 3.0.0)
