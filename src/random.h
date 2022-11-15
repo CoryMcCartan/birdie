@@ -1,21 +1,21 @@
 #ifndef RANDOM_H
 #define RANDOM_H
 
-#include "raceproxy_types.h"
+#include "birdie_types.h"
 
 /*
  * Sample `n` iid categorical values according to `probs`
  */
-uvec rcat(int n, const vec probs);
+ArrayXi rcat(int n, const ArrayXd probs);
 
 /*
  * Sample a single categorical value according to `probs`, using uniform draw `u`
  */
-int rcatp(vec probs, double u);
+int rcatp(const ArrayXd probs, double u);
 
 /*
  * Sample `n` iid vectors from a Dirichlet distribution with parameter `alpha`
  */
-mat rdirichlet(int n, const vec alpha);
+MatrixXd rdirichlet(int n, const VectorXd alpha);
 
 #endif
