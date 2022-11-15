@@ -21,10 +21,14 @@ int rcatp(ArrayXd probs, double u) {
 MatrixXd rdirichlet(int n, const VectorXd alpha) {
     int m = alpha.size();
     MatrixXd out(n, m);
-    ArrayXd sums = ArrayXd::Zero(n);
+    ArrayXd sums(n);
     for (int i = 0; i < m; i++) {
         out.col(i) = as<VectorXd>(rgamma(n, alpha[i]));
-        sums += out.col(i).array();
+        if (i == 0) {
+            sums = out.col(i).array();
+        } else {
+            sums += out.col(i).array();
+        }
     }
     for (int i = 0; i < m; i++) {
         out.col(i) = out.col(i).array() / sums;

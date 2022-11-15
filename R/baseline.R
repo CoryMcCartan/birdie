@@ -128,14 +128,10 @@ predict_race_sgz = function(S, G, Z=NULL, data=NULL, p_rs=NULL, p_rgz=NULL,
 }
 
 
-est_bisg = function(S, G, p_sr, p_gzr, p_r, geo=TRUE) {
-    if (!geo) p_gzr = p_gzr*0 + 1
+est_bisg = function(S, GX, p_sr, p_gxr, p_r, geo=TRUE) {
+    if (!geo) p_gxr = p_gxr*0 + 1
 
-    m_bisg = matrix(nrow=length(S), ncol=length(p_r))
-    for (i in seq_along(p_r)) {
-        m_bisg[, i] = p_sr[S, i] * p_gzr[G, i] * p_r[i]
-    }
-    m_bisg = m_bisg / rowSums(m_bisg)
+    m_bisg = calc_bayes_bisg(S, GX, p_sr, p_gxr, p_r);
     colnames(m_bisg) = paste0("pr_", names(p_r))
     m_bisg
 }
