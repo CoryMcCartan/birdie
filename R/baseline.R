@@ -50,7 +50,7 @@ predict_race_sgz = function(S, G, Z=NULL, data=NULL, p_rs=NULL, p_rgz=NULL,
 
     ## Parse and check input probabilities ----------------
     if (missing(p_rs)) {
-        S_vec = as.character(S_vec)
+        S_vec = proc_names(as.character(S_vec))
         p_rs = census_surname_table(S_vec, "last_name", p_r, flip=TRUE)
         S_vec[!S_vec %in% p_rs[[1]]] = "<generic>"
         S_vec = factor(S_vec, levels=p_rs[[1]])

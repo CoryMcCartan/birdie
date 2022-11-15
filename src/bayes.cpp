@@ -12,10 +12,11 @@ NumericMatrix calc_bayes_bisg(const IntegerVector S, const IntegerVector GX,
     for (int j = 0; j < n_r; j++) {
         for (int i = 0; i < n; i++) {
             out(i, j) = p_sr(S[i] - 1, j) *  p_gxr(GX[i] - 1, j) * p_r[j];
-            if (i == 0) {
-                sums[i] = 0.0;
+            if (j == 0) {
+                sums[i] = out(i, j);
+            } else {
+                sums[i] += out(i, j);
             }
-            sums[i] += out(i, j);
         }
     }
     // normalize
@@ -37,10 +38,11 @@ NumericMatrix calc_bayes(const IntegerVector Y,
     for (int j = 0; j < n_r; j++) {
         for (int i = 0; i < n; i++) {
             out(i, j) = lik(Y[i] - 1, j) *  prior(i, j);
-            if (i == 0) {
-                sums[i] = 0.0;
+            if (j == 0) {
+                sums[i] = out(i, j);
+            } else {
+                sums[i] += out(i, j);
             }
-            sums[i] += out(i, j);
         }
     }
     // normalize
