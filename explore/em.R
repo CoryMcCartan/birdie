@@ -1,75 +1,41 @@
-devtools::load_all(".")
-data(pseudo_vf)
-pseudo_vf = pseudo_vf |>
-    mutate(y = 1*(turnout == "yes"))
+suppressMessages({
+    library(dplyr)
+    devtools::load_all(".")
+    library(here)
+})
 
-form = turnout ~ 0 + white + black + hisp + asian + aian + other
+d = readRDS(here("data-raw/nc_voters_small.rds")) |>
+    filter(!is.na(party))
+p_r = with(d, prop.table(table(race)))
 
-races = levels(pseudo_vf$race)
-d_race_pr = as_tibble(as.data.frame(diag(6)))
-colnames(d_race_pr) = races
+r_probs = predict_race_sgz(last_name, zip, data=d, p_r=p_r,
+                           est_r_gz=TRUE, iterate=0)
+p_r_est = colMeans(r_probs)
+alpha = c(10, 10, 10, 1)
 
-m_race = model.matrix(~ 0 + race, data=pseudo_vf)
-colnames(m_race) = races
-m_true = glm(form, bind_cols(pseudo_vf, m_race), family=binomial())
+# x = birdie(r_probs, party ~ 1, d, alpha=alpha)
+data = mutate(d, zip = coalesce(zip, "<none>")) |>
+    select(party, zip, county, race)
+x = birdie(r_probs, party ~ (1 | zip), data, alpha=alpha, iter=200)
 
-get_pred <- function(m) {
-    out = predict(m, newdata=d_race_pr, type="response")
-    names(out) = races
-    out
-}
+xr = list(
+    true = with(d, prop.table(table(party, race))),
+    weight = calc_joint_bisgz(r_probs, d$party, "weight"),
+    ols = calc_joint_bisgz(r_probs, d$party, "ols"),
+    post_weight = calc_joint_bisgz(x$p_ryxs, d$party, "weight"),
+    # map0 = x$map0 %*% diag(p_r_est),
+    EM = x$map %*% diag(colMeans(x$p_ryxs)),
+    EM2 = x$map %*% diag(p_r)
+)
+# xr = c(xr[1], lapply(xr[-1], \(tbl) rake(tbl, rowSums(xr$true), colSums(xr$true))))
+xr = c(xr[1], lapply(xr[-1], \(tbl) tbl %*% diag(p_r / colSums(tbl))))
 
-px = mean(pseudo_vf$turnout == "yes")
-xr_act = get_pred(m_true)
+do.call(eval_joints, c(list(xr$true, "tv"), xr))
 
-yes = which(pseudo_vf$turnout == "yes")
+print_cond(xr$true)
+print_cond(xr$EM)
+print_cond(xr$ols)
 
-r_probs = predict_race_sgz(last_name, zip, data=pseudo_vf)
-# r_probs2 = predict_race_sgz_me(last_name, zip, data=pseudo_vf)
-# r_probs = r_probs2
-m_race = as.matrix(r_probs)
-colnames(m_race) = races
-m_race0 = m_race
-
-xr_ols = coef(lm(turnout=="yes" ~ 0 + white + black + hisp + asian + aian + other,
-                 data=bind_cols(pseudo_vf, m_race0)))
-
-# xr_est = xr_ols
-xr_est = colSums(m_race0[yes, ])/colSums(m_race0)
-# xr_est = rbind(px * colMeans(m_race[yes, ]), (1 - px) * colMeans(m_race[-yes, ]))
-# xr_est = (xr_est %*% diag(1/colSums(xr_est)))[1, ]
-ests = xr_est
-
-for (i in 1:25) {
-    # E step
-    m_race[yes, ] = m_race0[yes, ] %*% diag(xr_est)
-    m_race[-yes, ] = m_race0[-yes, ] %*% diag(1 - xr_est)
-    m_race = m_race / rowSums(m_race)
-    # plot(m_race0[, 1], m_race[, 1], cex=0.01)
-
-    # M step
-    # xr_est = rbind(px * colMeans(m_race[yes, ]), (1 - px) * colMeans(m_race[-yes, ]))
-    xr_est = colSums(m_race[yes, ])/colSums(m_race)
-    # for (j in 1:6) {
-    #     x = lme4::lmer(I(turnout == "yes") ~ (1 | zip), data=pseudo_vf,
-    #                     weights=m_race[, j]) |>
-    #         suppressMessages() |>
-    #         suppressWarnings()
-    #     xr_est[j] = x@beta#plogis(x@beta)
-    # }
-    ests = rbind(ests, xr_est)
-    # xr_est = (xr_est %*% diag(1/colSums(xr_est)))[1, ]
-    # m = glm(form, bind_cols(pseudo_vf, m_race), family=binomial())
-    # xr_est = get_pred(m)*0.1 + 0.9*xr_est
-    # xr_est = get_pred(m)
-}
-matplot(ests, type='b', cex=0.5)
-
-round(xr_est, 3)
-sum(abs(xr_est[1:5] - xr_act[1:5]))
-sum(abs(xr_ols[1:5] - xr_act[1:5]))
-
-pseudo_vf$dummy = sample(c("A", "B"), nrow(pseudo_vf), replace=TRUE)
-fit = model_race(r_probs, turnout, dummy, data=pseudo_vf)
-xr_mod = colMeans(fit$draws$global)[2,]
-xr_mod
+colSums(abs(to_cond(xr$true) - to_cond(xr$EM)))/2
+colSums(abs(to_cond(xr$true) - to_cond(xr$ols)))/2
+colSums(abs(to_cond(xr$true) - to_cond(xr$weight)))/2
