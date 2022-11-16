@@ -26,8 +26,8 @@ birdie <- function(r_probs, formula, data=NULL,
 
 
 
-    # out = em_nocov(as.integer(Y_vec), r_probs, alpha, iter=iter)
-    out = em_lmer(Y_vec, r_probs, formula, data, iter=iter)
+    out = em_nocov(as.integer(Y_vec), r_probs, alpha, iter=iter)
+    # out = em_lmer(Y_vec, r_probs, formula, data, iter=iter)
 
     colnames(out$map) = colnames(r_probs)
     rownames(out$map) = levels(Y_vec)
