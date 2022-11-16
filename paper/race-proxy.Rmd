@@ -77,7 +77,7 @@ To estimate racial disparities without individual-level racial data, some resear
 These methods, however, require strong assumptions, which can be difficult to verify and may provide misleading results [@cho2008ecological].
 Additionally, they all rely on accurate marginal information about race, which may not always be available.
 
-Where the analysis of racial disparities involves large-scale administrative data, many analysts have adopted Bayesian Improved Surname Geocoding (BISG), which generates individual probabilities of belonging to different racial groups based on last names and geolocation [@fiscella2006bisg; @elliott2008bisg].
+Where the analysis of racial disparities involves large-scale administrative data, many analysts have adopted Bayesian Improved Surname Geocoding (BISG), which generates individual probabilities of belonging to different racial groups using Bayes' Rule applied to last names and geolocation [@fiscella2006bisg; @elliott2008bisg].
 BISG leverages residential racial segregation and the hereditary association between race and surname to produce generally accurate and calibrated predictions of individual race [@imai2016improving; @kenny2021das; @deluca2022validating].
 
 Unfortunately, the accuracy BISG racial predictions alone is not sufficient for estimating disparities without bias.
@@ -130,7 +130,7 @@ For the sake of simplicity, we assume that the outcome variable $Y$ is also disc
 
 BISG relies on data from the decennial Census or the American Community Survey (ACS), which provide information on the joint distribution of $R$ and $G$ (and any other covariates $X$, such as gender or age).
 It then combines this information with data from the Census Bureau's surname tables [@censusnames], which provide information on the joint distribution of $R$ and $S$.
-We summarize this set of information from the Census by two conditional probabilities, $\vb q_{GX|R}$ and $\vb q_{S|R}$, and one marginal probability, $\vb q_R = P(R)$.
+We summarize this set of information from the Census by two conditional probabilities, $\vb q_{GX|R}$ and $\vb q_{S|R}$, and one marginal probability, $\vb q_R$.
 
 The BISG estimator of the probability that individual $i$ belongs to race $r \in \cR$ can then be written as [@fiscella2006bisg; @elliott2008bisg] \begin{equation} \label{eq:pr-bisg}
     \hat{P}_{ir} \dfeq \frac{q_{G_iX_i|r}\, q_{S_i|r}\, q_r}{
@@ -168,8 +168,13 @@ Like Assumption \ref{a:indep-sgx}, Assumption \ref{a:cens-acc} never holds exact
 Despite the best efforts of the Census Bureau, the decennial census has intrinsic error, including undercounting minority racial groups [@census2022undercount; @censuscount; @racecounts], as well as error introduced by privacy-preserving mechanisms [@abowd2020].
 And because of births, deaths, and moves, census data are often out-of-date from the moment of publication.
 These errors have led further extensions of the BISG estimator to account for some of this measurement error [@imai2022addressing], which can help with accuracy for smaller racial groups.
+The plausibility of Assumption \ref{a:cens-acc} is stretched even further when the study population is a subset of the whole U.S. population, which is covered by the census data.
+<!--For example, in our motivating example,... -->
+In these cases, analysts should set `q_r` to the known or estimated marginal racial distribution in the study population, rather than the national racial distribution.
+It may be more plausible then to assume that the conditional distributions $\Pr(S\mid R)$ and $\Pr(G,X\mid R)$ match the census distributions, even if $\Pr(R)$ does not.
 
-Even though Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc} are never perfectly met, researchers find that BISG produces accurate and generally well-calibrated estimates in practice [@imai2016; @kenny2021das; @deluca2022validating].
+Even though Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc} are never perfectly met, researchers find that BISG produces accurate and generally well-calibrated estimates in practice [@imai2016improving; @kenny2021das; @deluca2022validating].
+We observe this as well in the validation study in Section \@ref(sec:valid).
 
 Under Assumption \ref{a:indep-sgx}, by Bayes' Rule, $$
     \Pr(R_i=r\mid G_i,X_i,S_i)
@@ -319,7 +324,7 @@ Similarly, if campaigns use the surnames of individual voters to decide whether 
 Yet another possible violation of the assumption is the existence of unobserved confounder that affects both outcome and surname.
 For example, the country of origin for an immigrant may represent such a confounder.
 Even in these cases, however, conditioning on (unobserved) race is likely to reduce the magnitude of association between outcome and surnames.
-In Section \ref{sec:sens}, we develop a sensitivity analysis for potential violation of this assumption.
+<!--In Section \ref{sec:sens}, we develop a sensitivity analysis for potential violation of this assumption.-->
 
 The following theorem shows that it is possible to identify racial disparities under Assumption \ref{a:indep-ys}.
 
