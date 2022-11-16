@@ -4,18 +4,18 @@
 proc_names = function(x) {
     x = stringr::str_to_upper(x)
     x = stringi::stri_trans_general(x, "Latin-ASCII")
-    x = if_else(stringr::str_starts(x, "[A-Z] [A-Z]$"), NA_character_, x)
-    x = if_else(stringr::str_starts(x, "([A-Z] ){2,}[A-Z]$"), stringr::str_remove_all(x, " "), x)
+    x = if_else(str_starts(x, "[A-Z] [A-Z]$"), NA_character_, x)
+    x = if_else(str_starts(x, "([A-Z] ){2,}[A-Z]$"), str_remove_all(x, " "), x)
     x = if_else(x %in% c("JUNIOR", "SENIOR", "THIRD", "CRUTHIRD"), x,
-                stringr::str_remove(x, "(JUNIOR|SENIOR|THIRD|JR|III| II| IV| J R| S R)$"))
-    x = stringr::str_remove(x, "^(JR|III|II |J R |S R )")
-    x = if_else(stringr::str_length(x) >= 7, stringr::str_remove(x, "SR$"), x)
-    x = stringr::str_remove_all(x, "[.,\\'\"!@#$%^&*/?~`]")
-    x = stringr::str_replace_all(x, "^(MC|MAC|O) ", "\\1")
-    x = stringr::str_replace_all(x, "-", " ")
+                str_remove(x, "(JUNIOR|SENIOR|THIRD|JR|III| II| IV| J R| S R)$"))
+    x = str_remove(x, "^(JR|III|II |J R |S R )")
+    x = if_else(stringr::str_length(x) >= 7, str_remove(x, "SR$"), x)
+    x = str_remove_all(x, "[.,\\'\"!@#$%^&*/?~`]")
+    x = str_replace_all(x, "^(MC|MAC|O) ", "\\1")
+    x = str_replace_all(x, "-", " ")
     x = stringr::str_squish(x)
     x = if_else(stringr::str_length(x) == 2 & x != "NG" &
-                    !stringr::str_detect(x, "[AEIOUY]"), NA_character_, x)
+                    !str_detect(x, "[AEIOUY]"), NA_character_, x)
     x = if_else(x %in% c("DECLINE TO STATE", "DONT KNOW", "DECLINE",
                          "NO NAME", "NO NOMBRE", "SAME AS ABOVE"),
                 NA_character_, x)
@@ -23,5 +23,5 @@ proc_names = function(x) {
 }
 
 is_double_name = function(x) {
-    stringr::str_detect(x, "^\\S+ \\S+$")
+    str_detect(x, "^\\S+ \\S+$")
 }
