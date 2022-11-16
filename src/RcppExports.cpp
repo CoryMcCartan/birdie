@@ -28,15 +28,42 @@ BEGIN_RCPP
 END_RCPP
 }
 // calc_bayes
-NumericMatrix calc_bayes(const IntegerVector Y, const NumericMatrix lik, const NumericMatrix prior);
+Eigen::MatrixXd calc_bayes(const IntegerVector Y, const Eigen::MatrixXd lik, const Eigen::MatrixXd prior);
 RcppExport SEXP _birdie_calc_bayes(SEXP YSEXP, SEXP likSEXP, SEXP priorSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const IntegerVector >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< const NumericMatrix >::type lik(likSEXP);
-    Rcpp::traits::input_parameter< const NumericMatrix >::type prior(priorSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd >::type lik(likSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd >::type prior(priorSEXP);
     rcpp_result_gen = Rcpp::wrap(calc_bayes(Y, lik, prior));
+    return rcpp_result_gen;
+END_RCPP
+}
+// dirichlet_map
+MatrixXd dirichlet_map(const IntegerVector Y, const MatrixXd r_probs, const VectorXd prior_alpha);
+RcppExport SEXP _birdie_dirichlet_map(SEXP YSEXP, SEXP r_probsSEXP, SEXP prior_alphaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const IntegerVector >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const MatrixXd >::type r_probs(r_probsSEXP);
+    Rcpp::traits::input_parameter< const VectorXd >::type prior_alpha(prior_alphaSEXP);
+    rcpp_result_gen = Rcpp::wrap(dirichlet_map(Y, r_probs, prior_alpha));
+    return rcpp_result_gen;
+END_RCPP
+}
+// em_nocov
+List em_nocov(const IntegerVector Y, const Eigen::MatrixXd p_rxs, const Eigen::VectorXd prior_alpha, int iter);
+RcppExport SEXP _birdie_em_nocov(SEXP YSEXP, SEXP p_rxsSEXP, SEXP prior_alphaSEXP, SEXP iterSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const IntegerVector >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd >::type p_rxs(p_rxsSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd >::type prior_alpha(prior_alphaSEXP);
+    Rcpp::traits::input_parameter< int >::type iter(iterSEXP);
+    rcpp_result_gen = Rcpp::wrap(em_nocov(Y, p_rxs, prior_alpha, iter));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -63,6 +90,8 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_birdie_calc_bayes_bisg", (DL_FUNC) &_birdie_calc_bayes_bisg, 5},
     {"_birdie_calc_bayes", (DL_FUNC) &_birdie_calc_bayes, 3},
+    {"_birdie_dirichlet_map", (DL_FUNC) &_birdie_dirichlet_map, 3},
+    {"_birdie_em_nocov", (DL_FUNC) &_birdie_em_nocov, 4},
     {"_birdie_gibbs_me", (DL_FUNC) &_birdie_gibbs_me, 9},
     {NULL, NULL, 0}
 };

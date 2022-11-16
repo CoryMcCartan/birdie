@@ -27,13 +27,13 @@ NumericMatrix calc_bayes_bisg(const IntegerVector S, const IntegerVector GX,
     return out;
 }
 
-// [[Rcpp::export]]
-NumericMatrix calc_bayes(const IntegerVector Y,
-                         const NumericMatrix lik, const NumericMatrix prior) {
+// exported in header
+Eigen::MatrixXd calc_bayes(const IntegerVector Y,
+                           const Eigen::MatrixXd lik, const Eigen::MatrixXd prior) {
     int n_r = prior.cols();
     int n = Y.size();
-    NumericMatrix out(n, n_r);
-    NumericVector sums(n);
+    MatrixXd out(n, n_r);
+    ArrayXd sums(n);
     // do Bayes
     for (int j = 0; j < n_r; j++) {
         for (int i = 0; i < n; i++) {
@@ -47,7 +47,7 @@ NumericMatrix calc_bayes(const IntegerVector Y,
     }
     // normalize
     for (int i = 0; i < n_r; i++) {
-        out(_, i) = out(_, i) / sums;
+        out.col(i) = out.col(i).array() / sums;
     }
 
     return out;

@@ -24,10 +24,11 @@ Imports:
     vctrs,
     Rcpp
 Suggests: 
-    roxygen2,
+    lme4,
     easycensus,
     wru,
     knitr,
+    roxygen2,
     rmarkdown,
     testthat (>= 3.0.0)
 LinkingTo: 

@@ -9,6 +9,14 @@ calc_bayes <- function(Y, lik, prior) {
     .Call(`_birdie_calc_bayes`, Y, lik, prior)
 }
 
+dirichlet_map <- function(Y, r_probs, prior_alpha) {
+    .Call(`_birdie_dirichlet_map`, Y, r_probs, prior_alpha)
+}
+
+em_nocov <- function(Y, p_rxs, prior_alpha, iter) {
+    .Call(`_birdie_em_nocov`, Y, p_rxs, prior_alpha, iter)
+}
+
 gibbs_me <- function(iter, warmup, S, GZ, M_sr, N_gzr, alpha_gzr, beta_sr, verbosity) {
     .Call(`_birdie_gibbs_me`, iter, warmup, S, GZ, M_sr, N_gzr, alpha_gzr, beta_sr, verbosity)
 }

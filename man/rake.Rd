@@ -4,7 +4,7 @@
 \alias{rake}
 \title{Rake a joint distribution so that the margins match provided vectors}
 \usage{
-rake(est, row = rowSums(est), col = colSums(est))
+rake(est, row = rowSums(est), col = colSums(est), iter = 5)
 }
 \arguments{
 \item{est}{the starting joint distribution}
@@ -12,6 +12,8 @@ rake(est, row = rowSums(est), col = colSums(est))
 \item{row}{the desired row sums / margins}
 
 \item{col}{the desired column sums / margins}
+
+\item{iter}{the number of raking iterations}
 }
 \value{
 a new matrix \code{est}
