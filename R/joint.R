@@ -168,12 +168,13 @@ eval_joints = function(tgt, metric=c("tv", "tv_col", "tv_row", "mad", "rmse"), .
 #' @param est the starting joint distribution
 #' @param row the desired row sums / margins
 #' @param col the desired column sums / margins
+#' @param iter the number of raking iterations
 #'
 #' @returns a new matrix `est`
 #'
 #' @export
-rake = function(est, row=rowSums(est), col=colSums(est)) {
-    for (i in 1:5) {
+rake = function(est, row=rowSums(est), col=colSums(est), iter=5) {
+    for (i in seq_len(iter)) {
         est = est %*% diag(col / colSums(est))
         est = diag(row / rowSums(est)) %*% est
     }
