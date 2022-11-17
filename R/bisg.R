@@ -4,7 +4,8 @@
 #' name, location, and other covariates (optional). The standard function
 #' `bisg()` treats the input tables as fixed. An alternative function
 #' `bisg_me()`, assumes that the input tables are subject to measurement error,
-#' and uses a Gibbs sampler to impute the individual race probabilities.
+#' and uses a Gibbs sampler to impute the individual race probabilities, using
+#' the model of Imai et al. (2022).
 #'
 #' @param formula A formula specifying the BISG model. Must include the special
 #'   term `nm()` to identify the surname variable. Certain geographic variables
@@ -52,6 +53,20 @@
 #' data(pseudo_vf)
 #' bisg(~ nm(last_name), data=pseudo_vf)
 #' bisg(~ nm(last_name) + zip(zip), data=pseudo_vf)
+#'
+#' @references
+#' Elliott, M. N., Fremont, A., Morrison, P. A., Pantoja, P., and Lurie, N.
+#' (2008). A new method for estimating race/ethnicity and associated disparities
+#' where administrative records lack self-reported race/ethnicity. *Health
+#' services research*, 43(5p1):1722–1736.
+#'
+#' Fiscella, K. and Fremont, A. M. (2006). Use of geocoding and surname analysis
+#' to estimate race and ethnicity. *Health services research*,
+#' 41(4p1):1482–1500.
+#'
+#' Imai, K., Olivella, S., and Rosenman, E. T. (2022). Addressing census data
+#' problems in race imputation via fully Bayesian improved surname geocoding and
+#' name supplements. *arXiv preprint arXiv:2205.06129*.
 #'
 #' @describeIn bisg The standard BISG model.
 #' @export
