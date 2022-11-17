@@ -13,7 +13,7 @@ estimates of individual race. This package implements BIRDiE as
 described in [McCartan, Fisher, Goldin, Ho and Imai (2022)](#).
 Replication materials for that paper may be found in `replication/`.
 
-![BIRDiE Overview Poster](man/figures/poster.svg)
+<img src="man/figures/poster.svg" style="width: 100%" alt="BIRDiE Overview Poster" />
 
 ## Installation
 
