@@ -74,7 +74,8 @@ Calculates individual probabilities of belonging to racial groups given last
 name, location, and other covariates (optional). The standard function
 \code{bisg()} treats the input tables as fixed. An alternative function
 \code{bisg_me()}, assumes that the input tables are subject to measurement error,
-and uses a Gibbs sampler to impute the individual race probabilities.
+and uses a Gibbs sampler to impute the individual race probabilities, using
+the model of Imai et al. (2022).
 }
 \section{Functions}{
 \itemize{
@@ -90,4 +91,18 @@ bisg(~ nm(last_name) + zip(zip), data=pseudo_vf)
 
 data(pseudo_vf)
 bisg_me(~ nm(last_name) + zip(zip), data=pseudo_vf)
+}
+\references{
+Elliott, M. N., Fremont, A., Morrison, P. A., Pantoja, P., and Lurie, N.
+(2008). A new method for estimating race/ethnicity and associated disparities
+where administrative records lack self-reported race/ethnicity. \emph{Health
+services research}, 43(5p1):1722–1736.
+
+Fiscella, K. and Fremont, A. M. (2006). Use of geocoding and surname analysis
+to estimate race and ethnicity. \emph{Health services research},
+41(4p1):1482–1500.
+
+Imai, K., Olivella, S., and Rosenman, E. T. (2022). Addressing census data
+problems in race imputation via fully Bayesian improved surname geocoding and
+name supplements. \emph{arXiv preprint arXiv:2205.06129}.
 }
