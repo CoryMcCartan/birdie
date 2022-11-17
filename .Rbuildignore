@@ -9,3 +9,6 @@ __pycache__
 ^data-raw$
 ^data-out$
 ^README\.Rmd$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$

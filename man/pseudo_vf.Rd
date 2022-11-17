@@ -24,4 +24,8 @@ A dataset containing 5,000 fake voter records.
 Created by randomizing a subset of the North Carolina voter file.
 Turnout records are completely randomly generated.
 }
+\examples{
+data(pseudo_vf)
+print(pseudo_vf)
+}
 \keyword{datasets}
