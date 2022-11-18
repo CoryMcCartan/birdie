@@ -5,11 +5,8 @@ authors:
     - name: Cory McCartan
       department: Department of Statistics
       affiliation: Harvard University
-    - name: Robin Fisher
-      department: Office of Tax Analysis
-      affiliation: U.S. Department of the Treasury
     - name: Jacob Goldin
-      department: Sanford Law School
+      department: Stanford Law School
     - name: Daniel E. Ho
       department: Stanford Law School
     - name: Kosuke Imai
@@ -24,9 +21,9 @@ abstract: |
     Although BISG tends to produce well-calibrated racial predictions, its prediction errors are often correlated with the outcomes of interest, yielding biased estimates of racial disparities.
     We propose a more credible identification strategy that corrects this bias.
     The proposed strategy is applicable whenever one's surname is conditionally independent of the outcome given their (unobserved) race, residence location, and other observed characteristics.
-    Leveraging this identification strategy, we introduce a new class of models, Bayesian Instrumental Regression for Disparity Estimation (BIRDiE), that estimate racial disparity while using surnames as a high-dimensional instrument for race.
+    Leveraging this identification strategy, we introduce a new model, Bayesian Instrumental Regression for Disparity Estimation (BIRDiE), that estimates racial disparity while using surnames as a high-dimensional instrument for race.
     We also develop a sensitivity analysis to address the potential violation of the required assumption that BISG's race predictions are well calibrated.
-    Our validation study based on North Carolina voter files shows that BIRDiE reduces error by about 75% in comparison to the standard approaches for estimating party identification by race.
+    Our validation study based on North Carolina voter files shows that BIRDiE reduces error by about 75% in comparison to the standard approaches in estimating party identification by race.
     A similarly substantial improvement is obtained in estimating racial disparities of partisan identification.
 keywords: 
     - BISG
@@ -71,27 +68,28 @@ Within the U.S. government, efforts to identify and remedy racial disparities ha
 In many of these areas, however, racial information is not available at the individual level.
 The unavailability of individual racial information makes it impossible for analysts to simply tabulate variables of interest against race to identify disparities among different racial groups.
 In fact, in some areas, the law explicitly prohibits the collection of racial information even as it demands fair treatment on the basis of race (see, e.g. the U.S. Equal Credit Opportunity Act).
-This creates a dilemma for organizations who wish to measure possible disparities in order to monitor the fairness of their decision-making or service provision.
+This creates a dilemma for organizations who wish to measure possible disparities in order to monitor the racial disparity of their decision-making or service provision.
 
 To estimate racial disparities without individual-level racial data, some researchers have turned to ecological inference methods [@goodman1953ecological; @king1997solution; @king2004ecological; @wakefield2004ecological; @imai2008bayesian; @greiner2009r].
 These methods, however, require strong assumptions, which can be difficult to verify and may provide misleading results [@cho2008ecological].
 Additionally, they all rely on accurate marginal information about race, which may not always be available.
 
-Where the analysis of racial disparities involves large-scale administrative data, many analysts have adopted Bayesian Improved Surname Geocoding (BISG), which generates individual probabilities of belonging to different racial groups using Bayes' Rule applied to last names and geolocation [@fiscella2006bisg; @elliott2008bisg]. BISG leverages residential racial segregation and the hereditary association between race and surname to produce generally accurate and calibrated predictions of individual race [@imai2016improving; @kenny2021das; @deluca2022validating].
+Where the analysis of racial disparities involves large-scale administrative data, many analysts have adopted Bayesian Improved Surname Geocoding (BISG), which generates individual probabilities of belonging to different racial groups based on last names and geolocation [@fiscella2006bisg; @elliott2008bisg; @imai2022addressing].
+BISG leverages residential racial segregation and the hereditary association between race and surname to produce generally accurate and calibrated predictions of individual race [@imai2016improving; @kenny2021das; @deluca2022validating].
 
-Unfortunately, the accuracy BISG racial predictions alone is not sufficient for estimating disparities without bias.
-Indeed, the most common techniques for estimating disparities using BISG probabilities are known to be biased when prediction errors are correlated with the outcome variable [@chen2019fairness].
-As formally discussed in Section \@ref(sec:id), the standard methodology of racial disparity estimation based on BISG predictions also requires individual's race to be conditionally independent of the outcome given their residence location, surnames, and other observable attributes.
+Unfortunately, the accurate BISG racial prediction alone is not sufficient for unbiased estimation of disparities.
+Indeed, the most common techniques for estimating racial disparities using BISG probabilities are known to be biased when prediction errors are correlated with the outcome variable [@chen2019fairness].
+These approaches include the use of BISG probabilities as weights and BISG classification.
+As formally discussed in Section \@ref(sec:id), these standard methods of racial disparity estimation based on BISG predictions also require individual's race to be conditionally independent of the outcome given their residence location, surnames, and other observable attributes.
 This key identification assumption, however, is unlikely to hold because race affects many aspects of today's society even after accounting for residence location, surnames, and other observable attributes.
 
 To address this challenge, in Section \@ref(sec:est), we propose an alternative identification strategy.
 Specifically, we assume that the outcome is conditionally independent of surname given (unobserved) individual's race, residence location, and other observed attributes.
-This assumption is an exclusion restriction, treating surname as an instrument for the outcome.
+This assumption is a type of exclusion restriction where surname serves as an instrumental variable for unobserved race.
 It implies that for two individuals who live in the same area, belong to the same racial group, and share the observable attributes, their surnames have no predictive power of the outcome.
 We argue that this new identification assumption is more credible unless surname is directly used to determine the outcome of interest (i.e., name-based discrimination).
-Leveraging this identification strategy, we introduce a new class of models, Bayesian Instrumental Regression for Disparity Estimation (BIRDiE), that overcome the high-dimensionality of surnames to accurately estimate racial disparities.
-This approach includes built-in flexibility for researchers to make problem-specific modeling choices.
-We propose an EM algorithm for fitting BIRDiE models that can scale to hundreds of thousands or millions of observations.
+Leveraging this identification strategy, we introduce a new model, Bayesian Instrumental Regression for Disparity Estimation (BIRDiE), that overcomes the high-dimensionality of surnames to accurately estimate racial disparities.
+We show that one can use off-the-shelf stochastic variational inference to fit the model to large administrative datasets.
 
 In large datasets, sampling-based uncertainty is overwhelmed by error that arises from violations of our assumptions about the data.
 This is particularly true in this context where the key variable of interest is unobserved.
@@ -102,6 +100,7 @@ In Section \@ref(sec:valid), we validate the proposed methodology using real-wor
 BIRDiE substantially outperforms existing estimators across different error measures, two different outcome variables, and multiple levels of geolocation specificity.
 For example, the most popular existing BISG disparity estimator pegs the gap at Democratic party registration between White and Black voters at `r round(-100*x$weight$disp_wb, 1)` percentage points, while the actual gap is `r round(-100*x$weight$disp_wb_true, 1)` percentage points---more than double.
 BIRDiE yields an estimate of `r round(-100*x$model$disp_wb, 1)` percentage points.
+This represents about XX% of bias reduction. **KI: These numbers do not correspond to the number in the appendix.  Can you reconcile the difference?**
 
 ```{=html}
 <!--# In Section \@ref(sec:appl), we apply BIRDiE to large-scale administrative data from the U.S. Internal Revenue Service.
@@ -119,12 +118,12 @@ We argue that this assumption is likely to be violated given the significant rol
 
 Suppose that we have an i.i.d. sample of $N$ individuals from a population of infinite size.
 For each individual $i=1,2,\ldots,N$, we define a tuple $(Y_i, R_i, G_i, X_i, S_i)$, where $Y_i\in\cY$ is the outcome of interest for individual $i$, $R_i\in \cR$ is the (unobserved) race of the individual, $G_i\in\cG$ is the (geo)location of the individual's residence, $X_i\in\cX$ are other observed characteristics, and $S_i\in\cS$ is the individual's surname.
-When we are not referring to a particular individual, we will drop the subscripts.
-Note that individual's race is unobservable but all other variables are observed.
+When we are not referring to a particular individual, we will drop the subscripts for notational simplicity.
+Note that individual's race is unobservable but all other variables are assumed to be observed.
 The availability of particular (or any) $X$ is not required for either the standard or proposed methodology.
 
 We assume throughout that these variables are discrete, taking a finite set of values, i.e., $|\cY|=C_Y$, $|\cR|=C_R$, $|\cG|=C_G$, $|\cX|=C_X$, and $|\cS|=C_S$ where $C_Y$, $C_R$, $C_G$, $C_X$, and $C_S$ are constants.
-Note that typically $S$ is high-dimensional as there exist a large number of unique names.
+Note that typically $S$ is high-dimensional as there exist a large number of unique surnames.
 In practice, residence location $G$ is also discrete, since joint information about location, race, and other variables is only available down to the Census block level.
 For the sake of simplicity, we assume that the outcome variable $Y$ is also discrete, though it is possible to extend the standard and proposed methodologies to continuous outcome variables.
 
@@ -137,7 +136,7 @@ The BISG estimator of the probability that individual $i$ belongs to race $r \in
         \sum_{j\in\cR}q_{G_iX_i|j}\, q_{S_i|j}\, q_j},
 \end{equation} where, for example, $q_{G_iX_i|r}$ indicates the estimated conditional probability of residence location $G_i$ and covariates $X_i$ given race $r$, taken from the Census table $\vb q_{GX|R}$.
 
-The BISG estimator implicitly relies on two key assumptions.
+The BISG estimator relies on two key assumptions.
 The first is the following conditional independence relation between an individual's surname and residence location (as well as other characteristics) given their unobserved race.
 
 ```{=tex}
@@ -159,26 +158,27 @@ The second assumption required by BISG is that the Census tables reflect the tru
     For all $i$, 
     \begin{align*}
         \Pr(R_i=r) &= q_r \\
-        \Pr(S_i=s\mid R_i) &= q_{s|r} \\
-        \Pr(G_i=g, X_i=x\mid R_i) &= q_{gx|r}
+        \Pr(S_i=s\mid R_i = r) &= q_{s|r} \\
+        \Pr(G_i=g, X_i=x\mid R_i = r) &= q_{gx|r}
     \end{align*}
 \end{assump}
 ```
-Like Assumption \ref{a:indep-sgx}, Assumption \ref{a:cens-acc} never holds exactly in practice.
+Like Assumption \ref{a:indep-sgx}, Assumption \ref{a:cens-acc} may never hold exactly in practice.
 Despite the best efforts of the Census Bureau, the decennial census has intrinsic error, including undercounting minority racial groups [@census2022undercount; @censuscount; @racecounts], as well as error introduced by privacy-preserving mechanisms [@abowd2020].
 And because of births, deaths, and moves, census data are often out-of-date from the moment of publication.
 These errors have led further extensions of the BISG estimator to account for some of this measurement error [@imai2022addressing], which can help with accuracy for smaller racial groups.
 The plausibility of Assumption \ref{a:cens-acc} is stretched even further when the study population is a subset of the whole U.S. population, which is covered by the census data.
-<!--For example, in our motivating example,... --> In these cases, analysts should set `q_r` to the known or estimated marginal racial distribution in the study population, rather than the national racial distribution.
+<!--# For example, in our motivating example, .... -->
+In these cases, analysts should set $\vb q_R$ to the known or estimated marginal racial distribution in the study population, rather than the national racial distribution.
 It may be more plausible then to assume that the conditional distributions $\Pr(S\mid R)$ and $\Pr(G,X\mid R)$ match the census distributions, even if $\Pr(R)$ does not.
 
-Even though Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc} are never perfectly met, researchers find that BISG produces accurate and generally well-calibrated estimates in practice [@imai2016improving; @kenny2021das; @deluca2022validating].
-We observe this as well in the validation study in Section \@ref(sec:valid).
+Even though Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc} may never be perfectly met, researchers find that BISG produces accurate and generally well-calibrated estimates in practice [@imai2016improving; @kenny2021das; @deluca2022validating].
 
 Under Assumption \ref{a:indep-sgx}, by Bayes' Rule, $$
     \Pr(R_i=r\mid G_i,X_i,S_i)
     \propto \Pr(G_i, X_i\mid R_i=r)\Pr(S_i\mid R_i=r)\Pr(R_i=r).
-$$ This justifies the estimator given in \eqref{eq:pr-bisg}, and provides us with the following immediate result.
+$$ 
+This justifies the estimator given in Equation \eqref{eq:pr-bisg}, and provides us with the following immediate result.
 
 ```{=tex}
 \begin{prop}[Accuracy of BISG] \label{p:bisg}
@@ -188,7 +188,7 @@ $\hat P_{ir} = \Pr(R_i=r\mid G_i,X_i,S_i)$.
 ```
 ## Bias of Racial Disparity Estimates based on BISG Probabilities
 
-Unfortunately, accurate and calibrated estimates of individual race predictions alone are not sufficient for identifying racial disparities.
+Unfortunately, accurate and calibrated estimates of individual race predictions alone are not sufficient for unbiased estimation of racial disparities.
 The reason is that the prediction error of race probabilities may be correlated with the outcome variable of interest.
 Specifically, we consider the following weighting estimator, which attempts to capture the uncertainty inherent in race prediction and is most commonly used by researchers,[^1] $$
     \hat\mu^{(\text{wtd})}_{Y|R}(y\mid r) 
@@ -196,10 +196,10 @@ Specifically, we consider the following weighting estimator, which attempts to c
             \sum_{i=1}^N \hat P_{ir}}.
 $$
 
-[^1]: An alternative is a classification estimator, which deterministically assigns individuals to a predicted racial category based on the BISG estimates $\vb{\hat P}_i$ (either the largest $\hat P_{ir}$ or the one which exceeds a predetermined threshold).
-    Unlike the weighting estimator, this classification estimator does not take into account prediction uncertainty.
+[^1]: An alternative is a *thresholding* or *classification* estimator, which deterministically assigns individuals to a predicted racial category based on the BISG estimates $\vb{\hat P}_i$ (either the largest $\hat P_{ir}$ or the one which exceeds a predetermined threshold).
+    Unlike the weighting estimator, this classification estimator does not take into account prediction uncertainty, and its bias is harder to reason about than for the weighted estimator \citet{chen2019fairness}.
 
-\citet{chen2019fairness} show that the asymptotic bias of this weighting estimator is controlled by the residual correlation of $Y$ and $R$ after controlling for $G$, $X$, and $S$.
+\citet{chen2019fairness} show that the asymptotic bias of this weighting estimator is controlled by the residual correlation of $Y$ and $R$ after adjusting for $G$, $X$, and $S$.
 We reproduce this result here.
 
 ```{=tex}
@@ -217,10 +217,10 @@ This result implies that the conditional independence between individual's race 
 For all $i$, $$Y_i\indep R_i\mid G_i,X_i,S_i.$$
 \end{assump}
 ```
-Figure \@ref(fig:dag)(a) shows a causal directed asyclic graph (DAG) that satisfies Assumption \ref{a:indep-yr} as well as Assumption \ref{a:indep-sgx}.
-This causal structure implies that $Y\indep R\mid G,X,S$ because all paths from $R$ to $Y$ are blocked by $G$, $X$, or $S$.
+Figure \@ref(fig:dag)(a) shows a causal directed acyclic graph (DAG) that satisfies Assumption \ref{a:indep-yr} as well as Assumption \ref{a:indep-sgx}.
+This causal structure implies the conditional independence relation $Y\indep R\mid G,X,S$ because all paths from $R$ to $Y$ are blocked by $G$, $X$, or $S$.
 The key causal assumption of this DAG is that the effect of race $R$ on the outcome $Y$ must be entirely mediated by surname $S$, residence location $G$, and other observed characteristics $X$.
-This type of exclusion restriction is difficult to satisfy in many practical settings because race may affect the outcome through so many factors, biasing the weighting estimator.
+This type of exclusion restriction may not be credible in many practical settings because race can affect the outcome through so many factors, biasing the weighting estimator.
 
 But in other settings, Assumption \ref{a:indep-yr} may be more plausible.
 For example, for a manager reviewing job applications on paper, race is typically unobserved, but the manager may be influenced by racial or gender cues in a candidate's name or address [@park2009names; @aaslund2012names].
@@ -290,7 +290,7 @@ Outside of these cases, however, the weighting estimator is likely to be biased.
 # The Proposed Methodology {#sec:est}
 
 In this section, we propose an alternative identification strategy.
-Specifically, we show that racial disparity is identifiable if one's surname is conditionally independent of the outcome given their race, residence geolocation, and other observed information, assuming that BISG can accurately identify race probabilities.
+Specifically, we show that racial disparity is identifiable if one's surname is conditionally independent of the outcome given their race, residence geolocation, and other observed information, assuming that BISG can nonparametrically identify race probabilities.
 We then develop a statistical model, BIRDiE, that estimates racial disparity under this identification condition while accounting for the high-dimensionality of surnames.
 Finally, we propose a sensitivity analysis that addresses the potential violation of several of the key assumptions.
 
@@ -311,18 +311,20 @@ This causal structure is plausible in many real-world settings.
 <!--# This causal structure is plausible in many real-world settings, such as our motivating example of HMID claims.
 In this case, we can rule out a direct effect of name on the outcome.
 (**CM: revisit this more carefully once we've settled on outcomes. Dan notes e.g. mortgage application success may depend on discrimination via names**.) 
---> This assumption rules out the possibility that surname directly affects the outcome whereas such a direct effect is allowed under Assumption \ref{a:indep-yr}.
-In the above hiring example, if the manager directly relies upon surname to make the decision, our assumption will be violated.
-Similarly, if campaigns use the surnames of individual voters to decide whether to mobilize them, Assumption \ref{a:indep-ys} will be violated.
+-->
+This assumption rules out the possibility that surname directly affects the outcome whereas such a direct effect is allowed under Assumption \ref{a:indep-yr}.
+In the above hiring example, if the manager reviews applicants anonymously, there will be no name-based discrimination and the assumption is likely to be satisfied.
+The assumption may be violated in some contexts.
+For example, if campaigns use the surnames of individual voters to decide whether to mobilize them, Assumption \ref{a:indep-ys} will be violated.
 Yet another possible violation of the assumption is the existence of unobserved confounder that affects both outcome and surname.
-For example, the country of origin for an immigrant may represent such a confounder.
-Even in these cases, however, conditioning on (unobserved) race is likely to reduce the magnitude of association between outcome and surnames.
-<!--# In Section \ref{sec:sens}, we develop a sensitivity analysis for potential violation of this assumption.-->
+The country of origin for an immigrant may represent such a confounder.
+Even in these cases, however, conditioning on (unobserved) race is likely to substantially reduce the magnitude of association between outcome and surnames.
+<!-- In Section \ref{sec:sens}, we develop a sensitivity analysis for potential violation of this assumption. -->
 
-The following theorem shows that it is possible to identify racial disparities under Assumption \ref{a:indep-ys}.
+The following theorem shows that it is possible to nonparametrically identify racial disparities under Assumption \ref{a:indep-ys}.
 
 ```{=tex}
-\begin{theoremrep}[Identification] \label{thm:id}
+\begin{theoremrep}[Nonparametric Identification] \label{thm:id}
 For all $g\in\cG$, $x\in\cX$, and $y\in\cY$, define a matrix $\vb P$ with entries $p_{rs}=\Pr(R=r\mid G=g, X=x, S=s)$  and a vector $\vb b$ with entries $b_s=\Pr(Y=y\mid G=g, X=x, S=s)$.
 Then under Assumption~\ref{a:indep-ys}, and assuming knowledge of the joint distribution $\Pr(R,G,X,S)$, the conditional probabilities $\Pr(Y=y\mid R, G=g, X=x)$ are identified if and only if both $\vb P$ and the augmented matrix $\mqty(\vb P&\vb b)$ have rank $|\cR|$.
 \end{theoremrep}
@@ -344,7 +346,9 @@ Under Assumption \ref{a:indep-ys}, we have, for all $y\in\cY$, $g\in\cG$, $x\in\
     \Pr(Y=y\mid G=g, X=x, S=s)
     = \sum_{r\in\cR} \Pr(Y=y\mid R=r, G=g, X=x)\Pr(R=r\mid G=g, X=x, S=s).
 \end{equation} The leftmost term is estimable from the data and corresponds to the vector $\vb b$ in Theorem \ref{thm:id}, while the rightmost term is the BISG estimand and corresponds to the matrix $\vb P$ in Theorem \ref{thm:id}.
-Lastly, the remaining term in the middle can be solved for, since \eqref{eq:tprob} holds across all combinations of $Y$, $G$, $X$, and $S$, leading to a large system of equations.
+Lastly, the remaining term in the middle can be solved for, since Equation \eqref{eq:tprob} holds across all combinations of $Y$, $G$, $X$, and $S$, leading to a large system of linear equations. 
+Specifically, we have $|\cY|\times|\cG|\times|\cX|\times|\cS|$ equations with $(|\cY|-1)\times|\cG|\times|\cX|\times|\cR|$ unknowns.
+Since $|\cR| << |\cS|$, we can identify these unknowns as long as the linear system has sufficient rank. **CM FIX SYMBOL**
 Our result is closely related to causal identification based on proxy variables in the presence of unmeasured confounding [@kuroki2014measurement; @miao2018identifying].
 Here, we use surname as a proxy variable for (unobserved) race to identify racial disparities.
 
@@ -359,8 +363,8 @@ By post-stratifying this estimator across the $(G,X)$ cells, we arrive at an est
 = \sum_{x\in\cX,g\in\cG} (\hat{\vb P}_{\cI(xg)}^\top \hat{\vb P}_{\cI(xg)})^{-1} 
 \hat{\vb P}_{\cI(xg)}\,\ind\{{\vb Y}_{\cI(xg)} = y\})_r q_{gx|r} ,
 $$ since $q_{gx|r}=\Pr(G=g,X=x\mid R=r)$ under Assumption \ref{a:cens-acc}.
-<!--# and where $\vb Y_{gx}$ is the vector of outcome variables for the individuals with $G_i=g$ and $X_i=x$. --> This estimator is unbiased, as the following theorem shows.
-**CM: cite to Dan & Jacob's working paper around here.**
+<!-- and where $\vb Y_{gx}$ is the vector of outcome variables for the individuals with $G_i=g$ and $X_i=x$. -->
+This estimator is unbiased, as the following theorem shows.
 
 ```{=tex}
 \begin{theoremrep}[Unbiasedness of OLS Estimator] \label{thm:ols-bias}
@@ -463,7 +467,7 @@ As a result, in any particular sample, the estimator can produce impossible or c
 This is particularly problematic because a large number of unique surnames make both $\vb P$ and $\vb b$ high-dimensional.
 To address this challenge, and to open the door to more flexible modeling, we next propose a Bayesian modeling approach that is based on our identification strategy and yet satisfies necessary constraints.
 
-## Bayesian Instrumental Regression for Disparity Estimation
+## Bayesian Instrumental Regression for Disparity Estimation {#sec:birdie}
 
 The BIRDiE approach combines a user-specified complete-data outcome model $\pi(Y\mid R, G, X, \Theta)$, parametrized by $\Theta$, with the BISG model in order to estimate the distribution $Y\mid R$ that is of interest.
 We first present the general BIRDiE model and describe potential choices of complete-data outcome models before discussing our computational approach.
@@ -479,7 +483,7 @@ The BIRDiE posterior is obtained by applying Assumptions \ref{a:indep-sgx}, \ref
 To apply this general BIRDiE model to a particular analysis requires choosing a complete-data outcome model, given by the likelihood $\pi(Y_i\mid R_i, G_i, X_i, \Theta)$ and prior $\pi(\Theta)$.
 Since $Y$ is discrete, a categorical regression model is appropriate for $\pi(Y_i\mid R_i, G_i, X_i, \Theta)$.
 The parametrization of the categorical regression will depend on the analyst's goals, computational resources, and prior beliefs about the structure of the problem.
-We present here several reasonable alternatives that trade off modeling flexibility with computational efficiency.
+We present here several reasonable alternatives that trade off modeling flexibility and computational efficiency.
 
 <!--# The level-5 header is equivalent to \paragraph{} -->
 
@@ -490,7 +494,7 @@ This model is parametrized by $\Theta=\{\vb*\theta_r\}_{r\in\cR}$, which describ
         Y_i\mid R_i, G_i, X_i, \Theta &\sim \Categorical_{\cY}(\vb*\theta_{R_i}) \\
         \vb*\theta_r &\iid \Dirichlet(\vb*\alpha).
 \end{align*}
-With known $\vb R$, the posterior of $\vb*\theta_r$ is conjugate, a fact which will make computation under the EM scheme described below extremely efficient.
+With known $\vb R$, the posterior of $\vb*\theta_r$ is conjugate, a fact which will make computation under the EM scheme described in Section \@ref(sec:compute) below extremely efficient.
 Of course, this efficiency comes at the cost of a restrictive model that allows for no role of $G$ and $X$.
 If in reality $\Pr(Y\mid R)$ does vary along these dimensions, it is possible that the posterior of $\vb*\theta_r$ will not accurately estimate $\Pr(Y\mid R)$.
 In any case, if the analyst is interested in subgroup or small-area estimates of $\Pr(Y\mid R)$, the complete-pooling model will be of no help.
@@ -549,7 +553,7 @@ We also recommend including group-level covariates as fixed effects, which will 
 For example, if $G$ records counties, analysts could include fixed effects for racial and socioeconomic variables measured at the county level.
 Ultimately the structure of this general model will have to be chosen based on the structure of the data and the relevant research question.
 
-## Computation
+## Computation {#sec:compute}
 
 Since the individual race $\vb R$ is high-dimensional, discrete, and not of primary interest, we can marginalize it out as follows: \begin{align*}
     \pi(\Theta\mid \vb Y, \vb G, \vb X, \vb S)
@@ -559,7 +563,7 @@ Since the individual race $\vb R$ is high-dimensional, discrete, and not of prim
 \end{align*} 
 This makes it much easier to sample from the model, as the number of parameters is now a function only of the sizes of $\cY$, $\cR$, $\cG$, and $\cX$, and not the sample size $N$.
 
-The marginalized posterior \eqref{eq:post-marg} is simple, but not conjugate to any prior distribution.
+The marginalized posterior in Equation \eqref{eq:post-marg} is simple, but not conjugate to any prior distribution.
 It has only continuous parameters, but these are constrained to be nonnegative and to sum to 1 across certain dimensions.
 The BIRDiE model can be fit with any general Bayesian inference procedure such as Markov chain Monte Carlo (MCMC).
 However, the large amount of data and moderate-to-high dimensionality in practical settings makes MCMC algorithms computationally infeasible.
@@ -571,22 +575,27 @@ When the number of parameters is not too large relative to the data size, simple
 ## Sensitivity Analysis {#sec:sens}
 
 BIRDiE, like the weighting and OLS estimators, relies upon Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc}, which are required for the BISG race probabilities to be accurate.
-Unfortunately, these assumptions may not exactly hold in practice.
+Like the OLS estimators, it also crucially relies on \ref{a:indep-ys} for identification.
+Unfortunately, these assumptions may not exactly hold in practice, and are also not testable in observed data.
 In this section, we address this challenge by developing a sensitivity analysis that assesses how the bias in BISG race probabilities affect the estimates of racial disparities.
+
 
 In particular, we consider a setting where Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc} may be violated but Assumption \ref{a:indep-ys} still holds.
 For example, consider the existence of unobserved confounder that affects some or all of the variables except the outcome, i.e., $(R,S,G,X)$.
 This leads to the violation of Assumption \ref{a:indep-sgx}, but Assumption \ref{a:indep-ys} continues to be satisfied so long as such unobserved confounder does not affect the outcome.
-Unfortunately, inaccurate BISG predictions still lead to biased estimates of racial disparity.
+It is not possible to develop an analogous sensitivity analysis for Assumptions \ref{a:indep-ys}, since without it the model is not even identified.
+Unfortunately, even inaccurate BISG predictions can still lead to biased estimates of racial disparities.
 
-Specifically, if either the Census data are inaccurate, or the conditional independence relation does not hold $S\notindep G,X\mid R$, then the BISG predictions $\hat{\vb P}$ will differ from the "true" individual race probabilities $\vb P^*$.
+Specifically, if either the Census data are inaccurate, or the conditional independence relation does not hold $S\notindep G,X\mid R$, then the BISG predictions $\hat{\vb P}$ will differ from the "true" individual race probabilities $\vb P^*=\Pr(R\mid G, X, S)$.
 Our goal is to quantify how an error in these probabilities $\vb P^* - \hat{\vb P}$ shifts the posterior and hence the estimates of racial disparities.
 
 Denote by $\pi_{\vb*\delta}$ the posterior constructed using the error-corrected BISG race probabilities $\hat{\vb P}_i+\vb*\delta_i$ as the input probabilities for the model (see Equation \eqref{eq:posterior}), where $\pi_{\vb*\delta^*}$ is the true posterior with $\vb*\delta_i^* \dfeq \vb P^*_i - \hat{\vb P}_i$.
 Estimating how $\pi$ and $\pi_{\vb*\delta}$ differ in general is difficult, but we focus on the settings where $\vb*\delta$ is small enough to make a linear approximation appropriate.
 In sum, we aim to quantify how the small error in BISG probabilities can alter the estimates of racial disparities.
 
-Define the following perturbation weight, which represents the ratio of posterior based on the biased and error-corrected BISG race probabilities: $$
+For clarity, in this section we will use $\vb*\theta_{r G_iX_iY_i}$ to denote the model parameter or function thereof that represents $\pi(Y_i\mid R_i=r, G_i, X_i)$.
+This mirrors the notation of most of the specific models discussed in Section \@ref(sec:birdie) above.
+Then define the following perturbation weight, which represents the ratio of posterior based on the biased and error-corrected BISG race probabilities: $$
     w(\Theta,\vb*\delta^*) \dfeq 
     \prod_{i=1}^N 
     \qty(1 + \frac{\vb*\theta_{Y_i}(G_i, X_i)^\top \vb*\delta_i^*}{
@@ -651,7 +660,7 @@ We recommend that practitioners use other data sources, such as surveys, to esti
 
 # Validation Study {#sec:valid}
 
-To better understand how BIRDiE performs in real-world contexts, we apply it to the North Carolina voter registration data.
+To better understand how BIRDiE performs in real-world contexts, we apply it to North Carolina voter registration data.
 This voter file contains individual-level self-reported race and hence the "ground truth" relationship between outcome and race is known.
 We compare the performance of BIRDiE against those of other estimators.
 We also evaluate how the estimation error depends on the level of geographic precision used in the BISG probabilities.
@@ -662,7 +671,7 @@ Like most other Southern states with a history of disenfranchising minority vote
 This data, along with voters' names, addresses, gender, party registration (if any), and voting history, is part of the voter file that the secretary of state makes publicly available.
 This feature makes the voter file an ideal validation setting for the proposed methodology.
 The outcome we examine here, party registration, is the product of many unobservable factors, and are known to differ across racial groups.
-<!--# The two outcomes we examine here, party registration and turnout, are the product of many unobservable factors, and are known to differ across racial groups.--> Since self-reported race is available, inferences about these racial disparities using the estimators discussed here can be compared to the corresponding true values.
+Since self-reported race is available, inferences about these racial disparities using the estimators discussed here can be compared to the corresponding ground truths.
 
 We use a subset of the October 2022 voter file which could be linked to a proprietary voter file provided by L2, Inc., a leading national non-partisan firm and the oldest organization in the United States that supplies voter data and related technology to candidates, political parties, pollsters, and consultants for use in campaigns.
 The L2 file geocoded each address to a Census block, which allows for the finest block-level BISG predictions.
@@ -672,10 +681,10 @@ Altogether, `r percent(1 - 5754912/7389159, 0.1)` of records either had missing 
 ```{r nc-overview, fig.width=6.5}
 #| fig.cap: |
 #|     Distribution of party identification  by race, 
-#|     for a sample of 500,000 North Carolina voters. Parties are Libetarian (LIB),
+#|     for a sample of 500,000 North Carolina voters. Parties are Libertarian (LIB),
 #|     Republican (REP), Independent (IND), and Democrat (DEM). 
 #     Distribution of party identification (left) and turnout (right) by race, 
-#     for a sample of 500,000 North Carolina voters. Parties are Libetarian (LIB),
+#     for a sample of 500,000 North Carolina voters. Parties are Libertarian (LIB),
 #     Republican (REP), Independent (IND), and Democrat (DEM). Turnout ranges from 
 #     0 to 10, indicating the number of November general elections from 2012 through 2021, 
 #     in which a voter turned out.
@@ -731,7 +740,7 @@ knitr::include_graphics("figures/nc_disp.pdf")
 We first examine the accuracy of the various methods in estimating the disparity between White and Black, and White and Hispanic voters, in party identification<!--# and turnout-->.
 For example, the true difference in Democratic identification between Black and White voters in the sample is $`r percent(-x$model$disp_wb_true, 0.1)`$ percentage points, meaning Black voters register Democratic at a much higher rate.
 However, the standard weighting approach produces an estimate of only $`r percent(-x$weight$disp_wb, 0.1)`$ percentage points for this disparity---less than half the true value.
-In contrast, the proposed model produces an estimate of $`r percent(-x$model$disp_wb, 0.1)`$ percentage points.
+In contrast, the proposed model produces an estimate of $`r percent(-x$model$disp_wb, 0.1)`$ percentage points, which are only slightly lower than the ground truth.
 
 Figure \@ref(fig:nc-disp) compares all the methods across all of these possible disparity measurements, using the ZIP code-level BISG predictions.
 The true disparity is subtracted off for ease of comparison.
@@ -814,7 +823,7 @@ In contrast, the disparity in independent registration could be eliminated by wo
 # Discussion {#sec:disc}
 
 We have clarified the assumptions implicit in current approaches to disparity estimation from proxy data, and have introduced a new identifying assumption and accompanying model, BIRDiE.
-In most real-world applications, we believe the new model and identification condition are much appropriate and will produce significantly improved estimates.
+In many real-world applications, we believe the new model and identification condition are appropriate and will produce significantly improved estimates.
 However, there is no one-size-fits-all approach for the estimation of disparities.
 Careful consideration of the underlying causal and information structure is required to choose the correct estimation approach and avoid making the wrong conclusions.
 
