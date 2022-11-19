@@ -12,8 +12,8 @@ test_that("BISG checks input", {
     expect_error(expect_warning(
         bisg(~ nm(last_name) + zip(zip) + race, pseudo_vf)
         ))
-    expect_error(bisg(~ nm(last_name) + zip(zip) + county(zip), pseudo_vf))
-    expect_error(bisg(~ nm(last_name) + zip(zip) + county(race), pseudo_vf))
+    expect_error(bisg(~ nm(last_name) + zip(zip) + state(zip), pseudo_vf))
+    expect_error(bisg(~ nm(last_name) + zip(zip) + state(race), pseudo_vf))
     expect_error(bisg(~ nm(last_name) + zip + zip, pseudo_vf))
     expect_error(bisg(~ zip(zip), pseudo_vf))
 })
@@ -22,7 +22,8 @@ test_that("BISG checks input", {
 test_that("BISG results are directionally correct", {
     d = tibble(S=rep(c("Hernandez", "Mc Cartan"), 2),
                G=rep(c("78501", "50112"), each=2))
-    res = bisg(~ nm(S) + zip(G), data=d)
+    p_r = p_r_natl(2010)
+    res = bisg(~ nm(S) + zip(G), data=d, p_r=p_r)
 
     expect_gt(res$pr_hisp[1], 0.98)
     expect_gt(res$pr_white[4], 0.98)
@@ -31,9 +32,9 @@ test_that("BISG results are directionally correct", {
     expect_gt(res$pr_hisp[1], res$pr_hisp[2])
     expect_gt(res$pr_white[4], res$pr_white[3])
 
-    expect_gt(bisg(~ nm(S) + zip(G), data=tibble(S="LOCKLEAR", G="28715"))$pr_aian, 0.5)
-    expect_gt(bisg(~ nm(S) + zip(G), data=tibble(S="WASHINGTON", G="98118"))$pr_black, 0.9)
-    expect_gt(bisg(~ nm(S) + zip(G), data=tibble(S="XU", G="98118"))$pr_asian, 0.95)
+    expect_gt(bisg(~ nm(S) + zip(G), data=tibble(S="LOCKLEAR", G="28715"), p_r=p_r)$pr_aian, 0.5)
+    expect_gt(bisg(~ nm(S) + zip(G), data=tibble(S="WASHINGTON", G="98118"), p_r=p_r)$pr_black, 0.9)
+    expect_gt(bisg(~ nm(S) + zip(G), data=tibble(S="XU", G="98118"), p_r=p_r)$pr_asian, 0.95)
 })
 
 test_that("Measurement error BISG model works", {

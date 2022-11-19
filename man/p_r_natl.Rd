@@ -4,7 +4,7 @@
 \alias{p_r_natl}
 \title{National Racial Demographics}
 \usage{
-p_r_natl(year = 2010, vap = FALSE)
+p_r_natl(year = 2021, vap = FALSE)
 }
 \arguments{
 \item{year}{The year to return demographics for.}

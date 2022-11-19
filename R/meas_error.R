@@ -27,7 +27,7 @@ predict_race_sgz_me = function(S, G, Z=NULL, data=NULL, p_rs=NULL, p_rgz=NULL,
     if (missing(data)) cli_abort("{.arg data} must be provided.")
     S_vec = eval_tidy(enquo(S), data)
     G_vec = eval_tidy(enquo(G), data)
-    Z_df = data[, eval_select(enquo(Z), data)]
+    Z_df = data[, tidyselect::eval_select(enquo(Z), data)]
 
     if (!check_vec(S_vec)) cli_abort("{.arg S} must be a character or factor with no missing values.")
     if (!is.character(G_vec) && !is.factor(G_vec))
@@ -45,7 +45,7 @@ predict_race_sgz_me = function(S, G, Z=NULL, data=NULL, p_rs=NULL, p_rgz=NULL,
     ## Parse and check input probabilities ----------------
     if (missing(p_rs)) {
         S_vec = proc_names(as.character(S_vec))
-        p_rs = census_surname_table(S_vec, as_name(enquo(S)), p_r, counts=TRUE)
+        p_rs = census_surname_table(S_vec, as_name(enquo(S)), counts=TRUE)
         S_vec[!S_vec %in% p_rs[[1]]] = "<generic>"
         S_vec = factor(S_vec, levels=p_rs[[1]])
     } else {
@@ -64,7 +64,7 @@ predict_race_sgz_me = function(S, G, Z=NULL, data=NULL, p_rs=NULL, p_rgz=NULL,
         names(GZ)[1] = "zip"
         #p_rgz = census_zip_age_sex_table(GZ, GZ_vec, p_r, regularize)
     } else if (missing(p_rgz)) {
-        p_rgz = census_zip_table(G_vec, G_name, p_r, counts=TRUE)
+        p_rgz = census_premade_table(G_name, "zip_race_2010.rds", counts=TRUE)
     } else {
         if (!is.data.frame(p_rs)) cli_abort("{.arg p_rgz} must be a data frame.")
         if (!all(colnames(GZ) %in% colnames(p_rgz)))

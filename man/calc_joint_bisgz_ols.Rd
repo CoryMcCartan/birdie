@@ -27,7 +27,7 @@ should sum to 1.}
 \item{prefix}{how to select the race probability columns from \code{r_probs}, if
 if is a data frame}
 
-\item{truncate}{if \code{TRUE}, truncate results to lie in \link{0, 1}.}
+\item{truncate}{if \code{TRUE}, truncate results to lie in [0, 1].}
 }
 \value{
 a matrix

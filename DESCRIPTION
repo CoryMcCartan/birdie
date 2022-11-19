@@ -18,6 +18,7 @@ Imports:
     rlang (>= 0.1.2),
     cli,
     dplyr,
+    tidyselect,
     stringr,
     stringi,
     vctrs,
