@@ -1,3 +1,9 @@
+# shim. Only works if remaining columns all uniquely identify
+pivot_wider_tiny <- function(x, names_from="name", values_from="value") {
+    form = as.formula(paste0(values_from, "~", names_from))
+    d_id = distinct(select(x, c(-names_from, -values_from)))
+    as_tibble(cbind(d_id, unstack(x, form)))
+}
 
 # check types
 check_vec = function(x) (is.character(x) | is.factor(x)) && !any(is.na(x))

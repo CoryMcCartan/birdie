@@ -12,3 +12,4 @@ __pycache__
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
+^cran-comments\.md$

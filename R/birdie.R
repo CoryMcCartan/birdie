@@ -7,7 +7,7 @@ birdie <- function(r_probs, formula, data=NULL,
     Y_vec = lme4::glFormula(formula, data=data)$fr[[1]]
 
     if (!is.matrix(r_probs)) {
-        r_probs = as.matrix(dplyr::select(r_probs, starts_with(prefix)))
+        r_probs = as.matrix(select(r_probs, starts_with(prefix)))
         colnames(r_probs) = substring(colnames(r_probs), nchar(prefix)+1L)
     }
 
@@ -56,15 +56,15 @@ em_lmer <- function(Y, p_rxs, form, data, iter=10, tol=0.001) {
     cat("E")
 
     idx_grp = lme4::glFormula(form, data=data)$fr[-1] |>
-        dplyr::group_by_all() |>
-        dplyr::group_indices()
+        group_by_all() |>
+        group_indices()
     n_grp = max(idx_grp)
     grp_revlk = lapply(seq_len(n_grp), \(i) which(idx_grp == i))
     idx_extr = vapply(grp_revlk, \(x) x[1], 1L)
 
     ests = array(dim=c(n_grp, n_y, n_r))
     updating = matrix(TRUE, n_y, n_r)
-    form_fit = update(form, cbind(succ, fail) ~ .)
+    form_fit = update.formula(form, cbind(succ, fail) ~ .)
     form_env = rlang::f_env(form_fit)
     break_next = FALSE
     for (i in seq_len(iter)) {

@@ -7,11 +7,10 @@
 #' @import dplyr
 #' @importFrom rlang expr enquo enquos sym syms .data := as_name as_label eval_tidy
 #' @importFrom stringr str_detect str_starts str_remove_all str_replace_all str_remove
-#' @importFrom dplyr as_tibble
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom Rcpp sourceCpp
-#' @importFrom stats na.omit quantile lm.fit
-#' @importFrom utils tail
+#' @importFrom stats na.omit quantile lm.fit binomial fitted get_all_vars terms update.formula as.formula
+#' @importFrom utils tail unstack
 #' @useDynLib birdie, .registration = TRUE
 ## usethis namespace: end
 NULL

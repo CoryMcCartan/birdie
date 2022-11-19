@@ -66,7 +66,7 @@ calc_joint_bisgz = function(r_probs, x, method=c("weight", "thresh", "mi", "ols"
 #'   should sum to 1.
 #' @param prefix how to select the race probability columns from `r_probs`, if
 #'   if is a data frame
-#' @param truncate if `TRUE`, truncate results to lie in [0, 1].
+#' @param truncate if `TRUE`, truncate results to lie in \[0, 1\].
 #'
 #' @returns a matrix
 #' @export

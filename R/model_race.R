@@ -19,14 +19,14 @@
 #'
 #' @return A list containing the model output. Element `p_xr` contains the
 #'   approximate posterior draws of the global X|R table.
-#' @export
+#' @noRd
 model_race = function(r_probs, X, G, Z=NULL, condition=NULL,
                       data=NULL, prefix="pr_", method=c("svi", "mle"),
                       config=list(), silent=FALSE, reload_py=FALSE) {
     if (missing(data)) cli_abort("{.arg data} must be provided.")
     X_vec = eval_tidy(enquo(X), data)
     G_vec = eval_tidy(enquo(G), data)
-    Z_df = data[, eval_select(enquo(Z), data)]
+    Z_df = data[, tidyselect::eval_select(enquo(Z), data)]
     if (!is.matrix(r_probs)) {
         r_probs = as.matrix(dplyr::select(r_probs, starts_with(prefix)))
         colnames(r_probs) = substring(colnames(r_probs), nchar(prefix)+1L)
@@ -59,10 +59,10 @@ model_race = function(r_probs, X, G, Z=NULL, condition=NULL,
 
     # prepare prediction matrices
     GZ_names = c(
-        names(eval_select(enquo(G), data)),
-        names(eval_select(enquo(Z), data))
+        names(tidyselect::eval_select(enquo(G), data)),
+        names(tidyselect::eval_select(enquo(Z), data))
     )
-    cond_name = names(eval_select(enquo(condition), data))
+    cond_name = names(tidyselect::eval_select(enquo(condition), data))
 
     preds = list(global = colMeans(GZ_mat))
     if (length(cond_name) == 1) {
