@@ -123,6 +123,7 @@ predict_race_sgz = function(S, G, Z=NULL, data=NULL, p_rs=NULL, p_rgz=NULL,
         rownames(p_gzr) = p_rgz[[G_name]]
         attr(out, "p_gzr") = p_gzr
         attr(out, "gz") = GZ_vec
+        attr(out, "p_r") = p_r
     }
     out
 }

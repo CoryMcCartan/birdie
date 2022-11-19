@@ -20,7 +20,6 @@ Imports:
     dplyr,
     stringr,
     stringi,
-    tidyselect,
     vctrs,
     Rcpp
 Suggests: 
