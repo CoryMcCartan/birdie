@@ -9,11 +9,11 @@
 #'
 #' @param formula A formula specifying the BISG model. Must include the special
 #'   term `nm()` to identify the surname variable. Certain geographic variables
-#'   can be identified similarly: `zip()` for ZIP codes, and `county()` for
-#'   counties. If no other predictor variables are provided, then `bisg()` will
+#'   can be identified similarly: `zip()` for ZIP codes, and `state()` for
+#'   states. If no other predictor variables are provided, then `bisg()` will
 #'   automatically be able to build a table of census data to use in inference.
 #'   If other predictor variables are included, or if other geographic
-#'   indicators are used, then the user must specify the `p_rgx` argument below.
+#'   identifiers are used, then the user must specify the `p_rgx` argument below.
 #'   The left-hand side of the formula is ignored.
 #'   See the examples section below for sample formulas.
 #' @param data The data frame containing the variables in `formula`.
@@ -38,7 +38,7 @@
 #'   `p_rgx` will be constructed automatically from the most recent Census data.
 #'   This table will be normalized by row, so it can be provided as population
 #'   counts as well. Counts are required for `bisg_me()`.
-#'   TODO LINK TO CENSUS FUNCTIONS
+#'   The [census_race_geo_table()] function can be helpful to prepare tables.
 #' @param p_rs The distribution of race given last name. As with `p_rgx`, should
 #'   be provided as a data frame, with a column of names and additional columns
 #'   for each racial group. Users should not have to specify this argument in
@@ -81,6 +81,7 @@ bisg <- function(formula, data=NULL, p_r=p_r_natl(), p_rgx=NULL, p_rs=NULL) {
     out <- as_tibble(m_bisg)
     class(out) = c("bisg", class(out))
     attr(out, "S_name") = vars$S_name
+    attr(out, "GX_names") = colnames(vars$GX)
     attr(out, "p_r") = l_gx$p_r
     attr(out, "method") = "std"
 
@@ -116,6 +117,7 @@ bisg_me <- function(formula, data=NULL, p_r=p_r_natl(), p_rgx=NULL, p_rs=NULL,
     out <- as_tibble(m_bisg)
     class(out) = c("bisg", class(out))
     attr(out, "S_name") = vars$S_name
+    attr(out, "GX_names") = colnames(vars$GX)
     attr(out, "p_r") = l_gx$p_r
     attr(out, "method") = "me"
 
@@ -126,7 +128,7 @@ bisg_me <- function(formula, data=NULL, p_r=p_r_natl(), p_rgx=NULL, p_rs=NULL,
 # type of geography used (or "none"), and data frame of other covariates
 parse_bisg_form <- function(formula, data=NULL) {
     formula = update.formula(formula, NULL ~ .)
-    f_terms = terms(formula, specials=c("nm", "zip", "county"), data=data)
+    f_terms = terms(formula, specials=c("nm", "zip", "state"), data=data)
     d_model = get_all_vars(f_terms, data=data)
     if (ncol(d_model) != length(attr(f_terms, "term.labels"))) {
         cli_abort("Duplicated variables found in {.arg formula}.", call=parent.frame())
@@ -145,7 +147,7 @@ parse_bisg_form <- function(formula, data=NULL) {
                   call=parent.frame())
     }
 
-    # check ZIP, county, etc.
+    # check ZIP, state, etc.
     geo_locs = vapply(attr(f_terms, "specials")[-1], function(x) {
         if (is.null(x)) NA_integer_ else x
     }, 1L)
@@ -161,9 +163,6 @@ parse_bisg_form <- function(formula, data=NULL) {
     } else if (n_loc == 1) {
         geo_type = names(which(!is.na(geo_locs)))
         geo_loc = geo_locs[geo_type]
-        if (geo_type == "county") {
-            cli_abort("{.fn county} is not yet supported.", call=parent.frame())
-        }
 
         d_model[[geo_loc]] =  as.factor(coalesce(d_model[[geo_loc]], "<none>"))
     }
@@ -190,11 +189,16 @@ make_name_tbl_vec <- function(vars, p_r, p_rs, for_me=FALSE) {
     if (is.null(p_rs)) {
         S = proc_names(S)
         if (is.character(p_r)) p_r = p_r_natl()
+        if (length(p_r) != 6) {
+            cli_abort(c("Number of racial categories doesn't match the Census table.",
+                        "i"="Categories should be White, Black, Hispanic, Asian,
+                    American Indian/Alaska Native, and other."), call=parent.frame())
+        }
 
         if (isTRUE(for_me)) {
-            p_rs = census_surname_table(S, vars$S_name, p_r, counts=TRUE, flip=FALSE)
+            p_rs = census_surname_table(S, vars$S_name, counts=TRUE, flip=FALSE)
         } else {
-            p_rs = census_surname_table(S, vars$S_name, p_r, counts=FALSE, flip=TRUE)
+            p_rs = census_surname_table(S, vars$S_name, counts=FALSE, flip=TRUE)
         }
 
         S[!S %in% p_rs[[1]]] = "<generic>" # p_rs[[1]] is the name column
@@ -220,6 +224,10 @@ make_name_tbl_vec <- function(vars, p_r, p_rs, for_me=FALSE) {
             cli_abort("{.arg p_rs} contains missing, negative,
                       or otherwise invalid values.", call=parent.frame())
         }
+        if (length(p_r) != ncol(p_rs) + 1) {
+            cli_abort("Number of racial categories in {.arg p_rs}
+                      and {.arg p_r} must match.", call=parent.frame())
+        }
 
         S = factor(S, levels=p_rs[[name_col]])
 
@@ -231,6 +239,7 @@ make_name_tbl_vec <- function(vars, p_r, p_rs, for_me=FALSE) {
             p_sr[, i] = p_sr[, i] / sum(p_sr[, i])
         }
     }
+
 
     list(S = S,
          p_sr = p_sr) # p_sr is actualy p_rs, unormalized, if `for_me=TRUE`
@@ -252,12 +261,36 @@ make_gx_tbl_vec <- function(vars, p_r, p_rgx) {
     }
 
 
-    if (vars$geo_type == "zip") {
+    if (vars$geo_type != "none") {
         p_r_tmp = p_r
         if (is.character(p_r)) p_r_tmp = p_r_natl()
+        if (length(p_r_tmp) != 6) {
+            cli_abort(c("Number of racial categories doesn't match the Census table.",
+                        "i"="Categories should be White, Black, Hispanic, Asian,
+                    American Indian/Alaska Native, and other."), call=parent.frame())
+        }
 
         G_name = names(vars$GX)
-        p_rgx = census_zip_table(vars$GX[[1]], G_name, p_r_tmp, counts=TRUE)
+        if (vars$geo_type == "zip") {
+            p_rgx = census_premade_table(G_name, "zip_race_2010.rds", counts=TRUE)
+
+        } else if (vars$geo_type == "state") {
+            p_rgx = census_premade_table(G_name, "state_race_2010.rds", counts=TRUE)
+
+            # match states
+            G_vec = stringr::str_to_upper(vars$GX[[1]])
+            idx = coalesce(
+                pmatch(vars$GX[[1]], states$GEOID, duplicates.ok=TRUE),
+                pmatch(vars$GX[[1]], states$abbr, duplicates.ok=TRUE),
+                pmatch(vars$GX[[1]], states$name, duplicates.ok=TRUE)
+            )
+            vars$GX[[1]] = coalesce(states$GEOID[idx], "<none>")
+        } else {
+            cli_abort(c("{.fn {vars$geo_type}} is not yet supported.",
+                        ">"="Please file an issue at
+                        {.url https://github.com/CoryMcCartan/birdie/issues/new}"),
+                        call=parent.frame())
+        }
 
         # tidy up
         if (!"<none>" %in% p_rgx[[G_name]]) {
@@ -265,9 +298,9 @@ make_gx_tbl_vec <- function(vars, p_r, p_rgx) {
             new_row[[G_name]] = "<none>"
             p_rgx = rbind(p_rgx, new_row)
         }
-        p_rgx = dplyr::mutate(
-            p_rgx, dplyr::across(.data$white:.data$other,
-                                 ~ dplyr::coalesce(., p_r_tmp[dplyr::cur_column()]))
+        p_rgx = mutate(p_rgx,
+                       across(.data$white:.data$other,
+                          ~ coalesce(., p_r_tmp[cur_column()]))
         )
 
         match_idx = match(vars$GX[[1]], p_rgx[[G_name]])
@@ -275,16 +308,14 @@ make_gx_tbl_vec <- function(vars, p_r, p_rgx) {
         if (length(idx_miss) > 0) {
             vars$GX[[1]][idx_miss] = "<none>"
         }
-    } else if (vars$geo_type == "county") {
-        # TODO IMPLEMENT
     } else { # "none" -> use `p_rgx`
         if (!is.data.frame(p_rgx)) {
             cli_abort("{.arg p_rgx} must be a data frame.", call=parent.frame())
         }
-        if (!all(colnames(S$GX) %in% colnames(p_rgx))) {
+        if (!all(colnames(vars$GX) %in% colnames(p_rgx))) {
             cli_abort("All predictor columns must be in {.arg p_rgx}.", call=parent.frame())
         }
-        if (!is.character(p_r) && ncol(p_rgx) != length(p_r) + ncol(S$GX)) {
+        if (!is.character(p_r) && ncol(p_rgx) != length(p_r) + ncol(vars$GX)) {
             cli_abort("Number of racial categories in {.arg p_rgx}
                       and {.arg p_r} must match.", call=parent.frame())
         }
@@ -292,7 +323,7 @@ make_gx_tbl_vec <- function(vars, p_r, p_rgx) {
             cli_abort("{.arg p_rgx} must have unique rows.", call=parent.frame())
         }
 
-        d_miss <- dplyr::anti_join(vars$GX, p_rgx, by=names(vars$GX))
+        d_miss <- anti_join(vars$GX, p_rgx, by=names(vars$GX))
         if (nrow(d_miss) > 0) {
             cli::cli_text("Missing from {.arg p_rs}:")
             print(d_miss)
@@ -302,13 +333,13 @@ make_gx_tbl_vec <- function(vars, p_r, p_rgx) {
     }
 
     # subset to needed rows
-    d_match = dplyr::left_join(vars$GX, p_rgx, by=names(vars$GX))
+    d_match = left_join(vars$GX, p_rgx, by=names(vars$GX))
     GX_vec = as.factor(vctrs::vec_duplicate_id(d_match))
     p_rgx = d_match[!duplicated(GX_vec), ]
 
     # flip which margin sums to 1
     p_gx = prop.table(table(GX_vec))
-    p_rgx = as.matrix(dplyr::select(p_rgx, -names(vars$GX)))
+    p_rgx = as.matrix(select(p_rgx, -names(vars$GX)))
     p_gxr = p_rgx / rowSums(p_rgx)
     for (i in seq_len(ncol(p_gxr))) {
         p_gxr[, i] = p_gxr[, i] * p_gx
@@ -348,16 +379,15 @@ make_gx_tbl_vec <- function(vars, p_r, p_rgx) {
 #' p_r_natl(year=2010)
 #'
 #' @export
-p_r_natl <- function(year=2010, vap=FALSE) {
+p_r_natl <- function(year=2021, vap=FALSE) {
     if (isTRUE(vap)) cli_abort("Only {.arg vap = FALSE} is supported for now.")
 
     year = as.integer(year)
-    if (year == 2010L) {
-        c(white=0.630, black=0.121, hisp=0.173,
-          asian=0.0478, aian=0.0072, other=0.0210)
-    } else {
-        cli_abort("Only {.arg year = 2010} is supported for now.")
+    if (year < 2005L || year > 2021L) {
+        cli_abort("Only {.arg year} from 2005 to 2021 is supported.")
     }
+
+    l_race_year[[as.character(year)]]
 }
 
 

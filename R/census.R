@@ -1,12 +1,137 @@
 
+#' Download Census Race Data
+#'
+#' Downloads and prepares race-by-geography tables from U.S. census data, using
+#' the [`easycensus`][easycensus::easycensus] package. Requires that an api key
+#' be set up through [easycensus::cens_auth()] in that package. Supports data
+#' from the decennial census and the American Community Survey at a variety of
+#' levels of geographic detail. The output of this function can be used directly
+#' in [bisg()].
+#'
+#' @param geo The geographic level to return. Common options are listed in the
+#'   function signature, but any of the geographies listed at
+#'   [easycensus::cens_geo()] may be used.
+#' @param ... Further subgeographies to return, as in [easycensus::cens_geo()].
+#' @param year The year for the data
+#' @param survey The data product to use: either the decennial census (`"dec"`),
+#'   or the the 1-year or 5-year ACS.
+#' @param GEOIDs If `TRUE`, return the `GEOID` column as the unique geographic
+#'   identifier; if `FALSE`, return a human-readable name. For example, with
+#'   `geo="state"`, setting `GEOIDs=FALSE` will return a column named `state`
+#'   with entries like `"Massachusetts"`.
+#' @param counts If `TRUE`, return the table as actual population counts; if
+#'   `FALSE`, return table as percentages within each geography.
+#'
+#' @return A data frame with a geographic identifier column and six columns
+#'   `pop_white`, `pop_black`, etc. containing the counts or proportion of
+#'   residents in each racial group.
+#'
+#' @examples \dontrun{
+#' census_race_geo_table("us", year=2010)
+#' census_race_geo_table("state", year=2021, survey="acs1")
+#' census_race_geo_table("state", year=2021, survey="acs1", GEOIDs=FALSE)
+#' }
+#' @export
+census_race_geo_table <- function(geo=c("us", "state", "county", "zcta", "tract"),
+                                  ...,
+                                  year=2010, survey=c("dec", "acs1", "acs5"),
+                                  GEOIDs=TRUE, counts=TRUE) {
+    rlang::check_installed("easycensus", "for downloading Census data.")
+    survey = match.arg(survey)
+
+    if (year == 2010 && survey == "dec" && geo == "zcta" && GEOIDs) {
+        return(census_premade_table("GEOID", "zip_race_2010.rds", counts=counts))
+    }
+    if (year == 2010 && survey == "dec" && geo == "state" && GEOIDs) {
+        return(census_premade_table("GEOID", "state_race_2010.rds", counts=counts))
+    }
+
+    if (survey == "dec") {
+        if (!year %in% c(2010)) {
+            cli_abort("Decennial census data only available for
+                      {.arg year} = 2010 or 2020")
+        }
+        d_raw = easycensus::cens_get_dec("P5", geo, check_geo=TRUE)
+    } else {
+        if (year == 2020 && survey == "acs1") {
+            cli_abort("No 1-year ACS data for 2020 due to the COVID-19 pandemic.")
+        }
+        d_raw = easycensus::cens_get_acs("B03002", geo, year=year,
+                                         survey=survey, check_geo=TRUE) |>
+            filter(.data$hsplo_race_sub == "total",
+                   .data$hispanic_or_latino_origin != "total") |>
+            select(-"hsplo_race_sub") |>
+            mutate(value = easycensus::get_est(.data$value))
+    }
+
+    d = d_raw |>
+        mutate(race = case_when(
+                   .data$race == "total" ~ "total",
+                   .data$hispanic_or_latino_origin == "hispanic or latino" ~ "hisp",
+                   TRUE ~ as.character(easycensus::tidy_race(.data$race))
+               ),
+               race = case_when(
+                   .data$race == "nhpi" ~ "asian",
+                   .data$race == "two" ~ "other",
+                   TRUE ~ race
+               )) |>
+        group_by(.data$GEOID, .data$NAME, .data$race) |>
+        summarize(value = sum(.data$value),
+                  .groups="drop") |>
+        pivot_wider_tiny(names_from="race") |>
+        select("GEOID", "NAME", pop="total", pop_white="white",
+               pop_black="black", pop_hisp="hisp", pop_asian="asian",
+               pop_aian="aian", pop_other="other") |>
+        mutate(across(c(-"GEOID", -"NAME"), as.integer))
+
+    if (isFALSE(counts)) { # normalize by population
+        for (i in 1:6) {
+            d[, 3+i] = d[, 3+i] / d$pop
+        }
+    }
+
+    if (isTRUE(GEOIDs)) {
+        select(d, -"NAME")
+    } else {
+        d = select(d, -"GEOID")
+        colnames(d)[1] = geo
+        d
+    }
+}
+
+# Helper function to make an R|G table
+census_premade_table = function(G_name, path, counts=FALSE) {
+    d_cens = readRDS(system.file("extdata", path, package="birdie", mustWork=TRUE))
+    if (!counts) { # normalize by population
+        for (i in 1:6) {
+            d_cens[, 2+i] = d_cens[, 2+i] / d_cens[, 2]
+        }
+    }
+    d_cens = d_cens[, -2]
+    colnames(d_cens) = c(G_name, "white", "black", "hisp", "asian", "aian", "other")
+    as_tibble(d_cens)
+}
+
+
+# Helper function to make an R|G table
+census_state_table = function(G_name, counts=FALSE) {
+    d_cens = readRDS(system.file("extdata", "state_race_2010.rds",
+                                 package="birdie", mustWork=TRUE))
+    if (!counts) { # normalize by population
+        for (i in 1:6) {
+            d_cens[, 2+i] = d_cens[, 2+i] / d_cens[, 2]
+        }
+    }
+    d_cens = d_cens[, -2]
+    colnames(d_cens) = c(G_name, "white", "black", "hisp", "asian", "aian", "other")
+    as_tibble(d_cens)
+}
+
+
 # Helper function to make an R|S table
 # `counts` returns counts
 # `flip` returns S|R rather than R|S
-census_surname_table = function(S, S_name, p_r, counts=FALSE, flip=FALSE) {
-    if (length(p_r) != 6)
-        cli_abort(c("Number of racial categories doesn't match the Census table.",
-                    "i"="Categories should be White, Black, Hispanic, Asian,
-                    American Indian/Alaska Native, and other."))
+census_surname_table = function(S, S_name, counts=FALSE, flip=FALSE) {
     if (counts && flip)
         cli_abort("{.arg flip} must be {.val FALSE} if {.arg counts} is {.val TRUE}")
 
@@ -66,22 +191,34 @@ census_surname_table = function(S, S_name, p_r, counts=FALSE, flip=FALSE) {
     as_tibble(out)
 }
 
-# Helper function to make an R|G table
-census_zip_table = function(G, G_name, p_r, counts=FALSE) {
-    if (length(p_r) != 6)
-        cli_abort(c("Number of racial categories doesn't match the Census table.",
-                    "i"="Categories should be White, Black, Hispanic, Asian,
-                    American Indian/Alaska Native, and other."))
-
-    d_cens = readRDS(system.file("extdata", "zip_race_2010.rds",
-                            package="birdie", mustWork=TRUE))
-    if (!counts) {
-        for (i in seq_along(p_r)) {
-            d_cens[, 2+i] = d_cens[, 2+i] / d_cens[, 2]
-        }
-    }
-    d_cens = d_cens[, -2]
-    colnames(d_cens) = c(G_name, "white", "black", "hisp", "asian", "aian", "other")
-    as_tibble(d_cens)
-}
-
+states <- data.frame(
+    stringsAsFactors = FALSE,
+    GEOID = c("01","02","04","05","06",
+              "08","09","10","11","12","13","15","16","17","18",
+              "19","20","21","22","23","24","25","26","27",
+              "28","29","30","31","32","33","34","35","36","37",
+              "38","39","40","41","42","44","45","46","47",
+              "48","49","50","51","53","54","55","56","60","66",
+              "69","72","74","78"),
+    abbr = c("AL","AK","AZ","AR","CA",
+             "CO","CT","DE","DC","FL","GA","HI","ID","IL","IN",
+             "IA","KS","KY","LA","ME","MD","MA","MI","MN",
+             "MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC",
+             "ND","OH","OK","OR","PA","RI","SC","SD","TN",
+             "TX","UT","VT","VA","WA","WV","WI","WY","AS","GU",
+             "MP","PR","UM","VI"),
+    name =c("ALABAMA","ALASKA","ARIZONA",
+            "ARKANSAS","CALIFORNIA","COLORADO","CONNECTICUT",
+            "DELAWARE","DISTRICT OF COLUMBIA","FLORIDA","GEORGIA",
+            "HAWAII","IDAHO","ILLINOIS","INDIANA","IOWA","KANSAS",
+            "KENTUCKY","LOUISIANA","MAINE","MARYLAND",
+            "MASSACHUSETTS","MICHIGAN","MINNESOTA","MISSISSIPPI","MISSOURI",
+            "MONTANA","NEBRASKA","NEVADA","NEW HAMPSHIRE",
+            "NEW JERSEY","NEW MEXICO","NEW YORK","NORTH CAROLINA",
+            "NORTH DAKOTA","OHIO","OKLAHOMA","OREGON","PENNSYLVANIA",
+            "RHODE ISLAND","SOUTH CAROLINA","SOUTH DAKOTA",
+            "TENNESSEE","TEXAS","UTAH","VERMONT","VIRGINIA",
+            "WASHINGTON","WEST VIRGINIA","WISCONSIN","WYOMING",
+            "AMERICAN SAMOA","GUAM","NORTHERN MARIANA ISLANDS","PUERTO RICO",
+            "U.S. MINOR OUTLYING ISLANDS","U.S. VIRGIN ISLANDS")
+)

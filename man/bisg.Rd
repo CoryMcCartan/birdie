@@ -20,11 +20,11 @@ bisg_me(
 \arguments{
 \item{formula}{A formula specifying the BISG model. Must include the special
 term \code{nm()} to identify the surname variable. Certain geographic variables
-can be identified similarly: \code{zip()} for ZIP codes, and \code{county()} for
-counties. If no other predictor variables are provided, then \code{bisg()} will
+can be identified similarly: \code{zip()} for ZIP codes, and \code{state()} for
+states. If no other predictor variables are provided, then \code{bisg()} will
 automatically be able to build a table of census data to use in inference.
 If other predictor variables are included, or if other geographic
-indicators are used, then the user must specify the \code{p_rgx} argument below.
+identifiers are used, then the user must specify the \code{p_rgx} argument below.
 The left-hand side of the formula is ignored.
 See the examples section below for sample formulas.}
 
@@ -52,7 +52,7 @@ If \code{formula} contains only labeled terms (like \code{zip()}), then by defau
 \code{p_rgx} will be constructed automatically from the most recent Census data.
 This table will be normalized by row, so it can be provided as population
 counts as well. Counts are required for \code{bisg_me()}.
-TODO LINK TO CENSUS FUNCTIONS}
+The \code{\link[=census_race_geo_table]{census_race_geo_table()}} function can be helpful to prepare tables.}
 
 \item{p_rs}{The distribution of race given last name. As with \code{p_rgx}, should
 be provided as a data frame, with a column of names and additional columns
