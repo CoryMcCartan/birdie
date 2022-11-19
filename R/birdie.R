@@ -31,6 +31,8 @@ birdie <- function(r_probs, formula, data=NULL,
 
     colnames(out$map) = colnames(r_probs)
     rownames(out$map) = levels(Y_vec)
+    colnames(out$p_ryxs) = stringr::str_c(prefix, colnames(r_probs))
+    out$p_ryxs = as_tibble(out$p_ryxs)
     out$map0 = NULL
     out$N = length(Y_vec)
     # out$vars = GZ_names
@@ -92,8 +94,8 @@ em_lmer <- function(Y, p_rxs, form, data, iter=10, tol=0.001) {
             # check convergence
             if (i > 1) {
                 for (y in seq_len(n_y)) {
-                    avg_diff = sqrt(mean((ests[, y, r] - last_ests[, y, r])^2))
-                    if (avg_diff <= tol) updating[y, r] = FALSE
+                    rel_diff = mean(abs((ests[, y, r] - last_ests[, y, r]) / last_ests[, y, r]))
+                    if (rel_diff <= tol) updating[y, r] = FALSE
                 }
             }
         }

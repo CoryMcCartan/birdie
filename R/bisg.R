@@ -273,7 +273,7 @@ make_gx_tbl_vec <- function(vars, p_r, p_rgx) {
         match_idx = match(vars$GX[[1]], p_rgx[[G_name]])
         idx_miss = which(is.na(match_idx))
         if (length(idx_miss) > 0) {
-            vars$GX[[1]][] = "<none>"
+            vars$GX[[1]][idx_miss] = "<none>"
         }
     } else if (vars$geo_type == "county") {
         # TODO IMPLEMENT

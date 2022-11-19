@@ -8,8 +8,9 @@ d = readRDS(here("data-raw/nc_voters_small.rds")) |>
     filter(!is.na(party))
 p_r = with(d, prop.table(table(race)))
 
-r_probs = predict_race_sgz(last_name, zip, data=d, p_r=p_r,
-                           est_r_gz=TRUE, iterate=0)
+r_probs = bisg(~ nm(last_name) + zip(zip), d, p_r=p_r)
+# r_probs_me = bisg_me(~ nm(last_name) + zip(zip), d, p_r=p_r)
+
 p_r_est = colMeans(r_probs)
 alpha = c(10, 10, 10, 1)
 
@@ -17,7 +18,7 @@ alpha = c(10, 10, 10, 1)
 data = mutate(d, zip = coalesce(zip, "<none>")) |>
     select(party, zip, county, race)
 # x = birdie(r_probs, party ~ (1 | zip), data, alpha=alpha, iter=200)
-x = birdie(r_probs, party ~ (1 | zip), data, alpha=alpha, iter=20)
+x = birdie(r_probs, party ~ (1 | zip), data, alpha=alpha, iter=50)
 
 xr = list(
     true = with(d, prop.table(table(party, race))),
