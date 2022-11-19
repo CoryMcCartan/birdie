@@ -288,7 +288,7 @@ Outside of these cases, however, the weighting estimator is likely to be biased.
 # The Proposed Methodology {#sec:est}
 
 In this section, we propose an alternative identification strategy.
-Specifically, we show that racial disparity is identifiable if one's surname is conditionally independent of the outcome given their race, residence geolocation, and other observed information, assuming that BISG can accurately identify race probabilities.
+Specifically, we show that racial disparity is identifiable if one's surname is conditionally independent of the outcome given their race, residence geolocation, and other observed information, assuming that BISG can nonparametrically identify race probabilities.
 We then develop a statistical model, BIRDiE, that estimates racial disparity under this identification condition while accounting for the high-dimensionality of surnames.
 Finally, we propose a sensitivity analysis that addresses the potential violation of several of the key assumptions.
 
@@ -319,12 +319,12 @@ For example, if campaigns use the surnames of individual voters to decide whethe
 Yet another possible violation of the assumption is the existence of unobserved confounder that affects both outcome and surname.
 The country of origin for an immigrant may represent such a confounder.
 Even in these cases, however, conditioning on (unobserved) race is likely to substantially reduce the magnitude of association between outcome and surnames.
-In Section \ref{sec:sens}, we develop a sensitivity analysis for potential violation of this assumption.
+<!-- In Section \ref{sec:sens}, we develop a sensitivity analysis for potential violation of this assumption. -->
 
-The following theorem shows that it is possible to identify racial disparities under Assumption \ref{a:indep-ys}.
+The following theorem shows that it is possible to nonparametrically identify racial disparities under Assumption \ref{a:indep-ys}.
 
 ```{=tex}
-\begin{theoremrep}[Identification] \label{thm:id}
+\begin{theoremrep}[Nonparametric Identification] \label{thm:id}
 For all $g\in\cG$, $x\in\cX$, and $y\in\cY$, define a matrix $\vb P$ with entries $p_{rs}=\Pr(R=r\mid G=g, X=x, S=s)$  and a vector $\vb b$ with entries $b_s=\Pr(Y=y\mid G=g, X=x, S=s)$.
 Then under Assumption~\ref{a:indep-ys}, and assuming knowledge of the joint distribution $\Pr(R,G,X,S)$, the conditional probabilities $\Pr(Y=y\mid R, G=g, X=x)$ are identified if and only if both $\vb P$ and the augmented matrix $\mqty(\vb P&\vb b)$ have rank $|\cR|$.
 \end{theoremrep}
@@ -346,7 +346,7 @@ Under Assumption \ref{a:indep-ys}, we have, for all $y\in\cY$, $g\in\cG$, $x\in\
     \Pr(Y=y\mid G=g, X=x, S=s)
     = \sum_{r\in\cR} \Pr(Y=y\mid R=r, G=g, X=x)\Pr(R=r\mid G=g, X=x, S=s).
 \end{equation} The leftmost term is estimable from the data and corresponds to the vector $\vb b$ in Theorem \ref{thm:id}, while the rightmost term is the BISG estimand and corresponds to the matrix $\vb P$ in Theorem \ref{thm:id}.
-Lastly, the remaining term in the middle can be solved for, since Equation \eqref{eq:tprob} holds across all combinations of $Y$, $G$, $X$, and $S$, leading to a large system of equations. **KI: Let's express the number of equations and the number of unknowns and show that the former is greater**
+Lastly, the remaining term in the middle can be solved for, since Equation \eqref{eq:tprob} holds across all combinations of $Y$, $G$, $X$, and $S$, leading to a large system of equations. **KI: Therefore, we have a total of $(C_Y - 1) \times C_G \times C_X \times C_S$ equations with $(C_y - 1)\times C_R \times C_G \times C_X$ unknown parameters.  Since we typically have $C_R << C_S$, we can identify these unknowns.**
 Our result is closely related to causal identification based on proxy variables in the presence of unmeasured confounding [@kuroki2014measurement; @miao2018identifying].
 Here, we use surname as a proxy variable for (unobserved) race to identify racial disparities.
 
@@ -477,7 +477,7 @@ The top part of the model places no restrictions on the outcome process.
 \end{equation*} where the parameters $\theta_{yr}(g,x)$ represent the probabilities for each level of the outcome $Y$, which can vary by $R$, $G$, and $X$.
 We have written the parameters as $\theta_{yr}(g,x)$ rather than $\theta_{yrgx}$ to separate the conceptual role of $R$ and $G,X$ in the model.
 The dot $\cdot$ indicates a vector built up out of all possible values of that index.
-For example, $\vb*\theta_{\cdot R_i}(G_i,X_i)$ is a vector of length $|\cY|$ consisting of entries of $\theta_{yR_i}(G_i,X_i)$ for $y\in\cY$.
+For example, $\vb*\theta_{\cdot R_i}(G_i,X_i)$ is a vector of length $C_Y$ consisting of entries of $\theta_{yR_i}(G_i,X_i)$ for $y\in\cY$.
 The conditional distribution of $Y$ given $R$ is of primary interest, which can be written as, $$
     \bar\theta_{yr} 
     = \mathbb{E} (\theta_{yr}(G_i, X_i)),
@@ -528,9 +528,9 @@ Since the individual race $\vb R$ is high-dimensional, discrete, and not of prim
     &= \pi(\Theta) \prod_{i=1}^N \sum_{r\in\cR} \theta_{Y_i r}(G_i, X_i)\hat{P}_{ir}
     = \pi(\Theta) \prod_{i=1}^N \vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i.
     \numberthis \label{eq:post-marg}
-\end{align*} This makes it much easier to sample from the BIRDiE model, as the number of parameters is now a function only of the sizes of $\cY$, $\cR$, $\cG$, and $\cX$, and not the sample size $N$.
+\end{align*} This makes it much easier to sample from the BIRDiE model, as the number of parameters is now a function only of the sizes of $\cY$, $\cR$, $\cG$, and $\cX$, and not the sample size $N$. 
 
-The marginalized posterior \eqref{eq:post-marg} is simple, but not conjugate to any prior distribution.
+The marginalized posterior in Equation \eqref{eq:post-marg} is simple, but not conjugate to any prior distribution.
 It has only continuous parameters, but these are constrained to be nonnegative and to sum to 1 across certain dimensions.
 The BIRDiE  model can be fit with any general Bayesian inference procedure such as Markov chain Monte Carlo (MCMC).
 However, the large amount of data and moderate-to-high dimensionality in practical settings makes MCMC algorithms computationally infeasible.
@@ -637,12 +637,12 @@ The outcome we examine here, party registration, is the product of many unobserv
 <!--
 The two outcomes we examine here, party registration and turnout, are the product of many unobservable factors, and are known to differ across racial groups.
 -->
-Since self-reported race is available, inferences about these racial disparities using the estimators discussed here can be compared to the corresponding true values.
+Since self-reported race is available, inferences about these racial disparities using the estimators discussed here can be compared to the corresponding ground truths.
 
 We use a subset of the October 2022 voter file which could be linked to a proprietary voter file provided by L2, Inc., a leading national non-partisan firm and the oldest organization in the United States that supplies voter data and related technology to candidates, political parties, pollsters, and consultants for use in campaigns.
 The L2 file geocoded each address to a Census block, which allows for the finest block-level BISG predictions.
 We also removed any records without individual race information, since our goal is validation compared to some ground truth, rather than inference about the entire population of registered North Carolina voters.
-Alltogether, `r percent(1 - 5754912/7389159, 0.1)` of records either had missing race information or could not be linked to the L2 file.
+All together, `r percent(1 - 5754912/7389159, 0.1)` of records either had missing race information or could not be linked to the L2 file.
 
 
 ```{r nc-overview, fig.width=6.5}
@@ -708,7 +708,7 @@ knitr::include_graphics("figures/nc_disp.pdf")
 We first examine the accuracy of the various methods in estimating the disparity between White and Black, and White and Hispanic voters, in party identification<!-- and turnout-->.
 For example, the true difference in Democratic identification between Black and White voters in the sample is $`r percent(-x$model$disp_wb_true, 0.1)`$ percentage points, meaning Black voters register Democratic at a much higher rate.
 However, the standard weighting approach produces an estimate of only $`r percent(-x$weight$disp_wb, 0.1)`$ percentage points for this disparity---less than half the true value.
-In contrast, the proposed model produces an estimate of $`r percent(-x$model$disp_wb, 0.1)`$ percentage points.
+In contrast, the proposed model produces an estimate of $`r percent(-x$model$disp_wb, 0.1)`$ percentage points, which are only slightly lower than the ground truth.
 
 Figure \@ref(fig:nc-disp) compares all the methods across all of these possible disparity measurements, using the ZIP code-level BISG predictions.
 The true disparity is subtracted off for ease of comparison.
@@ -791,7 +791,7 @@ In contrast, the disparity in independent registration could be eliminated by wo
 # Discussion {#sec:disc}
 
 We have clarified the assumptions implicit in current approaches to disparity estimation from proxy data, and have introduced a new identifying assumption and accompanying model, BIRDiE.
-In most real-world applications, we believe the new model and identification condition are much appropriate and will produce significantly improved estimates.
+In many real-world applications, we believe the new model and identification condition are appropriate and will produce significantly improved estimates.
 However, there is no one-size-fits-all approach for the estimation of disparities.
 Careful consideration of the underlying causal and information structure is required to choose the correct estimation approach and avoid making the wrong conclusions.
 
