@@ -357,6 +357,16 @@ make_gx_tbl_vec <- function(vars, p_r, p_rgx) {
          p_gxr = p_gxr)
 }
 
+# Call Bayes' rule C++
+est_bisg = function(S, GX, p_sr, p_gxr, p_r, geo=TRUE) {
+    if (!geo) p_gxr = p_gxr*0 + 1
+
+    m_bisg = calc_bayes_bisg(S, GX, p_sr, p_gxr, p_r);
+    colnames(m_bisg) = paste0("pr_", names(p_r))
+    m_bisg
+}
+
+
 #' National Racial Demographics
 #'
 #' Returns the proportion of the U.S. population in six racial groups in a given
