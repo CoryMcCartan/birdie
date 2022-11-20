@@ -17,6 +17,14 @@ em_nocov <- function(Y, p_rxs, prior_alpha, iter) {
     .Call(`_birdie_em_nocov`, Y, p_rxs, prior_alpha, iter)
 }
 
+sum_grp <- function(x, grp, ngrp) {
+    .Call(`_birdie_sum_grp`, x, grp, ngrp)
+}
+
+sum_multi_grp <- function(x, grp, wt, init, nx, ngrp) {
+    .Call(`_birdie_sum_multi_grp`, x, grp, wt, init, nx, ngrp)
+}
+
 gibbs_me <- function(iter, warmup, S, GZ, M_sr, N_gzr, alpha_gzr, beta_sr, verbosity) {
     .Call(`_birdie_gibbs_me`, iter, warmup, S, GZ, M_sr, N_gzr, alpha_gzr, beta_sr, verbosity)
 }
