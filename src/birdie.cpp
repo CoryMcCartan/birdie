@@ -41,3 +41,36 @@ List em_nocov(const IntegerVector Y, const Eigen::MatrixXd p_rxs,
         _["p_ryxs"] = p_ryxs
     );
 }
+
+
+// [[Rcpp::export]]
+NumericVector sum_grp(const NumericVector x, const IntegerVector grp, int ngrp) {
+    NumericVector out(ngrp);
+
+    int N = x.size();
+    for (int i = 0; i < N; i++) {
+        out[grp[i] - 1] += x[i];
+    }
+
+    return out;
+}
+
+// [[Rcpp::export]]
+NumericMatrix sum_multi_grp(const IntegerVector x, const IntegerVector grp,
+                            const NumericVector wt, const NumericVector init,
+                            int nx, int ngrp) {
+    NumericMatrix out(ngrp, nx);
+
+    for (int j = 0; j < ngrp; j++) {
+        for (int k = 0; k < nx; k++) {
+            out(j, k) = init[k];
+        }
+    }
+
+    int N = x.size();
+    for (int i = 0; i < N; i++) {
+        out(grp[i] - 1, x[i] - 1) += wt[i];
+    }
+
+    return out;
+}

@@ -16,16 +16,21 @@ alpha = c(10, 10, 10, 1)
 
 # x = birdie(r_probs, party ~ 1, d, alpha=alpha)
 data = mutate(d, zip = coalesce(zip, "<none>")) |>
-    select(party, zip, county, race)
-# x = birdie(r_probs, party ~ (1 | zip), data, alpha=alpha, iter=200)
-x = birdie(r_probs, party ~ (1 | zip), data, alpha=alpha, iter=50)
+    select(party, zip, county, race, n_voted)
+x = birdie(r_probs, party ~ (1 | zip), data, max_iter=50)
+# x = birdie(r_probs, party ~ (1 | zip), data, alpha=alpha, iter=50)
 
 xr = list(
     true = with(d, prop.table(table(party, race))),
     weight = calc_joint_bisgz(r_probs, d$party, "weight"),
     ols = calc_joint_bisgz(r_probs, d$party, "ols"),
-    post_weight = calc_joint_bisgz(x$p_ryxs, d$party, "weight"),
-    # map0 = x$map0 %*% diag(p_r_est),
+    EM = x$map %*% diag(colMeans(x$p_ryxs)),
+    EM2 = x$map %*% diag(p_r)
+)
+xr = list(
+    true = with(d, prop.table(table(n_voted, race))),
+    weight = calc_joint_bisgz(r_probs, d$n_voted, "weight"),
+    ols = calc_joint_bisgz(r_probs, d$n_voted, "ols"),
     EM = x$map %*% diag(colMeans(x$p_ryxs)),
     EM2 = x$map %*% diag(p_r)
 )
