@@ -1,6 +1,6 @@
 Package: birdie
 Title: Bayesian Instrumental Regression for Disparity Estimation
-Version: 0.2.0
+Version: 0.3.0
 Authors@R: c(
     person("Cory", "McCartan", role=c("aut", "cre"), email="cmccartan@g.harvard.edu"),
     person("Kosuke", "Imai", role="aut", email="imai@harvard.edu"),
@@ -8,7 +8,7 @@ Authors@R: c(
     person("Jacob", "Goldin", role="ctb", email="jsgoldin@uchicago.edu"),
     person("Robin", "Fisher", role="ctb", email="robin.fisher@treasury.gov")
     )
-Description: A Bayesian model for accurately estimating conditional 
+Description: Bayesian models for accurately estimating conditional 
     distributions by race, using Bayesian Improved Surname Geocoding (BISG) 
     probability estimates of individual race. Implements the methdos described
     in McCartan, Fisher, Goldin, Ho and Imai (2022) <arXiv:>.
@@ -17,14 +17,14 @@ Depends:
 Imports: 
     rlang (>= 0.1.2),
     cli,
+    vctrs,
     dplyr,
     tidyselect,
     stringr,
     stringi,
-    vctrs,
+    lme4,
     Rcpp
 Suggests: 
-    lme4,
     easycensus,
     wru,
     knitr,

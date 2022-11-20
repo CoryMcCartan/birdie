@@ -67,6 +67,35 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// sum_grp
+NumericVector sum_grp(const NumericVector x, const IntegerVector grp, int ngrp);
+RcppExport SEXP _birdie_sum_grp(SEXP xSEXP, SEXP grpSEXP, SEXP ngrpSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector >::type grp(grpSEXP);
+    Rcpp::traits::input_parameter< int >::type ngrp(ngrpSEXP);
+    rcpp_result_gen = Rcpp::wrap(sum_grp(x, grp, ngrp));
+    return rcpp_result_gen;
+END_RCPP
+}
+// sum_multi_grp
+NumericMatrix sum_multi_grp(const IntegerVector x, const IntegerVector grp, const NumericVector wt, const NumericVector init, int nx, int ngrp);
+RcppExport SEXP _birdie_sum_multi_grp(SEXP xSEXP, SEXP grpSEXP, SEXP wtSEXP, SEXP initSEXP, SEXP nxSEXP, SEXP ngrpSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const IntegerVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector >::type grp(grpSEXP);
+    Rcpp::traits::input_parameter< const NumericVector >::type wt(wtSEXP);
+    Rcpp::traits::input_parameter< const NumericVector >::type init(initSEXP);
+    Rcpp::traits::input_parameter< int >::type nx(nxSEXP);
+    Rcpp::traits::input_parameter< int >::type ngrp(ngrpSEXP);
+    rcpp_result_gen = Rcpp::wrap(sum_multi_grp(x, grp, wt, init, nx, ngrp));
+    return rcpp_result_gen;
+END_RCPP
+}
 // gibbs_me
 Eigen::MatrixXd gibbs_me(int iter, int warmup, const Eigen::VectorXi& S, const Eigen::VectorXi& GZ, const Eigen::MatrixXd& M_sr, const Eigen::MatrixXd& N_gzr, const Eigen::MatrixXd& alpha_gzr, const Eigen::MatrixXd& beta_sr, int verbosity);
 RcppExport SEXP _birdie_gibbs_me(SEXP iterSEXP, SEXP warmupSEXP, SEXP SSEXP, SEXP GZSEXP, SEXP M_srSEXP, SEXP N_gzrSEXP, SEXP alpha_gzrSEXP, SEXP beta_srSEXP, SEXP verbositySEXP) {
@@ -92,6 +121,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_birdie_calc_bayes", (DL_FUNC) &_birdie_calc_bayes, 3},
     {"_birdie_dirichlet_map", (DL_FUNC) &_birdie_dirichlet_map, 3},
     {"_birdie_em_nocov", (DL_FUNC) &_birdie_em_nocov, 4},
+    {"_birdie_sum_grp", (DL_FUNC) &_birdie_sum_grp, 3},
+    {"_birdie_sum_multi_grp", (DL_FUNC) &_birdie_sum_multi_grp, 6},
     {"_birdie_gibbs_me", (DL_FUNC) &_birdie_gibbs_me, 9},
     {NULL, NULL, 0}
 };
