@@ -9,14 +9,10 @@ birdie <- function(r_probs, formula, data=NULL,
         d_model = model.frame(formula, data=data, na.action=na.fail)
         Y_vec = model.response(d_model)
         method = "nocov"
-    } else if (length(re_terms) == 1) {
-        d_model = lme4::lFormula(formula, data=data)$fr
-        Y_vec = d_model[[1]]
-        method = "re1"
     } else {
         d_model = lme4::lFormula(formula, data=data)$fr
         Y_vec = d_model[[1]]
-        method = "lmer"
+        method = if (length(re_terms) == 1) "re1" else "glmm"
     }
 
     # set up race probability matrix
@@ -56,9 +52,9 @@ birdie <- function(r_probs, formula, data=NULL,
     if (method == "nocov") {
         out = em_nocov(as.integer(Y_vec), r_probs, prior, iter=max_iter)
     } else if (method == "re1") {
-        out = em_lmer(Y_vec, r_probs, formula, data, iter=max_iter)
+        out = em_re1(Y_vec, r_probs, formula, data, iter=max_iter)
     } else if (method == "lmer") {
-        out = em_lmer(Y_vec, r_probs, formula, data, iter=max_iter)
+        out = em_glmm(Y_vec, r_probs, formula, data, iter=max_iter)
     }
 
 
@@ -77,7 +73,7 @@ birdie <- function(r_probs, formula, data=NULL,
     out
 }
 
-em_1re <- function(Y, p_rxs, form, d_model, prior=rep(1, ncol(p_rxs)),
+em_re1 <- function(Y, p_rxs, form, d_model, prior=rep(1, ncol(p_rxs)),
                    iter=10, tol=0.001) {
     n_y = nlevels(Y)
     n_r = ncol(p_rxs)
@@ -147,7 +143,7 @@ em_1re <- function(Y, p_rxs, form, d_model, prior=rep(1, ncol(p_rxs)),
          p_ryxs = p_ryxs)
 }
 
-em_lmer <- function(Y, p_rxs, form, data, iter=10, tol=0.001) {
+em_glmm <- function(Y, p_rxs, form, data, iter=10, tol=0.001) {
     n_y = nlevels(Y)
     n_r = ncol(p_rxs)
     Y = as.integer(Y)
