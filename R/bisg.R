@@ -78,7 +78,7 @@ bisg <- function(formula, data=NULL, p_r=p_r_natl(), p_rgx=NULL, p_rs=NULL) {
 
     m_bisg = est_bisg(l_name$S, l_gx$GX, l_name$p_sr, l_gx$p_gxr, l_gx$p_r)
 
-    out <- as_tibble(m_bisg)
+    out = as_tibble(m_bisg)
     class(out) = c("bisg", class(out))
     attr(out, "S_name") = vars$S_name
     attr(out, "GX_names") = colnames(vars$GX)
@@ -114,7 +114,7 @@ bisg_me <- function(formula, data=NULL, p_r=p_r_natl(), p_rgx=NULL, p_rs=NULL,
                       alpha_gzr, beta_sr, verbosity=3L)
     colnames(m_bisg) = paste0("pr_", names(p_r))
 
-    out <- as_tibble(m_bisg)
+    out = as_tibble(m_bisg)
     class(out) = c("bisg", class(out))
     attr(out, "S_name") = vars$S_name
     attr(out, "GX_names") = colnames(vars$GX)
