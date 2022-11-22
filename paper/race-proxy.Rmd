@@ -199,8 +199,8 @@ Specifically, we consider the following weighting estimator, which attempts to c
             \sum_{i=1}^N \hat P_{ir}}.
 $$
 
-[^1]: An alternative is a classification estimator, which deterministically assigns individuals to a predicted racial category based on the BISG estimates $\vb{\hat P}_i$ (either the largest $\hat P_{ir}$ or the one which exceeds a predetermined threshold).
-    Unlike the weighting estimator, this classification estimator does not take into account prediction uncertainty.
+[^1]: An alternative is a *thresholding* or *classification* estimator, which deterministically assigns individuals to a predicted racial category based on the BISG estimates $\vb{\hat P}_i$ (either the largest $\hat P_{ir}$ or the one which exceeds a predetermined threshold).
+    Unlike the weighting estimator, this classification estimator does not take into account prediction uncertainty, and its bias is harder to reason about than for the weighted estimator \citet{chen2019fairness}.
 
 \citet{chen2019fairness} show that the asymptotic bias of this weighting estimator is controlled by the residual correlation of $Y$ and $R$ after adjusting for $G$, $X$, and $S$.
 We reproduce this result here.
@@ -220,7 +220,7 @@ This result implies that the conditional independence between individual's race 
 For all $i$, $$Y_i\indep R_i\mid G_i,X_i,S_i.$$
 \end{assump}
 ```
-Figure \@ref(fig:dag)(a) shows a causal directed asyclic graph (DAG) that satisfies Assumption \ref{a:indep-yr} as well as Assumption \ref{a:indep-sgx}.
+Figure \@ref(fig:dag)(a) shows a causal directed acyclic graph (DAG) that satisfies Assumption \ref{a:indep-yr} as well as Assumption \ref{a:indep-sgx}.
 This causal structure implies the conditional independence relation $Y\indep R\mid G,X,S$ because all paths from $R$ to $Y$ are blocked by $G$, $X$, or $S$.
 The key causal assumption of this DAG is that the effect of race $R$ on the outcome $Y$ must be entirely mediated by surname $S$, residence location $G$, and other observed characteristics $X$.
 This type of exclusion restriction may not be credible in many practical settings because race can affect the outcome through so many factors, biasing the weighting estimator.
