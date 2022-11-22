@@ -6,7 +6,7 @@ authors:
       department: Department of Statistics
       affiliation: Harvard University
     - name: Jacob Goldin
-      department: Sanford Law School
+      department: Stanford Law School
     - name: Daniel E. Ho
       department: Stanford Law School
     - name: Kosuke Imai
