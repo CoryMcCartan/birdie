@@ -24,9 +24,9 @@ abstract: |
     Although BISG tends to produce well-calibrated racial predictions, its prediction errors are often correlated with the outcomes of interest, yielding biased estimates of racial disparities.
     We propose a more credible identification strategy that corrects this bias.
     The proposed strategy is applicable whenever one's surname is conditionally independent of the outcome given their (unobserved) race, residence location, and other observed characteristics.
-    Leveraging this identification strategy, we introduce a new model, Bayesian Instrumental Regression for Disparity Estimation (BIRDiE), that estimates racial disparity while using surnames as a kind of high-dimensional instrument for race.
+    Leveraging this identification strategy, we introduce a new class of models, Bayesian Instrumental Regression for Disparity Estimation (BIRDiE), that estimate racial disparity while using surnames as a high-dimensional instrument for race.
     We also develop a sensitivity analysis to address the potential violation of the required assumption that BISG's race predictions are well calibrated.
-    Our validation study based on North Carolina voter files shows that BIRDiE reduces error by about 74--79% in comparison to existing approaches in estimating party identification by race.
+    Our validation study based on North Carolina voter files shows that BIRDiE reduces error by about 75% in comparison to the standard approaches for estimating party identification by race.
     A similarly substantial improvement is obtained in estimating racial disparities of partisan identification.
 keywords: 
     - BISG
@@ -89,22 +89,24 @@ Specifically, we assume that the outcome is conditionally independent of surname
 This assumption is an exclusion restriction, treating surname as an instrument for the outcome.
 It implies that for two individuals who live in the same area, belong to the same racial group, and share the observable attributes, their surnames have no predictive power of the outcome.
 We argue that this new identification assumption is more credible unless surname is directly used to determine the outcome of interest (i.e., name-based discrimination).
-Leveraging this identification strategy, we introduce a new model, Bayesian Instrumental Regression for Disparity Estimation (BIRDiE), that overcomes the high-dimensionality of surnames to accurately estimate racial disparities.
-We propose using off-the-shelf stochastic variational inference to fit the model to large administrative datasets.
+Leveraging this identification strategy, we introduce a new class of models, Bayesian Instrumental Regression for Disparity Estimation (BIRDiE), that overcome the high-dimensionality of surnames to accurately estimate racial disparities.
+This approach includes built-in flexibility for researchers to make problem-specific modeling choices.
+We propose an EM algorithm for fitting BIRDiE models that can scale to hundreds of thousands or millions of observations.
 
 In large datasets, sampling-based uncertainty is overwhelmed by error that arises from violations of our assumptions about the data.
 This is particularly true in this context where the key variable of interest is unobserved.
 Section \@ref(sec:sens) proposes a method to evaluate the sensitivity of estimates about racial disparities to the potential violation of model assumptions.
-<!--# All of the proposed methodology is implemented in open-source software that is made available with the paper. -->
+All of the proposed methodology is implemented in open-source software that is made available with the paper.
 
 In Section \@ref(sec:valid), we validate the proposed methodology using real-world data taken from the voter file in North Carolina, where self-reported individual-race is observed and can be used to construct the ground-truth of racial disparities.
 BIRDiE substantially outperforms existing estimators across different error measures, two different outcome variables, and multiple levels of geolocation specificity.
 For example, the most popular existing BISG disparity estimator pegs the gap at Democratic party registration between White and Black voters at `r round(-100*x$weight$disp_wb, 1)` percentage points, while the actual gap is `r round(-100*x$weight$disp_wb_true, 1)` percentage points---more than double.
 BIRDiE yields an estimate of `r round(-100*x$model$disp_wb, 1)` percentage points.
 
+```{=html}
 <!--# In Section \@ref(sec:appl), we apply BIRDiE to large-scale administrative data from the U.S. Internal Revenue Service.
 We produce the first-ever estimates of claim rates of the home mortgage interest deduction (HMID) by race…. [fill in]. **KI: I would like to introduce this application in Section 2 as a motivating example.  Then, we can come back to its analysis in Section \@ref(sec:appl).** -->
-
+```
 Section \@ref(sec:disc) gives concluding remarks.
 
 # Bias of the Standard Methodology {#sec:id}
@@ -463,58 +465,89 @@ To address this challenge, and to open the door to more flexible modeling, we ne
 
 ## Bayesian Instrumental Regression for Disparity Estimation
 
-We first present the BIRDiE model and describe the choice of prior before briefly discussing computational issues.
-We consider modeling the conditional distribution of the outcome $Y$ given race $R$, residence location $G$, and other observed characteristics $X$.
-Under Assumption \ref{a:indep-ys}, we do not need to condition on $S$.
-The top part of the model places no restrictions on the outcome process.
-\begin{equation*}
-    Y_i \mid R_i, G_i, X_i, \Theta \sim \Categorical_\cY(\vb*\theta_{\cdot R_i}(G_i,X_i)),
-\end{equation*} where the parameters $\theta_{yr}(g,x)$ represent the probabilities for each level of the outcome $Y$, which can vary by $R$, $G$, and $X$.
-We have written the parameters as $\theta_{yr}(g,x)$ rather than $\theta_{yrgx}$ to separate the conceptual role of $R$ and $G,X$ in the model.
-The dot $\cdot$ indicates a vector built up out of all possible values of that index.
-For example, $\vb*\theta_{\cdot R_i}(G_i,X_i)$ is a vector of length $|\cY|$ consisting of entries of $\theta_{yR_i}(G_i,X_i)$ for $y\in\cY$.
-The conditional distribution of $Y$ given $R$ is of primary interest, which can be written as, $$
-    \bar\theta_{yr} 
-    = \mathbb{E} (\theta_{yr}(G_i, X_i)),
-$$ where the expectation is taken over the joint distribution of $G$ and $X$.
+The BIRDiE approach combines a user-specified complete-data outcome model $\pi(Y\mid R, G, X, \Theta)$, parametrized by $\Theta$, with the BISG model in order to estimate the distribution $Y\mid R$ that is of interest.
+We first present the general BIRDiE model and describe potential choices of complete-data outcome models before discussing our computational approach.
 
-Next, we model $G$, $X$, and $S$ given $R$ using the BISG methodology.
-Specifically, we model $S$ and $(G,X)$ separately given $R$ using the Census data under Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc}): \begin{align*}
-    (G_i, X_i) \mid R_i &\sim \Categorical_{\cG\times\cX}(\vb q_{GX|R_i}) \\
-    S_i \mid R_i &\sim \Categorical_\cS(\vb q_{S|R_i}) \\
-    R_i &\iid \Categorical_\cR(\vb q_R)
-\end{align*} Finally, the model is completed with the prior distribution for $\Theta$, which is denoted by $\pi(\Theta)$ and discussed in detail below.
-
-Putting all together, the posterior distribution can then be written as \begin{align}
+The BIRDiE posterior is obtained by applying Assumptions \ref{a:indep-sgx}, \ref{a:cens-acc}, and \ref{a:indep-ys} to the joint distribution $\pi(Y, R, G, X, S, \Theta)$: \begin{align}
     \pi(\Theta, \vb R\mid \vb Y, \vb G, \vb X, \vb S)
-    &\propto \pi(\Theta)\prod_{i=1}^N \pi(Y_i\mid G_i, X_i, R_i, \Theta)
-            \pi(G_i, X_i\mid R_i)\pi(S_i\mid R_i)\pi(R_i) \nonumber \\
-    &= \pi(\Theta) \prod_{i=1}^N \theta_{Y_iR_i}(G_i, X_i) q_{G_iX_i\mid R_i} q_{S_i\mid R_i} q_{R_i} \nonumber \\
-    &\propto \pi(\Theta) \prod_{i=1}^N \theta_{Y_iR_i}(G_i, X_i)\hat{P_i}_{R_i}, \label{eq:posterior}
-\end{align} where as above $\hat{\vb P_i}$ are the BISG probability estimates for individual $i$, which depend on Census data represented in $\vb q_{GX\mid R}$, $\vb q_{S\mid R}$, and $\vb q_R$, but not on the parameters $\Theta$ and individual race $\vb R$.
-<!--# Notice the similarities between the final form of the posterior and the identifying equation \eqref{eq:tprob}. -->
+    &\propto \pi(\Theta, \vb R, \vb Y, \vb G, \vb X, \vb S) \nonumber \\
+    &\propto \pi(\Theta)\prod_{i=1}^N \pi(Y_i\mid R_i, G_i, X_i, \Theta)
+            \pi(R_i\mid G_i, X_i, S_i) \nonumber \\
+    &= \pi(\Theta) \prod_{i=1}^N \pi(Y_i\mid R_i, G_i, X_i, \Theta) \hat{P_i}_{R_i}, \label{eq:posterior}
+\end{align} where as above $\hat{\vb P}_i$ are the BISG probability estimates for individual $i$, which depend on Census data represented in $\vb q_{GX\mid R}$, $\vb q_{S\mid R}$, and $\vb q_R$, but not on the outcome-model parameters $\Theta$.
 
-The final but critical component of the BIRDiE model is the prior $\pi(\Theta)$.
-A natural prior would be to allow for maximum flexibility with a *fully saturated* specification: \begin{align*}
-    \Theta_{yr}(g, \vb x) &= \theta_{yrg\vb x},  \\
-    \vb*\theta_{\cdot rgx}&\iid\Dirichlet(\alpha).
-\end{align*} This prior, however, suffers from the curse of dimensionality as more covariates are added to $X$, especially since in practice $G$ will be quite large, covering many blocks or ZIP codes.
-For example, for a binary outcome and nationwide data, if we use block-level race data, five racial categories, and just four binary covariates, the model has over 650 *million* parameters, which is nearly double the entire U.S. population.
-With all of these parameters *a priori* independent under the fully saturated prior, there is no opportunity for sharing information across parameters with the prior dominating the likelihood for individual parameters.
-This problem could be partially remedied by adding some hierarchical structure to the priors on $\vb*\theta_{\cdot rgx}$, e.g., by grouping parameters at the county or state level.
+To apply this general BIRDiE model to a particular analysis requires choosing a complete-data outcome model, given by the likelihood $\pi(Y_i\mid R_i, G_i, X_i, \Theta)$ and prior $\pi(\Theta)$.
+Since $Y$ is discrete, a categorical regression model is appropriate for $\pi(Y_i\mid R_i, G_i, X_i, \Theta)$.
+The parametrization of the categorical regression will depend on the analyst's goals, computational resources, and prior beliefs about the structure of the problem.
+We present here several reasonable alternatives that trade off modeling flexibility with computational efficiency.
 
-We take a slightly different approach, motivated by the fact that we are primarily interested in $\bar\Theta$.
-We assume that the relationship between the outcome $Y$ and race $R$ could vary widely by geographies, or within demographic subgroups but the structure of this interaction is relatively low-dimensional.
-Under this assumption of no higher-order interaction, we propose the following *additive* prior specification, which can be viewed as a random intercept model: \begin{align*}
-    \Theta_{yr}(g, \vb x) &= g^{-1}\qty(\log\theta_{yr} + \beta^{(0)}_{yrg} + 
-        \sum_{k=1}^{K} \beta^{(k)}_{yrx_k})\\
-        \vb*\theta_{\cdot r} &\iid \Dirichlet(\alpha) \\
-        \vb*\beta^{(k)}\mid\sigma^2_k &\iid \Norm(0, \sigma^2_k), \quad k=0,1,\dots,K \\
-        \sigma^2_k &\iid \Cauchy^+(0, L), \quad k=0,1,\dots,K,
-\end{align*} where $K$ is the number of covariates, $\alpha$ and $L$ are hyperparameters, and $g^{-1}$ is a softmax link function.
-The hierarchical priors on the $\vb*\beta^{(k)}$ allow the model to shrink towards zero for covariates which are not predictive of a varying relationship between $Y$ and $R$.
-To the extent one wishes to model higher-order interactions, those can be included as additional random intercepts; the key efficiency gain is in separating the large number of geographic parameters $\beta^{(0)}_{yrg}$ from the other covariates.
-We have found, on smaller datasets where fitting both the additive and fully saturated specifications is possible, that both specifications give similar inferences for $\bar\Theta$, but the additive specification tends to be more accurate even for medium-sized problems.
+<!--# The level-5 header is equivalent to \paragraph{} -->
+
+##### Complete-pooling model.
+
+The simplest possible model is one in which the relationship between $Y$ and $R$ does not vary with $G$ or $X$.
+This model is parametrized by $\Theta=\{\vb*\theta_r\}_{r\in\cR}$, which describe the distribution of $Y$ within every level of $R$: \begin{align*}
+        Y_i\mid R_i, G_i, X_i, \Theta &\sim \Categorical_{\cY}(\vb*\theta_{R_i}) \\
+        \vb*\theta_r &\iid \Dirichlet(\vb*\alpha).
+\end{align*}
+With known $\vb R$, the posterior of $\vb*\theta_r$ is conjugate, a fact which will make computation under the EM scheme described below extremely efficient.
+Of course, this efficiency comes at the cost of a restrictive model that allows for no role of $G$ and $X$.
+If in reality $\Pr(Y\mid R)$ does vary along these dimensions, it is possible that the posterior of $\vb*\theta_r$ will not accurately estimate $\Pr(Y\mid R)$.
+In any case, if the analyst is interested in subgroup or small-area estimates of $\Pr(Y\mid R)$, the complete-pooling model will be of no help.
+
+##### Saturated (no-pooling) model.
+
+At the other end of the spectrum from the complete-pooling model is a *saturated* or no-pooling model, which estimates a different distribution of $Y\mid R$ within every level of $G$ and $X$:
+\begin{align*}
+        Y_i\mid R_i, G_i, X_i, \Theta &\sim \Categorical_{\cY}(\vb*\theta_{R_iG_iX_i}) \\
+        \vb*\theta_{rgx} &\iid \Dirichlet(\vb*\alpha).
+\end{align*}
+This model is closest to the OLS estimator, though it ensures that all probability estimates lie in $[0, 1]$.
+As with the complete-pooling model, the posterior of $\vb*\theta_{rgx}$ is conjugate to its prior, and so computation can be made very efficient.
+Additionally, this model allows for any arbitrary relationship between $Y$, $R$, $G$, and $X$.
+Since it is fully nonparametric, the posterior will converge to the true $\Pr(Y\mid R, G, X)$ with enough data.
+However, in practice, the model suffers from the curse of dimensionality: the number of $(G, X)$ cells may be relatively large compared to the amount of available data, or even exceed it, especially since in practice $G$ will be quite large, covering many blocks or ZIP codes.
+In these cases, the prior will dominate the data in each cell, which could have a large biasing effect even on overall inferences about $\Pr(Y\mid R)$.
+
+##### Geographic hierarchical model.
+
+Often researchers only have available $S$ and $G$ for BISG inferences, with no additional covariates $X$.
+In this common use case, we propose a hierarchical model, which maintains the flexibility of the saturated model while avoiding its high bias and variance in finite samples.
+The hierarchical structure partially pools estimates of $\Pr(Y\mid R, G)$ towards an overall
+estimate of $\Pr(Y\mid R)$, which in turn is pooled towards an overall estimate of $\Pr(Y)$.
+This partial pooling allows the model to share information between geographic areas and racial categories, and should prove especially useful in cases where some areas or racial categories have few observations.
+
+The proposed model is as follows. 
+This particular hierarchical structure is inspired by @azzimonti2017hierarchical, though other parametrizations would accomplish the same goal. 
+\begin{align*}
+    Y_i\mid R_i, G_i, X_i, \Theta &\sim \Categorical_{\cY}(\vb*\theta_{R_iG_i}) \\
+    \vb*\theta_{rg}\mid \phi_{\beta r},\vb*\beta_r  &\sim \Dirichlet(\phi_{\beta r}\vb*\beta_r) \\
+    \vb*\beta_r\mid \phi_\alpha, \vb*\alpha &\iid \Dirichlet(\phi_\alpha\vb*\alpha) \\
+    \vb*\alpha &\sim \Dirichlet(\vb*1) \\
+    \phi_{\beta r} &\iid \Gam(2, \frac{2\sigma_\beta^2}{\tfrac{1}{4}-\sigma_\beta^2}), \quad
+    \phi_\alpha \sim \Gam(2, \frac{2\sigma_\alpha^2}{\tfrac{1}{4}-\sigma_\alpha^2})
+\end{align*}
+Here $\phi_{\beta r}$ and $\phi_\alpha$ are effective sample sizes that control the amount of dispersion of the random effects $\vb*\theta_{rg}$ and $\vb*\beta_r$.
+The priors on these parameters is written in terms of hyperparameters $\sigma_\beta$ and $\sigma_\alpha$, which represent the *a priori* expectation of the standard deviation of entries of $\vb*\theta_{rg}$ around $\vb*\beta_r$, and $\vb*\beta_r$ around $\vb*\alpha$.
+For example, if we expect there to be little variation in $\vb*\theta_{rg}$ (i.e., the distribution of $Y\mid R$ is similar across levels of $G$) and moderate variation in $\vb*\beta_r$ (i.e., the distribution of $Y$ varies moderately across levels of $R$), we might set $\sigma_\beta=0.05$ and $\sigma_\alpha=0.4$.
+This would give the $\phi_{\beta r}$ a prior mean of 99 and give $\phi_\alpha$ a prior mean of 24.
+Both $\sigma_\beta$ and $\sigma_\alpha$ must lie in $(0, \half)$, since the maximum standard deviation of any entry in a Dirichlet-distributed vector is $\half$.
+
+##### General mixed-effects model.
+
+Finally, in cases with covariates $X$, a multinomial mixed-effects model can be used:
+\begin{align*}
+    Y_i\mid R_i, G_i, X_i, \Theta &\sim \Categorical_{\cY}(g^{-1}(\vb*\mu_{rgx})) \\
+    \mu_{rgxy} &= \vb W\vb*\beta_{ry} + \vb Z\vb u_{ry} \\
+    \quad \vb u_{ry}\mid \phi_{ry} &\sim \Norm(0, \Sigma(\vb*\phi_{ry})) \\
+    \vb*\beta_{ry} &\iid f_\beta, \quad \vb*\phi_{ry} \iid f_\phi ,
+\end{align*}
+where $g^{-1}$ is a softmax or other link function, $\vb W$ and $\vb Z$ are matrices of fixed and random effects, respectively, $\vb*\phi$ is a vector of random-effect parameters, and $f_\beta$ and $f_\phi$ are some priors for the subscripted parameters.
+Some fixed or random effects could be shared across combinations of $R$ and $Y$, though this could complicate computation.
+We recommend including $X$ and especially $G$ in the model as random effects, with hierarchical structure as appropriate.
+We also recommend including group-level covariates as fixed effects, which will help share information across random effects and significantly improve generalization performance to unseen random effect levels.
+For example, if $G$ records counties, analysts could include fixed effects for racial and socioeconomic variables measured at the county level.
+Ultimately the structure of this general model will have to be chosen based on the structure of the data and the relevant research question.
 
 ## Computation
 
@@ -771,12 +804,13 @@ But these bounds provide a useful guarantee, and can can give an idea of the rel
 For example, even though the estimated gap between White and Black voters in Republican registration is smaller than the gap for Democratic registration, both disparities are roughly equally robust to error.
 In contrast, the disparity in independent registration could be eliminated by worst-case error on the order of `r round(100*x$max_err_party_wb["ind"], 1)` percentage points.
 
+```{=html}
 <!--# 
 # Application {#sec:appl}
 
 -   Treasury data, no covariates
 -->
-
+```
 # Discussion {#sec:disc}
 
 We have clarified the assumptions implicit in current approaches to disparity estimation from proxy data, and have introduced a new identifying assumption and accompanying model, BIRDiE.
