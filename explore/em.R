@@ -20,17 +20,17 @@ data = mutate(d, zip = coalesce(zip, "<none>")) |>
 
 x0 = birdie(r_probs, party ~ 1, data, prior=rep(1.01, 4), ctrl=birdie.ctrl(max_iter=500))
 x1 = birdie(r_probs, party ~ zip, data, prior=rep(1.01, 4), ctrl=birdie.ctrl(max_iter=500))
-x = birdie(r_probs, party ~ (1 | zip), data, ctrl=birdie.ctrl(max_iter=50))
+# x = birdie(r_probs, party ~ (1 | zip), data, ctrl=birdie.ctrl(max_iter=50))
 # x = birdie(r_probs, party ~ (1 | zip), data, alpha=alpha, iter=50)
 
 xr = list(
     true = with(d, prop.table(table(party, race))),
-    weight = calc_joint_bisgz(r_probs, d$party, "weight"),
-    ols = calc_joint_bisgz(r_probs, d$party, "ols"),
-    # pols = calc_joint_bisgz_ols(r_probs, d$party, d$zip, with(d, prop.table(table(zip, race), 2))),
     pool = x0$map %*% diag(colMeans(x0$p_ryxs)),
     sat = x1$map %*% diag(colMeans(x1$p_ryxs)),
-    glmm = x$map %*% diag(colMeans(x$p_ryxs))
+    # glmm = x$map %*% diag(colMeans(x$p_ryxs)),
+    # pols = calc_joint_bisgz_ols(r_probs, d$party, d$zip, with(d, prop.table(table(zip, race), 2))),
+    ols = calc_joint_bisgz(r_probs, d$party, "ols"),
+    weight = calc_joint_bisgz(r_probs, d$party, "weight")
 )
 
 # xr = c(xr[1], lapply(xr[-1], \(tbl) rake(tbl, rowSums(xr$true), colSums(xr$true))))

@@ -11,7 +11,7 @@ birdie <- function(r_probs, formula, data=NULL,
         if (length(attr(terms(formula), "term.labels")) == 0) { # just Y ~ 1
             method = "pool"
         } else { # saturated
-            method = "sat"
+            method = "fixef"
 
             tt = terms(formula)
             int_ord = attr(tt, "order")
@@ -19,7 +19,7 @@ birdie <- function(r_probs, formula, data=NULL,
             full_int = all(int_ord == choose(length(int_ord), seq_along(int_ord))) # pascal's triangle
             if (!full_int) {
                 x_vars = attr(tt, "term.labels")[attr(tt, "order") == 1]
-                cli_warn(c("Saturated (no-pooling) model being fit without
+                cli_warn(c("Fixed effects (no-pooling) model being fit without
                          full interaction structure. No estimation guarantees.",
                          "i"="For full interaction structure, use
                          `{colnames(d_model)[1]} ~ {paste0(x_vars, collapse=' * ')}`."))
@@ -61,23 +61,21 @@ birdie <- function(r_probs, formula, data=NULL,
         prior = rep_len(1, nlevels(Y_vec))
         if (method == "pool") {
             cli_inform("Using uniform prior for {.arg alpha} = Pr(X | R)")
-        } else if (method == "sat") {
-            cli_inform("Using c(2, 2, ... 2) prior for {.arg alpha} = Pr(X | R)")
-            prior = rep_len(2, nlevels(Y_vec))
+        } else if (method == "fixef") {
+            cli_inform("Using c(1+\u03B5, 1+\u03B5, ... 1+\u03B5)
+                       prior for {.arg alpha} = Pr(X | R)")
+            prior = rep_len(1 + 100*.Machine$double.eps, nlevels(Y_vec))
         }
     }
     if (length(prior) != nlevels(Y_vec))
         cli_abort("{.arg alpha} prior must have the same number of elements as there are levels of X")
 
     # run inference
-    if (method == "pool") {
-        out = em_pool(as.integer(Y_vec), r_probs, prior,
-                      iter=ctrl$max_iter, abstol=ctrl$abstol, reltol=ctrl$reltol)
-    } else if (method == "sat") {
+    if (method %in% c("pool", "fixef")) {
         X_vec = to_unique_ids(d_model[-1])
         n_x = max(X_vec)
-        out = em_sat(as.integer(Y_vec), X_vec, r_probs, prior, n_x,
-                     iter=ctrl$max_iter, abstol=ctrl$abstol, reltol=ctrl$reltol)
+        out = em_fixef(as.integer(Y_vec), X_vec, r_probs, prior, n_x,
+                       iter=ctrl$max_iter, abstol=ctrl$abstol, reltol=ctrl$reltol)
     } else if (method == "re1") {
         # out = em_re1(Y_vec, r_probs, formula, data, iter=max_iter)
         out = em_glmm(Y_vec, r_probs, formula, data, ctrl=ctrl)
@@ -102,6 +100,7 @@ birdie <- function(r_probs, formula, data=NULL,
     out$x_lev = levels(Y_vec)
     out$r_lev = colnames(r_probs)
     out$method = method
+    out$prior = prior
     class(out) = "birdie"
 
     out
