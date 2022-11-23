@@ -5,24 +5,24 @@ calc_bayes_bisg <- function(S, GX, p_sr, p_gxr, p_r) {
     .Call(`_birdie_calc_bayes_bisg`, S, GX, p_sr, p_gxr, p_r)
 }
 
-calc_bayes <- function(Y, lik, prior) {
-    .Call(`_birdie_calc_bayes`, Y, lik, prior)
+calc_bayes <- function(Y, X, lik, prior, n_x) {
+    .Call(`_birdie_calc_bayes`, Y, X, lik, prior, n_x)
 }
 
-dirichlet_map <- function(Y, r_probs, prior_alpha) {
-    .Call(`_birdie_dirichlet_map`, Y, r_probs, prior_alpha)
+em_pool <- function(Y, p_rxs, prior_alpha, iter) {
+    .Call(`_birdie_em_pool`, Y, p_rxs, prior_alpha, iter)
 }
 
-em_nocov <- function(Y, p_rxs, prior_alpha, iter) {
-    .Call(`_birdie_em_nocov`, Y, p_rxs, prior_alpha, iter)
+em_sat <- function(Y, X, p_rxs, prior_alpha, n_x, iter) {
+    .Call(`_birdie_em_sat`, Y, X, p_rxs, prior_alpha, n_x, iter)
 }
 
-sum_grp <- function(x, grp, ngrp) {
-    .Call(`_birdie_sum_grp`, x, grp, ngrp)
+sum_grp <- function(x, grp, wt, init, nx, ngrp) {
+    .Call(`_birdie_sum_grp`, x, grp, wt, init, nx, ngrp)
 }
 
-sum_multi_grp <- function(x, grp, wt, init, nx, ngrp) {
-    .Call(`_birdie_sum_multi_grp`, x, grp, wt, init, nx, ngrp)
+dirichlet_map <- function(Y, X, r_probs, prior_alpha, n_x) {
+    .Call(`_birdie_dirichlet_map`, Y, X, r_probs, prior_alpha, n_x)
 }
 
 gibbs_me <- function(iter, warmup, S, GZ, M_sr, N_gzr, alpha_gzr, beta_sr, verbosity) {
