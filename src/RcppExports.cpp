@@ -43,8 +43,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // em_pool
-List em_pool(const Eigen::VectorXi Y, const Eigen::MatrixXd p_rxs, const Eigen::VectorXd prior_alpha, int iter);
-RcppExport SEXP _birdie_em_pool(SEXP YSEXP, SEXP p_rxsSEXP, SEXP prior_alphaSEXP, SEXP iterSEXP) {
+List em_pool(const Eigen::VectorXi Y, const Eigen::MatrixXd p_rxs, const Eigen::VectorXd prior_alpha, int iter, double abstol, double reltol);
+RcppExport SEXP _birdie_em_pool(SEXP YSEXP, SEXP p_rxsSEXP, SEXP prior_alphaSEXP, SEXP iterSEXP, SEXP abstolSEXP, SEXP reltolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -52,13 +52,15 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Eigen::MatrixXd >::type p_rxs(p_rxsSEXP);
     Rcpp::traits::input_parameter< const Eigen::VectorXd >::type prior_alpha(prior_alphaSEXP);
     Rcpp::traits::input_parameter< int >::type iter(iterSEXP);
-    rcpp_result_gen = Rcpp::wrap(em_pool(Y, p_rxs, prior_alpha, iter));
+    Rcpp::traits::input_parameter< double >::type abstol(abstolSEXP);
+    Rcpp::traits::input_parameter< double >::type reltol(reltolSEXP);
+    rcpp_result_gen = Rcpp::wrap(em_pool(Y, p_rxs, prior_alpha, iter, abstol, reltol));
     return rcpp_result_gen;
 END_RCPP
 }
 // em_sat
-List em_sat(const Eigen::VectorXi Y, const Eigen::VectorXi X, const Eigen::MatrixXd p_rxs, const Eigen::VectorXd prior_alpha, int n_x, int iter);
-RcppExport SEXP _birdie_em_sat(SEXP YSEXP, SEXP XSEXP, SEXP p_rxsSEXP, SEXP prior_alphaSEXP, SEXP n_xSEXP, SEXP iterSEXP) {
+List em_sat(const Eigen::VectorXi Y, const Eigen::VectorXi X, const Eigen::MatrixXd p_rxs, const Eigen::VectorXd prior_alpha, int n_x, int iter, double abstol, double reltol);
+RcppExport SEXP _birdie_em_sat(SEXP YSEXP, SEXP XSEXP, SEXP p_rxsSEXP, SEXP prior_alphaSEXP, SEXP n_xSEXP, SEXP iterSEXP, SEXP abstolSEXP, SEXP reltolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -68,7 +70,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Eigen::VectorXd >::type prior_alpha(prior_alphaSEXP);
     Rcpp::traits::input_parameter< int >::type n_x(n_xSEXP);
     Rcpp::traits::input_parameter< int >::type iter(iterSEXP);
-    rcpp_result_gen = Rcpp::wrap(em_sat(Y, X, p_rxs, prior_alpha, n_x, iter));
+    Rcpp::traits::input_parameter< double >::type abstol(abstolSEXP);
+    Rcpp::traits::input_parameter< double >::type reltol(reltolSEXP);
+    rcpp_result_gen = Rcpp::wrap(em_sat(Y, X, p_rxs, prior_alpha, n_x, iter, abstol, reltol));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -103,6 +107,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// check_convergence
+bool check_convergence(Eigen::ArrayXd est, Eigen::ArrayXd last_est, double abstol, double reltol);
+RcppExport SEXP _birdie_check_convergence(SEXP estSEXP, SEXP last_estSEXP, SEXP abstolSEXP, SEXP reltolSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Eigen::ArrayXd >::type est(estSEXP);
+    Rcpp::traits::input_parameter< Eigen::ArrayXd >::type last_est(last_estSEXP);
+    Rcpp::traits::input_parameter< double >::type abstol(abstolSEXP);
+    Rcpp::traits::input_parameter< double >::type reltol(reltolSEXP);
+    rcpp_result_gen = Rcpp::wrap(check_convergence(est, last_est, abstol, reltol));
+    return rcpp_result_gen;
+END_RCPP
+}
 // gibbs_me
 Eigen::MatrixXd gibbs_me(int iter, int warmup, const Eigen::VectorXi& S, const Eigen::VectorXi& GZ, const Eigen::MatrixXd& M_sr, const Eigen::MatrixXd& N_gzr, const Eigen::MatrixXd& alpha_gzr, const Eigen::MatrixXd& beta_sr, int verbosity);
 RcppExport SEXP _birdie_gibbs_me(SEXP iterSEXP, SEXP warmupSEXP, SEXP SSEXP, SEXP GZSEXP, SEXP M_srSEXP, SEXP N_gzrSEXP, SEXP alpha_gzrSEXP, SEXP beta_srSEXP, SEXP verbositySEXP) {
@@ -126,10 +144,11 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_birdie_calc_bayes_bisg", (DL_FUNC) &_birdie_calc_bayes_bisg, 5},
     {"_birdie_calc_bayes", (DL_FUNC) &_birdie_calc_bayes, 5},
-    {"_birdie_em_pool", (DL_FUNC) &_birdie_em_pool, 4},
-    {"_birdie_em_sat", (DL_FUNC) &_birdie_em_sat, 6},
+    {"_birdie_em_pool", (DL_FUNC) &_birdie_em_pool, 6},
+    {"_birdie_em_sat", (DL_FUNC) &_birdie_em_sat, 8},
     {"_birdie_sum_grp", (DL_FUNC) &_birdie_sum_grp, 6},
     {"_birdie_dirichlet_map", (DL_FUNC) &_birdie_dirichlet_map, 5},
+    {"_birdie_check_convergence", (DL_FUNC) &_birdie_check_convergence, 4},
     {"_birdie_gibbs_me", (DL_FUNC) &_birdie_gibbs_me, 9},
     {NULL, NULL, 0}
 };

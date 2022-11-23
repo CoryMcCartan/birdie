@@ -9,12 +9,12 @@ calc_bayes <- function(Y, X, lik, prior, n_x) {
     .Call(`_birdie_calc_bayes`, Y, X, lik, prior, n_x)
 }
 
-em_pool <- function(Y, p_rxs, prior_alpha, iter) {
-    .Call(`_birdie_em_pool`, Y, p_rxs, prior_alpha, iter)
+em_pool <- function(Y, p_rxs, prior_alpha, iter, abstol, reltol) {
+    .Call(`_birdie_em_pool`, Y, p_rxs, prior_alpha, iter, abstol, reltol)
 }
 
-em_sat <- function(Y, X, p_rxs, prior_alpha, n_x, iter) {
-    .Call(`_birdie_em_sat`, Y, X, p_rxs, prior_alpha, n_x, iter)
+em_sat <- function(Y, X, p_rxs, prior_alpha, n_x, iter, abstol, reltol) {
+    .Call(`_birdie_em_sat`, Y, X, p_rxs, prior_alpha, n_x, iter, abstol, reltol)
 }
 
 sum_grp <- function(x, grp, wt, init, nx, ngrp) {
@@ -23,6 +23,10 @@ sum_grp <- function(x, grp, wt, init, nx, ngrp) {
 
 dirichlet_map <- function(Y, X, r_probs, prior_alpha, n_x) {
     .Call(`_birdie_dirichlet_map`, Y, X, r_probs, prior_alpha, n_x)
+}
+
+check_convergence <- function(est, last_est, abstol, reltol) {
+    .Call(`_birdie_check_convergence`, est, last_est, abstol, reltol)
 }
 
 gibbs_me <- function(iter, warmup, S, GZ, M_sr, N_gzr, alpha_gzr, beta_sr, verbosity) {
