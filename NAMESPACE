@@ -3,6 +3,7 @@
 S3method(print,birdie)
 S3method(print,fit_birdie)
 export(birdie)
+export(birdie.ctrl)
 export(bisg)
 export(bisg_me)
 export(calc_joint_bisgz)

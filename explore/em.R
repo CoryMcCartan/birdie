@@ -17,33 +17,33 @@ alpha = c(10, 10, 10, 1)
 # x = birdie(r_probs, party ~ 1, d, alpha=alpha)
 data = mutate(d, zip = coalesce(zip, "<none>")) |>
     select(party, zip, county, race, n_voted)
-x = birdie(r_probs, party ~ zip, data, max_iter=50)
-x = birdie(r_probs, party ~ (1 | zip), data, max_iter=50)
+
+x0 = birdie(r_probs, party ~ 1, data, prior=rep(1.01, 4), ctrl=birdie.ctrl(max_iter=500))
+x1 = birdie(r_probs, party ~ zip, data, prior=rep(1.01, 4), ctrl=birdie.ctrl(max_iter=500))
+x = birdie(r_probs, party ~ (1 | zip), data, ctrl=birdie.ctrl(max_iter=50))
 # x = birdie(r_probs, party ~ (1 | zip), data, alpha=alpha, iter=50)
 
 xr = list(
     true = with(d, prop.table(table(party, race))),
     weight = calc_joint_bisgz(r_probs, d$party, "weight"),
     ols = calc_joint_bisgz(r_probs, d$party, "ols"),
-    EM = x$map %*% diag(colMeans(x$p_ryxs)),
-    EM2 = x$map %*% diag(p_r)
+    # pols = calc_joint_bisgz_ols(r_probs, d$party, d$zip, with(d, prop.table(table(zip, race), 2))),
+    pool = x0$map %*% diag(colMeans(x0$p_ryxs)),
+    sat = x1$map %*% diag(colMeans(x1$p_ryxs)),
+    glmm = x$map %*% diag(colMeans(x$p_ryxs))
 )
-xr = list(
-    true = with(d, prop.table(table(n_voted, race))),
-    weight = calc_joint_bisgz(r_probs, d$n_voted, "weight"),
-    ols = calc_joint_bisgz(r_probs, d$n_voted, "ols"),
-    EM = x$map %*% diag(colMeans(x$p_ryxs)),
-    EM2 = x$map %*% diag(p_r)
-)
+
 # xr = c(xr[1], lapply(xr[-1], \(tbl) rake(tbl, rowSums(xr$true), colSums(xr$true))))
 xr = c(xr[1], lapply(xr[-1], \(tbl) tbl %*% diag(p_r / colSums(tbl))))
 
 do.call(eval_joints, c(list(xr$true, "tv"), xr))
 
 print_cond(xr$true)
-print_cond(xr$EM)
+print_cond(xr$pool)
+print_cond(xr$sat)
 print_cond(xr$ols)
 
-colSums(abs(to_cond(xr$true) - to_cond(xr$EM)))/2
+colSums(abs(to_cond(xr$true) - to_cond(xr$pool)))/2
+colSums(abs(to_cond(xr$true) - to_cond(xr$sat)))/2
 colSums(abs(to_cond(xr$true) - to_cond(xr$ols)))/2
 colSums(abs(to_cond(xr$true) - to_cond(xr$weight)))/2
