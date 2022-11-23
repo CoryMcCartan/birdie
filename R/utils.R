@@ -1,8 +1,12 @@
 # shim. Only works if remaining columns all uniquely identify
 pivot_wider_tiny <- function(x, names_from="name", values_from="value") {
     form = as.formula(paste0(values_from, "~", names_from))
-    d_id = distinct(select(x, c(-names_from, -values_from)))
-    as_tibble(cbind(d_id, unstack(x, form)))
+    d_id = distinct(select(x, -all_of(c(names_from, values_from))))
+    if (nrow(x) == n_distinct(x[[names_from]])) {
+        as_tibble(cbind(d_id, unstack(rbind(x, x), form)[1, ]))
+    } else {
+        as_tibble(cbind(d_id, unstack(x, form)))
+    }
 }
 
 to_unique_ids = function(x) {

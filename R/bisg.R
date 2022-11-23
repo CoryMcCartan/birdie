@@ -299,7 +299,7 @@ make_gx_tbl_vec <- function(vars, p_r, p_rgx) {
             p_rgx = rbind(p_rgx, new_row)
         }
         p_rgx = mutate(p_rgx,
-                       across(.data$white:.data$other,
+                       across(colnames(p_r_natl),
                           ~ coalesce(., p_r_tmp[cur_column()]))
         )
 
