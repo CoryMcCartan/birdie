@@ -5,6 +5,10 @@ pivot_wider_tiny <- function(x, names_from="name", values_from="value") {
     as_tibble(cbind(d_id, unstack(x, form)))
 }
 
+to_unique_ids = function(x) {
+    as.integer(as.factor(vctrs::vec_duplicate_id(x)))
+}
+
 # check types
 check_vec = function(x) (is.character(x) | is.factor(x)) && !any(is.na(x))
 
