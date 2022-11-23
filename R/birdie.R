@@ -1,6 +1,6 @@
 #' @export
 birdie <- function(r_probs, formula, data=NULL,
-                   prior=NULL, prefix="pr_", max_iter=30) {
+                   prior=NULL, prefix="pr_", ctrl=birdie.ctrl()) {
     # if (missing(data)) cli_abort("{.arg data} must be provided.")
 
     # figure out type of model and extract response vector
@@ -71,21 +71,22 @@ birdie <- function(r_probs, formula, data=NULL,
 
     # run inference
     if (method == "pool") {
-        out = em_pool(as.integer(Y_vec), r_probs, prior, iter=max_iter)
+        out = em_pool(as.integer(Y_vec), r_probs, prior,
+                      iter=ctrl$max_iter, abstol=ctrl$abstol, reltol=ctrl$reltol)
     } else if (method == "sat") {
         X_vec = to_unique_ids(d_model[-1])
         n_x = max(X_vec)
-        out = em_sat(as.integer(Y_vec), X_vec, r_probs, prior, n_x, iter=max_iter)
+        out = em_sat(as.integer(Y_vec), X_vec, r_probs, prior, n_x,
+                     iter=ctrl$max_iter, abstol=ctrl$abstol, reltol=ctrl$reltol)
     } else if (method == "re1") {
         # out = em_re1(Y_vec, r_probs, formula, data, iter=max_iter)
-        out = em_glmm(Y_vec, r_probs, formula, data, iter=max_iter)
+        out = em_glmm(Y_vec, r_probs, formula, data, ctrl=ctrl)
     } else if (method == "lmer") {
-        out = em_glmm(Y_vec, r_probs, formula, data, iter=max_iter)
+        out = em_glmm(Y_vec, r_probs, formula, data, ctrl=ctrl)
     }
 
-    if (isTRUE(out$max_iters)) {
-        cli_warn(c("Maximum number of EM iterations hit.",
-                   "i"="Estimates may not have converged.",
+    if (isFALSE(out$converge)) {
+        cli_warn(c("EM algorithm did not converge in {ctrl$max_iter} iterations.",
                    ">"="Consider increasing {.arg max_iter}."),
                  call=parent.frame())
     }
@@ -111,7 +112,7 @@ em_re1 <- function(Y, p_rxs, form, d_model, prior=rep(1, ncol(p_rxs)),
 
 }
 
-em_glmm <- function(Y, p_rxs, form, data, iter=10, tol=0.001, ref_grp=1L) {
+em_glmm <- function(Y, p_rxs, form, data, ctrl, ref_grp=1L) {
     n_y = nlevels(Y)
     n_r = ncol(p_rxs)
     Y = as.integer(Y)
@@ -136,8 +137,9 @@ em_glmm <- function(Y, p_rxs, form, data, iter=10, tol=0.001, ref_grp=1L) {
     form_env = rlang::f_env(form_fit)
 
     break_next = FALSE
-    cli::cli_progress_bar("Fitting BIRDiE with EM", total=iter*(n_y-1)*n_r)
-    for (i in seq_len(iter)) {
+    cli::cli_progress_bar("Fitting BIRDiE with EM",
+                          total=ctrl$max_iter*(n_y-1)*n_r)
+    for (i in seq_len(ctrl$max_iter)) {
         last_ests = ests
         # M step
         for (r in seq_len(n_r)) {
@@ -168,8 +170,10 @@ em_glmm <- function(Y, p_rxs, form, data, iter=10, tol=0.001, ref_grp=1L) {
             # check convergence
             if (i > 1) {
                 for (y in seq_len(n_y)) {
-                    rel_diff = mean(abs((ests[, y, r] - last_ests[, y, r]) / last_ests[, y, r]))
-                    if (rel_diff <= tol) updating[y, r] = FALSE
+                    if (check_convergence(ests[, y, r], last_ests[, y, r],
+                                          ctrl$abstol, ctrl$reltol)) {
+                        updating[y, r] = FALSE
+                    }
                 }
             }
         }
@@ -192,8 +196,34 @@ em_glmm <- function(Y, p_rxs, form, data, iter=10, tol=0.001, ref_grp=1L) {
 
     list(map = est,
          ests = ests,
-         max_iters = i >= iter,
+         iters = i,
+         converge = break_next,
          p_ryxs = p_ryxs)
+}
+
+#' ctrl of BIRDiE Model Fitting
+#'
+#' Constructs ctrl parameters for BIRDiE model fitting.
+#' All arguments have defaults.
+#'
+#' @param max_iter The maximum number of EM iterations.
+#' @param abstol The absolute tolerance used in checking convergence.
+#' @param reltol The relative tolerance used in checking convergence.
+#'
+#' @return A list containing the ctrl parameters
+#'
+#' @examples
+#' birdie.ctrl(max_iter=1000)
+#'
+#' @export
+birdie.ctrl <- function(max_iter=100, abstol=1e-7, reltol=1e-6) {
+    stopifnot(max_iter >= 1)
+    stopifnot(abstol >= 0)
+    stopifnot(reltol >= 0)
+
+    list(max_iter = as.integer(max_iter),
+         abstol = abstol,
+         reltol = reltol)
 }
 
 
