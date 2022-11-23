@@ -28,8 +28,9 @@ NumericMatrix calc_bayes_bisg(const IntegerVector S, const IntegerVector GX,
 }
 
 // exported in header
-Eigen::MatrixXd calc_bayes(const IntegerVector Y,
-                           const Eigen::MatrixXd lik, const Eigen::MatrixXd prior) {
+Eigen::MatrixXd calc_bayes(const Eigen::VectorXi Y, const Eigen::VectorXi X,
+                           const std::vector<Eigen::MatrixXd> lik,
+                           const Eigen::MatrixXd prior, int n_x) {
     int n_r = prior.cols();
     int n = Y.size();
     MatrixXd out(n, n_r);
@@ -37,7 +38,7 @@ Eigen::MatrixXd calc_bayes(const IntegerVector Y,
     // do Bayes
     for (int j = 0; j < n_r; j++) {
         for (int i = 0; i < n; i++) {
-            out(i, j) = lik(Y[i] - 1, j) *  prior(i, j);
+            out(i, j) = lik[X[i] - 1](Y[i] - 1, j) * prior(i, j);
             if (j == 0) {
                 sums[i] = out(i, j);
             } else {
@@ -50,5 +51,11 @@ Eigen::MatrixXd calc_bayes(const IntegerVector Y,
         out.col(i) = out.col(i).array() / sums;
     }
 
+    return out;
+}
+
+std::vector<Eigen::MatrixXd> wrap_lik(const Eigen::MatrixXd lik) {
+    std::vector<Eigen::MatrixXd> out(1);
+    out[0] = lik;
     return out;
 }

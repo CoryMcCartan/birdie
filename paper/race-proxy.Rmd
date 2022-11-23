@@ -352,7 +352,7 @@ Under Assumption \ref{a:indep-ys}, we have, for all $y\in\cY$, $g\in\cG$, $x\in\
 \end{equation} The leftmost term is estimable from the data and corresponds to the vector $\vb b$ in Theorem \ref{thm:id}, while the rightmost term is the BISG estimand and corresponds to the matrix $\vb P$ in Theorem \ref{thm:id}.
 Lastly, the remaining term in the middle can be solved for, since Equation \eqref{eq:tprob} holds across all combinations of $Y$, $G$, $X$, and $S$, leading to a large system of linear equations. 
 Specifically, we have $|\cY|\times|\cG|\times|\cX|\times|\cS|$ equations with $(|\cY|-1)\times|\cG|\times|\cX|\times|\cR|$ unknowns.
-Since $|\cR| << |\cS|$, we can identify these unknowns as long as the linear system has sufficient rank. **CM FIX SYMBOL**
+Since $|\cR| \ll |\cS|$, we can identify these unknowns as long as the linear system has sufficient rank.
 Our result is closely related to causal identification based on proxy variables in the presence of unmeasured confounding [@kuroki2014measurement; @miao2018identifying].
 Here, we use surname as a proxy variable for (unobserved) race to identify racial disparities.
 

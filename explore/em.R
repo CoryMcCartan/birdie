@@ -17,6 +17,7 @@ alpha = c(10, 10, 10, 1)
 # x = birdie(r_probs, party ~ 1, d, alpha=alpha)
 data = mutate(d, zip = coalesce(zip, "<none>")) |>
     select(party, zip, county, race, n_voted)
+x = birdie(r_probs, party ~ zip, data, max_iter=50)
 x = birdie(r_probs, party ~ (1 | zip), data, max_iter=50)
 # x = birdie(r_probs, party ~ (1 | zip), data, alpha=alpha, iter=50)
 
