@@ -9,12 +9,8 @@ calc_bayes <- function(Y, X, lik, prior, n_x) {
     .Call(`_birdie_calc_bayes`, Y, X, lik, prior, n_x)
 }
 
-em_pool <- function(Y, p_rxs, prior_alpha, iter, abstol, reltol) {
-    .Call(`_birdie_em_pool`, Y, p_rxs, prior_alpha, iter, abstol, reltol)
-}
-
-em_sat <- function(Y, X, p_rxs, prior_alpha, n_x, iter, abstol, reltol) {
-    .Call(`_birdie_em_sat`, Y, X, p_rxs, prior_alpha, n_x, iter, abstol, reltol)
+em_fixef <- function(Y, X, p_rxs, prior_alpha, n_x, iter, abstol, reltol) {
+    .Call(`_birdie_em_fixef`, Y, X, p_rxs, prior_alpha, n_x, iter, abstol, reltol)
 }
 
 sum_grp <- function(x, grp, wt, init, nx, ngrp) {
