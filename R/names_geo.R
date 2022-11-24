@@ -1,5 +1,7 @@
 #' Preprocess Last Names and Geographic Identifiers
 #'
+#' These functions are called automatically by [bisg()] but may be useful,
+#' especially when geographic variables are included in a [birdie()] model.
 #' `proc_zip()` and `proc_state()` preprocess their corresponding geographic
 #' identifiers. States are partially matched to state names and abbreviations
 #' and are returned as FIPS codes. ZIP codes are crosswalked to Census ZCTAs.
@@ -8,8 +10,6 @@
 #' (<https://www2.census.gov/topics/genealogy/2010surnames/surnames.pdf>).
 #' Names are converted to Latin characters, capitalized, stripped of prefixes
 #' and suffixes, and otherwise standardized.
-#' These functions are called automatically by [bisg()] but may be useful,
-#' especially when geographic variables are included in a model in [birdie()].
 #'
 #' @param x A character vector of names or geographic identifiers to process
 #'

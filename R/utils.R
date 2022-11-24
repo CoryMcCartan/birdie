@@ -9,8 +9,19 @@ pivot_wider_tiny <- function(x, names_from="name", values_from="value") {
     }
 }
 
+# converts data frame or vector to integer vector of grouping indices
+# e.g. c('a', 'a', 'b', 'a', 'c', 'b') becomes c(1, 1, 2, 1, 3, 2)
 to_unique_ids = function(x) {
     as.integer(as.factor(vctrs::vec_duplicate_id(x)))
+}
+
+# Find "|" in formula
+detect_ranef <- function(formula) {
+    if (!inherits(formula, "terms")) {
+        formula = terms(formula)
+    }
+    term_labs = attr(formula, "term.labels")
+    any(stringr::str_detect(term_labs, stringr::fixed("|")))
 }
 
 # check types

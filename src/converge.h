@@ -1,6 +1,8 @@
 #ifndef CONVERGE_H
 #define CONVERGE_H
 
+#include <queue>
+
 #include "birdie_types.h"
 
 // [[Rcpp::export]]
