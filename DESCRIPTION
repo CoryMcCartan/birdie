@@ -22,9 +22,10 @@ Imports:
     tidyselect,
     stringr,
     stringi,
-    lme4,
+    SQUAREM,
     Rcpp
 Suggests: 
+    lme4,
     easycensus,
     wru,
     knitr,

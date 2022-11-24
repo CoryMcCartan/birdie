@@ -67,6 +67,7 @@ test_that("BISG results match `wru`", {
         dplyr::mutate(state="NC") |>
         wru::predict_race(surname.only=TRUE) |>
         dplyr::select("pred.whi":"pred.oth") |>
+        suppressMessages() |>
         as.matrix()
 
     m_birdie = bisg(~ nm(last_name), data=pseudo_vf, p_r=p_r) |>

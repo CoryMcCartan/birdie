@@ -5,15 +5,13 @@
 
 #include "birdie_types.h"
 
-// [[Rcpp::export]]
+// [[Rcpp::export(rng=false)]]
 Eigen::MatrixXd calc_bayes(
         const Eigen::VectorXi Y,
         const Eigen::VectorXi X,
-        const std::vector<Eigen::MatrixXd> lik,
+        const Eigen::VectorXd lik,
         const Eigen::MatrixXd prior,
-        int n_x
+        int n_x, int n_y
 );
-
-std::vector<Eigen::MatrixXd> wrap_lik(const Eigen::MatrixXd lik);
 
 #endif

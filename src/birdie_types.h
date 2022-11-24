@@ -13,4 +13,13 @@
 using namespace Rcpp;
 using namespace Eigen;
 
+// indexing functions for 3D estimate arrays
+inline int est_idx(int r, int y, int grp, int n_r, int n_y) {
+    return r + n_r*(y + n_y*grp);
+}
+inline int est_col(int y, int grp, int n_r, int n_y) {
+    return n_r*(y + n_y*grp);
+}
+
+
 #endif

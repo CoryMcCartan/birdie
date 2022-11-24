@@ -5,7 +5,7 @@
 # roxygen namespace tags. Modify with care!
 ## usethis namespace: start
 #' @import dplyr
-#' @importFrom rlang expr enquo enquos sym syms .data := as_name as_label eval_tidy rep_along
+#' @importFrom rlang expr enquo enquos sym syms .data := as_name as_label eval_tidy rep_along f_lhs f_rhs
 #' @importFrom stringr str_detect str_starts str_remove_all str_replace_all str_remove
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom Rcpp sourceCpp

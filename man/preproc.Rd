@@ -20,6 +20,8 @@ proc_name(x)
 A processed character vector
 }
 \description{
+These functions are called automatically by \code{\link[=bisg]{bisg()}} but may be useful,
+especially when geographic variables are included in a \code{\link[=birdie]{birdie()}} model.
 \code{proc_zip()} and \code{proc_state()} preprocess their corresponding geographic
 identifiers. States are partially matched to state names and abbreviations
 and are returned as FIPS codes. ZIP codes are crosswalked to Census ZCTAs.
@@ -28,8 +30,6 @@ Missing identifiers are replaced with \code{"<none>"}.
 (\url{https://www2.census.gov/topics/genealogy/2010surnames/surnames.pdf}).
 Names are converted to Latin characters, capitalized, stripped of prefixes
 and suffixes, and otherwise standardized.
-These functions are called automatically by \code{\link[=bisg]{bisg()}} but may be useful,
-especially when geographic variables are included in a model in \code{\link[=birdie]{birdie()}}.
 }
 \examples{
 proc_name("Smith Jr.")
