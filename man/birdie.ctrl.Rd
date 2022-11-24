@@ -4,7 +4,7 @@
 \alias{birdie.ctrl}
 \title{Control of BIRDiE Model Fitting}
 \usage{
-birdie.ctrl(max_iter = 100, abstol = 1e-07, reltol = 1e-06)
+birdie.ctrl(max_iter = 1000, abstol = 1e-06, reltol = 1e-06)
 }
 \arguments{
 \item{max_iter}{The maximum number of EM iterations.}
