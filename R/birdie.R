@@ -227,7 +227,7 @@ vec_to_ests <- function(vec, n_y, n_r) {
 #' birdie.ctrl(max_iter=1000)
 #'
 #' @export
-birdie.ctrl <- function(max_iter=100, abstol=1e-6, reltol=1e-6) {
+birdie.ctrl <- function(max_iter=1000, abstol=1e-6, reltol=1e-6) {
     stopifnot(max_iter >= 1)
     stopifnot(abstol >= 0)
     stopifnot(reltol >= 0)
