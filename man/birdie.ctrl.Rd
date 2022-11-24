@@ -2,7 +2,7 @@
 % Please edit documentation in R/birdie.R
 \name{birdie.ctrl}
 \alias{birdie.ctrl}
-\title{ctrl of BIRDiE Model Fitting}
+\title{Control of BIRDiE Model Fitting}
 \usage{
 birdie.ctrl(max_iter = 100, abstol = 1e-07, reltol = 1e-06)
 }
@@ -14,10 +14,10 @@ birdie.ctrl(max_iter = 100, abstol = 1e-07, reltol = 1e-06)
 \item{reltol}{The relative tolerance used in checking convergence.}
 }
 \value{
-A list containing the ctrl parameters
+A list containing the control parameters
 }
 \description{
-Constructs ctrl parameters for BIRDiE model fitting.
+Constructs control parameters for BIRDiE model fitting.
 All arguments have defaults.
 }
 \examples{

@@ -1,6 +1,6 @@
 #include "bayes.h"
 
-// [[Rcpp::export]]
+// [[Rcpp::export(rng=false)]]
 NumericMatrix calc_bayes_bisg(const IntegerVector S, const IntegerVector GX,
                               const NumericMatrix p_sr, const NumericMatrix p_gxr,
                               const NumericVector p_r) {
@@ -29,16 +29,16 @@ NumericMatrix calc_bayes_bisg(const IntegerVector S, const IntegerVector GX,
 
 // exported in header
 Eigen::MatrixXd calc_bayes(const Eigen::VectorXi Y, const Eigen::VectorXi X,
-                           const std::vector<Eigen::MatrixXd> lik,
-                           const Eigen::MatrixXd prior, int n_x) {
+                           const Eigen::VectorXd lik,
+                           const Eigen::MatrixXd prior, int n_x, int n_y) {
     int n_r = prior.cols();
-    int n = Y.size();
-    MatrixXd out(n, n_r);
-    ArrayXd sums(n);
+    int N = Y.size();
+    MatrixXd out(N, n_r);
+    ArrayXd sums(N);
     // do Bayes
     for (int j = 0; j < n_r; j++) {
-        for (int i = 0; i < n; i++) {
-            out(i, j) = lik[X[i] - 1](Y[i] - 1, j) * prior(i, j);
+        for (int i = 0; i < N; i++) {
+            out(i, j) = lik[est_idx(j, Y[i] - 1, X[i] - 1, n_r, n_y)] * prior(i, j);
             if (j == 0) {
                 sums[i] = out(i, j);
             } else {
@@ -51,11 +51,5 @@ Eigen::MatrixXd calc_bayes(const Eigen::VectorXi Y, const Eigen::VectorXi X,
         out.col(i) = out.col(i).array() / sums;
     }
 
-    return out;
-}
-
-std::vector<Eigen::MatrixXd> wrap_lik(const Eigen::MatrixXd lik) {
-    std::vector<Eigen::MatrixXd> out(1);
-    out[0] = lik;
     return out;
 }

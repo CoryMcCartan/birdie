@@ -17,7 +17,6 @@ NumericMatrix calc_bayes_bisg(const IntegerVector S, const IntegerVector GX, con
 RcppExport SEXP _birdie_calc_bayes_bisg(SEXP SSEXP, SEXP GXSEXP, SEXP p_srSEXP, SEXP p_gxrSEXP, SEXP p_rSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const IntegerVector >::type S(SSEXP);
     Rcpp::traits::input_parameter< const IntegerVector >::type GX(GXSEXP);
     Rcpp::traits::input_parameter< const NumericMatrix >::type p_sr(p_srSEXP);
@@ -28,35 +27,47 @@ BEGIN_RCPP
 END_RCPP
 }
 // calc_bayes
-Eigen::MatrixXd calc_bayes(const Eigen::VectorXi Y, const Eigen::VectorXi X, const std::vector<Eigen::MatrixXd> lik, const Eigen::MatrixXd prior, int n_x);
-RcppExport SEXP _birdie_calc_bayes(SEXP YSEXP, SEXP XSEXP, SEXP likSEXP, SEXP priorSEXP, SEXP n_xSEXP) {
+Eigen::MatrixXd calc_bayes(const Eigen::VectorXi Y, const Eigen::VectorXi X, const Eigen::VectorXd lik, const Eigen::MatrixXd prior, int n_x, int n_y);
+RcppExport SEXP _birdie_calc_bayes(SEXP YSEXP, SEXP XSEXP, SEXP likSEXP, SEXP priorSEXP, SEXP n_xSEXP, SEXP n_ySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const Eigen::VectorXi >::type Y(YSEXP);
     Rcpp::traits::input_parameter< const Eigen::VectorXi >::type X(XSEXP);
-    Rcpp::traits::input_parameter< const std::vector<Eigen::MatrixXd> >::type lik(likSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd >::type lik(likSEXP);
     Rcpp::traits::input_parameter< const Eigen::MatrixXd >::type prior(priorSEXP);
     Rcpp::traits::input_parameter< int >::type n_x(n_xSEXP);
-    rcpp_result_gen = Rcpp::wrap(calc_bayes(Y, X, lik, prior, n_x));
+    Rcpp::traits::input_parameter< int >::type n_y(n_ySEXP);
+    rcpp_result_gen = Rcpp::wrap(calc_bayes(Y, X, lik, prior, n_x, n_y));
     return rcpp_result_gen;
 END_RCPP
 }
-// em_fixef
-List em_fixef(const Eigen::VectorXi Y, const Eigen::VectorXi X, const Eigen::MatrixXd p_rxs, const Eigen::VectorXd prior_alpha, int n_x, int iter, double abstol, double reltol);
-RcppExport SEXP _birdie_em_fixef(SEXP YSEXP, SEXP XSEXP, SEXP p_rxsSEXP, SEXP prior_alphaSEXP, SEXP n_xSEXP, SEXP iterSEXP, SEXP abstolSEXP, SEXP reltolSEXP) {
+// dirichlet_map
+Eigen::VectorXd dirichlet_map(const Eigen::VectorXi Y, const Eigen::VectorXi X, const Eigen::MatrixXd p_rxs, const Eigen::VectorXd prior_alpha, int n_x);
+RcppExport SEXP _birdie_dirichlet_map(SEXP YSEXP, SEXP XSEXP, SEXP p_rxsSEXP, SEXP prior_alphaSEXP, SEXP n_xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const Eigen::VectorXi >::type Y(YSEXP);
     Rcpp::traits::input_parameter< const Eigen::VectorXi >::type X(XSEXP);
     Rcpp::traits::input_parameter< const Eigen::MatrixXd >::type p_rxs(p_rxsSEXP);
     Rcpp::traits::input_parameter< const Eigen::VectorXd >::type prior_alpha(prior_alphaSEXP);
     Rcpp::traits::input_parameter< int >::type n_x(n_xSEXP);
-    Rcpp::traits::input_parameter< int >::type iter(iterSEXP);
-    Rcpp::traits::input_parameter< double >::type abstol(abstolSEXP);
-    Rcpp::traits::input_parameter< double >::type reltol(reltolSEXP);
-    rcpp_result_gen = Rcpp::wrap(em_fixef(Y, X, p_rxs, prior_alpha, n_x, iter, abstol, reltol));
+    rcpp_result_gen = Rcpp::wrap(dirichlet_map(Y, X, p_rxs, prior_alpha, n_x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// em_dirichlet
+Eigen::VectorXd em_dirichlet(const Eigen::VectorXd curr, const Eigen::VectorXi Y, const Eigen::VectorXi X, const Eigen::MatrixXd p_rxs, const Eigen::VectorXd prior_alpha, int n_x, bool map);
+RcppExport SEXP _birdie_em_dirichlet(SEXP currSEXP, SEXP YSEXP, SEXP XSEXP, SEXP p_rxsSEXP, SEXP prior_alphaSEXP, SEXP n_xSEXP, SEXP mapSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< const Eigen::VectorXd >::type curr(currSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXi >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXi >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd >::type p_rxs(p_rxsSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd >::type prior_alpha(prior_alphaSEXP);
+    Rcpp::traits::input_parameter< int >::type n_x(n_xSEXP);
+    Rcpp::traits::input_parameter< bool >::type map(mapSEXP);
+    rcpp_result_gen = Rcpp::wrap(em_dirichlet(curr, Y, X, p_rxs, prior_alpha, n_x, map));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -65,7 +76,6 @@ NumericMatrix sum_grp(const IntegerVector x, const IntegerVector grp, const Nume
 RcppExport SEXP _birdie_sum_grp(SEXP xSEXP, SEXP grpSEXP, SEXP wtSEXP, SEXP initSEXP, SEXP nxSEXP, SEXP ngrpSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const IntegerVector >::type x(xSEXP);
     Rcpp::traits::input_parameter< const IntegerVector >::type grp(grpSEXP);
     Rcpp::traits::input_parameter< const NumericVector >::type wt(wtSEXP);
@@ -73,21 +83,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type nx(nxSEXP);
     Rcpp::traits::input_parameter< int >::type ngrp(ngrpSEXP);
     rcpp_result_gen = Rcpp::wrap(sum_grp(x, grp, wt, init, nx, ngrp));
-    return rcpp_result_gen;
-END_RCPP
-}
-// dirichlet_map
-std::vector<MatrixXd> dirichlet_map(const Eigen::VectorXi Y, const Eigen::VectorXi X, const Eigen::MatrixXd r_probs, const Eigen::VectorXd prior_alpha, int n_x);
-RcppExport SEXP _birdie_dirichlet_map(SEXP YSEXP, SEXP XSEXP, SEXP r_probsSEXP, SEXP prior_alphaSEXP, SEXP n_xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Eigen::VectorXi >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< const Eigen::VectorXi >::type X(XSEXP);
-    Rcpp::traits::input_parameter< const Eigen::MatrixXd >::type r_probs(r_probsSEXP);
-    Rcpp::traits::input_parameter< const Eigen::VectorXd >::type prior_alpha(prior_alphaSEXP);
-    Rcpp::traits::input_parameter< int >::type n_x(n_xSEXP);
-    rcpp_result_gen = Rcpp::wrap(dirichlet_map(Y, X, r_probs, prior_alpha, n_x));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -127,10 +122,10 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_birdie_calc_bayes_bisg", (DL_FUNC) &_birdie_calc_bayes_bisg, 5},
-    {"_birdie_calc_bayes", (DL_FUNC) &_birdie_calc_bayes, 5},
-    {"_birdie_em_fixef", (DL_FUNC) &_birdie_em_fixef, 8},
-    {"_birdie_sum_grp", (DL_FUNC) &_birdie_sum_grp, 6},
+    {"_birdie_calc_bayes", (DL_FUNC) &_birdie_calc_bayes, 6},
     {"_birdie_dirichlet_map", (DL_FUNC) &_birdie_dirichlet_map, 5},
+    {"_birdie_em_dirichlet", (DL_FUNC) &_birdie_em_dirichlet, 7},
+    {"_birdie_sum_grp", (DL_FUNC) &_birdie_sum_grp, 6},
     {"_birdie_check_convergence", (DL_FUNC) &_birdie_check_convergence, 4},
     {"_birdie_gibbs_me", (DL_FUNC) &_birdie_gibbs_me, 9},
     {NULL, NULL, 0}

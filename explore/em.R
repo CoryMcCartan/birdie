@@ -15,13 +15,21 @@ p_r_est = colMeans(r_probs)
 alpha = c(10, 10, 10, 1)
 
 # x = birdie(r_probs, party ~ 1, d, alpha=alpha)
-data = mutate(d, zip = coalesce(zip, "<none>")) |>
+data = mutate(d, zip = proc_zip(zip)) |>
     select(party, zip, county, race, n_voted)
 
-x0 = birdie(r_probs, party ~ 1, data, prior=rep(1.01, 4), ctrl=birdie.ctrl(max_iter=500))
-x1 = birdie(r_probs, party ~ zip, data, prior=rep(1.01, 4), ctrl=birdie.ctrl(max_iter=500))
-# x = birdie(r_probs, party ~ (1 | zip), data, ctrl=birdie.ctrl(max_iter=50))
-# x = birdie(r_probs, party ~ (1 | zip), data, alpha=alpha, iter=50)
+if (FALSE) { # useful when debugging
+    formula = party ~ zip
+    ctrl = birdie.ctrl()
+    prior = rep(1.0001, 4)
+    p_rxs = as.matrix(r_probs)
+    # later
+    Y = Y_vec
+}
+
+x0 = birdie(r_probs, party ~ 1, data, prior=rep(1.0001, 4), ctrl=birdie.ctrl(max_iter=500))
+tic(); x1 = birdie(r_probs, party ~ zip, data, prior=rep(1.0001, 4), ctrl=birdie.ctrl(max_iter=800)); toc();
+# x = birdie(r_probs, party ~ (1 | zip), data, ctrl=birdie.ctrl(max_iter=20))
 
 xr = list(
     true = with(d, prop.table(table(party, race))),
@@ -45,5 +53,6 @@ print_cond(xr$ols)
 
 colSums(abs(to_cond(xr$true) - to_cond(xr$pool)))/2
 colSums(abs(to_cond(xr$true) - to_cond(xr$sat)))/2
+colSums(abs(to_cond(xr$true) - to_cond(xr$glmm)))/2
 colSums(abs(to_cond(xr$true) - to_cond(xr$ols)))/2
 colSums(abs(to_cond(xr$true) - to_cond(xr$weight)))/2

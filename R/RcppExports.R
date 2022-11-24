@@ -5,20 +5,20 @@ calc_bayes_bisg <- function(S, GX, p_sr, p_gxr, p_r) {
     .Call(`_birdie_calc_bayes_bisg`, S, GX, p_sr, p_gxr, p_r)
 }
 
-calc_bayes <- function(Y, X, lik, prior, n_x) {
-    .Call(`_birdie_calc_bayes`, Y, X, lik, prior, n_x)
+calc_bayes <- function(Y, X, lik, prior, n_x, n_y) {
+    .Call(`_birdie_calc_bayes`, Y, X, lik, prior, n_x, n_y)
 }
 
-em_fixef <- function(Y, X, p_rxs, prior_alpha, n_x, iter, abstol, reltol) {
-    .Call(`_birdie_em_fixef`, Y, X, p_rxs, prior_alpha, n_x, iter, abstol, reltol)
+dirichlet_map <- function(Y, X, p_rxs, prior_alpha, n_x) {
+    .Call(`_birdie_dirichlet_map`, Y, X, p_rxs, prior_alpha, n_x)
+}
+
+em_dirichlet <- function(curr, Y, X, p_rxs, prior_alpha, n_x, map = TRUE) {
+    .Call(`_birdie_em_dirichlet`, curr, Y, X, p_rxs, prior_alpha, n_x, map)
 }
 
 sum_grp <- function(x, grp, wt, init, nx, ngrp) {
     .Call(`_birdie_sum_grp`, x, grp, wt, init, nx, ngrp)
-}
-
-dirichlet_map <- function(Y, X, r_probs, prior_alpha, n_x) {
-    .Call(`_birdie_dirichlet_map`, Y, X, r_probs, prior_alpha, n_x)
 }
 
 check_convergence <- function(est, last_est, abstol, reltol) {

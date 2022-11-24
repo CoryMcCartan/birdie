@@ -19,5 +19,5 @@ test_that("Bayes' rule is calculated correctly in general", {
     y = c(rep(1:2, 5), 1)
     num = p_yr[y, ] * prior
     correct = num / rowSums(num)
-    expect_equal(correct, calc_bayes(y, rep_along(y, 1), list(p_yr), prior, 1))
+    expect_equal(correct, calc_bayes(y, rep_along(y, 1), as.numeric(t(p_yr)), prior, 1, 2))
 })
