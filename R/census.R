@@ -57,14 +57,14 @@ census_race_geo_table <- function(geo=c("us", "state", "county", "zcta", "tract"
             cli_abort("No 1-year ACS data for 2020 due to the COVID-19 pandemic.")
         }
         d_raw = easycensus::cens_get_acs("B03002", geo, year=year,
-                                         survey=survey, check_geo=TRUE) |>
+                                         survey=survey, check_geo=TRUE) %>%
             filter(.data$hsplo_race_sub == "total",
-                   .data$hispanic_or_latino_origin != "total") |>
-            select(-"hsplo_race_sub") |>
+                   .data$hispanic_or_latino_origin != "total") %>%
+            select(-"hsplo_race_sub") %>%
             mutate(value = easycensus::get_est(.data$value))
     }
 
-    d = d_raw |>
+    d = d_raw %>%
         mutate(race = case_when(
                    .data$race == "total" ~ "total",
                    .data$hispanic_or_latino_origin == "hispanic or latino" ~ "hisp",
@@ -74,14 +74,14 @@ census_race_geo_table <- function(geo=c("us", "state", "county", "zcta", "tract"
                    .data$race == "nhpi" ~ "asian",
                    .data$race == "two" ~ "other",
                    TRUE ~ race
-               )) |>
-        group_by(.data$GEOID, .data$NAME, .data$race) |>
+               )) %>%
+        group_by(.data$GEOID, .data$NAME, .data$race) %>%
         summarize(value = sum(.data$value),
-                  .groups="drop") |>
-        pivot_wider_tiny(names_from="race") |>
+                  .groups="drop") %>%
+        pivot_wider_tiny(names_from="race") %>%
         select("GEOID", "NAME", pop="total", pop_white="white",
                pop_black="black", pop_hisp="hisp", pop_asian="asian",
-               pop_aian="aian", pop_other="other") |>
+               pop_aian="aian", pop_other="other") %>%
         mutate(across(c(-"GEOID", -"NAME"), as.integer))
 
     if (isFALSE(counts)) { # normalize by population
