@@ -187,7 +187,7 @@ parse_bisg_form <- function(formula, data=NULL) {
 make_name_tbl_vec <- function(vars, p_r, p_rs, for_me=FALSE) {
     S = as.character(vars$S)
     if (is.null(p_rs)) {
-        S = proc_names(S)
+        S = proc_name(S)
         if (is.character(p_r)) p_r = p_r_natl()
         if (length(p_r) != 6) {
             cli_abort(c("Number of racial categories doesn't match the Census table.",
@@ -274,17 +274,13 @@ make_gx_tbl_vec <- function(vars, p_r, p_rgx) {
         if (vars$geo_type == "zip") {
             p_rgx = census_premade_table(G_name, "zip_race_2010.rds", counts=TRUE)
 
+            # match ZIPs to ZCTAs
+            vars$GX[[1]] = proc_zip(vars$GX[[1]])
         } else if (vars$geo_type == "state") {
             p_rgx = census_premade_table(G_name, "state_race_2010.rds", counts=TRUE)
 
             # match states
-            G_vec = stringr::str_to_upper(vars$GX[[1]])
-            idx = coalesce(
-                pmatch(vars$GX[[1]], states$GEOID, duplicates.ok=TRUE),
-                pmatch(vars$GX[[1]], states$abbr, duplicates.ok=TRUE),
-                pmatch(vars$GX[[1]], states$name, duplicates.ok=TRUE)
-            )
-            vars$GX[[1]] = coalesce(states$GEOID[idx], "<none>")
+            vars$GX[[1]] = proc_state(vars$GX[[1]])
         } else {
             cli_abort(c("{.fn {vars$geo_type}} is not yet supported.",
                         ">"="Please file an issue at

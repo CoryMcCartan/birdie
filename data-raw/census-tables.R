@@ -6,12 +6,7 @@ library(here)
 devtools::load_all(".")
 
 
-# State by race ------
-d = census_race_geo_table("state", year=2010, survey="dec", counts=TRUE, GEOIDs=TRUE)
-write_rds(d, here("inst/extdata/state_race_2010.rds"), compress="xz")
-
-
-# National race over time
+# National race over time -------
 years = 2005:2021
 get_natl_race <- function(year) {
     if (year == 2010) {
@@ -31,8 +26,13 @@ l_race_year = map(years, get_natl_race)
 names(l_race_year) = years
 
 l_race_year[["2020"]] = l_race_year[["2019"]]*0.5 + l_race_year[["2021"]]*0.5
-usethis::use_data(l_race_year, internal=TRUE, overwrite=TRUE)
+# run sysdata.R to save!
 
+
+
+# State by race ------
+d = census_race_geo_table("state", year=2010, survey="dec", counts=TRUE, GEOIDs=TRUE)
+write_rds(d, here("inst/extdata/state_race_2010.rds"), compress="xz")
 
 
 # ZIP code by race ------
