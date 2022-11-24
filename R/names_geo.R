@@ -1,0 +1,68 @@
+#' Preprocess Last Names and Geographic Identifiers
+#'
+#' `proc_zip()` and `proc_state()` preprocess their corresponding geographic
+#' identifiers. States are partially matched to state names and abbreviations
+#' and are returned as FIPS codes. ZIP codes are crosswalked to Census ZCTAs.
+#' Missing identifiers are replaced with `"<none>"`.
+#' `proc_name()` processes last names in accordance with Census processing rules
+#' (<https://www2.census.gov/topics/genealogy/2010surnames/surnames.pdf>).
+#' Names are converted to Latin characters, capitalized, stripped of prefixes
+#' and suffixes, and otherwise standardized.
+#' These functions are called automatically by [bisg()] but may be useful,
+#' especially when geographic variables are included in a model in [birdie()].
+#'
+#' @param x A character vector of names or geographic identifiers to process
+#'
+#' @returns A processed character vector
+#'
+#' @examples
+#' proc_name("Smith Jr.")
+#' proc_zip("00501")
+#' proc_state("Washington")
+#' @name preproc
+NULL
+
+#' @rdname preproc
+#' @export
+proc_zip = function(x) {
+    coalesce(zip_xw$zcta[match(x, zip_xw$zip)], "<none>")
+}
+
+#' @rdname preproc
+#' @export
+proc_state = function(x) {
+    x = stringr::str_to_upper(x)
+    idx = coalesce(
+        pmatch(x, states$GEOID, duplicates.ok=TRUE),
+        pmatch(x, states$abbr, duplicates.ok=TRUE),
+        pmatch(x, states$name, duplicates.ok=TRUE)
+    )
+    coalesce(states$GEOID[idx], "<none>")
+}
+
+#' @rdname preproc
+#' @export
+proc_name = function(x) {
+    x = stringr::str_to_upper(x)
+    x = stringi::stri_trans_general(x, "Latin-ASCII")
+    x = if_else(str_starts(x, "[A-Z] [A-Z]$"), NA_character_, x)
+    x = if_else(str_starts(x, "([A-Z] ){2,}[A-Z]$"), str_remove_all(x, " "), x)
+    x = str_remove_all(x, "[.,\\'\"!@#$%^&*/?~`]")
+    x = if_else(x %in% c("JUNIOR", "SENIOR", "THIRD", "CRUTHIRD"), x,
+                str_remove(x, "(JUNIOR|SENIOR|THIRD|JR|III| II| IV| J R| S R)$"))
+    x = str_remove(x, "^(JR|III|II |J R |S R )")
+    x = if_else(stringr::str_length(x) >= 7, str_remove(x, "SR$"), x)
+    x = str_replace_all(x, "^(MC|MAC|O) ", "\\1")
+    x = str_replace_all(x, "-", " ")
+    x = stringr::str_squish(x)
+    x = if_else(stringr::str_length(x) == 2 & x != "NG" &
+                    !str_detect(x, "[AEIOUY]"), NA_character_, x)
+    x = if_else(x %in% c("DECLINE TO STATE", "DONT KNOW", "DECLINE",
+                         "NO NAME", "NO NOMBRE", "SAME AS ABOVE"),
+                NA_character_, x)
+    x
+}
+
+is_double_name = function(x) {
+    str_detect(x, "^\\S+ \\S+$")
+}
