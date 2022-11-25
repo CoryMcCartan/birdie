@@ -36,6 +36,15 @@ Missing identifiers are replaced with \code{"<none>"}.
 Names are converted to Latin characters, capitalized, stripped of prefixes
 and suffixes, and otherwise standardized.
 }
+\section{Functions}{
+\itemize{
+\item \code{proc_zip()}: Match ZIP codes to ZCTAs and fill in missing values.
+
+\item \code{proc_state()}: Match state names and abbreviations and fill in missing values.
+
+\item \code{proc_name()}: Process names to a Census-standardized format.
+
+}}
 \examples{
 proc_name("Smith Jr.")
 proc_zip("00501")
