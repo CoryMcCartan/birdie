@@ -26,13 +26,13 @@
 #' @name preproc
 NULL
 
-#' @rdname preproc
+#' @describeIn preproc Match ZIP codes to ZCTAs and fill in missing values.
 #' @export
 proc_zip = function(x) {
     coalesce(zip_xw$zcta[match(x, zip_xw$zip)], "<none>")
 }
 
-#' @rdname preproc
+#' @describeIn preproc Match state names and abbreviations and fill in missing values.
 #' @export
 proc_state = function(x) {
     x = stringr::str_to_upper(x)
@@ -44,7 +44,7 @@ proc_state = function(x) {
     coalesce(states$GEOID[idx], "<none>")
 }
 
-#' @rdname preproc
+#' @describeIn preproc Process names to a Census-standardized format.
 #' @export
 proc_name = function(x, to_latin=TRUE) {
     x = stringr::str_to_upper(x)
