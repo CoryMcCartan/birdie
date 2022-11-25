@@ -90,6 +90,8 @@ bisg <- function(formula, data=NULL, p_r=p_r_natl(), p_rgx=NULL, p_rs=NULL) {
 
 #' @param iter How many sampling iterations in the Gibbs sampler
 #' @param warmup How many burn-in iterations in the Gibbs sampler
+#' @param cores How many parallel cores to use in computation. Around 4 seems to
+#'   be optimal, even if more are available.
 #'
 #' @examples
 #' data(pseudo_vf)
@@ -98,20 +100,26 @@ bisg <- function(formula, data=NULL, p_r=p_r_natl(), p_rgx=NULL, p_rs=NULL) {
 #' @describeIn bisg The measurement error BISG model.
 #' @export
 bisg_me <- function(formula, data=NULL, p_r=p_r_natl(), p_rgx=NULL, p_rs=NULL,
-                    iter=1000, warmup=100) {
+                    iter=1000, warmup=100, cores=1L) {
     vars = parse_bisg_form(formula, data)
 
     l_name = make_name_tbl_vec(vars, p_r, p_rs, TRUE)
     l_gx = make_gx_tbl_vec(vars, p_r, p_rgx)
 
+    # set up sampler vectors
     n_gx = nrow(l_gx$p_rgx)
     n_s = nrow(l_name$p_sr)
     alpha_gzr = matrix(rep(l_gx$p_r, n_gx), nrow=n_gx, ncol=6, byrow=T)
     beta_sr = matrix(rep(l_gx$p_r, n_s), nrow=n_s, ncol=6, byrow=T)
 
+    # computation params
+    iter = as.integer(max(iter, 1))
+    warmup = as.integer(max(warmup, 1))
+    cores = if (cores == 1) 0L else as.integer(cores)
+
     m_bisg = gibbs_me(iter+warmup, warmup, l_name$S, l_gx$GX,
                       l_name$p_sr, l_gx$p_rgx,
-                      alpha_gzr, beta_sr, verbosity=3L)
+                      alpha_gzr, beta_sr, cores=cores, verbosity=3L)
     colnames(m_bisg) = paste0("pr_", names(p_r))
 
     out = as_tibble(m_bisg)
