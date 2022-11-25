@@ -53,7 +53,8 @@ If \code{formula} contains only labeled terms (like \code{zip()}), then by defau
 \code{p_rgx} will be constructed automatically from the most recent Census data.
 This table will be normalized by row, so it can be provided as population
 counts as well. Counts are required for \code{bisg_me()}.
-The \code{\link[=census_race_geo_table]{census_race_geo_table()}} function can be helpful to prepare tables.}
+The \code{\link[=census_race_geo_table]{census_race_geo_table()}} function can be helpful to prepare tables,
+as can be \code{\link[censable:build_dec]{censable::build_dec()}} and \code{\link[censable:build_acs]{censable::build_acs()}}.}
 
 \item{p_rs}{The distribution of race given last name. As with \code{p_rgx}, should
 be provided as a data frame, with a column of names and additional columns
