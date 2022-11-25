@@ -28,8 +28,8 @@ if (FALSE) { # useful when debugging
     Y = Y_vec
 }
 
-x0 = birdie(r_probs, party ~ 1, data, prior=rep(1.0001, 4), ctrl=birdie.ctrl(max_iter=500))
-tic(); x1 = birdie(r_probs, party ~ zip, data, prior=rep(1.0001, 4), ctrl=birdie.ctrl(max_iter=800)); toc();
+x0 = birdie(r_probs, party ~ 1, data, prior=rep(1.01, 4), ctrl=birdie.ctrl(max_iter=500))
+tic(); x1 = birdie(r_probs, party ~ zip, data, prior=rep(1.01, 4), ctrl=birdie.ctrl(max_iter=800)); toc();
 # x = birdie(r_probs, party ~ (1 | zip), data, ctrl=birdie.ctrl(max_iter=20))
 
 xr = list(
@@ -54,6 +54,6 @@ print_cond(xr$ols)
 
 colSums(abs(to_cond(xr$true) - to_cond(xr$pool)))/2
 colSums(abs(to_cond(xr$true) - to_cond(xr$sat)))/2
-colSums(abs(to_cond(xr$true) - to_cond(xr$glmm)))/2
+# colSums(abs(to_cond(xr$true) - to_cond(xr$glmm)))/2
 colSums(abs(to_cond(xr$true) - to_cond(xr$ols)))/2
 colSums(abs(to_cond(xr$true) - to_cond(xr$weight)))/2

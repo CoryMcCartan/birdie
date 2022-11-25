@@ -12,6 +12,10 @@
 #' and suffixes, and otherwise standardized.
 #'
 #' @param x A character vector of names or geographic identifiers to process
+#' @param to_latin If `TRUE`, convert names to Latin characters only. Strongly
+#'   recommended if non-Latin characters are present, since these will not match
+#'   Census tables. However, the conversion is slightly time-consuming and so
+#'   can be disabled with this flag.
 #'
 #' @returns A processed character vector
 #'
@@ -42,9 +46,9 @@ proc_state = function(x) {
 
 #' @rdname preproc
 #' @export
-proc_name = function(x) {
+proc_name = function(x, to_latin=TRUE) {
     x = stringr::str_to_upper(x)
-    x = stringi::stri_trans_general(x, "Latin-ASCII")
+    if (to_latin) x = stringi::stri_trans_general(x, "Latin-ASCII")
     x = if_else(str_starts(x, "[A-Z] [A-Z]$"), NA_character_, x)
     x = if_else(str_starts(x, "([A-Z] ){2,}[A-Z]$"), str_remove_all(x, " "), x)
     x = str_remove_all(x, "[.,\\'\"!@#$%^&*/?~`]")
