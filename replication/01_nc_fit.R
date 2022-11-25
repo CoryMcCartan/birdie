@@ -1,9 +1,10 @@
+# Setup --------
 voters = read_rds(here("data-raw/nc_voters.rds"))
 d_cens = read_rds(here("data-raw/nc_block_vap_race.rds")) %>%
     drop_na()
 
 # make a R|GZ table for predict_race_sgz
-make_p_rgz = function(voters, level=c("block", "tract", "county", "zip"), counts=FALSE) {
+make_p_rgx = function(voters, level=c("block", "tract", "county", "zip"), counts=FALSE) {
     d_county = group_by(d_cens, county) %>%
         summarize(across(vap:vap_other, sum), .groups="drop") %>%
         mutate(tract = NA, block = NA)
@@ -31,7 +32,8 @@ make_p_rgz = function(voters, level=c("block", "tract", "county", "zip"), counts
             distinct(GEOID)
         d_county = mutate(d_county, GEOID = str_c("cty", county)) %>%
             select(-county, -tract, -block)
-        d = census_zip_table(NULL, "GEOID", 1:6, counts=TRUE) %>%
+        # d = census_zip_table(NULL, "GEOID", 1:6, counts=TRUE) %>%
+        d = census_premade_table("GEOID", "zip_race_2010.rds", counts=TRUE) %>%
             rename_with(~ str_c("vap_", .), white:other) %>%
             mutate(vap = rowSums(across(vap_white:vap_other))) %>%
             bind_rows(d_county) %>%
@@ -51,6 +53,7 @@ make_p_rgz = function(voters, level=c("block", "tract", "county", "zip"), counts
         mutate(GEOID = as.character(GEOID))
 }
 
+# Subsample a table and format geography and outcome variables
 set.seed(5118)
 d = slice_sample(voters, n=600e3) %>%
     filter(reg_date <= as.Date("2016-11-01")) |>
@@ -63,20 +66,21 @@ d = slice_sample(voters, n=600e3) %>%
            # n_voted = factor(1*voted_2020_11),
            party=coalesce(party, "ind")) |>
     slice_sample(n=200e3)
-rm(voters)
-print(head(d$last_name)) # ensure seed is working
+print(as.character(head(d$last_name))) # ensure seed is working
 
+# Do BISG --------
 p_r = prop.table(table(d$race))
 
 geo_levels = c("county", "zip", "tract", "block")
 
 r_probs = map(geo_levels, function(level) {
-    predict_race_sgz(last_name, GEOID,
-                     data=rename(d, GEOID=str_c("GEOID_", level)),
-                     p_rgz=make_p_rgz(d, level), p_r=p_r, iterate=0)
+    cat("Doing BISG at the", level, "level")
+    bisg(~ nm(last_name) + GEOID,
+         data=rename(d, GEOID=str_c("GEOID_", level)),
+         p_rgx=make_p_rgx(d, level), p_r=p_r)
 }) %>%
     set_names(geo_levels)
-rm(d_cens)
+rm(make_p_rgx, voters, d_cens)
 
 # BISG quality
 log_score_baseline = mean(log(p_r[as.integer(d$race)]))
