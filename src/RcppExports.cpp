@@ -2,6 +2,7 @@
 // Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 #include "birdie_types.h"
+#include <RcppThread.h>
 #include <RcppEigen.h>
 #include <Rcpp.h>
 
@@ -56,8 +57,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // em_dirichlet
-Eigen::VectorXd em_dirichlet(const Eigen::VectorXd curr, const Eigen::VectorXi Y, const Eigen::VectorXi X, const Eigen::MatrixXd p_rxs, const Eigen::VectorXd prior_alpha, int n_x, bool map);
-RcppExport SEXP _birdie_em_dirichlet(SEXP currSEXP, SEXP YSEXP, SEXP XSEXP, SEXP p_rxsSEXP, SEXP prior_alphaSEXP, SEXP n_xSEXP, SEXP mapSEXP) {
+Eigen::VectorXd em_dirichlet(const Eigen::VectorXd curr, const Eigen::VectorXi Y, const Eigen::VectorXi X, const Eigen::MatrixXd p_rxs, const Eigen::VectorXd prior_alpha, int n_x, bool map, int cores);
+RcppExport SEXP _birdie_em_dirichlet(SEXP currSEXP, SEXP YSEXP, SEXP XSEXP, SEXP p_rxsSEXP, SEXP prior_alphaSEXP, SEXP n_xSEXP, SEXP mapSEXP, SEXP coresSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< const Eigen::VectorXd >::type curr(currSEXP);
@@ -67,7 +68,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Eigen::VectorXd >::type prior_alpha(prior_alphaSEXP);
     Rcpp::traits::input_parameter< int >::type n_x(n_xSEXP);
     Rcpp::traits::input_parameter< bool >::type map(mapSEXP);
-    rcpp_result_gen = Rcpp::wrap(em_dirichlet(curr, Y, X, p_rxs, prior_alpha, n_x, map));
+    Rcpp::traits::input_parameter< int >::type cores(coresSEXP);
+    rcpp_result_gen = Rcpp::wrap(em_dirichlet(curr, Y, X, p_rxs, prior_alpha, n_x, map, cores));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -101,8 +103,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // gibbs_me
-Eigen::MatrixXd gibbs_me(int iter, int warmup, const Eigen::VectorXi& S, const Eigen::VectorXi& GZ, const Eigen::MatrixXd& M_sr, const Eigen::MatrixXd& N_gzr, const Eigen::MatrixXd& alpha_gzr, const Eigen::MatrixXd& beta_sr, int verbosity);
-RcppExport SEXP _birdie_gibbs_me(SEXP iterSEXP, SEXP warmupSEXP, SEXP SSEXP, SEXP GZSEXP, SEXP M_srSEXP, SEXP N_gzrSEXP, SEXP alpha_gzrSEXP, SEXP beta_srSEXP, SEXP verbositySEXP) {
+Eigen::MatrixXd gibbs_me(int iter, int warmup, const Eigen::VectorXi& S, const Eigen::VectorXi& GZ, const Eigen::MatrixXd& M_sr, const Eigen::MatrixXd& N_gzr, const Eigen::MatrixXd& alpha_gzr, const Eigen::MatrixXd& beta_sr, int cores, int verbosity);
+RcppExport SEXP _birdie_gibbs_me(SEXP iterSEXP, SEXP warmupSEXP, SEXP SSEXP, SEXP GZSEXP, SEXP M_srSEXP, SEXP N_gzrSEXP, SEXP alpha_gzrSEXP, SEXP beta_srSEXP, SEXP coresSEXP, SEXP verbositySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -114,8 +116,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type N_gzr(N_gzrSEXP);
     Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type alpha_gzr(alpha_gzrSEXP);
     Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type beta_sr(beta_srSEXP);
+    Rcpp::traits::input_parameter< int >::type cores(coresSEXP);
     Rcpp::traits::input_parameter< int >::type verbosity(verbositySEXP);
-    rcpp_result_gen = Rcpp::wrap(gibbs_me(iter, warmup, S, GZ, M_sr, N_gzr, alpha_gzr, beta_sr, verbosity));
+    rcpp_result_gen = Rcpp::wrap(gibbs_me(iter, warmup, S, GZ, M_sr, N_gzr, alpha_gzr, beta_sr, cores, verbosity));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -124,10 +127,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_birdie_calc_bayes_bisg", (DL_FUNC) &_birdie_calc_bayes_bisg, 5},
     {"_birdie_calc_bayes", (DL_FUNC) &_birdie_calc_bayes, 6},
     {"_birdie_dirichlet_map", (DL_FUNC) &_birdie_dirichlet_map, 5},
-    {"_birdie_em_dirichlet", (DL_FUNC) &_birdie_em_dirichlet, 7},
+    {"_birdie_em_dirichlet", (DL_FUNC) &_birdie_em_dirichlet, 8},
     {"_birdie_sum_grp", (DL_FUNC) &_birdie_sum_grp, 6},
     {"_birdie_check_convergence", (DL_FUNC) &_birdie_check_convergence, 4},
-    {"_birdie_gibbs_me", (DL_FUNC) &_birdie_gibbs_me, 9},
+    {"_birdie_gibbs_me", (DL_FUNC) &_birdie_gibbs_me, 10},
     {NULL, NULL, 0}
 };
 

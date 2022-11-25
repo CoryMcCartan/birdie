@@ -43,7 +43,7 @@ Eigen::VectorXd em_dirichlet(
         const Eigen::VectorXd curr,
         const Eigen::VectorXi Y, const Eigen::VectorXi X,
         const Eigen::MatrixXd p_rxs, const Eigen::VectorXd prior_alpha,
-        int n_x, bool map=true) {
+        int n_x, bool map=true, int cores=0) {
     int N = Y.size();
     int n_y = prior_alpha.size();
     int n_r = p_rxs.cols();

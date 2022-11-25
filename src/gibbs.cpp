@@ -6,7 +6,7 @@ Eigen::MatrixXd gibbs_me(
         int iter, int warmup, const Eigen::VectorXi &S, const Eigen::VectorXi &GZ,
         const Eigen::MatrixXd &M_sr, const Eigen::MatrixXd &N_gzr,
         const Eigen::MatrixXd &alpha_gzr, const Eigen::MatrixXd &beta_sr,
-        int verbosity) {
+        int cores=0, int verbosity=3) {
     // setup sizes and inits
     int N = S.size();
     int n_r = M_sr.cols();
@@ -32,6 +32,7 @@ Eigen::MatrixXd gibbs_me(
 
     // run the Gibbs sampler
     RObject bar = cli_progress_bar(iter, NULL);
+    RcppThread::ThreadPool pool(cores);
     try {
         for (int it = 0; it < iter; it++) {
             Rcpp::checkUserInterrupt();
@@ -39,7 +40,7 @@ Eigen::MatrixXd gibbs_me(
 
             // R_i | R_{-i}
             VectorXd u = as<VectorXd>(runif(N));
-            for (int i = 0; i < N; i++) {
+            pool.parallelFor(0, N, [&] (int i) {
                 // compute n^{-i} and m^{-i}
                 ArrayXd m_i = m_sr.col(S[i] - 1);
                 ArrayXd n_i = n_gzr.col(GZ[i] - 1);
@@ -59,7 +60,8 @@ Eigen::MatrixXd gibbs_me(
                 if (it >= warmup) {
                     out(i, R[i] - 1) += 1.0 / (iter - warmup);
                 }
-            }
+            });
+            pool.wait();
         }
     } catch (Rcpp::internal::InterruptedException e) {
         Rcerr << "Interrupted. Only partial results available.\n";
