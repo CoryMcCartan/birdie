@@ -38,7 +38,8 @@
 #'   `p_rgx` will be constructed automatically from the most recent Census data.
 #'   This table will be normalized by row, so it can be provided as population
 #'   counts as well. Counts are required for `bisg_me()`.
-#'   The [census_race_geo_table()] function can be helpful to prepare tables.
+#'   The [census_race_geo_table()] function can be helpful to prepare tables,
+#'   as can be [censable::build_dec()] and [censable::build_acs()].
 #' @param p_rs The distribution of race given last name. As with `p_rgx`, should
 #'   be provided as a data frame, with a column of names and additional columns
 #'   for each racial group. Users should not have to specify this argument in
@@ -206,8 +207,9 @@ make_name_tbl_vec <- function(vars, p_r, p_rs, for_me=FALSE) {
         if (is.character(p_r)) p_r = p_r_natl()
         if (length(p_r) != 6) {
             cli_abort(c("Number of racial categories doesn't match the Census table.",
-                        "i"="Categories should be White, Black, Hispanic, Asian,
-                    American Indian/Alaska Native, and other."), call=parent.frame())
+                        "i"="Categories should be `white`, `black`, `hisp`, `asian`,
+                        `aian` (American Indian/Alaska Native), and `other`."),
+                      call=parent.frame())
         }
 
         if (isTRUE(for_me)) {
@@ -255,6 +257,17 @@ make_name_tbl_vec <- function(vars, p_r, p_rs, for_me=FALSE) {
         }
     }
 
+    idx_names = match(names(p_r), colnames(p_sr))
+    if (any(is.na(idx_names))) {
+        cli_abort(c("Names of {.arg p_r} and column names of {.arg p_rs} must match.",
+                    "i"="Names for {.arg p_r}: {.val {names(p_r)}}",
+                    "i"="Names for {.arg p_rs}: {.val {names(p_rs)}}",
+                    ">"="If you provided {.arg p_r} but not {.arg p_rs}, make sure
+                    {.arg p_r} has {.fn names} matching `white`, `black`,
+                    `hisp`, `asian`, `aian`, and `other`."),
+                  call=parent.frame())
+    }
+    p_sr = p_sr[, idx_names]
 
     list(S = S,
          p_sr = p_sr) # p_sr is actualy p_rs, unormalized, if `for_me=TRUE`
@@ -275,24 +288,25 @@ make_gx_tbl_vec <- function(vars, p_r, p_rgx) {
                     p_gxr = matrix(rep(1, length(p_r)), nrow=1)))
     }
 
+    est_p_r = is.character(p_r) && (p_r == "est" || p_r == "estimate")
 
+    p_r_tmp = p_r
+    if (est_p_r) p_r_tmp = p_r_natl()
+    GX_names = colnames(vars$GX)
     if (vars$geo_type != "none") {
-        p_r_tmp = p_r
-        if (is.character(p_r)) p_r_tmp = p_r_natl()
         if (length(p_r_tmp) != 6) {
             cli_abort(c("Number of racial categories doesn't match the Census table.",
                         "i"="Categories should be White, Black, Hispanic, Asian,
                     American Indian/Alaska Native, and other."), call=parent.frame())
         }
 
-        G_name = names(vars$GX)
         if (vars$geo_type == "zip") {
-            p_rgx = census_premade_table(G_name, "zip_race_2010.rds", counts=TRUE)
+            p_rgx = census_premade_table(GX_names, "zip_race_2010.rds", counts=TRUE)
 
             # match ZIPs to ZCTAs
             vars$GX[[1]] = proc_zip(vars$GX[[1]])
         } else if (vars$geo_type == "state") {
-            p_rgx = census_premade_table(G_name, "state_race_2010.rds", counts=TRUE)
+            p_rgx = census_premade_table(GX_names, "state_race_2010.rds", counts=TRUE)
 
             # match states
             vars$GX[[1]] = proc_state(vars$GX[[1]])
@@ -303,22 +317,6 @@ make_gx_tbl_vec <- function(vars, p_r, p_rgx) {
                         call=parent.frame())
         }
 
-        # tidy up
-        if (!"<none>" %in% p_rgx[[G_name]]) {
-            new_row = as.data.frame(as.list(1e5 * p_r_tmp))
-            new_row[[G_name]] = "<none>"
-            p_rgx = rbind(p_rgx, new_row)
-        }
-        p_rgx = mutate(p_rgx,
-                       across(colnames(p_r_natl),
-                          ~ coalesce(., p_r_tmp[cur_column()]))
-        )
-
-        match_idx = match(vars$GX[[1]], p_rgx[[G_name]])
-        idx_miss = which(is.na(match_idx))
-        if (length(idx_miss) > 0) {
-            vars$GX[[1]][idx_miss] = "<none>"
-        }
     } else { # "none" -> use `p_rgx`
         if (!is.data.frame(p_rgx)) {
             cli_abort("{.arg p_rgx} must be a data frame.", call=parent.frame())
@@ -334,30 +332,71 @@ make_gx_tbl_vec <- function(vars, p_r, p_rgx) {
             cli_abort("{.arg p_rgx} must have unique rows.", call=parent.frame())
         }
 
-        d_miss <- anti_join(vars$GX, p_rgx, by=names(vars$GX))
-        if (nrow(d_miss) > 0) {
-            cli::cli_text("Missing from {.arg p_rs}:")
-            print(d_miss)
-            cli_abort("Some predictor combinations are missing from {.arg p_rs}.",
+        # if there is just one ID column we can easily fill in "<none>"
+        if (length(GX_names) > 1) {
+            d_miss <- anti_join(vars$GX, p_rgx, by=names(vars$GX))
+            if (nrow(d_miss) > 0) {
+                cli::cli_text("Missing from {.arg p_rgx}:")
+                print(head(d_miss, 10))
+                if (nrow(d_miss) > 10) cat("...")
+                cli_abort("Some predictor combinations are missing from {.arg p_rgx}.",
+                          call=parent.frame())
+            }
+        }
+    }
+
+    # tidy up
+    if (length(GX_names) == 1) {
+        p_rgx[[GX_names]] = as.character(p_rgx[[GX_names]])
+        vars$GX[[1]] = as.character(vars$GX[[1]])
+
+        if (!"<none>" %in% p_rgx[[GX_names]]) {
+            new_row = as.data.frame(as.list(1e5 * p_r_tmp))
+            new_row[[GX_names]] = "<none>"
+            p_rgx = rbind(p_rgx, new_row)
+        }
+
+        for (nm in names(p_r_tmp)) {
+            p_rgx[[nm]] = coalesce(p_rgx[[nm]], p_r_tmp[nm])
+        }
+
+        match_idx = match(vars$GX[[1]], p_rgx[[GX_names]])
+        idx_miss = which(is.na(match_idx))
+        if (length(idx_miss) > 0) {
+            vars$GX[[1]][idx_miss] = "<none>"
+        }
+    }
+
+    # get columns in order
+    idx_names = setdiff(seq_len(ncol(p_rgx)), match(GX_names, colnames(p_rgx))) # default to non-GX-names cols
+    if (!est_p_r) {
+        idx_names = match(names(p_r), colnames(p_rgx))
+        if (any(is.na(idx_names))) {
+            cli_abort(c("Names of {.arg p_r} and column names of {.arg p_rgx} must match.",
+                        "i"="Names for {.arg p_r}: {.val {names(p_r)}}",
+                        "i"="Names for {.arg p_rgx}: {.val {names(p_rgx)}}",
+                        ">"="If you provided {.arg p_r} but not {.arg p_rgx}, make sure
+                        {.arg p_r} has {.fn names} matching `white`, `black`,
+                        `hisp`, `asian`, `aian`, and `other`."),
                       call=parent.frame())
         }
     }
 
     # subset to needed rows
-    d_match = left_join(vars$GX, p_rgx, by=names(vars$GX))
+    d_match = left_join(vars$GX, p_rgx, by=GX_names)
     GX_vec = as.factor(vctrs::vec_duplicate_id(d_match))
-    p_rgx = d_match[!duplicated(GX_vec), ]
+    p_rgx = as.matrix(d_match[!duplicated(GX_vec), idx_names])
 
     # flip which margin sums to 1
     p_gx = prop.table(table(GX_vec))
-    p_rgx = as.matrix(select(p_rgx, -names(vars$GX)))
     p_gxr = p_rgx / rowSums(p_rgx)
     for (i in seq_len(ncol(p_gxr))) {
         p_gxr[, i] = p_gxr[, i] * p_gx
         p_gxr[, i] = p_gxr[, i] / sum(p_gxr[, i])
     }
 
-    if (is.character(p_r) && (p_r == "est" || p_r == "estimate")) {
+
+    if (est_p_r) {
         p_r = colSums(p_rgx)
         p_r = p_r / sum(p_r)
     }
@@ -405,7 +444,7 @@ p_r_natl <- function(year=2021, vap=FALSE) {
 
     year = as.integer(year)
     if (year < 2005L || year > 2021L) {
-        cli_abort("Only {.arg year} from 2005 to 2021 is supported.")
+        cli_abort("{.arg year} must be between 2005 and 2021 (inclusive).")
     }
 
     l_race_year[[as.character(year)]]
