@@ -13,8 +13,8 @@ dirichlet_map <- function(Y, X, p_rxs, prior_alpha, n_x) {
     .Call(`_birdie_dirichlet_map`, Y, X, p_rxs, prior_alpha, n_x)
 }
 
-em_dirichlet <- function(curr, Y, X, p_rxs, prior_alpha, n_x, map = TRUE) {
-    .Call(`_birdie_em_dirichlet`, curr, Y, X, p_rxs, prior_alpha, n_x, map)
+em_dirichlet <- function(curr, Y, X, p_rxs, prior_alpha, n_x, map = TRUE, cores = 0L) {
+    .Call(`_birdie_em_dirichlet`, curr, Y, X, p_rxs, prior_alpha, n_x, map, cores)
 }
 
 sum_grp <- function(x, grp, wt, init, nx, ngrp) {
@@ -25,7 +25,7 @@ check_convergence <- function(est, last_est, abstol, reltol) {
     .Call(`_birdie_check_convergence`, est, last_est, abstol, reltol)
 }
 
-gibbs_me <- function(iter, warmup, S, GZ, M_sr, N_gzr, alpha_gzr, beta_sr, verbosity) {
-    .Call(`_birdie_gibbs_me`, iter, warmup, S, GZ, M_sr, N_gzr, alpha_gzr, beta_sr, verbosity)
+gibbs_me <- function(iter, warmup, S, GZ, M_sr, N_gzr, alpha_gzr, beta_sr, cores = 0L, verbosity = 3L) {
+    .Call(`_birdie_gibbs_me`, iter, warmup, S, GZ, M_sr, N_gzr, alpha_gzr, beta_sr, cores, verbosity)
 }
 

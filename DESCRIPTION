@@ -33,8 +33,9 @@ Suggests:
     rmarkdown,
     testthat (>= 3.0.0)
 LinkingTo: 
-    RcppEigen,
     Rcpp,
+    RcppThread,
+    RcppEigen,
     cli
 License: MIT + file LICENSE
 Encoding: UTF-8
