@@ -42,39 +42,42 @@ p_r = colSums(p_xr)
 
 There are two steps to applying the `birdie` methodology:
 
-1. Generate a first set of individual race probabilities using BISG.
-1. For a specific outcome variable of interest, run the `birdie` model to come up with estimated probabilities conditional on race.
+1. Generate a first set of individual race probabilities using Bayesian Improved Surname Geocoding (`bisg()`).
+1. For a specific outcome variable of interest, run a Bayesian Instrumental Regression for Disparity Estimation (`birdie()`) model to come up with estimated probabilities conditional on race.
 
 ## Generating BISG probabilities
 
 For the first step, you can use any BISG software, including the [`wru` R package](https://cran.r-project.org/package=wru).
-`birdie` provides its own `predict_race_sgz()` function to make this easy.
+However, `birdie` provides its own `bisg()` function to make this easy and very computationally efficient.
+To use `bisg()`, you provide a formula that labels the predictors used.
+You use `nm()` to show which variable contains last names, which must always be provided.
+ZIP codes and states can be labeled with `zip()` and `state()`.
+Other types of geographies can be used as well---just read the documentation for `bisg()`.
 
 ```{r}
-r_probs = predict_race_sgz(last_name, zip, data=pseudo_vf, p_r=p_r, iterate=0)
+r_probs = bisg(~ nm(last_name) + zip(zip), data=pseudo_vf, p_r=p_r)
 print(r_probs)
 ```
 
 Each row `r_probs` matches a row in `pseudo_vf`.
 It's important to note that here we are assuming that we know the overall racial distribution of our population (registered voters).
-Because of that, we provide the `p_r=p_r` argument, which gives `predict_race_sgz()` the overall racial distribution, and we set `iterate=0` to prevent `predict_race_sgz()` from trying to adjust this overall distribution.
-If you don't know the overall racial distribution in your context (even a guess is better than nothing), then you would not pass in the `p_r` or `iterate` arguments.
-The function will then iteratively update its guess of the overall racial distribution, using its own BISG probabilities.
+Because of that, we provide the `p_r=p_r` argument, which gives `bisg()` the overall racial distribution.
+If you don't know the overall racial distribution in your context (even a guess is better than nothing), then you could pass in something like the national distribution of race (which is conveniently provided by `p_r_natl()`).
 
 ## Estimating distributions by race
 
 We're now ready to estimate turnout by race.
-For this we'll use the `model_race()` function, and provide it with the BISG probabilities, our variable of interest (`turnout`), and our geography variable `zip`.
-If your BISG probabilities also used additional covariates, you would pass them as the `Z` parameter to this function.
-`model_race()` knows how to handle the columns of `r_probs` because they came from this package.
+For this we'll use the `birdie()` function, and provide it with a formula describing our BIRDiE model, including our variable of interest `turnout` and our geography variable `zip`.
+`birdie()` knows how to handle the columns of `r_probs` because they came from this package.
 If you use a different package, the columns may be named differently.
-The `prefix` parameter to `model_race()` lets you specify the naming convention for your probabilities.
+The `prefix` parameter to `birdie()` lets you specify the naming convention for your probabilities.
 
 ```{r}
-fit = model_race(r_probs, turnout, zip, data=pseudo_vf)
+fit = birdie(r_probs, turnout ~ zip, data=pseudo_vf)
 print(fit)
 ```
 
+<!--
 The `fit` object has a lot of diagnostic information.
 
 ```{r}
@@ -128,3 +131,4 @@ eval_joints(xr$true, "tv",
 ```
 
 The `birdie` methodology meaningfully improves on the other BISG estimators.
+-->
