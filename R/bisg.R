@@ -117,9 +117,12 @@ bisg_me <- function(formula, data=NULL, p_r=p_r_natl(), p_rgx=NULL, p_rs=NULL,
     warmup = as.integer(max(warmup, 1))
     cores = if (cores == 1) 0L else as.integer(cores)
 
+    # extra process_done to try to handle cases with interruptions
+    cli::cli_process_done()
     m_bisg = gibbs_me(iter+warmup, warmup, l_name$S, l_gx$GX,
                       l_name$p_sr, l_gx$p_rgx,
                       alpha_gzr, beta_sr, cores=cores, verbosity=3L)
+    cli::cli_process_done()
     colnames(m_bisg) = paste0("pr_", names(p_r))
 
     out = as_tibble(m_bisg)
@@ -195,7 +198,11 @@ parse_bisg_form <- function(formula, data=NULL) {
 make_name_tbl_vec <- function(vars, p_r, p_rs, for_me=FALSE) {
     S = as.character(vars$S)
     if (is.null(p_rs)) {
-        S = proc_name(S)
+        # process names (by unique level)
+        idx_uniq = vctrs::vec_unique_loc(S)
+        idx_dup = to_unique_ids(S)
+        S = proc_name(S[idx_uniq], to_latin=TRUE)[idx_dup]
+
         if (is.character(p_r)) p_r = p_r_natl()
         if (length(p_r) != 6) {
             cli_abort(c("Number of racial categories doesn't match the Census table.",
