@@ -11,10 +11,15 @@ proc_zip(x)
 
 proc_state(x)
 
-proc_name(x)
+proc_name(x, to_latin = TRUE)
 }
 \arguments{
 \item{x}{A character vector of names or geographic identifiers to process}
+
+\item{to_latin}{If \code{TRUE}, convert names to Latin characters only. Strongly
+recommended if non-Latin characters are present, since these will not match
+Census tables. However, the conversion is slightly time-consuming and so
+can be disabled with this flag.}
 }
 \value{
 A processed character vector
