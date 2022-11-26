@@ -29,3 +29,7 @@ gibbs_me <- function(iter, warmup, S, GZ, M_sr, N_gzr, alpha_gzr, beta_sr, cores
     .Call(`_birdie_gibbs_me`, iter, warmup, S, GZ, M_sr, N_gzr, alpha_gzr, beta_sr, cores, verbosity)
 }
 
+mat_rcatp <- function(probs) {
+    .Call(`_birdie_mat_rcatp`, probs)
+}
+
