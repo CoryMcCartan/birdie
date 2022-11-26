@@ -6,6 +6,9 @@
 \alias{fitted.birdie}
 \alias{predict.birdie}
 \alias{simulate.birdie}
+\alias{tidy.birdie}
+\alias{glance.birdie}
+\alias{augment.birdie}
 \alias{print.birdie}
 \alias{summary.birdie}
 \title{Class "birdie_fit" of BIRDiE Models}
@@ -17,6 +20,12 @@
 \method{predict}{birdie}(object, ...)
 
 \method{simulate}{birdie}(object, nsim = 1, seed = NULL, ...)
+
+\method{tidy}{birdie}(x, ...)
+
+\method{glance}{birdie}(x, ...)
+
+\method{augment}{birdie}(x, data, ...)
 
 \method{print}{birdie}(x, ...)
 
@@ -56,6 +65,12 @@ estimates \code{Pr(R | G, X, S)}; this table estimates \code{Pr(R | Y, G, X, S)}
 \item \code{simulate(birdie)}: Simulate race from the posterior distribution
 \code{Pr(R | Y, G, X, S, Theta-MAP)}. Does not account for uncertainty in model
 parameters.
+
+\item \code{tidy(birdie)}: Put BIRDiE model coefficients in a tidy format.
+
+\item \code{glance(birdie)}: Glance at a BIRDiE model.
+
+\item \code{augment(birdie)}: Augment data with individual race predictions from a BIRDiE model.
 
 \item \code{print(birdie)}: Print a summary of the model fit.
 

@@ -16,6 +16,9 @@ birdie <- function(r_probs, formula, data=NULL,
             check_full_int(tt, covars)
         }
     } else {
+        d_model = get_all_vars(formula, data=data)
+        attr(d_model, "terms") = tt
+
         method = if (length(re_terms) == 1) "re1" else "glmm"
     }
 
@@ -77,7 +80,7 @@ birdie <- function(r_probs, formula, data=NULL,
             converge = res$converge,
             runtime = as.numeric(t2 - t1, units = "secs")
         ),
-        call = match.call()
+        call = match.call(),
     ), class="birdie")
 }
 
