@@ -294,8 +294,8 @@ check_full_int <- function(tt, covars) {
     full_int = all(int_ord == choose(length(int_ord), seq_along(int_ord))) # pascal's triangle
     if (!full_int) {
         x_vars = attr(tt, "term.labels")[attr(tt, "order") == 1]
-        cli_warn(c("Fixed effects (no-pooling) model being fit without
-                         full interaction structure. No estimation guarantees.",
+        cli_warn(c("Fixed effects (no-pooling) model is specified without full
+                   interaction structure but will be fit with full interactions.",
                    "i"="For full interaction structure, use
                          `{covars[1]} ~ {paste0(x_vars, collapse=' * ')}`."),
                  call=parent.frame())
