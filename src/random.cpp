@@ -18,6 +18,19 @@ int rcatp(ArrayXd probs, double u) {
     return j + 1;
 }
 
+// [[Rcpp::export]]
+Eigen::VectorXi mat_rcatp(Eigen::MatrixXd probs) {
+    int N = probs.rows();
+    VectorXd u = as<VectorXd>(runif(N));
+    VectorXi R(N);
+
+    for (int i = 0; i < N; i++) {
+        R[i] = rcatp(probs.row(i), u[i]);
+    }
+
+    return R;
+}
+
 MatrixXd rdirichlet(int n, const VectorXd alpha) {
     int m = alpha.size();
     MatrixXd out(n, m);

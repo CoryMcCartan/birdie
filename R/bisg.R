@@ -127,7 +127,7 @@ bisg_me <- function(formula, data=NULL, p_r=p_r_natl(), p_rgx=NULL, p_rs=NULL,
     colnames(m_bisg) = paste0("pr_", names(p_r))
 
     out = as_tibble(m_bisg)
-    class(out) = c("bisg", class(out))
+    class(out) = c("bisg_me", "bisg", class(out))
     attr(out, "S_name") = vars$S_name
     attr(out, "GX_names") = colnames(vars$GX)
     attr(out, "p_r") = l_gx$p_r

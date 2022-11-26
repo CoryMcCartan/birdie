@@ -39,7 +39,7 @@ birdie <- function(r_probs, formula, data=NULL,
     # run inference
     t1 <- Sys.time()
     if (method %in% c("pool", "fixef")) {
-        out = em_fixef(Y_vec, r_probs, d_model[-1], prior, ctrl=ctrl)
+        res = em_fixef(Y_vec, r_probs, d_model[-1], prior, ctrl=ctrl)
     } else if (method == "re1") {
         # out = em_re1(Y_vec, r_probs, formula, data, iter=max_iter)
         cli_abort("Method {.val {method}} not yet implemented.")
@@ -49,28 +49,36 @@ birdie <- function(r_probs, formula, data=NULL,
     }
     t2 <- Sys.time()
 
-    if (isFALSE(out$converge)) {
+    if (isFALSE(res$converge)) {
         cli_warn(c("EM algorithm did not converge in {ctrl$max_iter} iterations.",
                    ">"="Consider increasing {.arg max_iter}."),
                  call=parent.frame())
     }
 
-    # output
-    colnames(out$map) = colnames(r_probs)
-    rownames(out$map) = levels(Y_vec)
-    colnames(out$p_ryxs) = stringr::str_c(prefix, colnames(r_probs))
-    out$p_ryxs = as_tibble(out$p_ryxs)
-    out$map0 = NULL
-    out$N = length(Y_vec)
-    # out$vars = GZ_names
-    out$x_lev = levels(Y_vec)
-    out$r_lev = colnames(r_probs)
-    out$runtime = as.numeric(t2 - t1, units = "secs")
-    out$method = method
-    out$prior = prior
-    class(out) = "birdie"
 
-    out
+    # add names
+    colnames(res$map) = colnames(r_probs)
+    rownames(res$map) = levels(Y_vec)
+    colnames(res$p_ryxs) = stringr::str_c(prefix, colnames(r_probs))
+
+    # output
+    attr(tt, ".Environment") = NULL # save space
+
+    structure(list(
+        map = res$map,
+        map_sub = res$ests,
+        p_ryxs = as_tibble(res$p_ryxs),
+        N = length(Y_vec),
+        prior = prior,
+        prefix = prefix,
+        algo = list(
+            method = method,
+            iters = res$iters,
+            converge = res$converge,
+            runtime = as.numeric(t2 - t1, units = "secs")
+        ),
+        call = match.call()
+    ), class="birdie")
 }
 
 # Fixed-effects model (includes complete pooling and no pooling)

@@ -122,6 +122,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// mat_rcatp
+Eigen::VectorXi mat_rcatp(Eigen::MatrixXd probs);
+RcppExport SEXP _birdie_mat_rcatp(SEXP probsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Eigen::MatrixXd >::type probs(probsSEXP);
+    rcpp_result_gen = Rcpp::wrap(mat_rcatp(probs));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_birdie_calc_bayes_bisg", (DL_FUNC) &_birdie_calc_bayes_bisg, 5},
@@ -131,6 +142,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_birdie_sum_grp", (DL_FUNC) &_birdie_sum_grp, 6},
     {"_birdie_check_convergence", (DL_FUNC) &_birdie_check_convergence, 4},
     {"_birdie_gibbs_me", (DL_FUNC) &_birdie_gibbs_me, 10},
+    {"_birdie_mat_rcatp", (DL_FUNC) &_birdie_mat_rcatp, 1},
     {NULL, NULL, 0}
 };
 
