@@ -449,6 +449,3 @@ p_r_natl <- function(year=2021, vap=FALSE) {
 
     l_race_year[[as.character(year)]]
 }
-
-
-

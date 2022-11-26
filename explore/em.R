@@ -9,17 +9,14 @@ d = readRDS(here("data-raw/nc_voters_small.rds")) |>
 p_r = with(d, prop.table(table(race)))
 
 r_probs = bisg(~ nm(last_name) + zip(zip), d, p_r=p_r)
-r_probs = bisg_me(~ nm(last_name) + zip(zip), d, p_r=p_r, cores=4)
-# r_probs_me = bisg_me(~ nm(last_name) + zip(zip), d, p_r=p_r)
+r_probs_me = bisg_me(~ nm(last_name) + zip(zip), d, p_r=p_r, cores=4)
 
 p_r_est = colMeans(r_probs)
-alpha = c(10, 10, 10, 1)
 
-# x = birdie(r_probs, party ~ 1, d, alpha=alpha)
 data = mutate(d, zip = proc_zip(zip)) |>
     select(party, zip, county, race, n_voted)
 
-if (FALSE) { # useful when debugging
+if (FALSE) {
     formula = party ~ zip
     ctrl = birdie.ctrl()
     prior = rep(1.0001, 4)
@@ -28,8 +25,8 @@ if (FALSE) { # useful when debugging
     Y = Y_vec
 }
 
-x0 = birdie(r_probs, party ~ 1, data, prior=rep(1.01, 4), ctrl=birdie.ctrl(max_iter=500))
-tic(); x1 = birdie(r_probs, party ~ zip, data, prior=rep(1.01, 4), ctrl=birdie.ctrl(max_iter=800)); toc();
+x0 = birdie(r_probs, party ~ 1, data, prior=rep(1.01, 4))
+x1 = birdie(r_probs, party ~ zip, data, prior=rep(1.01, 4))
 # x = birdie(r_probs, party ~ (1 | zip), data, ctrl=birdie.ctrl(max_iter=20))
 
 xr = list(
@@ -39,7 +36,8 @@ xr = list(
     # glmm = x$map %*% diag(colMeans(x$p_ryxs)),
     # pols = calc_joint_bisgz_ols(r_probs, d$party, d$zip, with(d, prop.table(table(zip, race), 2))),
     ols = calc_joint_bisgz(r_probs, d$party, "ols"),
-    weight = calc_joint_bisgz(r_probs, d$party, "weight")
+    weight = calc_joint_bisgz(r_probs, d$party, "weight"),
+    thresh = calc_joint_bisgz(r_probs, d$party, "thresh")
 )
 
 # xr = c(xr[1], lapply(xr[-1], \(tbl) rake(tbl, rowSums(xr$true), colSums(xr$true))))

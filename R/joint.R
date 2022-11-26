@@ -82,19 +82,24 @@ calc_joint_bisgz_ols = function(r_probs, x, gz=attr(r_probs, "gz"),
     }
     stopifnot(nrow(r_probs) == N)
 
-    out = do.call(rbind, lapply(levels(x), function(xval) {
-        ests_local = do.call(rbind, lapply(levels(gz), function(lvl) {
-            idx = which(gz == lvl)
-            tryCatch(
-                lm.fit(r_probs[idx, ], x[idx] == xval)$coefficients,
-            error = function(e) rep(0, 6))
-        }))
-        if (isTRUE(truncate)) {
-            ests_local[ests_local < 0] = 0
-            ests_local[ests_local > 1] = 1
-        }
-        colSums(p_gzr * ests_local, na.rm=TRUE)
+    yy = do.call(cbind, lapply(levels(x), function(xval) {
+        as.numeric(x == xval)
     }))
+    ests_local = do.call(rbind, lapply(levels(gz), function(lvl) {
+        idx = which(gz == lvl)
+        tryCatch(
+            as.numeric(lm.fit(r_probs[idx, ], yy[idx, ])$coefficients),
+        error = function(e) rep(0, 6))
+    }))
+    if (isTRUE(truncate)) {
+        ests_local[ests_local < 0] = 0
+        ests_local[ests_local > 1] = 1
+    }
+    out = matrix(nrow=nlevels(x), ncol=ncol(r_probs))
+    for (i in seq_len(nlevels(x))) {
+        out[i, ] = colSums(p_gzr * ests_local[, 1:6 + 6*(i-1)], na.rm=TRUE)
+    }
+
 
     out = out %*% diag(colMeans(r_probs))
     rownames(out) = levels(x)
