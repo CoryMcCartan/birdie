@@ -23,9 +23,32 @@ if (FALSE) {
     p_rxs = as.matrix(r_probs)
     # later
     Y = Y_vec
+
+    ests = dirichlet_map(as.integer(d$party), rep_len(1, nrow(d)), as.matrix(r_probs), rep(1.001, 4), 1)
+    em_step = function(curr) em_dirichlet(curr, as.integer(d$party), rep_len(1, nrow(d)), as.matrix(r_probs), rep(1.001, 4), 1)
 }
 
 x0 = birdie(r_probs, party ~ 1, data, prior=rep(1.01, 4))
+
+microbenchmark::microbenchmark(
+    birdie(r_probs, party ~ 1, data, prior=rep(1.01, 4),
+           ctrl=birdie.ctrl(accel="squarem")),
+    birdie(r_probs, party ~ 1, data, prior=rep(1.01, 4),
+           ctrl=birdie.ctrl(accel="anderson",  anderson_restart=FALSE)),
+    birdie(r_probs, party ~ 1, data, prior=rep(1.01, 4),
+           ctrl=birdie.ctrl(accel="anderson", anderson_restart=TRUE)),
+    times = 20
+)
+microbenchmark::microbenchmark(
+    birdie(r_probs, party ~ 1, data, prior=rep(1.01, 4),
+           ctrl=birdie.ctrl(accel="squarem")),
+    birdie(r_probs, party ~ 1, data, prior=rep(1.01, 4),
+           ctrl=birdie.ctrl(accel="anderson", anderson_restart=TRUE, order=6)),
+    birdie(r_probs, party ~ 1, data, prior=rep(1.01, 4),
+           ctrl=birdie.ctrl(accel="anderson", anderson_restart=TRUE, order=12)),
+    times = 20
+)
+
 x1 = birdie(r_probs, party ~ zip, data, prior=rep(1.01, 4))
 # x = birdie(r_probs, party ~ (1 | zip), data, ctrl=birdie.ctrl(max_iter=20))
 

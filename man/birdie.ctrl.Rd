@@ -4,10 +4,28 @@
 \alias{birdie.ctrl}
 \title{Control of BIRDiE Model Fitting}
 \usage{
-birdie.ctrl(max_iter = 1000, abstol = 1e-06, reltol = 1e-06)
+birdie.ctrl(
+  max_iter = 1000,
+  accel = c("squarem", "anderson", "none"),
+  order = switch(match.arg(accel), none = 0L, anderson = -1L, squarem = 3L),
+  anderson_restart = TRUE,
+  abstol = 1e-06,
+  reltol = 1e-06
+)
 }
 \arguments{
 \item{max_iter}{The maximum number of EM iterations.}
+
+\item{accel}{The acceleration algorithm to use in doing EM. The default
+\code{"squarem"} is good for most purposes, though \code{"anderson"} may be faster
+when there are few parameters or very tight tolerances.}
+
+\item{order}{The order to use in the acceleration algorithm. Interpretation
+varies by algorithm. Can range from 1 to 3 (default) for SQUAREM and from 1
+to the number of parameters for Anderson (default -1 allows the order to be
+determined by problem size).}
+
+\item{anderson_restart}{Whether to use restarts in Anderson acceleration.}
 
 \item{abstol}{The absolute tolerance used in checking convergence.}
 

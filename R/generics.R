@@ -1,4 +1,4 @@
-#' Class "birdie_fit" of BIRDiE Models
+#' Class "birdie" of BIRDiE Models
 #'
 #' The output of [birdie()] is an object of class `birdie`, which supports
 #' many generic functions. Notably `coef.birdie()` returns the main model

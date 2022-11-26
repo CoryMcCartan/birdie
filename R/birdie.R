@@ -80,7 +80,7 @@ birdie <- function(r_probs, formula, data=NULL,
             converge = res$converge,
             runtime = as.numeric(t2 - t1, units = "secs")
         ),
-        call = match.call(),
+        call = match.call()
     ), class="birdie")
 }
 
@@ -99,24 +99,18 @@ em_fixef <- function(Y, p_rxs, d_model, prior, ctrl) {
     ests = dirichlet_map(Y, X, p_rxs, prior, n_x)
 
     # do EM (accelerated)
-    res = SQUAREM::squarem(
-        ests,
-        function(curr) em_dirichlet(curr, Y, X, p_rxs, prior, n_x),
-        control=list(K=3, method="rre", minimize=TRUE, square=TRUE,
-                     step.min0=1, step.max0=1, mstep=4, objfn.inc=1,
-                     kr=1, tol=ctrl$abstol*(n_x^0.666), maxiter=ctrl$max_iter,
-                     trace=FALSE, intermed=FALSE)
-    )
-    ests = res$par
+    res = ctrl$accel(ests, function(curr) {
+        em_dirichlet(curr, Y, X, p_rxs, prior, n_x)
+    }, ctrl, n_x=n_x)
 
-    p_ryxs = calc_bayes(Y, X, ests, p_rxs, n_x, n_y)
+    p_ryxs = calc_bayes(Y, X, res$ests, p_rxs, n_x, n_y)
     est = dirichlet_map(Y, rep_along(Y, 1), p_ryxs, rep_len(1, n_y), 1) %>%
         matrix(n_y, n_r, byrow=TRUE)
 
     list(map = est,
-         ests = aperm(array(ests, est_dim), 3:1),
-         iters = res$fpevals,
-         converge = res$convergence,
+         ests = aperm(array(res$ests, est_dim), 3:1),
+         iters = res$iters,
+         converge = res$converge,
          p_ryxs = p_ryxs)
 }
 
@@ -232,6 +226,14 @@ vec_to_ests <- function(vec, n_y, n_r) {
 #' All arguments have defaults.
 #'
 #' @param max_iter The maximum number of EM iterations.
+#' @param accel The acceleration algorithm to use in doing EM. The default
+#'   `"squarem"` is good for most purposes, though `"anderson"` may be faster
+#'   when there are few parameters or very tight tolerances.
+#' @param order The order to use in the acceleration algorithm. Interpretation
+#'   varies by algorithm. Can range from 1 to 3 (default) for SQUAREM and from 1
+#'   to the number of parameters for Anderson (default -1 allows the order to be
+#'   determined by problem size).
+#' @param anderson_restart Whether to use restarts in Anderson acceleration.
 #' @param abstol The absolute tolerance used in checking convergence.
 #' @param reltol The relative tolerance used in checking convergence.
 #'
@@ -241,12 +243,25 @@ vec_to_ests <- function(vec, n_y, n_r) {
 #' birdie.ctrl(max_iter=1000)
 #'
 #' @export
-birdie.ctrl <- function(max_iter=1000, abstol=1e-6, reltol=1e-6) {
+birdie.ctrl <- function(max_iter=1000, accel=c("squarem", "anderson", "none"),
+                        order=switch(match.arg(accel), none=0L, anderson=-1L, squarem=3L),
+                        anderson_restart=TRUE,
+                        abstol=1e-6, reltol=1e-6) {
     stopifnot(max_iter >= 1)
     stopifnot(abstol >= 0)
     stopifnot(reltol >= 0)
 
+    accel = match.arg(accel)
+    fn_accel = switch(accel,
+                      none = accel_none,
+                      anderson = accel_anderson,
+                      squarem = accel_squarem)
+    if (accel == "squarem") order = min(order, 3)
+
     list(max_iter = as.integer(max_iter),
+         accel = fn_accel,
+         order = order,
+         restart = as.logical(anderson_restart),
          abstol = abstol,
          reltol = reltol)
 }
