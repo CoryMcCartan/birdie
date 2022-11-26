@@ -11,7 +11,7 @@
 \alias{augment.birdie}
 \alias{print.birdie}
 \alias{summary.birdie}
-\title{Class "birdie_fit" of BIRDiE Models}
+\title{Class "birdie" of BIRDiE Models}
 \usage{
 \method{coef}{birdie}(object, complete = FALSE, ...)
 

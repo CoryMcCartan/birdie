@@ -88,7 +88,7 @@ calc_joint_bisgz_ols = function(r_probs, x, gz=attr(r_probs, "gz"),
     ests_local = do.call(rbind, lapply(levels(gz), function(lvl) {
         idx = which(gz == lvl)
         tryCatch(
-            as.numeric(lm.fit(r_probs[idx, ], yy[idx, ])$coefficients),
+            as.numeric(.lm.fit(r_probs[idx, ], yy[idx, ])$coefficients),
         error = function(e) rep(0, 6))
     }))
     if (isTRUE(truncate)) {
