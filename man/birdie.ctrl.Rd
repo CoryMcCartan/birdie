@@ -29,7 +29,8 @@ determined by problem size).}
 
 \item{abstol}{The absolute tolerance used in checking convergence.}
 
-\item{reltol}{The relative tolerance used in checking convergence.}
+\item{reltol}{The relative tolerance used in checking convergence.
+Ignored if \code{accel="squarem"}.}
 }
 \value{
 A list containing the control parameters

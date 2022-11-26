@@ -236,6 +236,7 @@ vec_to_ests <- function(vec, n_y, n_r) {
 #' @param anderson_restart Whether to use restarts in Anderson acceleration.
 #' @param abstol The absolute tolerance used in checking convergence.
 #' @param reltol The relative tolerance used in checking convergence.
+#'   Ignored if `accel="squarem"`.
 #'
 #' @return A list containing the control parameters
 #'
