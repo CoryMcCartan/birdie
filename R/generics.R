@@ -64,6 +64,50 @@ simulate.birdie <- function(object, nsim = 1, seed = NULL, ...) {
     out
 }
 
+#' @importFrom generics tidy glance augment
+#' @export
+generics::tidy
+#' @export
+generics::glance
+#' @export
+generics::augment
+
+#' @describeIn birdie-class Put BIRDiE model coefficients in a tidy format.
+#' @method tidy birdie
+#' @export
+tidy.birdie <- function(x, ...) {
+    m = x0$map
+
+    out = tibble(X = rep(rownames(m), ncol(m)),
+                 race = rep(colnames(m), each=nrow(m)),
+                 estimate = as.numeric(m))
+    names(out)[1] = rlang::expr_name(rlang::f_lhs(x$call$formula))
+
+    out
+}
+
+#' @describeIn birdie-class Glance at a BIRDiE model.
+#' @method glance birdie
+#' @export
+glance.birdie <- function(x, ...) {
+    m = x$p_ryxs
+
+    p_r = colMeans(m)
+    ents = entropy(m)
+
+    tibble(entr.marg = entropy(p_r),
+           entr.post.med = median(entropy(m)),
+           nobs = nrow(m),
+           ngrp = dim(x$map_sub)[1])
+}
+
+#' @describeIn birdie-class Augment data with individual race predictions from a BIRDiE model.
+#' @method augment birdie
+#' @export
+augment.birdie <- function(x, data, ...) {
+    bind_cols(data, fitted.birdie(x))
+}
+
 
 comma <- function(x) format(x, big.mark=',')
 

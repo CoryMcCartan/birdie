@@ -16,6 +16,7 @@ Depends:
     R (>= 3.6.0)
 Imports: 
     rlang (>= 0.1.2),
+    generics,
     cli,
     vctrs,
     dplyr,
