@@ -25,8 +25,10 @@ birdie <- function(r_probs, formula, data=NULL,
     check_covars(r_probs, covars, method) # check predictors
     # set up race probability matrix
     if (!is.matrix(r_probs)) {
-        r_probs = as.matrix(select(r_probs, starts_with(prefix)))
-        colnames(r_probs) = substring(colnames(r_probs), nchar(prefix)+1L)
+        p_rxs = as.matrix(select(r_probs, starts_with(prefix)))
+        colnames(p_rxs) = substring(colnames(p_rxs), nchar(prefix)+1L)
+    } else {
+        p_rxs = r_probs
     }
 
     # check types
@@ -42,7 +44,7 @@ birdie <- function(r_probs, formula, data=NULL,
     # run inference
     t1 <- Sys.time()
     if (method %in% c("pool", "fixef")) {
-        res = em_fixef(Y_vec, r_probs, d_model[-1], prior, ctrl=ctrl)
+        res = em_fixef(Y_vec, p_rxs, d_model[-1], prior, ctrl=ctrl)
     } else if (method == "re1") {
         # out = em_re1(Y_vec, r_probs, formula, data, iter=max_iter)
         cli_abort("Method {.val {method}} not yet implemented.")
@@ -60,9 +62,19 @@ birdie <- function(r_probs, formula, data=NULL,
 
 
     # add names
-    colnames(res$map) = colnames(r_probs)
+    colnames(res$map) = colnames(p_rxs)
     rownames(res$map) = levels(Y_vec)
-    colnames(res$p_ryxs) = stringr::str_c(prefix, colnames(r_probs))
+
+    # format p_ryxs
+    colnames(res$p_ryxs) = stringr::str_c(prefix, colnames(p_rxs))
+    p_ryxs = as_tibble(res$p_ryxs)
+    if (inherits(r_probs, "bisg")) {
+        attr(p_ryxs, "S_name") = attr(r_probs, "S_name")
+        attr(p_ryxs, "GX_names") = c(names(d_model)[1], attr(r_probs, "GX_names"))
+        attr(p_ryxs, "p_r") = attr(r_probs, "p_r")
+        attr(p_ryxs, "method") = "birdie"
+        class(p_ryxs) = c("bisg", class(p_ryxs))
+    }
 
     # output
     attr(tt, ".Environment") = NULL # save space
@@ -70,7 +82,7 @@ birdie <- function(r_probs, formula, data=NULL,
     structure(list(
         map = res$map,
         map_sub = res$ests,
-        p_ryxs = as_tibble(res$p_ryxs),
+        p_ryxs = p_ryxs,
         N = length(Y_vec),
         prior = prior,
         prefix = prefix,
@@ -228,11 +240,14 @@ vec_to_ests <- function(vec, n_y, n_r) {
 #' @param max_iter The maximum number of EM iterations.
 #' @param accel The acceleration algorithm to use in doing EM. The default
 #'   `"squarem"` is good for most purposes, though `"anderson"` may be faster
-#'   when there are few parameters or very tight tolerances.
+#'   when there are few parameters or very tight tolerances. `"daarem"` is an
+#'   excellent choice as well that works across a range of problems, though it
+#'   requires installing the small `SQUAREM` package. `"none"` is not
+#'   recommended unless other algorithms are running into numerical issues.
 #' @param order The order to use in the acceleration algorithm. Interpretation
 #'   varies by algorithm. Can range from 1 to 3 (default) for SQUAREM and from 1
-#'   to the number of parameters for Anderson (default -1 allows the order to be
-#'   determined by problem size).
+#'   to the number of parameters for Anderson and DAAREM (default -1 allows the
+#'   order to be determined by problem size).
 #' @param anderson_restart Whether to use restarts in Anderson acceleration.
 #' @param abstol The absolute tolerance used in checking convergence.
 #' @param reltol The relative tolerance used in checking convergence.
@@ -244,8 +259,8 @@ vec_to_ests <- function(vec, n_y, n_r) {
 #' birdie.ctrl(max_iter=1000)
 #'
 #' @export
-birdie.ctrl <- function(max_iter=1000, accel=c("squarem", "anderson", "none"),
-                        order=switch(match.arg(accel), none=0L, anderson=-1L, squarem=3L),
+birdie.ctrl <- function(max_iter=1000, accel=c("squarem", "anderson", "daarem", "none"),
+                        order=switch(match.arg(accel), none=0L, anderson=-1L, daarem=-1L, squarem=3L),
                         anderson_restart=TRUE,
                         abstol=1e-6, reltol=1e-6) {
     stopifnot(max_iter >= 1)
@@ -256,6 +271,7 @@ birdie.ctrl <- function(max_iter=1000, accel=c("squarem", "anderson", "none"),
     fn_accel = switch(accel,
                       none = accel_none,
                       anderson = accel_anderson,
+                      daarem = accel_daarem,
                       squarem = accel_squarem)
     if (accel == "squarem") order = min(order, 3)
 
