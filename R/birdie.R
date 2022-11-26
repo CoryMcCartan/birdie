@@ -37,6 +37,7 @@ birdie <- function(r_probs, formula, data=NULL,
     prior = check_make_prior(prior, method, n_y)
 
     # run inference
+    t1 <- Sys.time()
     if (method %in% c("pool", "fixef")) {
         out = em_fixef(Y_vec, r_probs, d_model[-1], prior, ctrl=ctrl)
     } else if (method == "re1") {
@@ -46,6 +47,7 @@ birdie <- function(r_probs, formula, data=NULL,
         cli_abort("Method {.val {method}} not yet implemented.")
         # out = em_glmm(Y_vec, r_probs, formula, data, ctrl=ctrl)
     }
+    t2 <- Sys.time()
 
     if (isFALSE(out$converge)) {
         cli_warn(c("EM algorithm did not converge in {ctrl$max_iter} iterations.",
@@ -63,6 +65,7 @@ birdie <- function(r_probs, formula, data=NULL,
     # out$vars = GZ_names
     out$x_lev = levels(Y_vec)
     out$r_lev = colnames(r_probs)
+    out$runtime = as.numeric(t2 - t1, units = "secs")
     out$method = method
     out$prior = prior
     class(out) = "birdie"
