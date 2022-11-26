@@ -85,6 +85,7 @@ accel_anderson <- function(init, em_step, ctrl, n_x=1, ...) {
 }
 
 accel_squarem <- function(init, em_step, ctrl, n_x=1, ...) {
+    rlang::check_installed("SQUAREM", "For SQUAREM acceleration.")
     squarem_method = if (ctrl$order == 1) 3 else "rre"
     incr_factor = n_x^(1/2)
 
@@ -95,6 +96,25 @@ accel_squarem <- function(init, em_step, ctrl, n_x=1, ...) {
                      square=TRUE, step.min0=1, step.max0=1, mstep=4, objfn.inc=1,
                      kr=1, tol=ctrl$abstol*incr_factor, maxiter=ctrl$max_iter,
                      trace=FALSE, intermed=FALSE)
+    )
+
+    list(ests = res$par,
+         iters = res$fpeval,
+         converge = res$convergence)
+}
+
+
+accel_daarem <- function(init, em_step, ctrl, n_x=1, ...) {
+    rlang::check_installed("daarem", "For DAAREM acceleration.")
+    if (ctrl$order <= 0) ctrl$order = min(10, length(init)/2)
+    incr_factor = n_x^(1/2)
+
+    res = daarem::daarem(
+        init,
+        em_step,
+        control=list(maxiter=ctrl$max_iter, order=ctrl$order,
+                     tol=ctrl$abstol*incr_factor, mon.tol=0.01, cycl.mon.tol=0.0,
+                     alpha=1.2, kappa=25, resid.tol=0.95, convtype="param")
     )
 
     list(ests = res$par,

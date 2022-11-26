@@ -6,8 +6,8 @@
 \usage{
 birdie.ctrl(
   max_iter = 1000,
-  accel = c("squarem", "anderson", "none"),
-  order = switch(match.arg(accel), none = 0L, anderson = -1L, squarem = 3L),
+  accel = c("squarem", "anderson", "daarem", "none"),
+  order = switch(match.arg(accel), none = 0L, anderson = -1L, daarem = -1L, squarem = 3L),
   anderson_restart = TRUE,
   abstol = 1e-06,
   reltol = 1e-06
@@ -18,12 +18,15 @@ birdie.ctrl(
 
 \item{accel}{The acceleration algorithm to use in doing EM. The default
 \code{"squarem"} is good for most purposes, though \code{"anderson"} may be faster
-when there are few parameters or very tight tolerances.}
+when there are few parameters or very tight tolerances. \code{"daarem"} is an
+excellent choice as well that works across a range of problems, though it
+requires installing the small \code{SQUAREM} package. \code{"none"} is not
+recommended unless other algorithms are running into numerical issues.}
 
 \item{order}{The order to use in the acceleration algorithm. Interpretation
 varies by algorithm. Can range from 1 to 3 (default) for SQUAREM and from 1
-to the number of parameters for Anderson (default -1 allows the order to be
-determined by problem size).}
+to the number of parameters for Anderson and DAAREM (default -1 allows the
+order to be determined by problem size).}
 
 \item{anderson_restart}{Whether to use restarts in Anderson acceleration.}
 
