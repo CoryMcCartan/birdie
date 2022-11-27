@@ -5,21 +5,23 @@
 // [[Rcpp::export(rng=false)]]
 Eigen::VectorXd dirichlet_map(
         const Eigen::VectorXi Y, const Eigen::VectorXi X,
-        const Eigen::MatrixXd p_rxs, const Eigen::VectorXd prior_alpha, int n_x) {
+        const Eigen::MatrixXd p_rxs, const Eigen::MatrixXd prior_yr, int n_x) {
     int N = Y.rows();
-    int n_y = prior_alpha.size();
+    int n_y = prior_yr.rows();
     int n_r = p_rxs.cols();
 
     Eigen::VectorXd post(n_x * n_y * n_r);
+    Eigen::VectorXd prior_sum = prior_yr.colwise().sum().array() - n_y;
+    Eigen::MatrixXd sums(n_r, n_x);
     for (int i = 0; i < n_x; i++) {
+        sums.col(i) = prior_sum;
         for (int j = 0; j < n_y; j++) {
             for (int k = 0; k < n_r; k++) {
-                post[est_idx(k, j, i, n_r, n_y)] = prior_alpha[j] - 1.0; // -1 to help with the mode later
+                post[est_idx(k, j, i, n_r, n_y)] = prior_yr(j, k) - 1.0; // -1 to help with the mode later
             }
         }
     }
 
-    Eigen::MatrixXd sums = MatrixXd::Constant(n_r, n_x, prior_alpha.sum() - n_y);
     for (int i = 0; i < N; i++) {
         sums.col(X[i] - 1) += p_rxs.row(i);
         post.segment(est_col(Y[i] - 1, X[i] - 1, n_r, n_y), n_r) += p_rxs.row(i);
@@ -42,24 +44,26 @@ Eigen::VectorXd dirichlet_map(
 Eigen::VectorXd em_dirichlet(
         const Eigen::VectorXd curr,
         const Eigen::VectorXi Y, const Eigen::VectorXi X,
-        const Eigen::MatrixXd p_rxs, const Eigen::VectorXd prior_alpha,
-        int n_x, bool map=true, int cores=0) {
+        const Eigen::MatrixXd p_rxs, const Eigen::MatrixXd prior_yr,
+        int n_x, bool map=true) {
     int N = Y.size();
-    int n_y = prior_alpha.size();
+    int n_y = prior_yr.rows();
     int n_r = p_rxs.cols();
 
     // initialize output with prior
     Eigen::VectorXd post(n_x * n_y * n_r);
+    Eigen::VectorXd prior_sum = prior_yr.colwise().sum().array() - n_y;
+    Eigen::MatrixXd sums(n_r, n_x);
     for (int i = 0; i < n_x; i++) {
+        sums.col(i) = prior_sum;
         for (int j = 0; j < n_y; j++) {
             for (int k = 0; k < n_r; k++) {
-                post[est_idx(k, j, i, n_r, n_y)] = prior_alpha[j] - map; // -1 if we are finding mode/MAP
+                post[est_idx(k, j, i, n_r, n_y)] = prior_yr(j, k) - map; // -1 if we are finding mode/MAP
             }
         }
     }
 
     // do Bayes and sum
-    Eigen::MatrixXd sums = MatrixXd::Constant(n_r, n_x, prior_alpha.sum() - n_y);
     VectorXd pr_i(n_r);
     for (int i = 0; i < N; i++) {
         int idx = est_col(Y[i] - 1, X[i] - 1, n_r, n_y);

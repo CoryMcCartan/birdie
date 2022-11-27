@@ -29,7 +29,7 @@ if (FALSE) {
     em_step = function(curr) em_dirichlet(curr, as.integer(d$party), rep_len(1, nrow(d)), as.matrix(r_probs), rep(1.001, 4), 1)
 }
 
-Y =  data$n_voted
+Y =  data$party
 
 x0 = birdie(r_probs, Y ~ 1, data)
 x1 = birdie(r_probs, Y ~ zip, data)

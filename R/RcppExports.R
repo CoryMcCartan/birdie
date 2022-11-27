@@ -9,12 +9,12 @@ calc_bayes <- function(Y, X, lik, prior, n_x, n_y) {
     .Call(`_birdie_calc_bayes`, Y, X, lik, prior, n_x, n_y)
 }
 
-dirichlet_map <- function(Y, X, p_rxs, prior_alpha, n_x) {
-    .Call(`_birdie_dirichlet_map`, Y, X, p_rxs, prior_alpha, n_x)
+dirichlet_map <- function(Y, X, p_rxs, prior_yr, n_x) {
+    .Call(`_birdie_dirichlet_map`, Y, X, p_rxs, prior_yr, n_x)
 }
 
-em_dirichlet <- function(curr, Y, X, p_rxs, prior_alpha, n_x, map = TRUE, cores = 0L) {
-    .Call(`_birdie_em_dirichlet`, curr, Y, X, p_rxs, prior_alpha, n_x, map, cores)
+em_dirichlet <- function(curr, Y, X, p_rxs, prior_yr, n_x, map = TRUE) {
+    .Call(`_birdie_em_dirichlet`, curr, Y, X, p_rxs, prior_yr, n_x, map)
 }
 
 sum_grp <- function(x, grp, wt, init, nx, ngrp) {
