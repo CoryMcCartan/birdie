@@ -24,7 +24,8 @@ Imports:
     stringr,
     stringi,
     daarem,
-    Rcpp
+    Rcpp,
+    TMB (>= 1.9.1)
 Suggests: 
     lme4,
     SQUAREM,
@@ -38,8 +39,9 @@ LinkingTo:
     Rcpp,
     RcppThread,
     RcppEigen,
-    cli
-License: MIT + file LICENSE
+    cli,
+    TMB
+License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
