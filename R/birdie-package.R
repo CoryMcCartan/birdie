@@ -11,6 +11,6 @@
 #' @importFrom Rcpp sourceCpp
 #' @importFrom stats na.omit quantile lm.fit binomial fitted get_all_vars terms update.formula as.formula
 #' @importFrom utils tail unstack
-#' @useDynLib birdie, .registration = TRUE
+#' @rawNamespace useDynLib(birdie, .registration=TRUE); useDynLib(birdie_TMBExports)
 ## usethis namespace: end
 NULL
