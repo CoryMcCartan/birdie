@@ -38,8 +38,9 @@ birdie <- function(r_probs, formula, data=NULL,
 
     Y_vec = as.factor(Y_vec)
     n_y = nlevels(Y_vec)
+    n_r = ncol(p_rxs)
 
-    prior = check_make_prior(prior, method, n_y)
+    prior = check_make_prior(prior, method, n_y, n_r)
 
     # run inference
     t1 <- Sys.time()
@@ -112,11 +113,12 @@ em_fixef <- function(Y, p_rxs, d_model, prior, ctrl) {
 
     # do EM (accelerated)
     res = ctrl$accel(ests, function(curr) {
-        em_dirichlet(curr, Y, X, p_rxs, prior, n_x)
+        .Call(`_birdie_em_dirichlet`, curr, Y, X, p_rxs, prior, n_x, TRUE)
     }, ctrl, n_x=n_x)
 
     p_ryxs = calc_bayes(Y, X, res$ests, p_rxs, n_x, n_y)
-    est = dirichlet_map(Y, rep_along(Y, 1), p_ryxs, rep_len(1, n_y), 1) %>%
+    ones_mat = matrix(1, nrow=n_y, ncol=n_r)
+    est = dirichlet_map(Y, rep_along(Y, 1), p_ryxs, ones_mat, 1) %>%
         matrix(n_y, n_r, byrow=TRUE)
 
     list(map = est,
@@ -284,21 +286,25 @@ birdie.ctrl <- function(max_iter=1000, accel=c("squarem", "anderson", "daarem", 
 }
 
 # Check (and possibly create default) prior
-check_make_prior <- function(prior, method, n_y) {
+check_make_prior <- function(prior, method, n_y, n_r) {
     if (is.null(prior)) {
-        prior = rep_len(1, n_y)
+        prior = matrix(1, nrow=n_y, ncol=n_r)
         if (method == "pool") {
             cli_inform("Using uniform prior for {.arg alpha} = Pr(X | R)",
                        call=parent.frame())
         } else if (method == "fixef") {
             cli_inform("Using c(1+\u03B5, 1+\u03B5, ... 1+\u03B5) prior for
                        {.arg alpha} = Pr(X | R)", call=parent.frame())
-            prior = rep_len(1 + 100*.Machine$double.eps, n_y)
+            prior = matrix(1 + 100*.Machine$double.eps, nrow=n_y, ncol=n_r)
         }
     }
-    if (length(prior) != n_y) {
-        cli_abort("{.arg alpha} prior must have the same number of elements
+    if (nrow(prior) != n_y) {
+        cli_abort("{.arg prior} must have the same number of rows
                   as there are levels of X", call=parent.frame())
+    }
+    if (ncol(prior) != n_r) {
+        cli_abort("{.arg prior} must have the same number of columns
+                  as there are racial groups", call=parent.frame())
     }
 
     prior
