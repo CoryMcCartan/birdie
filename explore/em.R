@@ -8,19 +8,20 @@ d = readRDS(here("data-raw/nc_voters_small.rds")) |>
     filter(!is.na(party))
 p_r = with(d, prop.table(table(race)))
 
-r_probs = bisg(~ nm(last_name) + zip(zip), d, p_r=p_r)
-r_probs_me = bisg_me(~ nm(last_name) + zip(zip), d, p_r=p_r, cores=4)
-r_probs = r_probs_me
+r_probs_vn = bisg(~ nm(last_name) + zip(zip), d, p_r=p_r)
+# r_probs_me = bisg_me(~ nm(last_name) + zip(zip), d, p_r=p_r, cores=4)
+r_probs = r_probs_vn
 
-p_r_est = colMeans(r_probs)
-
-data = mutate(d, zip = proc_zip(zip), n_voted=as.factor(n_voted)) |>
-    select(party, zip, county, race, gender, age, n_voted)
+data = d |>
+    mutate(zip = proc_zip(zip),
+           lic = c("no license", "license")[lic + 1],
+           n_voted=as.factor(n_voted)) |>
+    select(party, zip, county, race, gender, age, n_voted, lic)
 
 if (FALSE) {
     formula = party ~ zip
     ctrl = birdie.ctrl()
-    prior = rep(1.0001, 4)
+    prior = matrix(1.0001, 4, 6)
     p_rxs = as.matrix(r_probs)
     # later
     Y = Y_vec
@@ -33,13 +34,16 @@ Y =  data$party
 
 x0 = birdie(r_probs, Y ~ 1, data)
 x1 = birdie(r_probs, Y ~ zip, data)
-# x = birdie(r_probs, party ~ (1 | zip), data, ctrl=birdie.ctrl(max_iter=20))
+x2 = birdie(r_probs, Y ~ (1 | zip), data, ctrl=birdie.ctrl(max_iter=20))
+
+# sm = cmdstanr::cmdstan_model("src/stan/dir_hier.stan")
+# fit = sm$optimize(data=list(X=X, N=nrow(X), k=ncol(X)))
 
 xr = list(
     true = with(d, prop.table(table(Y, race))),
-    pool = x0$map %*% diag(colMeans(x0$p_ryxs)),
-    sat = x1$map %*% diag(colMeans(x1$p_ryxs)),
-    # glmm = x$map %*% diag(colMeans(x$p_ryxs)),
+    pool = coef(x0) %*% diag(colMeans(fitted(x0))),
+    sat = coef(x1) %*% diag(colMeans(fitted(x1))),
+    mmm = coef(x2) %*% diag(colMeans(fitted(x2))),
     # pols = calc_joint_bisgz_ols(r_probs, d$party, d$zip, with(d, prop.table(table(zip, race), 2))),
     ols = calc_joint_bisgz(r_probs, Y, "ols"),
     weight = calc_joint_bisgz(r_probs, Y, "weight"),
@@ -58,7 +62,7 @@ print_cond(xr$ols)
 
 colSums(abs(to_cond(xr$true) - to_cond(xr$pool)))/2
 colSums(abs(to_cond(xr$true) - to_cond(xr$sat)))/2
-# colSums(abs(to_cond(xr$true) - to_cond(xr$glmm)))/2
+colSums(abs(to_cond(xr$true) - to_cond(xr$sat2)))/2
 colSums(abs(to_cond(xr$true) - to_cond(xr$ols)))/2
 colSums(abs(to_cond(xr$true) - to_cond(xr$weight)))/2
 

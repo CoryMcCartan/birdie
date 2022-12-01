@@ -4,5 +4,6 @@
 #include <vector>
 
 #include "birdie_types.h"
+#include "utils.h"
 
 #endif

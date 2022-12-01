@@ -13,16 +13,12 @@ dirichlet_map <- function(Y, X, p_rxs, prior_yr, n_x) {
     .Call(`_birdie_dirichlet_map`, Y, X, p_rxs, prior_yr, n_x)
 }
 
-em_dirichlet <- function(curr, Y, X, p_rxs, prior_yr, n_x, map = TRUE) {
-    .Call(`_birdie_em_dirichlet`, curr, Y, X, p_rxs, prior_yr, n_x, map)
+em_dirichlet <- function(curr, Y, X, p_rxs, prior_yr, n_x, sum_only = FALSE) {
+    .Call(`_birdie_em_dirichlet`, curr, Y, X, p_rxs, prior_yr, n_x, sum_only)
 }
 
-sum_grp <- function(x, grp, wt, init, nx, ngrp) {
-    .Call(`_birdie_sum_grp`, x, grp, wt, init, nx, ngrp)
-}
-
-check_convergence <- function(est, last_est, abstol, reltol) {
-    .Call(`_birdie_check_convergence`, est, last_est, abstol, reltol)
+dirichlet_norm <- function(post, prior_yr, n_x) {
+    .Call(`_birdie_dirichlet_norm`, post, prior_yr, n_x)
 }
 
 gibbs_me <- function(iter, warmup, S, GZ, M_sr, N_gzr, alpha_gzr, beta_sr, cores = 0L, verbosity = 3L) {
@@ -31,5 +27,17 @@ gibbs_me <- function(iter, warmup, S, GZ, M_sr, N_gzr, alpha_gzr, beta_sr, cores
 
 mat_rcatp <- function(probs) {
     .Call(`_birdie_mat_rcatp`, probs)
+}
+
+check_convergence <- function(est, last_est, abstol, reltol) {
+    .Call(`_birdie_check_convergence`, est, last_est, abstol, reltol)
+}
+
+to_simplex <- function(y) {
+    .Call(`_birdie_to_simplex`, y)
+}
+
+from_simplex <- function(x) {
+    .Call(`_birdie_from_simplex`, x)
 }
 

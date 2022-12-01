@@ -1,3 +1,4 @@
+#include <cmath>
 #include "birdie.h"
 
 // MAP estimate of Dirichlet-Multinomial posterior by X
@@ -39,26 +40,31 @@ Eigen::VectorXd dirichlet_map(
 
 // combined calc_bayes + dirichlet_map (doesn't store intermediate p_ryxs matrix)
 // input (Y|R) tables in `curr`
-// if `map` is false, returns Dirichlet parameters rather than mode
+// if `sum_only` is true, returns aggregated data rather than Dirichlet mode
 // [[Rcpp::export(rng=false)]]
 Eigen::VectorXd em_dirichlet(
         const Eigen::VectorXd curr,
         const Eigen::VectorXi Y, const Eigen::VectorXi X,
         const Eigen::MatrixXd p_rxs, const Eigen::MatrixXd prior_yr,
-        int n_x, bool map=true) {
+        int n_x, bool sum_only=false) {
     int N = Y.size();
     int n_y = prior_yr.rows();
     int n_r = p_rxs.cols();
 
     // initialize output with prior
-    Eigen::VectorXd post(n_x * n_y * n_r);
-    Eigen::VectorXd prior_sum = prior_yr.colwise().sum().array() - n_y;
-    Eigen::MatrixXd sums(n_r, n_x);
-    for (int i = 0; i < n_x; i++) {
-        sums.col(i) = prior_sum;
-        for (int j = 0; j < n_y; j++) {
-            for (int k = 0; k < n_r; k++) {
-                post[est_idx(k, j, i, n_r, n_y)] = prior_yr(j, k) - map; // -1 if we are finding mode/MAP
+    VectorXd post(n_x * n_y * n_r);
+    MatrixXd sums(n_r, n_x);
+    if (sum_only) {
+        post = VectorXd::Zero(n_x * n_y * n_r);
+        sums = MatrixXd::Zero(n_r, n_x);
+    } else {
+        VectorXd prior_sum = prior_yr.colwise().sum().array() - n_y;
+        for (int i = 0; i < n_x; i++) {
+            sums.col(i) = prior_sum;
+            for (int j = 0; j < n_y; j++) {
+                for (int k = 0; k < n_r; k++) {
+                    post[est_idx(k, j, i, n_r, n_y)] = prior_yr(j, k) - 1; // -1 if we are finding mode/MAP
+                }
             }
         }
     }
@@ -77,7 +83,7 @@ Eigen::VectorXd em_dirichlet(
     }
 
     // convert to MLE
-    if (map) {
+    if (!sum_only) {
         for (int i = 0; i < n_x; i++) {
             for (int j = 0; j < n_y; j++) {
                 post.segment(est_col(j, i, n_r, n_y), n_r).array() /= sums.col(i).array();
@@ -88,23 +94,31 @@ Eigen::VectorXd em_dirichlet(
     return post;
 }
 
-
+// after using `em_dirichlet()` with `sum_only=true`,
+//  this function adds back in the prior and normalizes
 // [[Rcpp::export(rng=false)]]
-NumericMatrix sum_grp(const IntegerVector x, const IntegerVector grp,
-                      const NumericVector wt, const NumericVector init,
-                      int nx, int ngrp) {
-    NumericMatrix out(ngrp, nx);
+Eigen::VectorXd dirichlet_norm(
+        Eigen::VectorXd &post, const Eigen::MatrixXd prior_yr, int n_x) {
+    int n_y = prior_yr.rows();
+    int n_r = prior_yr.cols();
 
-    for (int j = 0; j < ngrp; j++) {
-        for (int k = 0; k < nx; k++) {
-            out(j, k) = init[k];
+    Eigen::MatrixXd sums = MatrixXd::Zero(n_r, n_x);
+    for (int i = 0; i < n_x; i++) {
+        for (int j = 0; j < n_y; j++) {
+            for (int k = 0; k < n_r; k++) {
+                int idx = est_idx(k, j, i, n_r, n_y);
+                post[idx] += prior_yr(j, k) - 1.0; // -1 for mode later
+                sums(k, i) += post[idx];
+            }
         }
     }
 
-    int N = x.size();
-    for (int i = 0; i < N; i++) {
-        out(grp[i] - 1, x[i] - 1) += wt[i];
+    // normalize
+    for (int i = 0; i < n_x; i++) {
+        for (int j = 0; j < n_y; j++) {
+            post.segment(est_col(j, i, n_r, n_y), n_r).array() /= sums.col(i).array();
+        }
     }
 
-    return out;
+    return post;
 }
