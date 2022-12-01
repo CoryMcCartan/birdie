@@ -80,7 +80,7 @@ Where the analysis of racial disparities involves large-scale administrative dat
 BISG leverages residential racial segregation and the hereditary association between race and surname to produce generally accurate and calibrated predictions of individual race [@imai2016improving; @kenny2021das; @deluca2022validating].
 
 Unfortunately, the accurate BISG racial prediction alone is not sufficient for unbiased estimation of disparities.
-Indeed, the most common techniques for estimating racial disparities using BISG probabilities are known to be biased when race is correlated with the outcome even after controlling on nanme and location [@chen2019fairness].
+Indeed, the most common techniques for estimating racial disparities using BISG probabilities are known to be biased when race is correlated with the outcome even after controlling on name and location [@chen2019fairness; @argyle2022misclassification].
 These approaches include the use of BISG probabilities as weights and thresholding the BISG probabilities to produce point estimates of individual race.
 As formally discussed in Section \@ref(sec:id), these standard methods of racial disparity estimation based on BISG predictions also require individual's race to be conditionally independent of the outcome given their residence location, surnames, and other observable attributes.
 This key identification assumption, however, is unlikely to hold because race affects many aspects of today's society even after accounting for residence location, surnames, and other observable attributes.
