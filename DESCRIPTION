@@ -16,19 +16,19 @@ Depends:
     R (>= 3.6.0)
 Imports: 
     rlang (>= 0.1.2),
-    generics,
     cli,
     vctrs,
+    generics,
     dplyr,
-    tidyselect,
-    stringr,
+    methods,
+    SQUAREM,
     stringi,
-    daarem,
-    Rcpp,
-    TMB (>= 1.9.1)
+    stringr,
+    Rcpp (>= 0.12.0),
+    rstan (>= 2.18.1)
 Suggests: 
     lme4,
-    SQUAREM,
+    daarem,
     easycensus,
     wru,
     knitr,
@@ -36,11 +36,13 @@ Suggests:
     rmarkdown,
     testthat (>= 3.0.0)
 LinkingTo: 
-    Rcpp,
-    RcppThread,
-    RcppEigen,
+    Rcpp (>= 0.12.0),
     cli,
-    TMB
+    BH (>= 1.66.0),
+    RcppEigen (>= 0.3.3.3.0),
+    RcppThread,
+    rstan (>= 2.18.1),
+    StanHeaders (>= 2.18.0)
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
@@ -48,3 +50,5 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
 VignetteBuilder: knitr
 Config/testthat/edition: 3
+SystemRequirements: GNU make
+Biarch: true

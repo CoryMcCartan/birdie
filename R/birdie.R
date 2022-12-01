@@ -19,7 +19,7 @@ birdie <- function(r_probs, formula, data=NULL,
         d_model = get_all_vars(formula, data=data)
         attr(d_model, "terms") = tt
 
-        method = if (length(re_terms) == 1) "re1" else "glmm"
+        method = if (ncol(d_model) == 2) "re1" else "glmm"
     }
 
     check_covars(r_probs, covars, method) # check predictors
@@ -32,7 +32,7 @@ birdie <- function(r_probs, formula, data=NULL,
     }
 
     # check types
-    if (!check_vec(Y_vec)) cli_abort("{.arg X} must be a character or factor with no missing values.")
+    if (!check_vec(Y_vec)) cli_abort("Response variable must be a character or factor with no missing values.")
     if (nrow(data) != nrow(r_probs))
         cli_abort("{.arg data} and {.arg r_probs} must have the same number of rows.")
 
@@ -47,8 +47,9 @@ birdie <- function(r_probs, formula, data=NULL,
     if (method %in% c("pool", "fixef")) {
         res = em_fixef(Y_vec, p_rxs, d_model[-1], prior, ctrl=ctrl)
     } else if (method == "re1") {
-        # out = em_re1(Y_vec, r_probs, formula, data, iter=max_iter)
-        cli_abort("Method {.val {method}} not yet implemented.")
+        # res = em_re1(Y_vec, p_rxs, d_model[-1], prior, ctrl=ctrl)
+        res = em_glmm(Y_vec, p_rxs, d_model, prior, ctrl=ctrl)
+        # cli_abort("Method {.val {method}} not yet implemented.")
     } else if (method == "lmer") {
         cli_abort("Method {.val {method}} not yet implemented.")
         # out = em_glmm(Y_vec, r_probs, formula, data, ctrl=ctrl)
@@ -110,10 +111,11 @@ em_fixef <- function(Y, p_rxs, d_model, prior, ctrl) {
 
     # init
     ests = dirichlet_map(Y, X, p_rxs, prior, n_x)
+    ests0 <<- ests
 
     # do EM (accelerated)
     res = ctrl$accel(ests, function(curr) {
-        .Call(`_birdie_em_dirichlet`, curr, Y, X, p_rxs, prior, n_x, TRUE)
+        .Call(`_birdie_em_dirichlet`, curr, Y, X, p_rxs, prior, n_x, FALSE)
     }, ctrl, n_x=n_x)
 
     p_ryxs = calc_bayes(Y, X, res$ests, p_rxs, n_x, n_y)
@@ -122,117 +124,172 @@ em_fixef <- function(Y, p_rxs, d_model, prior, ctrl) {
         matrix(n_y, n_r, byrow=TRUE)
 
     list(map = est,
-         ests = aperm(array(res$ests, est_dim), 3:1),
+         ests = to_array_yrx(res$ests, est_dim),
          iters = res$iters,
          converge = res$converge,
          p_ryxs = p_ryxs)
 }
 
-em_re1 <- function(Y, p_rxs, form, d_model, prior=rep(1, ncol(p_rxs)),
-                   iter=10, tol=0.001) {
+em_re1 <- function(Y, p_rxs, d_model, prior, ctrl) {
+    n_y = nlevels(Y)
+    n_r = ncol(p_rxs)
+    Y = as.integer(Y)
+    ones_mat = matrix(1, nrow=n_y, ncol=n_r)
+
+    # create unique group IDs
+    X = to_unique_ids(d_model)
+    n_x = max(X)
+    est_dim = c(n_r, n_y, n_x)
+
+    # init pars and access indices
+    p_theta = n_r * n_y * n_x
+    p_alpha = n_r * n_y
+    idx_theta = seq_len(p_theta)
+
+    idx_alpha = p_theta + seq_len(p_alpha)
+
+    prior_sigma = 0.1
+    scale_b = (0.25 - prior_sigma^2) / (2 * prior_sigma^2)
+
+    ests = rep_len(0, p_theta + p_alpha)
+    ests[idx_alpha] = log(1.01)
+
+    to_prior = function(ests) {
+        matrix(exp(ests[idx_alpha]), n_y, n_r, byrow=TRUE)
+    }
+
+    ests[idx_theta] = dirichlet_map(Y, X, p_rxs, to_prior(ests), n_x)
+
+    standata = list(n_y = n_y,
+                    n_r = n_r,
+                    n_x = n_x,
+                    prior_loc_alpha = 2.0,
+                    prior_shp_alpha = 100.0)
+
+    # do EM (accelerated)
+    res = ctrl$accel(ests, function(curr) {
+        # reproject if acceleration has brought us out of bounds
+        curr[idx_theta][curr[idx_theta] < 0] = 0 + 1e3*.Machine$double.eps
+        curr[idx_theta][curr[idx_theta] > 1] = 1 - 1e3*.Machine$double.eps
+        cat(".")
+
+        agg = .Call(`_birdie_em_dirichlet`, curr[idx_theta], Y, X,
+                    p_rxs, ones_mat, n_x, TRUE)
+
+        standata$X = to_array_xry(agg, est_dim)
+
+        fit = rstan::optimizing(stanmodels$dir_hier, data=standata,
+                                init=list(alpha=t(to_prior(ests))),
+                                as_vector=FALSE,
+                                tol_obj=0.01, tol_param=ctrl$abstol,
+                                tol_rel_obj=10/ctrl$reltol)
+
+        curr[idx_alpha] = log(fit$par$alpha)
+
+        curr[idx_theta] = dirichlet_norm(agg, to_prior(curr), n_x)
+
+        curr
+    }, ctrl, n_x=n_x)
+
+    p_ryxs = calc_bayes(Y, X, res$ests[idx_theta], p_rxs, n_x, n_y)
+    est = dirichlet_map(Y, rep_along(Y, 1), p_ryxs, ones_mat, 1) %>%
+        matrix(n_y, n_r, byrow=TRUE)
+
+    cat('\n')
+    print(round(to_prior(res$ests), 2))
+
+    list(map = est,
+         ests = to_array_yrx(res$ests[idx_theta], est_dim),
+         iters = res$iters,
+         converge = res$converge,
+         p_ryxs = p_ryxs)
 
 }
 
-em_glmm <- function(Y, p_rxs, form, data, ctrl, ref_grp=1L) {
-    rlang::check_installed("lme4", "to fit a GLMM-based BIRDiE model.")
+
+to_array_yrx <- function(ests, est_dim) {
+    aperm(array(ests, est_dim), c(2L, 1L, 3L))
+}
+to_array_xyr <- function(ests, est_dim) {
+    aperm(array(ests, est_dim), c(3L, 2L, 1L))
+}
+to_array_xry <- function(ests, est_dim) {
+    aperm(array(ests, est_dim), c(3L, 1L, 2L))
+}
+to_vec_xyr <- function(ests) {
+    as.numeric(aperm(ests, c(3L, 2L, 1L)))
+}
+
+em_glmm <- function(Y, p_rxs, d_model, prior, ctrl) {
+    # rlang::check_installed("lme4", "to fit a GLMM-based BIRDiE model.")
 
     n_y = nlevels(Y)
     n_r = ncol(p_rxs)
     Y = as.integer(Y)
+    ones_mat = matrix(1, nrow=n_y, ncol=n_r)
     ones = rep_along(Y, 1)
-    # init with (penalized) weighted estimator
-    p_ryxs = p_rxs
-    est = dirichlet_map(Y, ones, p_rxs, rep(2, n_y), 1)
-    p_ryxs = calc_bayes(Y, ones, est, p_rxs, 1, n_y)
 
-    idx_grp = to_unique_ids(lme4::lFormula(form, data=data)$fr[-1])
-    n_grp = max(idx_grp)
-    grp_revlk = lapply(seq_len(n_grp), \(i) which(idx_grp == i))
-    idx_extr = vapply(grp_revlk, function(x) x[1], 1L)
-    idx_extr_y = lapply(seq_len(n_y), function(y) {
-        intersect(idx_extr, which(Y %in% c(y, ref_grp)))
-    })
+    # create unique group IDs
+    X = to_unique_ids(d_model[-1])
+    n_x = max(X)
+    est_dim = c(n_r, n_y, n_x)
 
-    ests = array(dim=c(n_grp, n_y, n_r))
-    updating = matrix(TRUE, n_y, n_r)
+    idx_sub = vctrs::vec_unique_loc(X)
+    d_sub = d_model[idx_sub, ][-1]
 
-    form_fit = update.formula(form, cbind(succ, fail) ~ .)
-    form_env = rlang::f_env(form_fit)
+    ests = dirichlet_map(Y, X, p_rxs, ones_mat * 1.01, n_x) |>
+        to_array_xyr(est_dim)
 
-    break_next = FALSE
-    cli::cli_progress_bar("Fitting BIRDiE with EM",
-                          total=ctrl$max_iter*(n_y-1)*n_r)
-    for (i in seq_len(ctrl$max_iter)) {
-        last_ests = ests
-        # M step
+    # form_fit = update.formula(form, cbind(succ, fail) ~ .)
+    # form_env = rlang::f_env(form_fit)
+
+    standata = list(
+        n_y = n_y,
+        N = n_x,
+        p = 1L,
+        n_grp = n_x,
+
+        X = matrix(1, nrow=n_x),
+
+        grp = X[idx_sub],
+
+        prior_sigma = 0.2,
+        prior_beta = 1.0
+    )
+
+    res = ctrl$accel(ests, function(curr) {
+        cat(".")
+        cts = .Call(`_birdie_em_dirichlet`, curr, Y, X,
+                    p_rxs, ones_mat, n_x, TRUE) |>
+            to_array_xyr(est_dim)
+        curr = to_array_xyr(curr, est_dim)
+
         for (r in seq_len(n_r)) {
-            cts = sum_grp(Y, idx_grp, p_ryxs[, r], rep_len(0, n_y), n_y, n_grp)
+            standata$Y = cts[, , r]
 
-            for (y in seq_len(n_y)[-ref_grp]) {
-                cli::cli_progress_update()
-                if (!updating[y, r]) next
+            fit = rstan::optimizing(stanmodels$multinom, data=standata,
+                                    init=0, check_data=FALSE, as_vector=FALSE,
+                                    tol_obj=100*ctrl$abstol, tol_param=ctrl$abstol)
+            if (r == 2) fit0 <<- fit
 
-                rlang::env_bind(
-                    form_env,
-                    succ = cts[, y],
-                    fail = cts[, ref_grp],
-                )
-                m = lme4::glmer(form_fit,
-                                data = data[idx_extr, ],
-                                family=binomial(), nAGQ=0L) %>%
-                    suppressWarnings() %>%
-                    suppressMessages()
-
-                ests[, y, r] = exp(predict(m, type="link"))
-            }
-
-            # normalize
-            ests[, ref_grp, r] = 1
-            ests[, , r] = ests[, , r] / rowSums(ests[, , r])
-
-            # check convergence
-            if (i > 1) {
-                for (y in seq_len(n_y)) {
-                    if (check_convergence(ests[, y, r], last_ests[, y, r],
-                                          ctrl$abstol, ctrl$reltol)) {
-                        updating[y, r] = FALSE
-                    }
-                }
-            }
+            curr[, , r] = exp(fit$par$lsft)
         }
 
-        # E step
-        p_ryxs = calc_bayes(Y, idx_grp, ests, p_rxs, n_grp, n_y)
-
-        if (break_next) break
-        if (all(!updating)) { # converged -- do one more full update
-            updating = matrix(TRUE, n_y, n_r)
-            break_next = TRUE
-        }
-    }
-    cli::cli_progress_done()
-
+        to_vec_xyr(curr)
+    }, ctrl, n_x=n_x)
 
     # final global mean
-    est = matrix(dirichlet_map(Y, ones, p_ryxs, rep_len(1, n_y), 1), n_y, n_r)
+    p_ryxs = calc_bayes(Y, X, res$ests, p_rxs, n_x, n_y)
+    est = dirichlet_map(Y, ones, p_ryxs, ones_mat, 1) %>%
+        matrix(n_y, n_r, byrow=TRUE)
 
     list(map = est,
          ests = ests,
-         iters = i,
-         converge = break_next,
+         iters = res$iters,
+         converge = res$converge,
          p_ryxs = p_ryxs)
 }
 
-
-# Helpers for use in fixed-point iteration accelerators
-est_to_vec <- function(ests) {
-    as.numeric(do.call(cbind, lapply(ests, as.numeric)))
-}
-vec_to_ests <- function(vec, n_y, n_r) {
-    apply(matrix(vec, nrow=n_y*n_r), 2, function(x) {
-        matrix(x, nrow=n_y, ncol=n_r)
-    }, simplify=FALSE)
-}
 
 #' Control of BIRDiE Model Fitting
 #'
@@ -290,11 +347,11 @@ check_make_prior <- function(prior, method, n_y, n_r) {
     if (is.null(prior)) {
         prior = matrix(1, nrow=n_y, ncol=n_r)
         if (method == "pool") {
-            cli_inform("Using uniform prior for {.arg alpha} = Pr(X | R)",
+            cli_inform("Using uniform prior for Pr(X | R)",
                        call=parent.frame())
         } else if (method == "fixef") {
-            cli_inform("Using c(1+\u03B5, 1+\u03B5, ... 1+\u03B5) prior for
-                       {.arg alpha} = Pr(X | R)", call=parent.frame())
+            cli_inform("Using c(1+\u03B5, 1+\u03B5, ..., 1+\u03B5) prior for Pr(X | R)",
+                       call=parent.frame())
             prior = matrix(1 + 100*.Machine$double.eps, nrow=n_y, ncol=n_r)
         }
     }
