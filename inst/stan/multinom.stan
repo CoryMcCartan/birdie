@@ -1,0 +1,54 @@
+data {
+    int<lower=0> n_y;
+    //int<lower=0> n_r;
+    int<lower=0> N;
+    int<lower=0> p;
+    int<lower=0> n_grp;
+
+    matrix[N, p] X;
+    //vector[n_y] Y[N];
+    matrix[N, n_y] Y;
+    int<lower=1, upper=n_grp> grp[N];
+
+    real<lower=0> prior_sigma;
+    real<lower=0> prior_beta;
+}
+
+transformed data {
+    vector[n_y] ones_y = rep_vector(1, n_y);
+}
+
+parameters {
+    matrix[p, n_y] beta;
+    matrix[n_grp, n_y] u;
+
+    vector<lower=0>[n_y] sigma_grp;
+    cholesky_factor_corr[n_y] L;
+}
+
+transformed parameters {
+    matrix[N, n_y] lsft;
+    {
+        matrix[N, n_y] linpred;
+        matrix[n_y, n_y] Sigma = diag_pre_multiply(sigma_grp, L);
+        linpred = X * beta + (Sigma * u[grp]')';
+
+        // for (j in 1:n_y) {
+        //     linpred[j] = (X * beta[j] + Sigma * u[grp])';
+        // }
+
+        // manual log softmax
+        // lsft = (linpred - rep_matrix(log(ones_y * exp(linpred)), n_y))';
+        lsft = linpred - rep_matrix(log(exp(linpred) * ones_y), n_y);
+    }
+}
+
+model {
+    target += sum(Y .* lsft);
+
+    to_vector(beta) ~ normal(0, prior_beta);
+    to_vector(u) ~ std_normal();
+
+    sigma_grp ~ gamma(2.0, 2.0/prior_sigma);
+    L ~ lkj_corr_cholesky(2.0);
+}

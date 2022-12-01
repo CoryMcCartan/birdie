@@ -9,8 +9,10 @@
 #' @importFrom stringr str_detect str_starts str_remove_all str_replace_all str_remove
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom Rcpp sourceCpp
-#' @importFrom stats na.omit quantile lm.fit binomial fitted get_all_vars terms update.formula as.formula
+#' @importFrom rstan sampling
+#' @importFrom stats na.omit lm.fit optim fitted get_all_vars terms update.formula as.formula
 #' @importFrom utils tail unstack
-#' @rawNamespace useDynLib(birdie, .registration=TRUE); useDynLib(birdie_TMBExports)
+#' @import methods
+#' @rawNamespace useDynLib(birdie, .registration=TRUE)
 ## usethis namespace: end
 NULL

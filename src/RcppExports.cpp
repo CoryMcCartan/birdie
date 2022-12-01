@@ -2,8 +2,8 @@
 // Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 #include "birdie_types.h"
-#include <RcppThread.h>
 #include <RcppEigen.h>
+#include <RcppThread.h>
 #include <Rcpp.h>
 
 using namespace Rcpp;
@@ -57,8 +57,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // em_dirichlet
-Eigen::VectorXd em_dirichlet(const Eigen::VectorXd curr, const Eigen::VectorXi Y, const Eigen::VectorXi X, const Eigen::MatrixXd p_rxs, const Eigen::MatrixXd prior_yr, int n_x, bool map);
-RcppExport SEXP _birdie_em_dirichlet(SEXP currSEXP, SEXP YSEXP, SEXP XSEXP, SEXP p_rxsSEXP, SEXP prior_yrSEXP, SEXP n_xSEXP, SEXP mapSEXP) {
+Eigen::VectorXd em_dirichlet(const Eigen::VectorXd curr, const Eigen::VectorXi Y, const Eigen::VectorXi X, const Eigen::MatrixXd p_rxs, const Eigen::MatrixXd prior_yr, int n_x, bool sum_only);
+RcppExport SEXP _birdie_em_dirichlet(SEXP currSEXP, SEXP YSEXP, SEXP XSEXP, SEXP p_rxsSEXP, SEXP prior_yrSEXP, SEXP n_xSEXP, SEXP sum_onlySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< const Eigen::VectorXd >::type curr(currSEXP);
@@ -67,37 +67,20 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Eigen::MatrixXd >::type p_rxs(p_rxsSEXP);
     Rcpp::traits::input_parameter< const Eigen::MatrixXd >::type prior_yr(prior_yrSEXP);
     Rcpp::traits::input_parameter< int >::type n_x(n_xSEXP);
-    Rcpp::traits::input_parameter< bool >::type map(mapSEXP);
-    rcpp_result_gen = Rcpp::wrap(em_dirichlet(curr, Y, X, p_rxs, prior_yr, n_x, map));
+    Rcpp::traits::input_parameter< bool >::type sum_only(sum_onlySEXP);
+    rcpp_result_gen = Rcpp::wrap(em_dirichlet(curr, Y, X, p_rxs, prior_yr, n_x, sum_only));
     return rcpp_result_gen;
 END_RCPP
 }
-// sum_grp
-NumericMatrix sum_grp(const IntegerVector x, const IntegerVector grp, const NumericVector wt, const NumericVector init, int nx, int ngrp);
-RcppExport SEXP _birdie_sum_grp(SEXP xSEXP, SEXP grpSEXP, SEXP wtSEXP, SEXP initSEXP, SEXP nxSEXP, SEXP ngrpSEXP) {
+// dirichlet_norm
+Eigen::VectorXd dirichlet_norm(Eigen::VectorXd& post, const Eigen::MatrixXd prior_yr, int n_x);
+RcppExport SEXP _birdie_dirichlet_norm(SEXP postSEXP, SEXP prior_yrSEXP, SEXP n_xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< const IntegerVector >::type x(xSEXP);
-    Rcpp::traits::input_parameter< const IntegerVector >::type grp(grpSEXP);
-    Rcpp::traits::input_parameter< const NumericVector >::type wt(wtSEXP);
-    Rcpp::traits::input_parameter< const NumericVector >::type init(initSEXP);
-    Rcpp::traits::input_parameter< int >::type nx(nxSEXP);
-    Rcpp::traits::input_parameter< int >::type ngrp(ngrpSEXP);
-    rcpp_result_gen = Rcpp::wrap(sum_grp(x, grp, wt, init, nx, ngrp));
-    return rcpp_result_gen;
-END_RCPP
-}
-// check_convergence
-bool check_convergence(Eigen::ArrayXd est, Eigen::ArrayXd last_est, double abstol, double reltol);
-RcppExport SEXP _birdie_check_convergence(SEXP estSEXP, SEXP last_estSEXP, SEXP abstolSEXP, SEXP reltolSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Eigen::ArrayXd >::type est(estSEXP);
-    Rcpp::traits::input_parameter< Eigen::ArrayXd >::type last_est(last_estSEXP);
-    Rcpp::traits::input_parameter< double >::type abstol(abstolSEXP);
-    Rcpp::traits::input_parameter< double >::type reltol(reltolSEXP);
-    rcpp_result_gen = Rcpp::wrap(check_convergence(est, last_est, abstol, reltol));
+    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type post(postSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd >::type prior_yr(prior_yrSEXP);
+    Rcpp::traits::input_parameter< int >::type n_x(n_xSEXP);
+    rcpp_result_gen = Rcpp::wrap(dirichlet_norm(post, prior_yr, n_x));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -132,16 +115,56 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// check_convergence
+bool check_convergence(Eigen::ArrayXd est, Eigen::ArrayXd last_est, double abstol, double reltol);
+RcppExport SEXP _birdie_check_convergence(SEXP estSEXP, SEXP last_estSEXP, SEXP abstolSEXP, SEXP reltolSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< Eigen::ArrayXd >::type est(estSEXP);
+    Rcpp::traits::input_parameter< Eigen::ArrayXd >::type last_est(last_estSEXP);
+    Rcpp::traits::input_parameter< double >::type abstol(abstolSEXP);
+    Rcpp::traits::input_parameter< double >::type reltol(reltolSEXP);
+    rcpp_result_gen = Rcpp::wrap(check_convergence(est, last_est, abstol, reltol));
+    return rcpp_result_gen;
+END_RCPP
+}
+// to_simplex
+Eigen::VectorXd to_simplex(Eigen::VectorXd y);
+RcppExport SEXP _birdie_to_simplex(SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< Eigen::VectorXd >::type y(ySEXP);
+    rcpp_result_gen = Rcpp::wrap(to_simplex(y));
+    return rcpp_result_gen;
+END_RCPP
+}
+// from_simplex
+Eigen::VectorXd from_simplex(Eigen::VectorXd x);
+RcppExport SEXP _birdie_from_simplex(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< Eigen::VectorXd >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(from_simplex(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+
+RcppExport SEXP _rcpp_module_boot_stan_fit4dir_hier_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4multinom_mod();
 
 static const R_CallMethodDef CallEntries[] = {
     {"_birdie_calc_bayes_bisg", (DL_FUNC) &_birdie_calc_bayes_bisg, 5},
     {"_birdie_calc_bayes", (DL_FUNC) &_birdie_calc_bayes, 6},
     {"_birdie_dirichlet_map", (DL_FUNC) &_birdie_dirichlet_map, 5},
     {"_birdie_em_dirichlet", (DL_FUNC) &_birdie_em_dirichlet, 7},
-    {"_birdie_sum_grp", (DL_FUNC) &_birdie_sum_grp, 6},
-    {"_birdie_check_convergence", (DL_FUNC) &_birdie_check_convergence, 4},
+    {"_birdie_dirichlet_norm", (DL_FUNC) &_birdie_dirichlet_norm, 3},
     {"_birdie_gibbs_me", (DL_FUNC) &_birdie_gibbs_me, 10},
     {"_birdie_mat_rcatp", (DL_FUNC) &_birdie_mat_rcatp, 1},
+    {"_birdie_check_convergence", (DL_FUNC) &_birdie_check_convergence, 4},
+    {"_birdie_to_simplex", (DL_FUNC) &_birdie_to_simplex, 1},
+    {"_birdie_from_simplex", (DL_FUNC) &_birdie_from_simplex, 1},
+    {"_rcpp_module_boot_stan_fit4dir_hier_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4dir_hier_mod, 0},
+    {"_rcpp_module_boot_stan_fit4multinom_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4multinom_mod, 0},
     {NULL, NULL, 0}
 };
 
