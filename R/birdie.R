@@ -1,27 +1,23 @@
 #' @export
-birdie <- function(r_probs, formula, data=NULL,
+birdie <- function(r_probs, formula, data=NULL, method=c("auto", "fixef", "mmm"),
                    prior=NULL, prefix="pr_", se_boot=0, ctrl=birdie.ctrl()) {
     # figure out type of model and extract response vector
     Y_vec = eval_tidy(f_lhs(formula), data)
-    tt = terms(formula)
+    tt = terms(formula, keep.order=TRUE)
     covars = all.vars(tt)
-    if (!detect_ranef(tt)) {
-        d_model = model.frame(formula, data=data, na.action=na.fail)
-        method = "fixef"
-        if (length(attr(tt, "term.labels")) > 0) { # not just Y ~ 1
-            check_full_int(tt, covars)
-        }
-    } else {
-        d_model = get_all_vars(formula, data=data)
-        attr(d_model, "terms") = tt
-        method = "mmm"
+    full_int = check_full_int(tt, covars)
+    method = match.arg(method)
+    if (method == "auto") {
+        method = if (count_ranef(tt) == 0 && full_int) "fixef" else "mmm"
     }
 
-    check_covars(r_probs, covars, method) # check predictors
+    # check formula and predictors against method and r_probs
+    check_method(method, tt, covars, full_int, se_boot)
+    check_covars(r_probs, covars, method)
+
     # set up race probability matrix
     if (!is.matrix(r_probs)) {
         p_rxs = as.matrix(select(r_probs, starts_with(prefix)))
-        colnames(p_rxs) = substring(colnames(p_rxs), nchar(prefix)+1L)
     } else {
         p_rxs = r_probs
     }
@@ -40,10 +36,10 @@ birdie <- function(r_probs, formula, data=NULL,
 
     # run inference
     t1 <- Sys.time()
-    if (method %in% c("pool", "fixef")) {
-        res = em_fixef(Y_vec, p_rxs, d_model[-1], prior, boot=se_boot, ctrl=ctrl)
+    if (method == "fixef") {
+        res = em_fixef(Y_vec, p_rxs, tt, data, prior, boot=se_boot, ctrl=ctrl)
     } else if (method == "mmm") {
-        res = em_mmm(Y_vec, p_rxs, d_model, prior, ctrl=ctrl)
+        res = em_mmm(Y_vec, p_rxs, tt, data, prior, ctrl=ctrl)
     }
     t2 <- Sys.time()
 
@@ -54,14 +50,14 @@ birdie <- function(r_probs, formula, data=NULL,
     }
 
     # add names
-    colnames(res$map) = colnames(p_rxs)
+    colnames(res$map) = substring(colnames(p_rxs), nchar(prefix)+1L)
     rownames(res$map) = levels(Y_vec)
 
     # format p_ryxs
-    colnames(res$p_ryxs) = stringr::str_c(prefix, colnames(p_rxs))
+    colnames(res$p_ryxs) = colnames(p_rxs)
     p_ryxs = as_tibble(res$p_ryxs)
     if (inherits(r_probs, "bisg")) {
-        p_ryxs = reconstruct.bisg(p_ryxs, r_probs, cat_nms=names(d_model)[1])
+        p_ryxs = reconstruct.bisg(p_ryxs, r_probs, cat_nms=covars[1])
     }
 
     # output
@@ -88,7 +84,9 @@ birdie <- function(r_probs, formula, data=NULL,
 }
 
 # Fixed-effects model (includes complete pooling and no pooling)
-em_fixef <- function(Y, p_rxs, d_model, prior, boot, ctrl) {
+em_fixef <- function(Y, p_rxs, formula, data, prior, boot, ctrl) {
+    d_model = model.frame(formula, data=data, na.action=na.fail)[-1]
+
     n_y = nlevels(Y)
     n_r = ncol(p_rxs)
     Y = as.integer(Y)
@@ -102,13 +100,17 @@ em_fixef <- function(Y, p_rxs, d_model, prior, boot, ctrl) {
     ests = dirichlet_map(Y, X, p_rxs, prior, n_x)
 
     # do EM (accelerated)
+    pb_id = cli::cli_progress_bar("EM iterations", total=NA)
     res = ctrl$accel(ests, function(curr) {
+        cli::cli_progress_update(id=pb_id)
+
         # reproject if acceleration has brought us out of bounds
         curr[curr < 0] = 0 + 1e3*.Machine$double.eps
         curr[curr > 1] = 1 - 1e3*.Machine$double.eps
 
         .Call(`_birdie_em_dirichlet`, curr, Y, X, p_rxs, prior, n_x, FALSE)
     }, ctrl, n_x=n_x)
+    cli::cli_progress_done(id=pb_id)
 
     p_ryxs = calc_bayes(Y, X, res$ests, p_rxs, n_x, n_y)
     ones_mat = matrix(1, nrow=n_y, ncol=n_r)
@@ -172,70 +174,97 @@ boot_fixef <- function(mle, R=10, Y, X, p_rxs, prior, n_x, ctrl) {
     out
 }
 
-
-em_mmm <- function(Y, p_rxs, d_model, prior, ctrl) {
+# Multinomial mixed-effects model
+em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
     n_y = nlevels(Y)
     n_r = ncol(p_rxs)
     Y = as.integer(Y)
     ones_mat = matrix(1, nrow=n_y, ncol=n_r)
     ones = rep_along(Y, 1)
 
-    # create unique group IDs
-    X = to_unique_ids(d_model[-1])
-    n_x = max(X)
-    est_dim = c(n_r, n_y, n_x)
+    # find unique rows
+    d_model = get_all_vars(formula, data=data)[-1]
+    if (any(is.na(d_model))) {
+        cli_abort("Missing values found in data.", call=parent.frame())
+    }
+    idx_uniq = to_unique_ids(d_model)
+    idx_sub = vctrs::vec_unique_loc(idx_uniq)
+    n_uniq = max(idx_uniq)
+    est_dim = c(n_r, n_y, n_uniq)
 
-    idx_sub = vctrs::vec_unique_loc(X)
-    d_sub = d_model[idx_sub, ][-1]
+    # create fixed effects matrix
+    fixef_form = remove_ranef(formula)
+    X = model.matrix(fixef_form, data=data)[idx_sub, , drop=FALSE]
 
-    ests = dirichlet_map(Y, X, p_rxs, ones_mat * 1.01, n_x) |>
-        to_array_xyr(est_dim)
+    # create random effects vector
+    if (count_ranef(formula) >= 1) {
+        Z = to_unique_ids(d_model[idx_sub, which(logi_ranef(formula))])
+        n_grp = max(Z)
+    } else {
+        Z = rep_along(idx_sub, 1L)
+        n_grp = 1L
+    }
 
-    # form_fit = update.formula(form, cbind(succ, fail) ~ .)
-    # form_env = rlang::f_env(form_fit)
-
+    # init
+    ests = dirichlet_map(Y, idx_uniq, p_rxs, ones_mat * 1.0001, n_uniq) |>
+        to_array_ryx(est_dim)
     standata = list(
         n_y = n_y,
-        N = n_x,
-        p = 1L,
-        n_grp = n_x,
+        N = nrow(X),
+        p = ncol(X),
+        n_grp = n_grp,
 
-        X = matrix(1, nrow=n_x),
+        Y = matrix(0, nrow=nrow(X), ncol=n_y),
+        X = X,
+        grp = Z,
 
-        grp = X[idx_sub],
-
-        prior_sigma = 0.2,
-        prior_beta = 1.0
+        prior_sigma = prior$sigma,
+        prior_beta = prior$beta
     )
 
-    res = ctrl$accel(ests, function(curr) {
-        cat(".")
-        cts = .Call(`_birdie_em_dirichlet`, curr, Y, X,
-                    p_rxs, ones_mat, n_x, TRUE) |>
+    sm <<- rstan::sampling(stanmodels$multinom, data=standata, chains=0) |>
+        suppressMessages()
+
+    n_upar = rstan::get_num_upars(sm)
+    par0 = rep_len(0, n_upar*n_r)
+
+    pb_id = cli::cli_progress_bar("EM iterations", total=NA)
+    res = ctrl$accel(par0, function(curr) {
+        cli::cli_progress_update(id=pb_id)
+
+        curr = matrix(curr, nrow=n_upar, ncol=n_r)
+        par_l = apply(curr, 2, fn_constr(sm))
+
+        cts = .Call(`_birdie_em_dirichlet`, ests, Y, idx_uniq,
+                    p_rxs, ones_mat, n_uniq, TRUE) |>
             to_array_xyr(est_dim)
-        curr = to_array_xyr(curr, est_dim)
+        ests_arr = to_array_xyr(ests, est_dim)
 
         for (r in seq_len(n_r)) {
             standata$Y = cts[, , r]
 
             fit = rstan::optimizing(stanmodels$multinom, data=standata,
-                                    init=0, check_data=FALSE, as_vector=FALSE,
-                                    tol_obj=100*ctrl$abstol, tol_param=ctrl$abstol)
-            if (r == 2) fit0 <<- fit
+                                    init=par_l[[r]], check_data=FALSE, as_vector=FALSE,
+                                    tol_obj=10*ctrl$abstol, tol_param=ctrl$abstol)
+            curr[, r] = rstan::unconstrain_pars(sm, fit$par)
+            if (any(is.nan(curr))) browser()
 
-            curr[, , r] = exp(fit$par$lsft)
+            ests_arr[, , r] = exp(fit$par$lsft)
+            if (any(is.nan(ests_arr))) browser()
         }
 
-        to_vec_xyr(curr)
-    }, ctrl, n_x=n_x)
+        ests <<- to_vec_xyr(ests_arr)
+        as.numeric(curr)
+    }, ctrl, n_x=n_upar)
+    cli::cli_progress_done(id=pb_id)
 
-    # final global mean
-    p_ryxs = calc_bayes(Y, X, res$ests, p_rxs, n_x, n_y)
+    # final global mean and R|YXS
+    p_ryxs = calc_bayes(Y, idx_uniq, ests, p_rxs, n_uniq, n_y)
     est = dirichlet_map(Y, ones, p_ryxs, ones_mat, 1) %>%
         matrix(n_y, n_r, byrow=TRUE)
 
     out = list(map = est,
-               ests = ests,
+               ests = to_array_xyr(ests, est_dim),
                iters = res$iters,
                converge = res$converge,
                p_ryxs = p_ryxs)

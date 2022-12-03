@@ -121,7 +121,8 @@ accel_daarem <- function(init, em_step, ctrl, n_x=1, ...) {
         control=list(maxiter=ctrl$max_iter, order=ctrl$order,
                      tol=ctrl$abstol*incr_factor, mon.tol=0.01, cycl.mon.tol=0.0,
                      alpha=1.2, kappa=25, resid.tol=0.95, convtype="param")
-    )
+    ) |>
+        suppressWarnings()
 
     list(ests = res$par,
          iters = res$fpeval,

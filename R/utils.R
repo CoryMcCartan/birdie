@@ -15,14 +15,6 @@ to_unique_ids = function(x) {
     as.integer(as.factor(vctrs::vec_duplicate_id(x)))
 }
 
-# Find "|" in formula
-detect_ranef <- function(formula) {
-    if (!inherits(formula, "terms")) {
-        formula = terms(formula)
-    }
-    term_labs = attr(formula, "term.labels")
-    any(stringr::str_detect(term_labs, stringr::fixed("|")))
-}
 
 # check types
 check_vec = function(x) (is.character(x) | is.factor(x)) && !any(is.na(x))
