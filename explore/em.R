@@ -10,7 +10,7 @@ p_r = with(d, prop.table(table(race)))
 
 r_probs_vn = bisg(~ nm(last_name) + zip(zip), d, p_r=p_r)
 # r_probs_me = bisg_me(~ nm(last_name) + zip(zip), d, p_r=p_r, cores=4)
-r_probs = r_probs_me
+r_probs = r_probs_vn
 
 data = d |>
     mutate(zip = proc_zip(zip),
@@ -43,7 +43,7 @@ xr = list(
     pool = coef(x0) %*% diag(colMeans(fitted(x0))),
     sat = coef(x1) %*% diag(colMeans(fitted(x1))),
     mmm = coef(x2) %*% diag(colMeans(fitted(x2))),
-    sat2 = coef(x1b) %*% diag(colMeans(fitted(x1b))),
+    # sat2 = coef(x1b) %*% diag(colMeans(fitted(x1b))),
     # pols = calc_joint_bisgz_ols(r_probs, d$party, d$zip, with(d, prop.table(table(zip, race), 2))),
     ols = calc_joint_bisgz(r_probs, Y, "ols"),
     weight = calc_joint_bisgz(r_probs, Y, "weight"),
