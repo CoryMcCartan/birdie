@@ -80,6 +80,13 @@ fn_constr <- function(sm) {
         rstan::constrain_pars(sm, x)
     }
 }
+to_ests_vec <- function(par_l, n_y, n_r, n_x) {
+    out = array(dim=c(n_r, n_x, n_y))
+    for (j in seq_along(par_l)) {
+        out[j, , ] = exp(par_l[[j]]$lsft)
+    }
+    as.numeric(aperm(out, c(1L, 3L, 2L)))
+}
 
 
 # Find "|" in formula
