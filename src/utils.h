@@ -13,11 +13,5 @@ bool check_convergence(
         double reltol
 );
 
-// [[Rcpp::export(rng = false)]]
-Eigen::VectorXd to_simplex(Eigen::VectorXd y);
-
-// [[Rcpp::export(rng = false)]]
-Eigen::VectorXd from_simplex(Eigen::VectorXd x);
-
 
 #endif

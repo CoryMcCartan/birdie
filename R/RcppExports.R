@@ -37,11 +37,3 @@ check_convergence <- function(est, last_est, abstol, reltol) {
     .Call(`_birdie_check_convergence`, est, last_est, abstol, reltol)
 }
 
-to_simplex <- function(y) {
-    .Call(`_birdie_to_simplex`, y)
-}
-
-from_simplex <- function(x) {
-    .Call(`_birdie_from_simplex`, x)
-}
-

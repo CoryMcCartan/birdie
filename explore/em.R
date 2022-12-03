@@ -10,13 +10,15 @@ p_r = with(d, prop.table(table(race)))
 
 r_probs_vn = bisg(~ nm(last_name) + zip(zip), d, p_r=p_r)
 # r_probs_me = bisg_me(~ nm(last_name) + zip(zip), d, p_r=p_r, cores=4)
-r_probs = r_probs_vn
+r_probs = r_probs_me
 
 data = d |>
     mutate(zip = proc_zip(zip),
            lic = c("no license", "license")[lic + 1],
            n_voted=as.factor(n_voted)) |>
-    select(party, zip, county, race, gender, age, n_voted, lic)
+    left_join(census_race_geo_table("zcta", counts=FALSE), by=c("zip"="GEOID")) |>
+    mutate(across(white:other, ~ coalesce(., p_r[cur_column()]))) |>
+    select(party, zip, county, race, gender, age, n_voted, lic, white:hisp)
 
 if (FALSE) {
     formula = party ~ zip
@@ -34,16 +36,14 @@ Y =  data$party
 
 x0 = birdie(r_probs, Y ~ 1, data)
 x1 = birdie(r_probs, Y ~ zip, data)
-x2 = birdie(r_probs, Y ~ (1 | zip), data, ctrl=birdie.ctrl(max_iter=20))
-
-# sm = cmdstanr::cmdstan_model("src/stan/dir_hier.stan")
-# fit = sm$optimize(data=list(X=X, N=nrow(X), k=ncol(X)))
+x2 = birdie(r_probs, Y ~ (1|zip), data, ctrl=birdie.ctrl(abstol=2e-4, max_iter=200))
 
 xr = list(
     true = with(d, prop.table(table(Y, race))),
     pool = coef(x0) %*% diag(colMeans(fitted(x0))),
     sat = coef(x1) %*% diag(colMeans(fitted(x1))),
     mmm = coef(x2) %*% diag(colMeans(fitted(x2))),
+    stg = coef(x3) %*% diag(colMeans(fitted(x3))),
     # pols = calc_joint_bisgz_ols(r_probs, d$party, d$zip, with(d, prop.table(table(zip, race), 2))),
     ols = calc_joint_bisgz(r_probs, Y, "ols"),
     weight = calc_joint_bisgz(r_probs, Y, "weight"),
@@ -62,12 +62,13 @@ print_cond(xr$ols)
 
 colSums(abs(to_cond(xr$true) - to_cond(xr$pool)))/2
 colSums(abs(to_cond(xr$true) - to_cond(xr$sat)))/2
-colSums(abs(to_cond(xr$true) - to_cond(xr$sat2)))/2
+colSums(abs(to_cond(xr$true) - to_cond(xr$mmm)))/2
 colSums(abs(to_cond(xr$true) - to_cond(xr$ols)))/2
 colSums(abs(to_cond(xr$true) - to_cond(xr$weight)))/2
 
 
 # try out multistage regression
-x0 = birdie(r_probs, age ~ zip, data)
-x1 = birdie(x0$p_ryxs, party ~ zip * age, data)
-x1 = birdie(x0$p_ryxs, party ~ age, data)
+ctrl = birdie.ctrl(abstol=1e-4)
+x3 = birdie(r_probs, lic ~ zip, data, ctrl=ctrl) |>
+    fitted() |>
+    birdie(party ~ lic + (1|zip), data, ctrl=ctrl)
