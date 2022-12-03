@@ -191,3 +191,20 @@ summary.bisg <- function(object, p_r=NULL) {
 
     invisible(ents)
 }
+
+reconstruct <- function(new, old, ...) {
+    UseMethod("reconstruct")
+}
+
+reconstruct.default <- function(new, old, ...) {
+    new
+}
+
+reconstruct.bisg <- function(new, old, cat_nms=NULL, ...) {
+    attr(new, "S_name") = attr(old, "S_name")
+    attr(new, "GX_names") = c(cat_nms, attr(old, "GX_names"))
+    attr(new, "p_r") = attr(old, "p_r")
+    attr(new, "method") = "birdie"
+    class(new) = c("bisg", class(p_ryxs))
+    new
+}

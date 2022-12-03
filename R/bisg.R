@@ -136,6 +136,8 @@ bisg_me <- function(formula, data=NULL, p_r=p_r_natl(), p_rgx=NULL, p_rs=NULL,
     out
 }
 
+
+
 # Parse formula and return a list with name vector, name vector name,
 # type of geography used (or "none"), and data frame of other covariates
 parse_bisg_form <- function(formula, data=NULL) {

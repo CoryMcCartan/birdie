@@ -72,15 +72,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// dirichlet_norm
-Eigen::VectorXd dirichlet_norm(Eigen::VectorXd& post, const Eigen::MatrixXd prior_yr, int n_x);
-RcppExport SEXP _birdie_dirichlet_norm(SEXP postSEXP, SEXP prior_yrSEXP, SEXP n_xSEXP) {
+// em_dirichlet_wt
+Eigen::VectorXd em_dirichlet_wt(const Eigen::VectorXd curr, const Eigen::VectorXi Y, const Eigen::VectorXi X, const Eigen::VectorXd wt, const Eigen::MatrixXd p_rxs, const Eigen::MatrixXd prior_yr, int n_x);
+RcppExport SEXP _birdie_em_dirichlet_wt(SEXP currSEXP, SEXP YSEXP, SEXP XSEXP, SEXP wtSEXP, SEXP p_rxsSEXP, SEXP prior_yrSEXP, SEXP n_xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type post(postSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd >::type curr(currSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXi >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXi >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd >::type wt(wtSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd >::type p_rxs(p_rxsSEXP);
     Rcpp::traits::input_parameter< const Eigen::MatrixXd >::type prior_yr(prior_yrSEXP);
     Rcpp::traits::input_parameter< int >::type n_x(n_xSEXP);
-    rcpp_result_gen = Rcpp::wrap(dirichlet_norm(post, prior_yr, n_x));
+    rcpp_result_gen = Rcpp::wrap(em_dirichlet_wt(curr, Y, X, wt, p_rxs, prior_yr, n_x));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -112,6 +116,18 @@ BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Eigen::MatrixXd >::type probs(probsSEXP);
     rcpp_result_gen = Rcpp::wrap(mat_rcatp(probs));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rdirichlet
+MatrixXd rdirichlet(int n, const VectorXd alpha);
+RcppExport SEXP _birdie_rdirichlet(SEXP nSEXP, SEXP alphaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< const VectorXd >::type alpha(alphaSEXP);
+    rcpp_result_gen = Rcpp::wrap(rdirichlet(n, alpha));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -149,7 +165,6 @@ BEGIN_RCPP
 END_RCPP
 }
 
-RcppExport SEXP _rcpp_module_boot_stan_fit4dir_hier_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4multinom_mod();
 
 static const R_CallMethodDef CallEntries[] = {
@@ -157,13 +172,13 @@ static const R_CallMethodDef CallEntries[] = {
     {"_birdie_calc_bayes", (DL_FUNC) &_birdie_calc_bayes, 6},
     {"_birdie_dirichlet_map", (DL_FUNC) &_birdie_dirichlet_map, 5},
     {"_birdie_em_dirichlet", (DL_FUNC) &_birdie_em_dirichlet, 7},
-    {"_birdie_dirichlet_norm", (DL_FUNC) &_birdie_dirichlet_norm, 3},
+    {"_birdie_em_dirichlet_wt", (DL_FUNC) &_birdie_em_dirichlet_wt, 7},
     {"_birdie_gibbs_me", (DL_FUNC) &_birdie_gibbs_me, 10},
     {"_birdie_mat_rcatp", (DL_FUNC) &_birdie_mat_rcatp, 1},
+    {"_birdie_rdirichlet", (DL_FUNC) &_birdie_rdirichlet, 2},
     {"_birdie_check_convergence", (DL_FUNC) &_birdie_check_convergence, 4},
     {"_birdie_to_simplex", (DL_FUNC) &_birdie_to_simplex, 1},
     {"_birdie_from_simplex", (DL_FUNC) &_birdie_from_simplex, 1},
-    {"_rcpp_module_boot_stan_fit4dir_hier_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4dir_hier_mod, 0},
     {"_rcpp_module_boot_stan_fit4multinom_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4multinom_mod, 0},
     {NULL, NULL, 0}
 };

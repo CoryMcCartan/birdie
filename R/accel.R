@@ -16,7 +16,10 @@ accel_none <- function(init, em_step, ctrl, n_x=1, ...) {
         }
     }
 
+    absdiff = abs(ests - last)
     list(ests = ests,
+         absdiff = max(absdiff),
+         reldiff = max(absdiff / ests),
          iters = i,
          converge = converged)
 }
@@ -79,7 +82,10 @@ accel_anderson <- function(init, em_step, ctrl, n_x=1, ...) {
         }
     }
 
+    absdiff = X[, 1] - X[, 2]
     list(ests = X[, 1] + f[, 1], # use extra em_step we already computed
+         absdiff = max(absdiff),
+         reldiff = max(absdiff / ests),
          iters = i,
          converge = converged)
 }
