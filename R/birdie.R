@@ -1,19 +1,19 @@
 #' @export
-birdie <- function(r_probs, formula, data=NULL, method=c("auto", "fixef", "mmm"),
+birdie <- function(r_probs, formula, data=NULL, model=c("auto", "dir", "mmm"),
                    prior=NULL, prefix="pr_", se_boot=0, ctrl=birdie.ctrl()) {
     # figure out type of model and extract response vector
     Y_vec = eval_tidy(f_lhs(formula), data)
     tt = terms(formula, keep.order=TRUE)
     covars = all.vars(tt)
     full_int = check_full_int(tt, covars)
-    method = match.arg(method)
-    if (method == "auto") {
-        method = if (count_ranef(tt) == 0 && full_int) "fixef" else "mmm"
+    model = match.arg(model)
+    if (model == "auto") {
+        model = if (count_ranef(tt) == 0 && full_int) "dir" else "mmm"
     }
 
-    # check formula and predictors against method and r_probs
-    check_method(method, tt, covars, full_int, se_boot)
-    check_covars(r_probs, covars, method)
+    # check formula and predictors against model and r_probs
+    check_model(model, tt, covars, full_int, se_boot)
+    check_covars(r_probs, covars, model)
 
     # set up race probability matrix
     if (!is.matrix(r_probs)) {
@@ -32,13 +32,13 @@ birdie <- function(r_probs, formula, data=NULL, method=c("auto", "fixef", "mmm")
     n_y = nlevels(Y_vec)
     n_r = ncol(p_rxs)
 
-    prior = check_make_prior(prior, method, n_y, n_r)
+    prior = check_make_prior(prior, model, n_y, n_r)
 
     # run inference
     t1 <- Sys.time()
-    if (method == "fixef") {
-        res = em_fixef(Y_vec, p_rxs, tt, data, prior, boot=se_boot, ctrl=ctrl)
-    } else if (method == "mmm") {
+    if (model == "dir") {
+        res = em_dir(Y_vec, p_rxs, tt, data, prior, boot=se_boot, ctrl=ctrl)
+    } else if (model == "mmm") {
         res = em_mmm(Y_vec, p_rxs, tt, data, prior, ctrl=ctrl)
     }
     t2 <- Sys.time()
@@ -74,7 +74,7 @@ birdie <- function(r_probs, formula, data=NULL, method=c("auto", "fixef", "mmm")
         prior = prior,
         prefix = prefix,
         algo = list(
-            method = method,
+            model = model,
             iters = res$iters,
             converge = res$converge,
             runtime = as.numeric(t2 - t1, units = "secs")
@@ -84,7 +84,7 @@ birdie <- function(r_probs, formula, data=NULL, method=c("auto", "fixef", "mmm")
 }
 
 # Fixed-effects model (includes complete pooling and no pooling)
-em_fixef <- function(Y, p_rxs, formula, data, prior, boot, ctrl) {
+em_dir <- function(Y, p_rxs, formula, data, prior, boot, ctrl) {
     d_model = model.frame(formula, data=data, na.action=na.fail)[-1]
 
     n_y = nlevels(Y)
@@ -124,14 +124,14 @@ em_fixef <- function(Y, p_rxs, formula, data, prior, boot, ctrl) {
                 p_ryxs = p_ryxs)
 
     if (boot > 0) {
-        boot_ests = boot_fixef(res$ests, boot, Y, X, p_rxs, prior, n_x, ctrl)
+        boot_ests = boot_dir(res$ests, boot, Y, X, p_rxs, prior, n_x, ctrl)
         out$vcov = cov(t(boot_ests))
     }
 
     out
 }
 
-boot_fixef <- function(mle, R=10, Y, X, p_rxs, prior, n_x, ctrl) {
+boot_dir <- function(mle, R=10, Y, X, p_rxs, prior, n_x, ctrl) {
     N = length(Y)
     n_r = ncol(prior)
     n_y = nrow(prior)
@@ -255,7 +255,7 @@ em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
 
         ests <<- to_vec_xyr(ests_arr)
         as.numeric(curr)
-    }, ctrl, n_x=n_upar)
+    }, ctrl, n_x=n_upar*n_r*(4^2)) # extra factor since upar scale is different
     cli::cli_progress_done(id=pb_id)
 
     # final global mean and R|YXS
