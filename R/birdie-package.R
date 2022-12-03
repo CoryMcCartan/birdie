@@ -6,12 +6,12 @@
 ## usethis namespace: start
 #' @import dplyr
 #' @importFrom rlang expr enquo enquos sym syms .data := as_name as_label eval_tidy rep_along f_lhs f_rhs
-#' @importFrom stringr str_detect str_starts str_remove_all str_replace_all str_remove
+#' @importFrom stringr str_c str_detect str_starts str_remove_all str_replace_all str_remove
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom Rcpp sourceCpp
 #' @importFrom rstan sampling
-#' @importFrom stats na.omit lm.fit optim fitted get_all_vars terms update.formula as.formula
-#' @importFrom utils tail unstack
+#' @importFrom stats na.omit lm.fit fitted terms get_all_vars update.formula as.formula
+#' @importFrom utils tail unstack relist
 #' @import methods
 #' @rawNamespace useDynLib(birdie, .registration=TRUE)
 ## usethis namespace: end

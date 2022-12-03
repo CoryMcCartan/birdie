@@ -144,26 +144,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// to_simplex
-Eigen::VectorXd to_simplex(Eigen::VectorXd y);
-RcppExport SEXP _birdie_to_simplex(SEXP ySEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< Eigen::VectorXd >::type y(ySEXP);
-    rcpp_result_gen = Rcpp::wrap(to_simplex(y));
-    return rcpp_result_gen;
-END_RCPP
-}
-// from_simplex
-Eigen::VectorXd from_simplex(Eigen::VectorXd x);
-RcppExport SEXP _birdie_from_simplex(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< Eigen::VectorXd >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(from_simplex(x));
-    return rcpp_result_gen;
-END_RCPP
-}
 
 RcppExport SEXP _rcpp_module_boot_stan_fit4multinom_mod();
 
@@ -177,8 +157,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_birdie_mat_rcatp", (DL_FUNC) &_birdie_mat_rcatp, 1},
     {"_birdie_rdirichlet", (DL_FUNC) &_birdie_rdirichlet, 2},
     {"_birdie_check_convergence", (DL_FUNC) &_birdie_check_convergence, 4},
-    {"_birdie_to_simplex", (DL_FUNC) &_birdie_to_simplex, 1},
-    {"_birdie_from_simplex", (DL_FUNC) &_birdie_from_simplex, 1},
     {"_rcpp_module_boot_stan_fit4multinom_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4multinom_mod, 0},
     {NULL, NULL, 0}
 };
