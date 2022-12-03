@@ -17,8 +17,8 @@ em_dirichlet <- function(curr, Y, X, p_rxs, prior_yr, n_x, sum_only = FALSE) {
     .Call(`_birdie_em_dirichlet`, curr, Y, X, p_rxs, prior_yr, n_x, sum_only)
 }
 
-dirichlet_norm <- function(post, prior_yr, n_x) {
-    .Call(`_birdie_dirichlet_norm`, post, prior_yr, n_x)
+em_dirichlet_wt <- function(curr, Y, X, wt, p_rxs, prior_yr, n_x) {
+    .Call(`_birdie_em_dirichlet_wt`, curr, Y, X, wt, p_rxs, prior_yr, n_x)
 }
 
 gibbs_me <- function(iter, warmup, S, GZ, M_sr, N_gzr, alpha_gzr, beta_sr, cores = 0L, verbosity = 3L) {
@@ -27,6 +27,10 @@ gibbs_me <- function(iter, warmup, S, GZ, M_sr, N_gzr, alpha_gzr, beta_sr, cores
 
 mat_rcatp <- function(probs) {
     .Call(`_birdie_mat_rcatp`, probs)
+}
+
+rdirichlet <- function(n, alpha) {
+    .Call(`_birdie_rdirichlet`, n, alpha)
 }
 
 check_convergence <- function(est, last_est, abstol, reltol) {

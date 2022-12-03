@@ -31,6 +31,7 @@ Eigen::VectorXi mat_rcatp(Eigen::MatrixXd probs) {
     return R;
 }
 
+// [[Rcpp::export]]
 MatrixXd rdirichlet(int n, const VectorXd alpha) {
     int m = alpha.size();
     MatrixXd out(n, m);

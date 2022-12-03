@@ -94,26 +94,43 @@ Eigen::VectorXd em_dirichlet(
     return post;
 }
 
-// after using `em_dirichlet()` with `sum_only=true`,
-//  this function adds back in the prior and normalizes
+// weighted version
 // [[Rcpp::export(rng=false)]]
-Eigen::VectorXd dirichlet_norm(
-        Eigen::VectorXd &post, const Eigen::MatrixXd prior_yr, int n_x) {
+Eigen::VectorXd em_dirichlet_wt(
+        const Eigen::VectorXd curr,
+        const Eigen::VectorXi Y, const Eigen::VectorXi X,
+        const Eigen::VectorXd wt,
+        const Eigen::MatrixXd p_rxs, const Eigen::MatrixXd prior_yr, int n_x) {
+    int N = Y.size();
     int n_y = prior_yr.rows();
-    int n_r = prior_yr.cols();
+    int n_r = p_rxs.cols();
 
-    Eigen::MatrixXd sums = MatrixXd::Zero(n_r, n_x);
+    // initialize output with prior
+    VectorXd post(n_x * n_y * n_r);
+    MatrixXd sums(n_r, n_x);
+    VectorXd prior_sum = prior_yr.colwise().sum().array() - n_y;
     for (int i = 0; i < n_x; i++) {
+        sums.col(i) = prior_sum;
         for (int j = 0; j < n_y; j++) {
             for (int k = 0; k < n_r; k++) {
-                int idx = est_idx(k, j, i, n_r, n_y);
-                post[idx] += prior_yr(j, k) - 1.0; // -1 for mode later
-                sums(k, i) += post[idx];
+                post[est_idx(k, j, i, n_r, n_y)] = prior_yr(j, k) - 1; // -1 if we are finding mode/MAP
             }
         }
     }
 
-    // normalize
+    // do Bayes and sum
+    VectorXd pr_i(n_r);
+    for (int i = 0; i < N; i++) {
+        int idx = est_col(Y[i] - 1, X[i] - 1, n_r, n_y);
+        for (int k = 0; k < n_r; k++) {
+            pr_i[k] = curr[idx + k] * p_rxs(i, k);
+        }
+        pr_i /= pr_i.sum();
+
+        post.segment(idx, n_r) += pr_i * wt[i];
+        sums.col(X[i] - 1) += pr_i * wt[i];
+    }
+
     for (int i = 0; i < n_x; i++) {
         for (int j = 0; j < n_y; j++) {
             post.segment(est_col(j, i, n_r, n_y), n_r).array() /= sums.col(i).array();

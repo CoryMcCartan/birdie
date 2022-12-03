@@ -1,25 +1,20 @@
 #' @export
 birdie <- function(r_probs, formula, data=NULL,
-                   prior=NULL, prefix="pr_", ctrl=birdie.ctrl()) {
-    # if (missing(data)) cli_abort("{.arg data} must be provided.")
-
+                   prior=NULL, prefix="pr_", se_boot=0, ctrl=birdie.ctrl()) {
     # figure out type of model and extract response vector
     Y_vec = eval_tidy(f_lhs(formula), data)
     tt = terms(formula)
     covars = all.vars(tt)
     if (!detect_ranef(tt)) {
         d_model = model.frame(formula, data=data, na.action=na.fail)
-        if (length(attr(tt, "term.labels")) == 0) { # just Y ~ 1
-            method = "pool"
-        } else { # saturated
-            method = "fixef"
+        method = "fixef"
+        if (length(attr(tt, "term.labels")) > 0) { # not just Y ~ 1
             check_full_int(tt, covars)
         }
     } else {
         d_model = get_all_vars(formula, data=data)
         attr(d_model, "terms") = tt
-
-        method = if (ncol(d_model) == 2) "re1" else "glmm"
+        method = "mmm"
     }
 
     check_covars(r_probs, covars, method) # check predictors
@@ -32,8 +27,9 @@ birdie <- function(r_probs, formula, data=NULL,
     }
 
     # check types
-    if (!check_vec(Y_vec)) cli_abort("Response variable must be a character or factor with no missing values.")
-    if (nrow(data) != nrow(r_probs))
+    if (!check_vec(Y_vec))
+        cli_abort("Response variable must be a character or factor with no missing values.")
+    if (!is.null(data) && nrow(data) != nrow(r_probs))
         cli_abort("{.arg data} and {.arg r_probs} must have the same number of rows.")
 
     Y_vec = as.factor(Y_vec)
@@ -45,23 +41,17 @@ birdie <- function(r_probs, formula, data=NULL,
     # run inference
     t1 <- Sys.time()
     if (method %in% c("pool", "fixef")) {
-        res = em_fixef(Y_vec, p_rxs, d_model[-1], prior, ctrl=ctrl)
-    } else if (method == "re1") {
-        # res = em_re1(Y_vec, p_rxs, d_model[-1], prior, ctrl=ctrl)
-        res = em_glmm(Y_vec, p_rxs, d_model, prior, ctrl=ctrl)
-        # cli_abort("Method {.val {method}} not yet implemented.")
-    } else if (method == "lmer") {
-        cli_abort("Method {.val {method}} not yet implemented.")
-        # out = em_glmm(Y_vec, r_probs, formula, data, ctrl=ctrl)
+        res = em_fixef(Y_vec, p_rxs, d_model[-1], prior, boot=se_boot, ctrl=ctrl)
+    } else if (method == "mmm") {
+        res = em_mmm(Y_vec, p_rxs, d_model, prior, ctrl=ctrl)
     }
     t2 <- Sys.time()
 
     if (isFALSE(res$converge)) {
         cli_warn(c("EM algorithm did not converge in {ctrl$max_iter} iterations.",
-                   ">"="Consider increasing {.arg max_iter}."),
+                   ">"="Consider increasing {.arg max_iter} in {.fn birdie.ctrl}."),
                  call=parent.frame())
     }
-
 
     # add names
     colnames(res$map) = colnames(p_rxs)
@@ -71,11 +61,7 @@ birdie <- function(r_probs, formula, data=NULL,
     colnames(res$p_ryxs) = stringr::str_c(prefix, colnames(p_rxs))
     p_ryxs = as_tibble(res$p_ryxs)
     if (inherits(r_probs, "bisg")) {
-        attr(p_ryxs, "S_name") = attr(r_probs, "S_name")
-        attr(p_ryxs, "GX_names") = c(names(d_model)[1], attr(r_probs, "GX_names"))
-        attr(p_ryxs, "p_r") = attr(r_probs, "p_r")
-        attr(p_ryxs, "method") = "birdie"
-        class(p_ryxs) = c("bisg", class(p_ryxs))
+        p_ryxs = reconstruct.bisg(p_ryxs, r_probs, cat_nms=names(d_model)[1])
     }
 
     # output
@@ -85,6 +71,9 @@ birdie <- function(r_probs, formula, data=NULL,
         map = res$map,
         map_sub = res$ests,
         p_ryxs = p_ryxs,
+        vcov = if (se_boot > 0) res$vcov else NULL,
+        se = if (se_boot > 0) vcov_to_se(res$vcov, res$map) else NULL,
+        fit = res$fit,
         N = length(Y_vec),
         prior = prior,
         prefix = prefix,
@@ -99,7 +88,7 @@ birdie <- function(r_probs, formula, data=NULL,
 }
 
 # Fixed-effects model (includes complete pooling and no pooling)
-em_fixef <- function(Y, p_rxs, d_model, prior, ctrl) {
+em_fixef <- function(Y, p_rxs, d_model, prior, boot, ctrl) {
     n_y = nlevels(Y)
     n_r = ncol(p_rxs)
     Y = as.integer(Y)
@@ -111,10 +100,13 @@ em_fixef <- function(Y, p_rxs, d_model, prior, ctrl) {
 
     # init
     ests = dirichlet_map(Y, X, p_rxs, prior, n_x)
-    ests0 <<- ests
 
     # do EM (accelerated)
     res = ctrl$accel(ests, function(curr) {
+        # reproject if acceleration has brought us out of bounds
+        curr[curr < 0] = 0 + 1e3*.Machine$double.eps
+        curr[curr > 1] = 1 - 1e3*.Machine$double.eps
+
         .Call(`_birdie_em_dirichlet`, curr, Y, X, p_rxs, prior, n_x, FALSE)
     }, ctrl, n_x=n_x)
 
@@ -123,106 +115,65 @@ em_fixef <- function(Y, p_rxs, d_model, prior, ctrl) {
     est = dirichlet_map(Y, rep_along(Y, 1), p_ryxs, ones_mat, 1) %>%
         matrix(n_y, n_r, byrow=TRUE)
 
-    list(map = est,
-         ests = to_array_yrx(res$ests, est_dim),
-         iters = res$iters,
-         converge = res$converge,
-         p_ryxs = p_ryxs)
-}
+    out =  list(map = est,
+                ests = to_array_yrx(res$ests, est_dim),
+                iters = res$iters,
+                converge = res$converge,
+                p_ryxs = p_ryxs)
 
-em_re1 <- function(Y, p_rxs, d_model, prior, ctrl) {
-    n_y = nlevels(Y)
-    n_r = ncol(p_rxs)
-    Y = as.integer(Y)
-    ones_mat = matrix(1, nrow=n_y, ncol=n_r)
-
-    # create unique group IDs
-    X = to_unique_ids(d_model)
-    n_x = max(X)
-    est_dim = c(n_r, n_y, n_x)
-
-    # init pars and access indices
-    p_theta = n_r * n_y * n_x
-    p_alpha = n_r * n_y
-    idx_theta = seq_len(p_theta)
-
-    idx_alpha = p_theta + seq_len(p_alpha)
-
-    prior_sigma = 0.1
-    scale_b = (0.25 - prior_sigma^2) / (2 * prior_sigma^2)
-
-    ests = rep_len(0, p_theta + p_alpha)
-    ests[idx_alpha] = log(1.01)
-
-    to_prior = function(ests) {
-        matrix(exp(ests[idx_alpha]), n_y, n_r, byrow=TRUE)
+    if (boot > 0) {
+        boot_ests = boot_fixef(res$ests, boot, Y, X, p_rxs, prior, n_x, ctrl)
+        out$vcov = cov(t(boot_ests))
     }
 
-    ests[idx_theta] = dirichlet_map(Y, X, p_rxs, to_prior(ests), n_x)
+    out
+}
 
-    standata = list(n_y = n_y,
-                    n_r = n_r,
-                    n_x = n_x,
-                    prior_loc_alpha = 2.0,
-                    prior_shp_alpha = 100.0)
+boot_fixef <- function(mle, R=10, Y, X, p_rxs, prior, n_x, ctrl) {
+    N = length(Y)
+    n_r = ncol(prior)
+    n_y = nrow(prior)
 
-    # do EM (accelerated)
-    res = ctrl$accel(ests, function(curr) {
-        # reproject if acceleration has brought us out of bounds
-        curr[idx_theta][curr[idx_theta] < 0] = 0 + 1e3*.Machine$double.eps
-        curr[idx_theta][curr[idx_theta] > 1] = 1 - 1e3*.Machine$double.eps
-        cat(".")
+    out = matrix(nrow=length(prior), ncol=R)
 
-        agg = .Call(`_birdie_em_dirichlet`, curr[idx_theta], Y, X,
-                    p_rxs, ones_mat, n_x, TRUE)
+    ctrl$abstol = 0.0005 #min(ctrl$abstol * 1000, 0.001)
+    ctrl$reltol = 0.005 #min(ctrl$reltol * 1000, 0.001)
+    ctrl$max_iter = 50
 
-        standata$X = to_array_xry(agg, est_dim)
+    ones = rep_along(Y, 1)
+    ones_mat = matrix(1, nrow=n_y, ncol=n_r)
+    iters = numeric(R)
 
-        fit = rstan::optimizing(stanmodels$dir_hier, data=standata,
-                                init=list(alpha=t(to_prior(ests))),
-                                as_vector=FALSE,
-                                tol_obj=0.01, tol_param=ctrl$abstol,
-                                tol_rel_obj=10/ctrl$reltol)
+    if (N > 1000 && R > 100) {
+        mk_wt = function() tabulate(sample.int(N, N, replace=TRUE), N) / N
+    } else { # more computationally intensive but smoother
+        mk_wt = function() as.numeric(rdirichlet(1, ones))
+    }
 
-        curr[idx_alpha] = log(fit$par$alpha)
+    cli::cli_progress_bar("Bootstrapping", total=R)
+    for (i in seq_len(R)) {
+        wt = mk_wt()
 
-        curr[idx_theta] = dirichlet_norm(agg, to_prior(curr), n_x)
+        res = ctrl$accel(mle, function(curr) {
+            # reproject if acceleration has brought us out of bounds
+            curr[curr < 0] = 0 + 1e3*.Machine$double.eps
+            curr[curr > 1] = 1 - 1e3*.Machine$double.eps
 
-        curr
-    }, ctrl, n_x=n_x)
+            .Call(`_birdie_em_dirichlet_wt`, curr, Y, X, wt, p_rxs, prior, n_x)
+        }, ctrl, n_x=n_x)
+        iters[i] = res$iters
 
-    p_ryxs = calc_bayes(Y, X, res$ests[idx_theta], p_rxs, n_x, n_y)
-    est = dirichlet_map(Y, rep_along(Y, 1), p_ryxs, ones_mat, 1) %>%
-        matrix(n_y, n_r, byrow=TRUE)
+        out[, i] = em_dirichlet_wt(res$ests, Y, ones, wt, p_rxs, ones_mat, 1)
 
-    cat('\n')
-    print(round(to_prior(res$ests), 2))
+        cli::cli_progress_update()
+    }
+    cli::cli_progress_done()
 
-    list(map = est,
-         ests = to_array_yrx(res$ests[idx_theta], est_dim),
-         iters = res$iters,
-         converge = res$converge,
-         p_ryxs = p_ryxs)
-
+    out
 }
 
 
-to_array_yrx <- function(ests, est_dim) {
-    aperm(array(ests, est_dim), c(2L, 1L, 3L))
-}
-to_array_xyr <- function(ests, est_dim) {
-    aperm(array(ests, est_dim), c(3L, 2L, 1L))
-}
-to_array_xry <- function(ests, est_dim) {
-    aperm(array(ests, est_dim), c(3L, 1L, 2L))
-}
-to_vec_xyr <- function(ests) {
-    as.numeric(aperm(ests, c(3L, 2L, 1L)))
-}
-
-em_glmm <- function(Y, p_rxs, d_model, prior, ctrl) {
-    # rlang::check_installed("lme4", "to fit a GLMM-based BIRDiE model.")
-
+em_mmm <- function(Y, p_rxs, d_model, prior, ctrl) {
     n_y = nlevels(Y)
     n_r = ncol(p_rxs)
     Y = as.integer(Y)
@@ -283,119 +234,9 @@ em_glmm <- function(Y, p_rxs, d_model, prior, ctrl) {
     est = dirichlet_map(Y, ones, p_ryxs, ones_mat, 1) %>%
         matrix(n_y, n_r, byrow=TRUE)
 
-    list(map = est,
-         ests = ests,
-         iters = res$iters,
-         converge = res$converge,
-         p_ryxs = p_ryxs)
-}
-
-
-#' Control of BIRDiE Model Fitting
-#'
-#' Constructs control parameters for BIRDiE model fitting.
-#' All arguments have defaults.
-#'
-#' @param max_iter The maximum number of EM iterations.
-#' @param accel The acceleration algorithm to use in doing EM. The default
-#'   `"squarem"` is good for most purposes, though `"anderson"` may be faster
-#'   when there are few parameters or very tight tolerances. `"daarem"` is an
-#'   excellent choice as well that works across a range of problems, though it
-#'   requires installing the small `SQUAREM` package. `"none"` is not
-#'   recommended unless other algorithms are running into numerical issues.
-#' @param order The order to use in the acceleration algorithm. Interpretation
-#'   varies by algorithm. Can range from 1 to 3 (default) for SQUAREM and from 1
-#'   to the number of parameters for Anderson and DAAREM (default -1 allows the
-#'   order to be determined by problem size).
-#' @param anderson_restart Whether to use restarts in Anderson acceleration.
-#' @param abstol The absolute tolerance used in checking convergence.
-#' @param reltol The relative tolerance used in checking convergence.
-#'   Ignored if `accel="squarem"`.
-#'
-#' @return A list containing the control parameters
-#'
-#' @examples
-#' birdie.ctrl(max_iter=1000)
-#'
-#' @export
-birdie.ctrl <- function(max_iter=1000, accel=c("squarem", "anderson", "daarem", "none"),
-                        order=switch(match.arg(accel), none=0L, anderson=-1L, daarem=-1L, squarem=3L),
-                        anderson_restart=TRUE,
-                        abstol=1e-6, reltol=1e-6) {
-    stopifnot(max_iter >= 1)
-    stopifnot(abstol >= 0)
-    stopifnot(reltol >= 0)
-
-    accel = match.arg(accel)
-    fn_accel = switch(accel,
-                      none = accel_none,
-                      anderson = accel_anderson,
-                      daarem = accel_daarem,
-                      squarem = accel_squarem)
-    if (accel == "squarem") order = min(order, 3)
-
-    list(max_iter = as.integer(max_iter),
-         accel = fn_accel,
-         order = order,
-         restart = as.logical(anderson_restart),
-         abstol = abstol,
-         reltol = reltol)
-}
-
-# Check (and possibly create default) prior
-check_make_prior <- function(prior, method, n_y, n_r) {
-    if (is.null(prior)) {
-        prior = matrix(1, nrow=n_y, ncol=n_r)
-        if (method == "pool") {
-            cli_inform("Using uniform prior for Pr(X | R)",
-                       call=parent.frame())
-        } else if (method == "fixef") {
-            cli_inform("Using c(1+\u03B5, 1+\u03B5, ..., 1+\u03B5) prior for Pr(X | R)",
-                       call=parent.frame())
-            prior = matrix(1 + 100*.Machine$double.eps, nrow=n_y, ncol=n_r)
-        }
-    }
-    if (nrow(prior) != n_y) {
-        cli_abort("{.arg prior} must have the same number of rows
-                  as there are levels of X", call=parent.frame())
-    }
-    if (ncol(prior) != n_r) {
-        cli_abort("{.arg prior} must have the same number of columns
-                  as there are racial groups", call=parent.frame())
-    }
-
-    prior
-}
-
-# Check predictors against theory
-check_covars <- function(r_probs, covars, method) {
-    if (inherits(r_probs, "bisg")) {
-        if (attr(r_probs, "S_name") %in% covars) {
-            cli_warn("Last name vector {.arg {attr(r_probs, 'S_name')}}
-                     should not be used in BIRDiE model",
-                     call=parent.frame())
-        }
-        if (method != "pool" &&
-            length(setdiff( attr(r_probs, "GX_names"), covars)) > 0) {
-            cli_warn(c("Some variables used to create BISG probabilities are
-                       not used in BIRDiE model.",
-                       "x"="Statistically valid inference is not guaranteed."),
-                     call=parent.frame())
-        }
-    }
-}
-
-# Check for full interaction structure
-check_full_int <- function(tt, covars) {
-    int_ord = attr(tt, "order")
-    int_ord = table(factor(int_ord, levels=seq_len(max(int_ord))))
-    full_int = all(int_ord == choose(length(int_ord), seq_along(int_ord))) # pascal's triangle
-    if (!full_int) {
-        x_vars = attr(tt, "term.labels")[attr(tt, "order") == 1]
-        cli_warn(c("Fixed effects (no-pooling) model is specified without full
-                   interaction structure but will be fit with full interactions.",
-                   "i"="For full interaction structure, use
-                         `{covars[1]} ~ {paste0(x_vars, collapse=' * ')}`."),
-                 call=parent.frame())
-    }
+    out = list(map = est,
+               ests = ests,
+               iters = res$iters,
+               converge = res$converge,
+               p_ryxs = p_ryxs)
 }
