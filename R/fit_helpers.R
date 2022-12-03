@@ -113,14 +113,14 @@ remove_ranef <- function(formula) {
 
 
 # Check (and possibly create default) prior
-check_make_prior <- function(prior, method, n_y, n_r) {
+check_make_prior <- function(prior, model, n_y, n_r) {
     if (is.null(prior)) {
-        if (method == "fixef") {
+        if (model == "dir") {
             cli_inform("Using c(1+\u03B5, 1+\u03B5, ..., 1+\u03B5) prior for Pr(X | R)",
                        .frequency="once", .frequency_id="birdie_prior",
                        call=parent.frame())
             prior = matrix(1 + 100*.Machine$double.eps, nrow=n_y, ncol=n_r)
-        } else if (method == "mmm") {
+        } else if (model == "mmm") {
             prior = list(
                 sigma = 0.2,
                 beta = 1.0
@@ -128,7 +128,7 @@ check_make_prior <- function(prior, method, n_y, n_r) {
         }
     }
 
-    if (method == "fixef") {
+    if (model == "dir") {
         if (nrow(prior) != n_y) {
             cli_abort("{.arg prior} must have the same number of rows
                       as there are levels of X", call=parent.frame())
@@ -143,7 +143,7 @@ check_make_prior <- function(prior, method, n_y, n_r) {
 }
 
 # Check predictors against theory
-check_covars <- function(r_probs, covars, method) {
+check_covars <- function(r_probs, covars, model) {
     if (inherits(r_probs, "bisg")) {
         if (attr(r_probs, "S_name") %in% covars) {
             cli_warn("Last name vector {.arg {attr(r_probs, 'S_name')}}
@@ -162,24 +162,24 @@ check_covars <- function(r_probs, covars, method) {
     }
 }
 
-check_method <- function(method, tt, covars, full_int, se_boot) {
-    if (method == "fixef") {
+check_model <- function(model, tt, covars, full_int, se_boot) {
+    if (model == "dir") {
         if (!full_int) {
             x_vars = attr(tt, "term.labels")[attr(tt, "order") == 1]
             cli_abort(c("Fixed effects (no-pooling) model is specified without full
                         interaction structure.",
                         "i"="Models without full interaction structure must be fit
-                             using {.arg method = \"mmm\"}.",
+                             using {.arg model = \"mmm\"}.",
                         ">"="For full interaction structure, use
                               `{covars[1]} ~ {paste0(x_vars, collapse=' * ')}`."),
                       call=parent.frame())
         }
         if (count_ranef(tt) > 0) {
             cli_abort("Models with random effects must be fit
-                             using {.arg method = \"mmm\"}.",
+                             using {.arg model = \"mmm\"}.",
                       call=parent.frame())
         }
-    } else if (method == "mmm") {
+    } else if (model == "mmm") {
         re = re_terms(tt)
 
         if (length(re) > 1) {
@@ -199,14 +199,14 @@ check_method <- function(method, tt, covars, full_int, se_boot) {
 
         if (se_boot > 0) {
             cli_abort(c("Bootstrapping with {.arg se_boot > 0} is only
-                        computationally feasible for {.arg method = \"fixef\"}.",
-                        ">"="If you are using {.arg method = \"auto\"}, you need
+                        computationally feasible for {.arg model = \"dir\"}.",
+                        ">"="If you are using {.arg model = \"auto\"}, you need
                         to remove any random effects terms and specify a completely
-                        pooled or fully interacted model to use {.arg method = \"fixef\"}."),
+                        pooled or fully interacted model to use {.arg model = \"dir\"}."),
                       call=parent.frame())
         }
     } else {
-        cli_abort("{.arg method} must be one of {.val {'fixef'}},
+        cli_abort("{.arg model} must be one of {.val {'dir'}},
                   {.val {'mmm'}}, or {.val {'auto'}}.",
                   call=parent.frame())
     }

@@ -18,7 +18,7 @@ data = d |>
            n_voted=as.factor(n_voted)) |>
     left_join(census_race_geo_table("zcta", counts=FALSE), by=c("zip"="GEOID")) |>
     mutate(across(white:other, ~ coalesce(., p_r[cur_column()]))) |>
-    select(party, zip, county, race, gender, age, n_voted, lic, white:hisp)
+    select(party, zip, county, race, gender, age, n_voted, lic, white:other)
 
 if (FALSE) {
     formula = party ~ zip
@@ -36,14 +36,14 @@ Y =  data$party
 
 x0 = birdie(r_probs, Y ~ 1, data)
 x1 = birdie(r_probs, Y ~ zip, data)
-x2 = birdie(r_probs, Y ~ (1|zip), data, ctrl=birdie.ctrl(abstol=2e-4, max_iter=200))
+x2 = birdie(r_probs, Y ~ white + black + hisp + (1|zip), data, ctrl=birdie.ctrl(abstol=1e-5))
 
 xr = list(
     true = with(d, prop.table(table(Y, race))),
     pool = coef(x0) %*% diag(colMeans(fitted(x0))),
     sat = coef(x1) %*% diag(colMeans(fitted(x1))),
     mmm = coef(x2) %*% diag(colMeans(fitted(x2))),
-    stg = coef(x3) %*% diag(colMeans(fitted(x3))),
+    sat2 = coef(x1b) %*% diag(colMeans(fitted(x1b))),
     # pols = calc_joint_bisgz_ols(r_probs, d$party, d$zip, with(d, prop.table(table(zip, race), 2))),
     ols = calc_joint_bisgz(r_probs, Y, "ols"),
     weight = calc_joint_bisgz(r_probs, Y, "weight"),
