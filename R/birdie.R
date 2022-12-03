@@ -206,8 +206,7 @@ em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
     }
 
     # init
-    ests = dirichlet_map(Y, idx_uniq, p_rxs, ones_mat * 1.0001, n_uniq) |>
-        to_array_ryx(est_dim)
+    ests = dirichlet_map(Y, idx_uniq, p_rxs, ones_mat * 1.0001, n_uniq)
     standata = list(
         n_y = n_y,
         N = nrow(X),
@@ -227,6 +226,7 @@ em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
 
     n_upar = rstan::get_num_upars(sm)
     par0 = rep_len(0, n_upar*n_r)
+    first_iter = TRUE
 
     pb_id = cli::cli_progress_bar("EM iterations", total=NA)
     res = ctrl$accel(par0, function(curr) {
@@ -234,11 +234,16 @@ em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
 
         curr = matrix(curr, nrow=n_upar, ncol=n_r)
         par_l = apply(curr, 2, fn_constr(sm))
+        ests_vec = if (first_iter) {
+            first_iter <<- FALSE
+            ests
+        } else {
+            to_ests_vec(par_l, n_y, n_r, n_grp)
+        }
 
-        cts = .Call(`_birdie_em_dirichlet`, ests, Y, idx_uniq,
+        cts = .Call(`_birdie_em_dirichlet`, ests_vec, Y, idx_uniq,
                     p_rxs, ones_mat, n_uniq, TRUE) |>
             to_array_xyr(est_dim)
-        ests_arr = to_array_xyr(ests, est_dim)
 
         for (r in seq_len(n_r)) {
             standata$Y = cts[, , r]
@@ -247,16 +252,15 @@ em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
                                     init=par_l[[r]], check_data=FALSE, as_vector=FALSE,
                                     tol_obj=10*ctrl$abstol, tol_param=ctrl$abstol)
             curr[, r] = rstan::unconstrain_pars(sm, fit$par)
-            if (any(is.nan(curr))) browser()
-
-            ests_arr[, , r] = exp(fit$par$lsft)
-            if (any(is.nan(ests_arr))) browser()
         }
 
-        ests <<- to_vec_xyr(ests_arr)
         as.numeric(curr)
     }, ctrl, n_x=n_upar*n_r*(4^2)) # extra factor since upar scale is different
     cli::cli_progress_done(id=pb_id)
+
+    ests = matrix(res$ests, nrow=n_upar, ncol=n_r) |>
+        apply(2, fn_constr(sm)) |>
+        to_ests_vec(n_y, n_r, n_grp)
 
     # final global mean and R|YXS
     p_ryxs = calc_bayes(Y, idx_uniq, ests, p_rxs, n_uniq, n_y)
