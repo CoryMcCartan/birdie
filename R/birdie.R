@@ -176,8 +176,6 @@ boot_dir <- function(mle, R=10, Y, X, p_rxs, prior, n_x, ctrl) {
 
 # Multinomial mixed-effects model
 em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
-    rlang::check_installed("rstan", "to fit `mmm` models.")
-
     n_y = nlevels(Y)
     n_r = ncol(p_rxs)
     Y = as.integer(Y)
@@ -223,19 +221,20 @@ em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
         prior_beta = prior$beta
     )
 
-    sm = rstan::sampling(stanmodels$multinom, data=standata, chains=0) |>
-        suppressMessages()
+    sm = get_stanmodel(rstantools_model_multinom, standata)
 
-    n_upar = rstan::get_num_upars(sm)
+    n_upar = sm$num_pars_unconstrained()
     par0 = rep_len(0, n_upar*n_r)
     first_iter = TRUE
 
     pb_id = cli::cli_progress_bar("EM iterations", total=NA)
+    last_iter_converge = TRUE
     res = ctrl$accel(par0, function(curr) {
         cli::cli_progress_update(id=pb_id)
 
         curr = matrix(curr, nrow=n_upar, ncol=n_r)
-        par_l = apply(curr, 2, fn_constr(sm))
+        # par_l = apply(curr, 2, constrain)
+        par_l = apply(curr, 2, function(x) constrain_pars(sm, x))
         ests_vec = if (first_iter) {
             first_iter <<- FALSE
             ests
@@ -247,21 +246,24 @@ em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
                     p_rxs, ones_mat, n_uniq, TRUE) |>
             to_array_xyr(est_dim)
 
+        all_converged = TRUE
         for (r in seq_len(n_r)) {
             standata$Y = cts[, , r]
 
-            fit = rstan::optimizing(stanmodels$multinom, data=standata,
-                                    init=par_l[[r]], check_data=FALSE, as_vector=FALSE,
-                                    tol_obj=10*ctrl$abstol, tol_param=ctrl$abstol)
-            curr[, r] = rstan::unconstrain_pars(sm, fit$par)
+            fit = get_stanmodel(rstantools_model_multinom, standata) |>
+                optim_model(par_l[[r]], tol_obj=10*ctrl$abstol, tol_param=ctrl$abstol)
+            all_converged = all_converged && fit$converged
+            curr[, r] = fit$par
         }
+        last_iter_converge <<- all_converged
 
+        if (any(is.nan(curr))) browser()
         as.numeric(curr)
     }, ctrl, n_x=n_upar*n_r*(4^2)) # extra factor since upar scale is different
     cli::cli_progress_done(id=pb_id)
 
     ests = matrix(res$ests, nrow=n_upar, ncol=n_r) |>
-        apply(2, fn_constr(sm)) |>
+        apply(2, function(x) constrain_pars(sm, x)) |>
         to_ests_vec(n_y, n_r, n_grp)
 
     # final global mean and R|YXS
