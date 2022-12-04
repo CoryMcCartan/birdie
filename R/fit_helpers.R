@@ -64,6 +64,9 @@ to_array_ryx <- function(ests, est_dim) {
 to_array_yrx <- function(ests, est_dim) {
     aperm(array(ests, est_dim), c(2L, 1L, 3L))
 }
+to_array_rxy <- function(ests, est_dim) {
+    aperm(array(ests, est_dim), c(1L, 3L, 2L))
+}
 to_array_xyr <- function(ests, est_dim) {
     aperm(array(ests, est_dim), c(3L, 2L, 1L))
 }
@@ -72,13 +75,6 @@ to_array_xry <- function(ests, est_dim) {
 }
 to_vec_xyr <- function(ests) {
     as.numeric(aperm(ests, c(3L, 2L, 1L)))
-}
-
-# rstan helper
-fn_constr <- function(sm) {
-    function(x) {
-        rstan::constrain_pars(sm, x)
-    }
 }
 to_ests_vec <- function(par_l, n_y, n_r, n_x) {
     out = array(dim=c(n_r, n_x, n_y))
