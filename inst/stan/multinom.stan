@@ -1,12 +1,10 @@
 data {
     int<lower=0> n_y;
-    //int<lower=0> n_r;
     int<lower=0> N;
     int<lower=0> p;
     int<lower=0> n_grp;
 
     matrix[N, p] X;
-    //vector[n_y] Y[N];
     matrix[N, n_y] Y;
     int<lower=1, upper=n_grp> grp[N];
 
@@ -33,12 +31,7 @@ transformed parameters {
         matrix[n_y, n_y] Sigma = diag_pre_multiply(sigma_grp, L);
         linpred = X * beta + (Sigma * u[grp]')';
 
-        // for (j in 1:n_y) {
-        //     linpred[j] = (X * beta[j] + Sigma * u[grp])';
-        // }
-
         // manual log softmax
-        // lsft = (linpred - rep_matrix(log(ones_y * exp(linpred)), n_y))';
         lsft = linpred - rep_matrix(log(exp(linpred) * ones_y), n_y);
     }
 }

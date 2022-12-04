@@ -26,7 +26,6 @@ Imports:
     stringr,
     SQUAREM
 Suggests: 
-    rstan (>= 2.18.1),
     daarem,
     easycensus,
     censable,
@@ -45,10 +44,10 @@ LinkingTo:
     StanHeaders (>= 2.18.0)
 License: GPL (>= 3)
 Encoding: UTF-8
-LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 SystemRequirements: GNU make
 Biarch: true
+LazyData: true
