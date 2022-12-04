@@ -13,3 +13,4 @@ __pycache__
 ^docs$
 ^pkgdown$
 ^cran-comments\.md$
+^\.github$

@@ -4,6 +4,8 @@
 # **BIRDiE** <img src="man/figures/logo.png" align="right" height="156" />
 
 <!-- badges: start -->
+
+[![R-CMD-check](https://github.com/CoryMcCartan/birdie/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/CoryMcCartan/birdie/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 Bayesian Instrumental Regression for Disparity Estimation (BIRDiE) is a

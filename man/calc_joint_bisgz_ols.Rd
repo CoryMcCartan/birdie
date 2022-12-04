@@ -19,7 +19,7 @@ calc_joint_bisgz_ols(
 \item{x}{the variable X to tabulate against}
 
 \item{gz}{values of GZ variables. Usually exported as part of
-\code{\link[=predict_race_sgz]{predict_race_sgz()}}}
+\code{predict_race_sgz()}}
 
 \item{p_gzr}{a table giving Pr(GZ|R) for use in post-stratification. Columns
 should sum to 1.}
