@@ -176,6 +176,8 @@ boot_dir <- function(mle, R=10, Y, X, p_rxs, prior, n_x, ctrl) {
 
 # Multinomial mixed-effects model
 em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
+    rlang::check_installed("rstan", "to fit `mmm` models.")
+
     n_y = nlevels(Y)
     n_r = ncol(p_rxs)
     Y = as.integer(Y)
@@ -221,7 +223,7 @@ em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
         prior_beta = prior$beta
     )
 
-    sm <<- rstan::sampling(stanmodels$multinom, data=standata, chains=0) |>
+    sm = rstan::sampling(stanmodels$multinom, data=standata, chains=0) |>
         suppressMessages()
 
     n_upar = rstan::get_num_upars(sm)

@@ -46,7 +46,7 @@ calc_joint_bisgz = function(r_probs, x, method=c("weight", "thresh", "mi", "ols"
                     a simpler OLS estimator that may be biased.",
                    .frequency="once", .frequency_id="calc_joint")
         out = lapply(levels(x), function(l) {
-            lm.fit(r_probs, x == l)$coefficients
+            .lm.fit(r_probs, x == l)$coefficients
         })
         out = do.call(rbind, out)
         out = out %*% diag(colMeans(r_probs))
@@ -61,7 +61,7 @@ calc_joint_bisgz = function(r_probs, x, method=c("weight", "thresh", "mi", "ols"
 #' @param r_probs a matrix data frame of race probabilities
 #' @param x the variable X to tabulate against
 #' @param gz values of GZ variables. Usually exported as part of
-#'   [predict_race_sgz()]
+#'   `predict_race_sgz()`
 #' @param p_gzr a table giving Pr(GZ|R) for use in post-stratification. Columns
 #'   should sum to 1.
 #' @param prefix how to select the race probability columns from `r_probs`, if

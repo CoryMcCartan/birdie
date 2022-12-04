@@ -9,6 +9,7 @@
 #' directly. The generics listed here should be used instead.
 #'
 #' @param object,x A `birdie` object
+#' @param data A data frame to agument with `Pr(R | Y, X, S)` probabilities
 #' @param ... Potentially further arguments passed from other methods
 #'
 #' @name birdie-class
@@ -76,7 +77,7 @@ generics::augment
 #' @method tidy birdie
 #' @export
 tidy.birdie <- function(x, ...) {
-    m = x0$map
+    m = x$map
 
     out = tibble(X = rep(rownames(m), ncol(m)),
                  race = rep(colnames(m), each=nrow(m)),
@@ -95,8 +96,8 @@ glance.birdie <- function(x, ...) {
     p_r = colMeans(m)
     ents = entropy(m)
 
-    tibble(entr.marg = entropy(p_r),
-           entr.post.med = median(entropy(m)),
+    tibble(entropy.marg = entropy(p_r),
+           entropy.post.med = median(entropy(m)),
            nobs = nrow(m),
            ngrp = dim(x$map_sub)[1])
 }
@@ -168,8 +169,10 @@ summary.birdie <- function(object, ...) {
 }
 
 #' @describeIn bisg Summarize predicted race probabilities. Returns vector of individual entropies.
+#' @param object An object of class `bisg`, the result of running [bisg()].
+#' @param ... Additional arguments to `summary()` (ignored).
 #' @export
-summary.bisg <- function(object, p_r=NULL) {
+summary.bisg <- function(object, p_r=NULL, ...) {
     cli::cli_text("{.pkg BISG} individual race probabilities")
     if (inherits(object, "bisg_me")) {
         cli::cat_line("Estimated with measurement error model")

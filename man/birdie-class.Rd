@@ -42,6 +42,8 @@ coefficient estimates as a 3D array.}
 \item{nsim}{The number of vectors to simulate. Defaults to 1.}
 
 \item{seed}{Used to seed the random number generator. See \code{\link[stats:simulate]{stats::simulate()}}.}
+
+\item{data}{A data frame to agument with \code{Pr(R | Y, X, S)} probabilities}
 }
 \description{
 The output of \code{\link[=birdie]{birdie()}} is an object of class \code{birdie}, which supports
