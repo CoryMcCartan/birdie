@@ -29,6 +29,7 @@ Suggests:
     rstan (>= 2.18.1),
     daarem,
     easycensus,
+    censable,
     wru,
     knitr,
     roxygen2,
