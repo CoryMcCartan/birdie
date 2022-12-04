@@ -16,18 +16,17 @@ Depends:
     R (>= 3.6.0)
 Imports: 
     rlang (>= 0.1.2),
+    Rcpp (>= 0.12.0),
     cli,
     vctrs,
     generics,
     dplyr,
     methods,
-    SQUAREM,
     stringi,
     stringr,
-    Rcpp (>= 0.12.0),
-    rstan (>= 2.18.1)
+    SQUAREM
 Suggests: 
-    lme4,
+    rstan (>= 2.18.1),
     daarem,
     easycensus,
     wru,

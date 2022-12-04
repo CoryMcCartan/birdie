@@ -19,7 +19,7 @@ bisg_me(
   cores = 1L
 )
 
-\method{summary}{bisg}(object, p_r = NULL)
+\method{summary}{bisg}(object, p_r = NULL, ...)
 }
 \arguments{
 \item{formula}{A formula specifying the BISG model. Must include the special
@@ -71,6 +71,10 @@ automatically. Counts are required for \code{bisg_me()}.}
 
 \item{cores}{How many parallel cores to use in computation. Around 4 seems to
 be optimal, even if more are available.}
+
+\item{object}{An object of class \code{bisg}, the result of running \code{\link[=bisg]{bisg()}}.}
+
+\item{...}{Additional arguments to \code{summary()} (ignored).}
 }
 \value{
 An object of class \code{bisg}, which is just a data frame with some
