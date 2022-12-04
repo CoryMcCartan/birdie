@@ -116,14 +116,13 @@ accel_daarem <- function(init, em_step, ctrl, n_x=1, ...) {
     if (ctrl$order <= 0) ctrl$order = min(10, length(init)/2)
     incr_factor = n_x^(1/2)
 
-    res = daarem::daarem(
+    res = suppressWarnings(daarem::daarem(
         init,
         em_step,
         control=list(maxiter=ctrl$max_iter, order=ctrl$order,
                      tol=ctrl$abstol*incr_factor, mon.tol=0.01, cycl.mon.tol=0.0,
                      alpha=1.2, kappa=25, resid.tol=0.95, convtype="param")
-    ) |>
-        suppressWarnings()
+    ))
 
     list(ests = res$par,
          iters = res$fpeval,

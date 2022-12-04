@@ -17,3 +17,5 @@
 #' @rawNamespace useDynLib(birdie, .registration=TRUE)
 ## usethis namespace: end
 NULL
+
+Rcpp::loadModule("stan_fit4multinom_mod", what=TRUE)

@@ -65,6 +65,7 @@ colSums(abs(to_cond(xr$true) - to_cond(xr$sat)))/2
 colSums(abs(to_cond(xr$true) - to_cond(xr$mmm)))/2
 colSums(abs(to_cond(xr$true) - to_cond(xr$ols)))/2
 colSums(abs(to_cond(xr$true) - to_cond(xr$weight)))/2
+colSums(abs(to_cond(xr$true) - to_cond(xr$thresh)))/2
 
 
 # try out multistage regression
