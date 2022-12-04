@@ -7,22 +7,25 @@ get_stanmodel <- function(module, data, seed=5118L) {
     new(module, data, seed, function() stop("cxxfn"))
 }
 
-optim_model <- function(mod, init, algorithm = c("LBFGS", "BFGS", "Newton"), ..., seed=5118L) {
-    if (is.numeric(init))
-        init = as.character(init)
-
+get_skeleton <- function(mod) {
     par_nm = mod$param_names()
     p_dims = mod$param_dims()[par_nm != "lp__"]
+    lapply(p_dims, function(d) array(0, dim=d))
+}
 
-    skeleton = lapply(p_dims, function(d) array(0, dim=d))
+optim_model <- function(mod, init, skeleton,
+                        algorithm = c("LBFGS", "BFGS", "Newton"), ..., seed=5118L) {
+    if (is.numeric(init))
+        init = as.character(init)
 
     args = list(init = init,
                 seed = as.integer(seed),
                 method = "optim",
                 refresh = 0L,
-                algorithm = match.arg(algorithm))
+                algorithm = match.arg(algorithm),
+                ...)
 
-    res = mod$call_sampler(c(args, list(...)))
+    res = mod$call_sampler(args)
 
     theta = relist(res$par, skeleton)
 
@@ -32,11 +35,6 @@ optim_model <- function(mod, init, algorithm = c("LBFGS", "BFGS", "Newton"), ...
     )
 }
 
-constrain_pars <- function(mod, x) {
-    par_nm = mod$param_names()
-    p_dims = mod$param_dims()[par_nm != "lp__"]
-
-    skeleton = lapply(p_dims, function(d) array(0, dim=d))
-
+constrain_pars <- function(mod, skeleton, x) {
     relist(mod$constrain_pars(x), skeleton)
 }

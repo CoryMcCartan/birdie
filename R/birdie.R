@@ -222,6 +222,7 @@ em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
     )
 
     sm = get_stanmodel(rstantools_model_multinom, standata)
+    skeleton = get_skeleton(sm)
 
     n_upar = sm$num_pars_unconstrained()
     par0 = rep_len(0, n_upar*n_r)
@@ -233,8 +234,7 @@ em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
         cli::cli_progress_update(id=pb_id)
 
         curr = matrix(curr, nrow=n_upar, ncol=n_r)
-        # par_l = apply(curr, 2, constrain)
-        par_l = apply(curr, 2, function(x) constrain_pars(sm, x))
+        par_l = apply(curr, 2, function(x) constrain_pars(sm, skeleton, x))
         ests_vec = if (first_iter) {
             first_iter <<- FALSE
             ests
@@ -243,15 +243,16 @@ em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
         }
 
         cts = .Call(`_birdie_em_dirichlet`, ests_vec, Y, idx_uniq,
-                    p_rxs, ones_mat, n_uniq, TRUE) |>
+                    p_rxs, ones_mat, n_uniq, TRUE) %>%
             to_array_xyr(est_dim)
 
         all_converged = TRUE
         for (r in seq_len(n_r)) {
             standata$Y = cts[, , r]
 
-            fit = get_stanmodel(rstantools_model_multinom, standata) |>
-                optim_model(par_l[[r]], tol_obj=10*ctrl$abstol, tol_param=ctrl$abstol)
+            sm_ir = get_stanmodel(rstantools_model_multinom, standata)
+            fit = optim_model(sm_ir, init=par_l[[r]], skeleton=skeleton,
+                              tol_obj=10*ctrl$abstol, tol_param=ctrl$abstol)
             all_converged = all_converged && fit$converged
             curr[, r] = fit$par
         }
@@ -262,8 +263,8 @@ em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
     }, ctrl, n_x=n_upar*n_r*(4^2)) # extra factor since upar scale is different
     cli::cli_progress_done(id=pb_id)
 
-    ests = matrix(res$ests, nrow=n_upar, ncol=n_r) |>
-        apply(2, function(x) constrain_pars(sm, x)) |>
+    ests = matrix(res$ests, nrow=n_upar, ncol=n_r) %>%
+        apply(2, function(x) constrain_pars(sm, skeleton, x)) %>%
         to_ests_vec(n_y, n_r, n_grp)
 
     # final global mean and R|YXS
