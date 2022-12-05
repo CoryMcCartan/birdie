@@ -5,7 +5,6 @@
 data-raw/*.csv
 data-raw/*/
 data-out
-pkgdown/
 
 *.rds
 
@@ -33,4 +32,5 @@ paper/polmeth.*
 replication/presentation.*
 inst/doc
 
+pkgdown
 docs
