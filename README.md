@@ -95,7 +95,8 @@ The `proc_zip()` function fills in missing ZIP codes, among other
 things. We can extract the estimated conditional distributions with
 `coef()`. We can also get updated BISG probabilities that additionally
 condition on turnout using `fitted()`. Additional functions allow us to
-extract a tidy version of our estimates.
+extract a tidy version of our estimates (`tidy()`) and visualize the
+estimated distributiosn (`plot()`).
 
 ``` r
 coef(fit)
@@ -130,7 +131,11 @@ tidy(fit)
 #> 10 yes     aian     0.356
 #> 11 no      other    0.534
 #> 12 yes     other    0.466
+
+plot(fit)
 ```
+
+<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
 
 A more detailed introduction to the method and software package can be
 found on the [Get
