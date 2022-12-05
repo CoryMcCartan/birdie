@@ -31,6 +31,7 @@
 #' census_race_geo_table("state", year=2021, survey="acs1")
 #' census_race_geo_table("state", year=2021, survey="acs1", GEOIDs=FALSE)
 #' }
+#' @concept preproc
 #' @export
 census_race_geo_table <- function(geo=c("us", "state", "county", "zcta", "tract"),
                                   ...,

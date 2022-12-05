@@ -25,6 +25,7 @@
 #' @examples
 #' birdie.ctrl(max_iter=1000)
 #'
+#' @concept estimators
 #' @export
 birdie.ctrl <- function(max_iter=1000, accel=c("squarem", "anderson", "daarem", "none"),
                         order=switch(match.arg(accel), none=0L, anderson=-1L, daarem=-1L, squarem=3L),

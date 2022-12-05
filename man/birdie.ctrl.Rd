@@ -46,3 +46,4 @@ All arguments have defaults.
 birdie.ctrl(max_iter=1000)
 
 }
+\concept{estimators}

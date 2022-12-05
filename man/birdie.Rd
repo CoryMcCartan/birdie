@@ -17,7 +17,7 @@ birdie(
 }
 \arguments{
 \item{r_probs}{A data frame or matrix of BISG probabilities, with one row per
-individual. The output of \verb{[bisg()]} can be used directly here.}
+individual. The output of \code{\link[=bisg]{bisg()}} can be used directly here.}
 
 \item{formula}{A two-sided formula object describing the model structure. The
 left-hand side is the outcome variable, which must be discrete. A single
@@ -110,13 +110,20 @@ r_probs = bisg(~ nm(last_name) + zip(zip), data=pseudo_vf)
 pseudo_vf$zip = proc_zip(pseudo_vf$zip)
 
 birdie(r_probs, turnout ~ 1, data=pseudo_vf)
+
 birdie(r_probs, turnout ~ zip, data=pseudo_vf)
-birdie(r_probs, turnout ~ (1 | zip), data=pseudo_vf,
+
+fit = birdie(r_probs, turnout ~ (1 | zip), data=pseudo_vf,
        ctrl=birdie.ctrl(abstol=1e-3))
+
+summary(fit)
+coef(fit)
+fitted(fit)
 
 }
 \references{
 McCartan, C., Fisher, R., Goldin, J., Ho, D., & Imai, K. (2022).
 Estimating Racial Disparities when Race is Not Observed.
-Available at \url{}.
+Available at \url{https://arxiv.org/abs/}.
 }
+\concept{estimators}

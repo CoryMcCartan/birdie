@@ -28,4 +28,5 @@ Turnout records are completely randomly generated.
 data(pseudo_vf)
 print(pseudo_vf)
 }
+\concept{misc}
 \keyword{datasets}

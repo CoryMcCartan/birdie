@@ -15,6 +15,7 @@
 #' @examples
 #' methods(class="birdie")
 #'
+#' @concept estimators
 #' @name birdie-class
 NULL
 
@@ -39,10 +40,14 @@ fitted.birdie <- function(object, ...) {
     object$p_ryxs
 }
 
-#' @describeIn birdie-class Alias for `fitted.birdie`.
+#' @describeIn birdie-class Create point predictions of individual race. Returns
+#'   factor vector of individual race labels. Strongly not recommended for any
+#'   kind of inferential purpose, as biases may be extreme and in unpredictable
+#'   directions.
+#' @inheritParams predict.bisg
 #' @export
-predict.birdie <- function(object, ...) {
-    fitted.birdie(object)
+predict.birdie <- function(object, adj=NULL, ...) {
+    predict.bisg(object$p_ryxs, adj=adj, ...)
 }
 
 #' @param nsim The number of vectors to simulate. Defaults to 1.
@@ -205,7 +210,7 @@ summary.birdie <- function(object, ...) {
 
 #' @describeIn bisg Summarize predicted race probabilities. Returns vector of individual entropies.
 #' @param object An object of class `bisg`, the result of running [bisg()].
-#' @param ... Additional arguments to `summary()` (ignored).
+#' @param ... Additional arguments to generic methods (ignored).
 #' @export
 summary.bisg <- function(object, p_r=NULL, ...) {
     cli::cli_text("{.pkg BISG} individual race probabilities")
@@ -229,6 +234,36 @@ summary.bisg <- function(object, p_r=NULL, ...) {
 
     invisible(ents)
 }
+
+#' @describeIn bisg Create point predictions of individual race. Returns factor
+#'   vector of individual race labels. Strongly not recommended for any kind of
+#'   inferential purpose, as biases may be extreme and in unpredictable
+#'   directions.
+#' @param adj A point in the simplex that describes how BISG probabilities
+#'   will be thresholded to produce point predictions. The probabilities are
+#'   divied by `adj`, then the racial category with the highest probability is
+#'   predicted. Can be used to trade off types of prediction error. Must be
+#'   nonnegative but will be normalized to sum to 1. The default is to make no
+#'   adjustment.
+#' @export
+predict.bisg <- function(object, adj=NULL, ...) {
+    n_r = ncol(object)
+    races = stringr::str_sub(colnames(object), 4)
+
+    if (is.null(adj)) {
+        adj = rep(1, n_r)
+    } else {
+        if (any(adj < 0)) {
+            cli::cli_abort("{.arg thresh} must be nonnegative.")
+        }
+    }
+    adj = adj / sum(adj)
+
+    m = as.matrix(object) / rep(adj, each=nrow(object))
+
+    factor(max.col(m), levels=seq_len(n_r), labels=races)
+}
+
 
 reconstruct <- function(new, old, ...) {
     UseMethod("reconstruct")
