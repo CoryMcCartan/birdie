@@ -39,7 +39,8 @@
 #'   This table will be normalized by row, so it can be provided as population
 #'   counts as well. Counts are required for `bisg_me()`.
 #'   The [census_race_geo_table()] function can be helpful to prepare tables,
-#'   as can be [censable::build_dec()] and [censable::build_acs()].
+#'   as can be the `build_dec()` and `build_acs()` functions in the `censable`
+#'   package.
 #' @param p_rs The distribution of race given last name. As with `p_rgx`, should
 #'   be provided as a data frame, with a column of names and additional columns
 #'   for each racial group. Users should not have to specify this argument in

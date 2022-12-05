@@ -10,6 +10,15 @@
 
 Bayesian models for accurately estimating conditional distributions by race, using Bayesian Improved Surname Geocoding (BISG) probability estimates of individual race. Implements the methods described in McCartan, Fisher, Goldin, Ho and Imai (2022) <arXiv:>.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/CoryMcCartan/birdie}
+  \item \url{http://corymccartan.com/birdie/}
+  \item Report bugs at \url{https://github.com/CoryMcCartan/birdie/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: Cory McCartan \email{cmccartan@g.harvard.edu}
 
