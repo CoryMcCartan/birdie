@@ -298,7 +298,7 @@ em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
     # create random effects vector
     if (count_ranef(formula) >= 1) {
         re_expr = attr(formula, "variables")[[2 + which(logi_ranef(formula))]][[3]]
-        Z = to_unique_ids(eval_tidy(re_expr, data=pseudo_vf)[idx_sub])
+        Z = to_unique_ids(eval_tidy(re_expr, data=data)[idx_sub])
         n_grp = max(Z)
     } else {
         Z = rep_along(idx_sub, 1L)

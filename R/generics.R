@@ -128,7 +128,7 @@ formula.birdie <- function(x, ...) {
 #' @method nobs birdie
 #' @export
 nobs.birdie <- function(object, ...) {
-    nrow(x$p_ryxs)
+    nrow(object$p_ryxs)
 }
 
 #' @describeIn birdie-class Return the estimated variance-covariance matrix for
@@ -136,7 +136,7 @@ nobs.birdie <- function(object, ...) {
 #' @method vcov birdie
 #' @export
 vcov.birdie <- function(object, ...) {
-    x$vcov
+    object$vcov
 }
 
 
