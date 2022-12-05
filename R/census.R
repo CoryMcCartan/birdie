@@ -22,8 +22,8 @@
 #' @param counts If `TRUE`, return the table as actual population counts; if
 #'   `FALSE`, return table as percentages within each geography.
 #'
-#' @return A data frame with a geographic identifier column and six columns
-#'   `pop_white`, `pop_black`, etc. containing the counts or proportion of
+#' @return A data frame with geographic identifier column(s) and six columns
+#'   `white`, `black`, etc. containing the counts or proportion of
 #'   residents in each racial group.
 #'
 #' @examples \dontrun{
@@ -79,16 +79,19 @@ census_race_geo_table <- function(geo=c("us", "state", "county", "zcta", "tract"
         summarize(value = sum(.data$value),
                   .groups="drop") %>%
         pivot_wider_tiny(names_from="race") %>%
-        select("GEOID", "NAME", pop="total", pop_white="white",
-               pop_black="black", pop_hisp="hisp", pop_asian="asian",
-               pop_aian="aian", pop_other="other") %>%
+        # select("GEOID", "NAME", pop="total", pop_white="white",
+        #        pop_black="black", pop_hisp="hisp", pop_asian="asian",
+        #        pop_aian="aian", pop_other="other") %>%
+        select("GEOID", "NAME", white, black, hisp, asian, aian, other, total) %>%
         mutate(across(c(-"GEOID", -"NAME"), as.integer))
 
     if (isFALSE(counts)) { # normalize by population
+        nc = ncol(d)
         for (i in 1:6) {
-            d[, 3+i] = d[, 3+i] / d$pop
+            d[, nc - i] = d[, nc - i] / d$total
         }
     }
+    d$total <- NULL # delete col
 
     if (isTRUE(GEOIDs)) {
         select(d, -"NAME")
