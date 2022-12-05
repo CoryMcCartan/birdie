@@ -1,3 +1,4 @@
+#' @aliases birdie-package
 #' @keywords internal
 "_PACKAGE"
 
@@ -11,7 +12,8 @@
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom Rcpp sourceCpp
 #' @importFrom stats na.omit na.fail .lm.fit fitted simulate median cov
-#' @importFrom stats terms get_all_vars update.formula as.formula model.frame model.matrix
+#' @importFrom stats terms get_all_vars model.frame model.matrix
+#' @importFrom stats formula update.formula as.formula nobs vcov
 #' @importFrom utils tail unstack relist head
 #' @useDynLib birdie, .registration=TRUE
 ## usethis namespace: end

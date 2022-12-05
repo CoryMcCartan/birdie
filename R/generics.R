@@ -8,9 +8,12 @@
 #' The internal structure of `birdie` objects is not designed to be accessed
 #' directly. The generics listed here should be used instead.
 #'
-#' @param object,x A `birdie` object
-#' @param data A data frame to agument with `Pr(R | Y, X, S)` probabilities
+#' @param object,x A `birdie` model object
+#' @param data A data frame to augment with `Pr(R | Y, X, S)` probabilities
 #' @param ... Potentially further arguments passed from other methods
+#'
+#' @examples
+#' methods(class="birdie")
 #'
 #' @name birdie-class
 NULL
@@ -109,13 +112,40 @@ augment.birdie <- function(x, data, ...) {
     bind_cols(data, fitted.birdie(x))
 }
 
+#' @describeIn birdie-class Extract the formula used to specify a BIRDiE model.
+#' @method formula birdie
+#' @export
+formula.birdie <- function(x, ...) {
+    UseMethod("formula", x$call)
+}
+
+#' @describeIn birdie-class Return the number of observations used to fit a BIRDiE model.
+#' @method nobs birdie
+#' @export
+nobs.birdie <- function(object, ...) {
+    nrow(x$p_ryxs)
+}
+
+#' @describeIn birdie-class Return the estimated variance-covariance matrix for
+#'   the BIRDiE model estimates, if available.
+#' @method vcov birdie
+#' @export
+vcov.birdie <- function(object, ...) {
+    x$vcov
+}
+
 
 comma <- function(x) format(x, big.mark=',')
 
 #' @describeIn birdie-class Print a summary of the model fit.
 #' @export
 print.birdie <- function(x, ...) {
-    cli::cli_text("{.pkg BIRDiE} model fit with method = {.arg {x$algo$method}}")
+    cli::cli_text(switch(
+        x$algo$model,
+        dir = "Multinomial-Dirichlet {.pkg BIRDiE} model",
+        mmm = "Multinomial mixed-effects {.pkg BIRDiE} model",
+        "{.pkg BIRDiE} model"
+    ))
     cli::cat_line("Formula: ", deparse(x$call$formula))
     cli::cat_line("   Data: ", deparse(x$call$data))
     cli::cli_text("Number of obs: {comma(x$N)};
@@ -138,7 +168,12 @@ entropy <- function(x) {
 #' @describeIn birdie-class Print a summary of the model fit.
 #' @export
 summary.birdie <- function(object, ...) {
-    cli::cli_text("{.pkg BIRDiE} model fit with method = {.arg {object$algo$method}}")
+    cli::cli_text(switch(
+        object$algo$model,
+        dir = "Multinomial-Dirichlet {.pkg BIRDiE} model",
+        mmm = "Multinomial mixed-effects {.pkg BIRDiE} model",
+        "{.pkg BIRDiE} model"
+    ))
     cli::cat_line("Formula: ", deparse(object$call$formula))
     cli::cat_line("   Data: ", deparse(object$call$data))
     cat("\n")

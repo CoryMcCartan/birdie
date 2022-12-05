@@ -2,13 +2,13 @@
 % Please edit documentation in R/birdie-package.R
 \docType{package}
 \name{birdie-package}
-\alias{birdie}
 \alias{birdie-package}
+\alias{_PACKAGE}
 \title{birdie: Bayesian Instrumental Regression for Disparity Estimation}
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-Bayesian models for accurately estimating conditional distributions by race, using Bayesian Improved Surname Geocoding (BISG) probability estimates of individual race. Implements the methdos described in McCartan, Fisher, Goldin, Ho and Imai (2022) <arXiv:>.
+Bayesian models for accurately estimating conditional distributions by race, using Bayesian Improved Surname Geocoding (BISG) probability estimates of individual race. Implements the methods described in McCartan, Fisher, Goldin, Ho and Imai (2022) <arXiv:>.
 }
 \author{
 \strong{Maintainer}: Cory McCartan \email{cmccartan@g.harvard.edu}

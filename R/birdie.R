@@ -1,3 +1,98 @@
+#' Fit BIRDiE Models
+#'
+#' Fits one of two possible Bayesian Instrumental Regression for Disparity
+#' Estimation (BIRDiE) models to BISG probabilities and covariates. The simplest
+#' Multinomial-Dirichlet model (`dir`) is appropriate when there are no covariates or when
+#' all covariates are discrete and fully interacted with another. The more
+#' general Multinomial mixed-effects model (`mmm`) is a supports any number of
+#' fixed effects and up to one random intercept.
+#'
+#' `birdie()` uses an expectation-maximization (EM) routine to find the maximum
+#' *a posteriori* (MAP) estimate for the specified model. Asymptotic
+#' variance-covariance matrices for the MAP estimate are available for the
+#' Multinomial-Dirichlet model via bootstrapping (`se_boot`).
+#'
+#' The Multinomial-Dirichlet model is specified as follows: \deqn{
+#'     Y_i \mid R_i, X_i, \Theta \sim \text{Categorical}(\theta_{R_iX_i}) \\
+#'     \theta_{rx} \sim \text{Dirichlet}(\alpha_r),
+#' } where \eqn{Y} is the outcome variable, \eqn{R} is race, \eqn{X} are
+#' covariates (fixed effects), and \eqn{\theta_{rx}} and \eqn{\alpha_r} are
+#' vectors with length matching the number of levels of the outcome variable.
+#' There is one vector \eqn{\theta_{rx}} for every combination of race and
+#' covariates, hence the need for `formula` to either have no covariates or a
+#' fully interacted structure.
+#'
+#' The Multinomial mixed-effects model is specified as follows: \deqn{
+#'     Y_i \mid R_i, X_i, \Theta \sim \text{Categorical}(g^{-1}(\mu_{R_iX_i})) \\
+#'     \mu_{rx} = W\beta_{ry} + Zu_{ry} \\
+#'     u_{ry} \mid \sigma^2_{ry} \sim \mathcal{N}(0, \sigma^2_{ry}) \\
+#'     \beta_{ry} \sim \mathcal{N}(0, s_\beta) \\
+#'     \sigma_{ry} \sim \text{Gamma}(2, 2/s_\sigma),
+#' } where \eqn{\beta_{ry}} are the fixed effects, \eqn{u_{ry}} is the random
+#' intercept, and \eqn{g} is a softmax link function.
+#'
+#' More details on the models and their properties may be found in the paper
+#' referenced below.
+#'
+#' @param r_probs A data frame or matrix of BISG probabilities, with one row per
+#'   individual. The output of `[bisg()]` can be used directly here.
+#' @param formula A two-sided formula object describing the model structure. The
+#'   left-hand side is the outcome variable, which must be discrete. A single
+#'   random intercept term, denoted with a vertical bar (`"(1 | <term>)"`), is
+#'   supported on the right-hand side.
+#' @param data An optional data frame containing the variables named in `formula`.
+#' @param model A string specifying the type of model to fit: either `"dir"` for
+#'   the Multinomial-Dirichlet model or `"mmm"` for the Multinomial
+#'   mixed-effects model. The default, `"auto"`, will select the most
+#'   computationally efficient model available: `"dir"` if `formula` has no
+#'   covariates or a fully-interacted structure, and `"mmm"` otherwise. More
+#'   details on the model specifications can be found in the "Details" section
+#'   below.
+#' @param prior A list with entries specifying the model prior. When
+#'   `model="dir"` the only entry is `alpha`, which should be a matrix of
+#'   Dirichlet hyperparameters. The matrix should have one row for every level
+#'   of the outcome variable and one column for every racial group. The default
+#'   prior is a matrix with all entries set to \eqn{1+\epsilon}. When
+#'   `model="mmm"`, the `prior` list should contain two scalar entries:
+#'   `scale_beta`, the standard deviation on the Normal prior for the fixed
+#'   effects, and `scale_sigma`, the prior mean of the standard deviation of the
+#'   random intercepts.
+#' @param prefix If `r_probs` is a data frame, the columns containing racial
+#'   probabilities will be selected as those with names starting with `prefix`.
+#'   The default will work with the output of [bisg()].
+#' @param se_boot The number of bootstrap replicates to use to compute
+#'   approximate standard errors for the main model estimates. Only available
+#'   when `model="dir"`. When there are fewer than 1,000 individuals or 100 or
+#'   fewer replicates, a Bayesian bootstrap is used instead (i.e., weights are
+#'   drawn from a \eqn{\text{Dirichlet}(1, 1, ..., 1)} distribution, which produces more
+#'   reliable estimates.
+#' @param ctrl A list containing control parameters for the EM algorithm and
+#'   optimization routines. A list in the proper format can be made using
+#'   [birdie.ctrl()].
+#'
+#' @return An object of class [`birdie`][birdie::birdie-class], for which many
+#'   methods are available. The model estimates may be accessed with
+#'   [coef.birdie()], and updated BISG probabilities (conditioning on the
+#'   outcome) may be accessed with [fitted.birdie()].
+#'
+#' @references
+#' McCartan, C., Fisher, R., Goldin, J., Ho, D., & Imai, K. (2022).
+#' Estimating Racial Disparities when Race is Not Observed.
+#' Available at \url{}.
+#'
+#' @examples
+#' data(pseudo_vf)
+#'
+#' r_probs = bisg(~ nm(last_name) + zip(zip), data=pseudo_vf)
+#'
+#' # Process zip codes to remove missing values
+#' pseudo_vf$zip = proc_zip(pseudo_vf$zip)
+#'
+#' birdie(r_probs, turnout ~ 1, data=pseudo_vf)
+#' birdie(r_probs, turnout ~ zip, data=pseudo_vf)
+#' birdie(r_probs, turnout ~ (1 | zip), data=pseudo_vf,
+#'        ctrl=birdie.ctrl(abstol=1e-3))
+#'
 #' @export
 birdie <- function(r_probs, formula, data=NULL, model=c("auto", "dir", "mmm"),
                    prior=NULL, prefix="pr_", se_boot=0, ctrl=birdie.ctrl()) {
@@ -69,7 +164,6 @@ birdie <- function(r_probs, formula, data=NULL, model=c("auto", "dir", "mmm"),
         p_ryxs = p_ryxs,
         vcov = if (se_boot > 0) res$vcov else NULL,
         se = if (se_boot > 0) vcov_to_se(res$vcov, res$map) else NULL,
-        fit = res$fit,
         N = length(Y_vec),
         prior = prior,
         prefix = prefix,
@@ -97,7 +191,7 @@ em_dir <- function(Y, p_rxs, formula, data, prior, boot, ctrl) {
     est_dim = c(n_r, n_y, n_x)
 
     # init
-    ests = dirichlet_map(Y, X, p_rxs, prior, n_x)
+    ests = dirichlet_map(Y, X, p_rxs, prior$alpha, n_x)
 
     # do EM (accelerated)
     pb_id = cli::cli_progress_bar("EM iterations", total=NA)
@@ -108,7 +202,7 @@ em_dir <- function(Y, p_rxs, formula, data, prior, boot, ctrl) {
         curr[curr < 0] = 0 + 1e3*.Machine$double.eps
         curr[curr > 1] = 1 - 1e3*.Machine$double.eps
 
-        .Call(`_birdie_em_dirichlet`, curr, Y, X, p_rxs, prior, n_x, FALSE)
+        .Call(`_birdie_em_dirichlet`, curr, Y, X, p_rxs, prior$alpha, n_x, FALSE)
     }, ctrl, n_x=n_x)
     cli::cli_progress_done(id=pb_id)
 
@@ -124,7 +218,7 @@ em_dir <- function(Y, p_rxs, formula, data, prior, boot, ctrl) {
                 p_ryxs = p_ryxs)
 
     if (boot > 0) {
-        boot_ests = boot_dir(res$ests, boot, Y, X, p_rxs, prior, n_x, ctrl)
+        boot_ests = boot_dir(res$ests, boot, Y, X, p_rxs, prior$alpha, n_x, ctrl)
         out$vcov = cov(t(boot_ests))
     }
 
@@ -133,10 +227,10 @@ em_dir <- function(Y, p_rxs, formula, data, prior, boot, ctrl) {
 
 boot_dir <- function(mle, R=10, Y, X, p_rxs, prior, n_x, ctrl) {
     N = length(Y)
-    n_r = ncol(prior)
-    n_y = nrow(prior)
+    n_r = ncol(prior$alpha)
+    n_y = nrow(prior$alpha)
 
-    out = matrix(nrow=length(prior), ncol=R)
+    out = matrix(nrow=length(prior$alpha), ncol=R)
 
     ctrl$abstol = 0.0005 #min(ctrl$abstol * 1000, 0.001)
     ctrl$reltol = 0.005 #min(ctrl$reltol * 1000, 0.001)
@@ -161,7 +255,7 @@ boot_dir <- function(mle, R=10, Y, X, p_rxs, prior, n_x, ctrl) {
             curr[curr < 0] = 0 + 1e3*.Machine$double.eps
             curr[curr > 1] = 1 - 1e3*.Machine$double.eps
 
-            .Call(`_birdie_em_dirichlet_wt`, curr, Y, X, wt, p_rxs, prior, n_x)
+            .Call(`_birdie_em_dirichlet_wt`, curr, Y, X, wt, p_rxs, prior$alpha, n_x)
         }, ctrl, n_x=n_x)
         iters[i] = res$iters
 
@@ -195,6 +289,7 @@ em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
     # create fixed effects matrix
     fixef_form = remove_ranef(formula)
     X = model.matrix(fixef_form, data=data)[idx_sub, , drop=FALSE]
+    N = nrow(X)
 
     # create random effects vector
     if (count_ranef(formula) >= 1) {
@@ -209,7 +304,7 @@ em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
     ests = dirichlet_map(Y, idx_uniq, p_rxs, ones_mat * 1.0001, n_uniq)
     standata = list(
         n_y = n_y,
-        N = nrow(X),
+        N = N,
         p = ncol(X),
         n_grp = n_grp,
 
@@ -217,8 +312,8 @@ em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
         X = X,
         grp = Z,
 
-        prior_sigma = prior$sigma,
-        prior_beta = prior$beta
+        prior_sigma = prior$scale_sigma,
+        prior_beta = prior$scale_beta
     )
 
     sm = get_stanmodel(rstantools_model_multinom, standata)
@@ -239,7 +334,7 @@ em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
             first_iter <<- FALSE
             ests
         } else {
-            to_ests_vec(par_l, n_y, n_r, n_grp)
+            to_ests_vec(par_l, n_y, n_r, N)
         }
 
         cts = .Call(`_birdie_em_dirichlet`, ests_vec, Y, idx_uniq,
@@ -258,14 +353,18 @@ em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
         }
         last_iter_converge <<- all_converged
 
-        if (any(is.nan(curr))) browser()
         as.numeric(curr)
     }, ctrl, n_x=n_upar*n_r*(4^2)) # extra factor since upar scale is different
     cli::cli_progress_done(id=pb_id)
 
+    if (!last_iter_converge) {
+        cli::cli_warn("Final M step did not converge.",
+                      call=parent.frame())
+    }
+
     ests = matrix(res$ests, nrow=n_upar, ncol=n_r) %>%
         apply(2, function(x) constrain_pars(sm, skeleton, x)) %>%
-        to_ests_vec(n_y, n_r, n_grp)
+        to_ests_vec(n_y, n_r, N)
 
     # final global mean and R|YXS
     p_ryxs = calc_bayes(Y, idx_uniq, ests, p_rxs, n_uniq, n_y)
