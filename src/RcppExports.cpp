@@ -131,19 +131,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// check_convergence
-bool check_convergence(Eigen::ArrayXd est, Eigen::ArrayXd last_est, double abstol, double reltol);
-RcppExport SEXP _birdie_check_convergence(SEXP estSEXP, SEXP last_estSEXP, SEXP abstolSEXP, SEXP reltolSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< Eigen::ArrayXd >::type est(estSEXP);
-    Rcpp::traits::input_parameter< Eigen::ArrayXd >::type last_est(last_estSEXP);
-    Rcpp::traits::input_parameter< double >::type abstol(abstolSEXP);
-    Rcpp::traits::input_parameter< double >::type reltol(reltolSEXP);
-    rcpp_result_gen = Rcpp::wrap(check_convergence(est, last_est, abstol, reltol));
-    return rcpp_result_gen;
-END_RCPP
-}
 
 RcppExport SEXP _rcpp_module_boot_stan_fit4multinom_mod();
 
@@ -156,7 +143,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_birdie_gibbs_me", (DL_FUNC) &_birdie_gibbs_me, 10},
     {"_birdie_mat_rcatp", (DL_FUNC) &_birdie_mat_rcatp, 1},
     {"_birdie_rdirichlet", (DL_FUNC) &_birdie_rdirichlet, 2},
-    {"_birdie_check_convergence", (DL_FUNC) &_birdie_check_convergence, 4},
     {"_rcpp_module_boot_stan_fit4multinom_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4multinom_mod, 0},
     {NULL, NULL, 0}
 };

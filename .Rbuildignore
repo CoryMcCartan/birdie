@@ -13,4 +13,5 @@ __pycache__
 ^docs$
 ^pkgdown$
 ^cran-comments\.md$
+^man/figures/poster\.svg$
 ^\.github$

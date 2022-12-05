@@ -1,3 +1,9 @@
+check_convergence <- function(est, last, abstol, reltol) {
+    diff = abs(est - last)
+
+    (max(diff) < abstol) || (max(diff / est) < reltol)
+}
+
 # shim. Only works if remaining columns all uniquely identify
 pivot_wider_tiny <- function(x, names_from="name", values_from="value") {
     form = as.formula(paste0(values_from, "~", names_from))
