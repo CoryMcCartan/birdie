@@ -9,6 +9,9 @@
 \alias{tidy.birdie}
 \alias{glance.birdie}
 \alias{augment.birdie}
+\alias{formula.birdie}
+\alias{nobs.birdie}
+\alias{vcov.birdie}
 \alias{print.birdie}
 \alias{summary.birdie}
 \title{Class "birdie" of BIRDiE Models}
@@ -27,12 +30,18 @@
 
 \method{augment}{birdie}(x, data, ...)
 
+\method{formula}{birdie}(x, ...)
+
+\method{nobs}{birdie}(object, ...)
+
+\method{vcov}{birdie}(object, ...)
+
 \method{print}{birdie}(x, ...)
 
 \method{summary}{birdie}(object, ...)
 }
 \arguments{
-\item{object, x}{A \code{birdie} object}
+\item{object, x}{A \code{birdie} model object}
 
 \item{complete}{If \code{TRUE}, return group-level (rather than marginal)
 coefficient estimates as a 3D array.}
@@ -43,7 +52,7 @@ coefficient estimates as a 3D array.}
 
 \item{seed}{Used to seed the random number generator. See \code{\link[stats:simulate]{stats::simulate()}}.}
 
-\item{data}{A data frame to agument with \code{Pr(R | Y, X, S)} probabilities}
+\item{data}{A data frame to augment with \code{Pr(R | Y, X, S)} probabilities}
 }
 \description{
 The output of \code{\link[=birdie]{birdie()}} is an object of class \code{birdie}, which supports
@@ -74,8 +83,19 @@ parameters.
 
 \item \code{augment(birdie)}: Augment data with individual race predictions from a BIRDiE model.
 
+\item \code{formula(birdie)}: Extract the formula used to specify a BIRDiE model.
+
+\item \code{nobs(birdie)}: Return the number of observations used to fit a BIRDiE model.
+
+\item \code{vcov(birdie)}: Return the estimated variance-covariance matrix for
+the BIRDiE model estimates, if available.
+
 \item \code{print(birdie)}: Print a summary of the model fit.
 
 \item \code{summary(birdie)}: Print a summary of the model fit.
 
 }}
+\examples{
+methods(class="birdie")
+
+}

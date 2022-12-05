@@ -10,7 +10,7 @@ Authors@R: c(
     )
 Description: Bayesian models for accurately estimating conditional 
     distributions by race, using Bayesian Improved Surname Geocoding (BISG) 
-    probability estimates of individual race. Implements the methdos described
+    probability estimates of individual race. Implements the methods described
     in McCartan, Fisher, Goldin, Ho and Imai (2022) <arXiv:>.
 Depends: 
     R (>= 3.6.0)

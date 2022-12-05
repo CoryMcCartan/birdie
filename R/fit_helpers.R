@@ -9,7 +9,7 @@
 #'   `"squarem"` is good for most purposes, though `"anderson"` may be faster
 #'   when there are few parameters or very tight tolerances. `"daarem"` is an
 #'   excellent choice as well that works across a range of problems, though it
-#'   requires installing the small `SQUAREM` package. `"none"` is not
+#'   requires installing the small `daarem` package. `"none"` is not
 #'   recommended unless other algorithms are running into numerical issues.
 #' @param order The order to use in the acceleration algorithm. Interpretation
 #'   varies by algorithm. Can range from 1 to 3 (default) for SQUAREM and from 1
@@ -18,7 +18,7 @@
 #' @param anderson_restart Whether to use restarts in Anderson acceleration.
 #' @param abstol The absolute tolerance used in checking convergence.
 #' @param reltol The relative tolerance used in checking convergence.
-#'   Ignored if `accel="squarem"`.
+#'   Ignored if `accel = "squarem"` or `"daarem"`.
 #'
 #' @return A list containing the control parameters
 #'
@@ -58,23 +58,11 @@ vcov_to_se <- function(vcov, map) {
     out
 }
 
-to_array_ryx <- function(ests, est_dim) {
-    array(ests, est_dim)
-}
 to_array_yrx <- function(ests, est_dim) {
     aperm(array(ests, est_dim), c(2L, 1L, 3L))
 }
-to_array_rxy <- function(ests, est_dim) {
-    aperm(array(ests, est_dim), c(1L, 3L, 2L))
-}
 to_array_xyr <- function(ests, est_dim) {
     aperm(array(ests, est_dim), c(3L, 2L, 1L))
-}
-to_array_xry <- function(ests, est_dim) {
-    aperm(array(ests, est_dim), c(3L, 1L, 2L))
-}
-to_vec_xyr <- function(ests) {
-    as.numeric(aperm(ests, c(3L, 2L, 1L)))
 }
 to_ests_vec <- function(par_l, n_y, n_r, n_x) {
     out = array(dim=c(n_r, n_x, n_y))
@@ -120,25 +108,51 @@ check_make_prior <- function(prior, model, n_y, n_r) {
     if (is.null(prior)) {
         if (model == "dir") {
             cli_inform("Using c(1+\u03B5, 1+\u03B5, ..., 1+\u03B5) prior for Pr(X | R)",
-                       .frequency="once", .frequency_id="birdie_prior",
+                       .frequency="once", .frequency_id="birdie_prior_dir",
                        call=parent.frame())
-            prior = matrix(1 + 100*.Machine$double.eps, nrow=n_y, ncol=n_r)
+            prior = list(
+                alpha = matrix(1 + 100*.Machine$double.eps, nrow=n_y, ncol=n_r)
+            )
         } else if (model == "mmm") {
             prior = list(
-                sigma = 0.2,
-                beta = 1.0
+                scale_sigma = 0.2,
+                scale_beta = 1.0
             )
+
+            cli_inform(c("Using default prior for Pr(X | R):",
+                         ">"="Prior scale on fixed effects coefficients:
+                              {format(prior$scale_beta, nsmall=1)}",
+                         ">"="Prior mean of random effects standard deviation:
+                              {format(prior$scale_sigma, nsmall=2)}"),
+                       .frequency="once", .frequency_id="birdie_prior_mmm",
+                       call=parent.frame())
         }
     }
 
     if (model == "dir") {
-        if (nrow(prior) != n_y) {
-            cli_abort("{.arg prior} must have the same number of rows
+        if (!"alpha" %in% names(prior) ||
+                !is.numeric(prior$alpha) || any(is.na(prior$alpha))) {
+            cli_abort(c("With {.arg model=\"dir\"}, {.arg prior} must have an entry
+                        {.code alpha} which is a numeric matrix.",
+                        "i"="See {.fn birdie::birdie} for details."),
+                        call=parent.frame())
+        }
+        if (nrow(prior$alpha) != n_y) {
+            cli_abort("{.arg prior$alpha} must have the same number of rows
                       as there are levels of X", call=parent.frame())
         }
-        if (ncol(prior) != n_r) {
-            cli_abort("{.arg prior} must have the same number of columns
+        if (ncol(prior$alpha) != n_r) {
+            cli_abort("{.arg prior$alpha} must have the same number of columns
                       as there are racial groups", call=parent.frame())
+        }
+    } else if (model == "mmm") {
+        if (!all(c("scale_sigma", "scale_beta") %in% names(prior)) ||
+                !is.numeric(prior$scale_beta) || length(prior$scale_beta) != 1 ||
+                !is.numeric(prior$scale_sigma) || length(prior$scale_sigma) != 1) {
+            cli_abort(c("With {.arg model=\"mmm\"}, {.arg prior} must have two
+                        scalar entries {.code scale_beta} and {.code scale_sigma}.",
+                        "i"="See {.fn birdie::birdie} for details."),
+                      call=parent.frame())
         }
     }
 
@@ -150,7 +164,7 @@ check_covars <- function(r_probs, covars, model) {
     if (inherits(r_probs, "bisg")) {
         if (attr(r_probs, "S_name") %in% covars) {
             cli_warn("Last name vector {.arg {attr(r_probs, 'S_name')}}
-                     should not be used in BIRDiE model",
+                     should not be used in BIRDiE model.",
                      call=parent.frame())
         }
         unused = setdiff(attr(r_probs, "GX_names"), covars)

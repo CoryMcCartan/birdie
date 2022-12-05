@@ -20,7 +20,7 @@ birdie.ctrl(
 \code{"squarem"} is good for most purposes, though \code{"anderson"} may be faster
 when there are few parameters or very tight tolerances. \code{"daarem"} is an
 excellent choice as well that works across a range of problems, though it
-requires installing the small \code{SQUAREM} package. \code{"none"} is not
+requires installing the small \code{daarem} package. \code{"none"} is not
 recommended unless other algorithms are running into numerical issues.}
 
 \item{order}{The order to use in the acceleration algorithm. Interpretation
@@ -33,7 +33,7 @@ order to be determined by problem size).}
 \item{abstol}{The absolute tolerance used in checking convergence.}
 
 \item{reltol}{The relative tolerance used in checking convergence.
-Ignored if \code{accel="squarem"}.}
+Ignored if \code{accel = "squarem"} or \code{"daarem"}.}
 }
 \value{
 A list containing the control parameters
