@@ -13,8 +13,7 @@
 #' @importFrom stats na.omit na.fail .lm.fit fitted simulate median cov
 #' @importFrom stats terms get_all_vars update.formula as.formula model.frame model.matrix
 #' @importFrom utils tail unstack relist head
-#' @import methods
-#' @rawNamespace useDynLib(birdie, .registration=TRUE)
+#' @useDynLib birdie, .registration=TRUE
 ## usethis namespace: end
 NULL
 
