@@ -31,3 +31,4 @@ a matrix
 \description{
 Estimate the joint distribution of R and X
 }
+\keyword{internal}

@@ -15,6 +15,7 @@
 #'
 #' @source \url{https://www.ncsbe.gov/results-data/voter-registration-data}
 #'
+#' @concept misc
 #' @examples
 #' data(pseudo_vf)
 #' print(pseudo_vf)

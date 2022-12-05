@@ -20,7 +20,7 @@
 
 \method{fitted}{birdie}(object, ...)
 
-\method{predict}{birdie}(object, ...)
+\method{predict}{birdie}(object, adj = NULL, ...)
 
 \method{simulate}{birdie}(object, nsim = 1, seed = NULL, ...)
 
@@ -48,6 +48,13 @@ coefficient estimates as a 3D array.}
 
 \item{...}{Potentially further arguments passed from other methods}
 
+\item{adj}{A point in the simplex that describes how BISG probabilities
+will be thresholded to produce point predictions. The probabilities are
+divied by \code{adj}, then the racial category with the highest probability is
+predicted. Can be used to trade off types of prediction error. Must be
+nonnegative but will be normalized to sum to 1. The default is to make no
+adjustment.}
+
 \item{nsim}{The number of vectors to simulate. Defaults to 1.}
 
 \item{seed}{Used to seed the random number generator. See \code{\link[stats:simulate]{stats::simulate()}}.}
@@ -71,7 +78,10 @@ directly. The generics listed here should be used instead.
 \item \code{fitted(birdie)}: Return an updated race probability table. \code{\link[=bisg]{bisg()}}
 estimates \code{Pr(R | G, X, S)}; this table estimates \code{Pr(R | Y, G, X, S)}.
 
-\item \code{predict(birdie)}: Alias for \code{fitted.birdie}.
+\item \code{predict(birdie)}: Create point predictions of individual race. Returns
+factor vector of individual race labels. Strongly not recommended for any
+kind of inferential purpose, as biases may be extreme and in unpredictable
+directions.
 
 \item \code{simulate(birdie)}: Simulate race from the posterior distribution
 \code{Pr(R | Y, G, X, S, Theta-MAP)}. Does not account for uncertainty in model
@@ -99,3 +109,4 @@ the BIRDiE model estimates, if available.
 methods(class="birdie")
 
 }
+\concept{estimators}

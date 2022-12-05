@@ -4,6 +4,7 @@
 \alias{bisg}
 \alias{bisg_me}
 \alias{summary.bisg}
+\alias{predict.bisg}
 \title{Bayesian Improved Surname Geocoding (BISG)}
 \usage{
 bisg(formula, data = NULL, p_r = p_r_natl(), p_rgx = NULL, p_rs = NULL)
@@ -20,6 +21,8 @@ bisg_me(
 )
 
 \method{summary}{bisg}(object, p_r = NULL, ...)
+
+\method{predict}{bisg}(object, adj = NULL, ...)
 }
 \arguments{
 \item{formula}{A formula specifying the BISG model. Must include the special
@@ -74,7 +77,14 @@ be optimal, even if more are available.}
 
 \item{object}{An object of class \code{bisg}, the result of running \code{\link[=bisg]{bisg()}}.}
 
-\item{...}{Additional arguments to \code{summary()} (ignored).}
+\item{...}{Additional arguments to generic methods (ignored).}
+
+\item{adj}{A point in the simplex that describes how BISG probabilities
+will be thresholded to produce point predictions. The probabilities are
+divied by \code{adj}, then the racial category with the highest probability is
+predicted. Can be used to trade off types of prediction error. Must be
+nonnegative but will be normalized to sum to 1. The default is to make no
+adjustment.}
 }
 \value{
 An object of class \code{bisg}, which is just a data frame with some
@@ -92,6 +102,11 @@ the model of Imai et al. (2022).
 \section{Methods (by generic)}{
 \itemize{
 \item \code{summary(bisg)}: Summarize predicted race probabilities. Returns vector of individual entropies.
+
+\item \code{predict(bisg)}: Create point predictions of individual race. Returns factor
+vector of individual race labels. Strongly not recommended for any kind of
+inferential purpose, as biases may be extreme and in unpredictable
+directions.
 
 }}
 \section{Functions}{
@@ -123,3 +138,4 @@ Imai, K., Olivella, S., and Rosenman, E. T. (2022). Addressing census data
 problems in race imputation via fully Bayesian improved surname geocoding and
 name supplements. \emph{arXiv preprint arXiv:2205.06129}.
 }
+\concept{bisg}

@@ -70,6 +70,7 @@
 #' name supplements. *arXiv preprint arXiv:2205.06129*.
 #'
 #' @describeIn bisg The standard BISG model.
+#' @concept bisg
 #' @export
 bisg <- function(formula, data=NULL, p_r=p_r_natl(), p_rgx=NULL, p_rs=NULL) {
     vars = parse_bisg_form(formula, data)
@@ -99,6 +100,7 @@ bisg <- function(formula, data=NULL, p_r=p_r_natl(), p_rgx=NULL, p_rs=NULL) {
 #' bisg_me(~ nm(last_name) + zip(zip), data=pseudo_vf)
 
 #' @describeIn bisg The measurement error BISG model.
+#' @concept bisg
 #' @export
 bisg_me <- function(formula, data=NULL, p_r=p_r_natl(), p_rgx=NULL, p_rs=NULL,
                     iter=1000, warmup=100, cores=1L) {

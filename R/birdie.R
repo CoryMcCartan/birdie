@@ -35,7 +35,7 @@
 #' referenced below.
 #'
 #' @param r_probs A data frame or matrix of BISG probabilities, with one row per
-#'   individual. The output of `[bisg()]` can be used directly here.
+#'   individual. The output of [bisg()] can be used directly here.
 #' @param formula A two-sided formula object describing the model structure. The
 #'   left-hand side is the outcome variable, which must be discrete. A single
 #'   random intercept term, denoted with a vertical bar (`"(1 | <term>)"`), is
@@ -78,7 +78,7 @@
 #' @references
 #' McCartan, C., Fisher, R., Goldin, J., Ho, D., & Imai, K. (2022).
 #' Estimating Racial Disparities when Race is Not Observed.
-#' Available at \url{}.
+#' Available at \url{https://arxiv.org/abs/}.
 #'
 #' @examples
 #' data(pseudo_vf)
@@ -89,10 +89,17 @@
 #' pseudo_vf$zip = proc_zip(pseudo_vf$zip)
 #'
 #' birdie(r_probs, turnout ~ 1, data=pseudo_vf)
+#'
 #' birdie(r_probs, turnout ~ zip, data=pseudo_vf)
-#' birdie(r_probs, turnout ~ (1 | zip), data=pseudo_vf,
+#'
+#' fit = birdie(r_probs, turnout ~ (1 | zip), data=pseudo_vf,
 #'        ctrl=birdie.ctrl(abstol=1e-3))
 #'
+#' summary(fit)
+#' coef(fit)
+#' fitted(fit)
+#'
+#' @concept estimators
 #' @export
 birdie <- function(r_probs, formula, data=NULL, model=c("auto", "dir", "mmm"),
                    prior=NULL, prefix="pr_", se_boot=0, ctrl=birdie.ctrl()) {
@@ -145,7 +152,7 @@ birdie <- function(r_probs, formula, data=NULL, model=c("auto", "dir", "mmm"),
     }
 
     # add names
-    colnames(res$map) = substring(colnames(p_rxs), nchar(prefix)+1L)
+    colnames(res$map) = stringr::str_sub(colnames(p_rxs), nchar(prefix)+1L)
     rownames(res$map) = levels(Y_vec)
 
     # format p_ryxs
@@ -278,9 +285,6 @@ em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
 
     # find unique rows
     d_model = get_all_vars(formula, data=data)[-1]
-    if (any(is.na(d_model))) {
-        cli_abort("Missing values found in data.", call=parent.frame())
-    }
     idx_uniq = to_unique_ids(d_model)
     idx_sub = vctrs::vec_unique_loc(idx_uniq)
     n_uniq = max(idx_uniq)
@@ -293,11 +297,16 @@ em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
 
     # create random effects vector
     if (count_ranef(formula) >= 1) {
-        Z = to_unique_ids(d_model[idx_sub, which(logi_ranef(formula))])
+        re_expr = attr(formula, "variables")[[2 + which(logi_ranef(formula))]][[3]]
+        Z = to_unique_ids(eval_tidy(re_expr, data=pseudo_vf)[idx_sub])
         n_grp = max(Z)
     } else {
         Z = rep_along(idx_sub, 1L)
         n_grp = 1L
+    }
+
+    if (any(is.na(Z)) || any(is.na(X))) {
+        cli_abort("Missing values found in data.", call=parent.frame())
     }
 
     # init
