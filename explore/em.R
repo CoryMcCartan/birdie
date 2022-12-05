@@ -9,7 +9,7 @@ d = readRDS(here("data-raw/nc_voters_small.rds")) |>
 p_r = with(d, prop.table(table(race)))
 
 r_probs_vn = bisg(~ nm(last_name) + zip(zip), d, p_r=p_r)
-# r_probs_me = bisg_me(~ nm(last_name) + zip(zip), d, p_r=p_r, cores=4)
+r_probs_me = bisg_me(~ nm(last_name) + zip(zip), d, p_r=p_r, cores=4)
 r_probs = r_probs_vn
 
 data = d |>

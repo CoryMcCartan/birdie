@@ -11,6 +11,7 @@
 #' @importFrom stringr str_c str_detect str_starts str_remove_all str_replace_all str_remove
 #' @importFrom cli cli_inform cli_warn cli_abort
 #' @importFrom Rcpp sourceCpp
+#' @importFrom RcppParallel CxxFlags
 #' @importFrom stats na.omit na.fail .lm.fit fitted simulate median cov
 #' @importFrom stats terms get_all_vars model.frame model.matrix
 #' @importFrom stats formula update.formula as.formula nobs vcov
