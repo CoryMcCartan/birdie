@@ -12,6 +12,7 @@
 \alias{formula.birdie}
 \alias{nobs.birdie}
 \alias{vcov.birdie}
+\alias{plot.birdie}
 \alias{print.birdie}
 \alias{summary.birdie}
 \title{Class "birdie" of BIRDiE Models}
@@ -35,6 +36,8 @@
 \method{nobs}{birdie}(object, ...)
 
 \method{vcov}{birdie}(object, ...)
+
+\method{plot}{birdie}(x, log = FALSE, ...)
 
 \method{print}{birdie}(x, ...)
 
@@ -60,6 +63,8 @@ adjustment.}
 \item{seed}{Used to seed the random number generator. See \code{\link[stats:simulate]{stats::simulate()}}.}
 
 \item{data}{A data frame to augment with \code{Pr(R | Y, X, S)} probabilities}
+
+\item{log}{If \code{TRUE}, plot estimated probabilities on a log scale.}
 }
 \description{
 The output of \code{\link[=birdie]{birdie()}} is an object of class \code{birdie}, which supports
@@ -99,6 +104,9 @@ parameters.
 
 \item \code{vcov(birdie)}: Return the estimated variance-covariance matrix for
 the BIRDiE model estimates, if available.
+
+\item \code{plot(birdie)}: Visualize the estimated conditional distributions
+for a BIRDiE model.
 
 \item \code{print(birdie)}: Print a summary of the model fit.
 

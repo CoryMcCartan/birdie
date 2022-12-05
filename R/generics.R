@@ -121,7 +121,7 @@ augment.birdie <- function(x, data, ...) {
 #' @method formula birdie
 #' @export
 formula.birdie <- function(x, ...) {
-    UseMethod("formula", x$call)
+    NextMethod()
 }
 
 #' @describeIn birdie-class Return the number of observations used to fit a BIRDiE model.
@@ -137,6 +137,41 @@ nobs.birdie <- function(object, ...) {
 #' @export
 vcov.birdie <- function(object, ...) {
     object$vcov
+}
+
+#' @describeIn birdie-class Visualize the estimated conditional distributions
+#'   for a BIRDiE model.
+#' @param log If `TRUE`, plot estimated probabilities on a log scale.
+#' @method plot birdie
+#' @export
+plot.birdie <- function(x, log=FALSE, ...) {
+    m = coef.birdie(x)
+
+    resp = as_label(f_lhs(formula(x)))
+    ylab = str_c("Pr(", resp, " | Race)")
+    main = paste("Estimates of", resp, "by race")
+    n_y = nrow(m)
+
+    PAL_RAINIER = c("#465177", "#E4C22B", "#965127", "#29483A", "#759C44",
+                   "#9FB6DA", "#DF3383")
+    PAL_PUGET = c("#1D3024", "#123B2D", "#00473E", "#005252", "#005B66",
+                  "#00657D", "#386B91", "#5F6EA3", "#8172B1", "#A074B8",
+                  "#B87DB8", "#CB85B6", "#D992B2", "#E59FAE", "#EEADAB")
+    if (n_y <= 7) {
+        pal = PAL_RAINIER[seq_len(n_y)]
+    } else {
+        pal = colorRampPalette(PAL_PUGET)(nrow(m))
+    }
+
+
+    barplot(m, names.arg=toupper(colnames(m)), log=if (log) "y" else "",
+            cex.names=0.85, border=NA, space=c(0.1, 0.9), axis.lty=0,
+            ylab=ylab, xlab="Race", col=pal, beside=TRUE,
+            args.legend=list(x="topright", box.lwd=0, cex=0.9, y.intersp=0.1,
+                             horiz=TRUE, inset=c(0, -0.05)),
+            legend.text=TRUE, ...)
+
+    invisible(m)
 }
 
 
