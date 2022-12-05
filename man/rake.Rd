@@ -21,3 +21,4 @@ a new matrix \code{est}
 \description{
 Rake a joint distribution so that the margins match provided vectors
 }
+\keyword{internal}

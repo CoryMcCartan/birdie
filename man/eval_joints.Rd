@@ -21,3 +21,4 @@ a tibble with a row for every argument in \code{...}
 \description{
 Evaluate the quality of a joint distribution approximation
 }
+\keyword{internal}

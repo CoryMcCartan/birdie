@@ -10,7 +10,7 @@
 #' @param n_mi if `method == "mi"`, how many imputations to produce.
 #'
 #' @returns a matrix
-#' @export
+#' @keywords internal
 calc_joint_bisgz = function(r_probs, x, method=c("weight", "thresh", "mi", "ols"),
                             prefix="pr_", n_mi=8) {
     x = as.factor(x)
@@ -69,7 +69,7 @@ calc_joint_bisgz = function(r_probs, x, method=c("weight", "thresh", "mi", "ols"
 #' @param truncate if `TRUE`, truncate results to lie in \[0, 1\].
 #'
 #' @returns a matrix
-#' @export
+#' @keywords internal
 calc_joint_bisgz_ols = function(r_probs, x, gz=attr(r_probs, "gz"),
                                 p_gzr=attr(r_probs, "p_gzr"),
                                 prefix="pr_", truncate=TRUE) {
@@ -117,7 +117,7 @@ calc_joint_bisgz_ols = function(r_probs, x, gz=attr(r_probs, "gz"),
 #' @param ... named joint distributions.
 #'
 #' @return a tibble with a row for every argument in `...`
-#' @export
+#' @keywords internal
 eval_joints = function(tgt, metric=c("tv", "tv_col", "tv_row", "mad", "rmse"), ...) {
     score_fn = function(x) cli_abort("Metric {.val {metric}} not recognized.")
     metric = match.arg(metric)
@@ -157,7 +157,7 @@ eval_joints = function(tgt, metric=c("tv", "tv_col", "tv_row", "mad", "rmse"), .
 #'
 #' @returns a new matrix `est`
 #'
-#' @export
+#' @keywords internal
 rake = function(est, row=rowSums(est), col=colSums(est), iter=5) {
     for (i in seq_len(iter)) {
         est = est %*% diag(col / colSums(est))

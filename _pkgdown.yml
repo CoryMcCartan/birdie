@@ -1,4 +1,25 @@
 url: ~
 template:
   bootstrap: 5
+reference:
+- title: Estimating Racial Disparities
+  desc: "Functions to estimate the distribution of an outcome by race."
+  contents:
+  - birdie
+  - has_concept("estimators")
+- title: Impute Individual Race
+  desc: >
+        Functions to perform Bayesian Improved Surname Geocoding, to estimate
+        the probability of an individual belonging to different racial groups.
+  contents:
+  - has_concept("bisg")
+- title: Prepare and Preprocess Data
+  desc: "Functions to download Census data and process names and geographic identifiers."
+  contents:
+  - has_concept("preproc")
+- title: Data and Miscellaneous
+  desc: "Example data and miscellaneous helper functions."
+  contents:
+  - has_concept("misc")
+  - lacks_concepts(c("estimators", "bisg", "preproc", "misc"))
 

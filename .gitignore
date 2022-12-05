@@ -5,10 +5,9 @@
 data-raw/*.csv
 data-raw/*/
 data-out
+pkgdown/
 
 *.rds
-__pycache__
-*.pyc
 
 *.swp
 *.bak
