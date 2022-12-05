@@ -53,7 +53,10 @@
 #' @examples
 #' data(pseudo_vf)
 #' bisg(~ nm(last_name), data=pseudo_vf)
-#' bisg(~ nm(last_name) + zip(zip), data=pseudo_vf)
+#'
+#' r_probs = bisg(~ nm(last_name) + zip(zip), data=pseudo_vf)
+#' summary(r_probs)
+#' head(predict(r_probs))
 #'
 #' @references
 #' Elliott, M. N., Fremont, A., Morrison, P. A., Pantoja, P., and Lurie, N.
