@@ -23,6 +23,7 @@ Other contributors:
   \item Daniel Ho \email{dho@law.stanford.edu} [contributor]
   \item Jacob Goldin \email{jsgoldin@uchicago.edu} [contributor]
   \item Robin Fisher \email{robin.fisher@treasury.gov} [contributor]
+  \item The Stan Development Team (include/rstan) [copyright holder]
 }
 
 }
