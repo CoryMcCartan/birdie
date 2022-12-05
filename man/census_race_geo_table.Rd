@@ -34,8 +34,8 @@ with entries like \code{"Massachusetts"}.}
 \code{FALSE}, return table as percentages within each geography.}
 }
 \value{
-A data frame with a geographic identifier column and six columns
-\code{pop_white}, \code{pop_black}, etc. containing the counts or proportion of
+A data frame with geographic identifier column(s) and six columns
+\code{white}, \code{black}, etc. containing the counts or proportion of
 residents in each racial group.
 }
 \description{

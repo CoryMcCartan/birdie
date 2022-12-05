@@ -4,7 +4,7 @@
 # Also see rstan optimizing code <https://github.com/stan-dev/rstan/blob/develop/rstan/rstan/R/stanmodel-class.R#L346>
 
 get_stanmodel <- function(module, data, seed=5118L) {
-    new(module, data, seed, function() stop("cxxfn"))
+    methods::new(module, data, seed, function() stop("cxxfn"))
 }
 
 get_skeleton <- function(mod) {
