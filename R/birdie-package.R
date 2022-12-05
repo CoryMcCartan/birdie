@@ -15,6 +15,8 @@
 #' @importFrom stats terms get_all_vars model.frame model.matrix
 #' @importFrom stats formula update.formula as.formula nobs vcov
 #' @importFrom utils tail unstack relist head
+#' @importFrom graphics barplot
+#' @importFrom grDevices colorRampPalette
 #' @useDynLib birdie, .registration=TRUE
 ## usethis namespace: end
 NULL

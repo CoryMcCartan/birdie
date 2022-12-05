@@ -9,7 +9,7 @@ A data frame with 5,000 rows and 4 records:
 \describe{
 \item{last_name}{Voter's last name}
 \item{zip}{5-digit ZIP code. May be NA}
-\item{race}{One of "white", "black", "hisp", "asian", or "other"}
+\item{race}{One of "white", "black", "hisp", "asian", "aian", or "other"}
 \item{turnout}{1 if the voter voted in the most recent election, 0 otherwise}
 }
 }
