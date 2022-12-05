@@ -82,7 +82,8 @@ census_race_geo_table <- function(geo=c("us", "state", "county", "zcta", "tract"
         # select("GEOID", "NAME", pop="total", pop_white="white",
         #        pop_black="black", pop_hisp="hisp", pop_asian="asian",
         #        pop_aian="aian", pop_other="other") %>%
-        select("GEOID", "NAME", white, black, hisp, asian, aian, other, total) %>%
+        select("GEOID", "NAME", "white", "black", "hisp",
+               "asian", "aian", "other", "total") %>%
         mutate(across(c(-"GEOID", -"NAME"), as.integer))
 
     if (isFALSE(counts)) { # normalize by population
