@@ -1,0 +1,10 @@
+pandoc: 2.19.2
+pkgdown: 2.0.6
+pkgdown_sha: ~
+articles:
+  birdie: birdie.html
+last_built: 2022-12-05T23:15Z
+urls:
+  reference: http://corymccartan.com/birdie/reference
+  article: http://corymccartan.com/birdie/articles
+
