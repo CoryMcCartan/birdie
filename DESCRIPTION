@@ -6,7 +6,8 @@ Authors@R: c(
     person("Kosuke", "Imai", role="aut", email="imai@harvard.edu"),
     person("Daniel", "Ho", role="ctb", email="dho@law.stanford.edu"),
     person("Jacob", "Goldin", role="ctb", email="jsgoldin@uchicago.edu"),
-    person("Robin", "Fisher", role="ctb", email="robin.fisher@treasury.gov")
+    person("Robin", "Fisher", role="ctb", email="robin.fisher@treasury.gov"),
+    person("The Stan", "Development Team", role = "cph", comment = "include/rstan")
     )
 Description: Bayesian models for accurately estimating conditional 
     distributions by race, using Bayesian Improved Surname Geocoding (BISG) 
@@ -25,7 +26,6 @@ Imports:
     stringi,
     stringr,
     RcppParallel (>= 5.0.1),
-    rstan (>= 2.18.1),
     SQUAREM
 Suggests: 
     daarem,
@@ -43,7 +43,6 @@ LinkingTo:
     RcppEigen (>= 0.3.3.3.0),
     RcppParallel (>= 5.0.1),
     RcppThread,
-    rstan (>= 2.18.1),
     StanHeaders (>= 2.18.0)
 License: GPL (>= 3)
 Encoding: UTF-8

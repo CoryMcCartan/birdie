@@ -33,7 +33,3 @@ rdirichlet <- function(n, alpha) {
     .Call(`_birdie_rdirichlet`, n, alpha)
 }
 
-check_convergence <- function(est, last_est, abstol, reltol) {
-    .Call(`_birdie_check_convergence`, est, last_est, abstol, reltol)
-}
-
