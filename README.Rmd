@@ -11,6 +11,7 @@ knitr::opts_chunk$set(
   fig.path = "man/figures/README-",
   out.width = "100%"
 )
+set.seed(5118)
 ```
 
 # **BIRDiE**: Estimating disparities when race is not observed <img src="man/figures/logo.png" align="right" height="156" />
@@ -73,7 +74,8 @@ print(fit)
 The `proc_zip()` function fills in missing ZIP codes, among other things.
 We can extract the estimated conditional distributions with `coef()`.
 We can also get updated BISG probabilities that additionally condition on turnout using `fitted()`.
-Additional functions allow us to extract a tidy version of our estimates.
+Additional functions allow us to extract a tidy version of our estimates (`tidy()`)
+and visualize the estimated distributiosn (`plot()`).
 
 ```{r}
 coef(fit)
@@ -81,6 +83,8 @@ coef(fit)
 head(fitted(fit))
 
 tidy(fit)
+
+plot(fit)
 ```
 
 A more detailed introduction to the method and software package can be found 

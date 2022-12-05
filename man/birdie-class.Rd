@@ -6,13 +6,13 @@
 \alias{fitted.birdie}
 \alias{predict.birdie}
 \alias{simulate.birdie}
+\alias{plot.birdie}
 \alias{tidy.birdie}
 \alias{glance.birdie}
 \alias{augment.birdie}
 \alias{formula.birdie}
 \alias{nobs.birdie}
 \alias{vcov.birdie}
-\alias{plot.birdie}
 \alias{print.birdie}
 \alias{summary.birdie}
 \title{Class "birdie" of BIRDiE Models}
@@ -25,6 +25,8 @@
 
 \method{simulate}{birdie}(object, nsim = 1, seed = NULL, ...)
 
+\method{plot}{birdie}(x, log = FALSE, ...)
+
 \method{tidy}{birdie}(x, ...)
 
 \method{glance}{birdie}(x, ...)
@@ -36,8 +38,6 @@
 \method{nobs}{birdie}(object, ...)
 
 \method{vcov}{birdie}(object, ...)
-
-\method{plot}{birdie}(x, log = FALSE, ...)
 
 \method{print}{birdie}(x, ...)
 
@@ -62,9 +62,9 @@ adjustment.}
 
 \item{seed}{Used to seed the random number generator. See \code{\link[stats:simulate]{stats::simulate()}}.}
 
-\item{data}{A data frame to augment with \code{Pr(R | Y, X, S)} probabilities}
-
 \item{log}{If \code{TRUE}, plot estimated probabilities on a log scale.}
+
+\item{data}{A data frame to augment with \code{Pr(R | Y, X, S)} probabilities}
 }
 \description{
 The output of \code{\link[=birdie]{birdie()}} is an object of class \code{birdie}, which supports
@@ -92,6 +92,9 @@ directions.
 \code{Pr(R | Y, G, X, S, Theta-MAP)}. Does not account for uncertainty in model
 parameters.
 
+\item \code{plot(birdie)}: Visualize the estimated conditional distributions
+for a BIRDiE model.
+
 \item \code{tidy(birdie)}: Put BIRDiE model coefficients in a tidy format.
 
 \item \code{glance(birdie)}: Glance at a BIRDiE model.
@@ -104,9 +107,6 @@ parameters.
 
 \item \code{vcov(birdie)}: Return the estimated variance-covariance matrix for
 the BIRDiE model estimates, if available.
-
-\item \code{plot(birdie)}: Visualize the estimated conditional distributions
-for a BIRDiE model.
 
 \item \code{print(birdie)}: Print a summary of the model fit.
 
