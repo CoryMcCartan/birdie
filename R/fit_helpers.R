@@ -12,7 +12,7 @@
 #'   requires installing the small `daarem` package. `"none"` is not
 #'   recommended unless other algorithms are running into numerical issues.
 #' @param order The order to use in the acceleration algorithm. Interpretation
-#'   varies by algorithm. Can range from 1 to 3 (default) for SQUAREM and from 1
+#'   varies by algorithm. Can range from 1 (default) to 3 for SQUAREM and from 1
 #'   to the number of parameters for Anderson and DAAREM (default -1 allows the
 #'   order to be determined by problem size).
 #' @param anderson_restart Whether to use restarts in Anderson acceleration.
@@ -28,7 +28,7 @@
 #' @concept estimators
 #' @export
 birdie.ctrl <- function(max_iter=1000, accel=c("squarem", "anderson", "daarem", "none"),
-                        order=switch(match.arg(accel), none=0L, anderson=-1L, daarem=-1L, squarem=3L),
+                        order=switch(match.arg(accel), none=0L, anderson=-1L, daarem=-1L, squarem=1L),
                         anderson_restart=TRUE,
                         abstol=1e-6, reltol=1e-6) {
     stopifnot(max_iter >= 1)

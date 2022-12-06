@@ -53,7 +53,7 @@ data(pseudo_vf)
 head(pseudo_vf)
 ```
 
-To computing BISG probabilities, you [provide the last name and (optionally) geography variables as part of a formula.
+To compute BISG probabilities, you provide the last name and (optionally) geography variables as part of a formula.
 
 ```{r}
 r_probs = bisg(~ nm(last_name) + zip(zip), data=pseudo_vf)

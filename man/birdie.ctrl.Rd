@@ -7,7 +7,7 @@
 birdie.ctrl(
   max_iter = 1000,
   accel = c("squarem", "anderson", "daarem", "none"),
-  order = switch(match.arg(accel), none = 0L, anderson = -1L, daarem = -1L, squarem = 3L),
+  order = switch(match.arg(accel), none = 0L, anderson = -1L, daarem = -1L, squarem = 1L),
   anderson_restart = TRUE,
   abstol = 1e-06,
   reltol = 1e-06
@@ -24,7 +24,7 @@ requires installing the small \code{daarem} package. \code{"none"} is not
 recommended unless other algorithms are running into numerical issues.}
 
 \item{order}{The order to use in the acceleration algorithm. Interpretation
-varies by algorithm. Can range from 1 to 3 (default) for SQUAREM and from 1
+varies by algorithm. Can range from 1 (default) to 3 for SQUAREM and from 1
 to the number of parameters for Anderson and DAAREM (default -1 allows the
 order to be determined by problem size).}
 
