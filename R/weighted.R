@@ -1,4 +1,4 @@
-#' Calculate Weighted Estimator of Outcomes By Race
+#' Calculate Weighted Estimate of Outcomes By Race
 #'
 #' Calculates the "standard" weighted estimator of conditional distributions of
 #' an outcome variable \eqn{Y} by race \eqn{R}, using BISG probabilities.  This
@@ -13,7 +13,8 @@
 #' @param formula A two-sided formula object describing the estimator structure.
 #'   The left-hand side is the outcome variable, which must be discrete.
 #'   Subgroups for which to calculate estimates may be specified by adding
-#'   covariates on the right-hand side.
+#'   covariates on the right-hand side. Subgroup estimates are available with
+#'   `coef(..., subgroup=TRUE)` and `tidy(..., subgroup=TRUE)`.
 #' @param data An optional data frame containing the variables named in `formula`.
 #' @param prefix If `r_probs` is a data frame, the columns containing racial
 #'   probabilities will be selected as those with names starting with `prefix`.
@@ -43,7 +44,8 @@
 #'
 #' est_weighted(r_probs, turnout ~ 1, data=pseudo_vf)
 #'
-#' est_weighted(r_probs, turnout ~ zip, data=pseudo_vf)
+#' est = est_weighted(r_probs, turnout ~ zip, data=pseudo_vf)
+#' tidy(est, subgroup=TRUE)
 #'
 #' @concept estimators
 #' @export
@@ -113,6 +115,8 @@ est_weighted <- function(r_probs, formula, data, prefix="pr_", se_boot=0) {
         N = length(Y_vec),
         tbl_gx = as_tibble(tbl_gx),
         prefix = prefix,
+        entropy = list(pre = median(entropy(p_rxs)),
+                       post = median(entropy(p_ryxs))),
         call = match.call()
     ), class=c("est_weighted", "birdie"))
 }
@@ -153,7 +157,7 @@ print.est_weighted <- function(x, ...) {
     cli::cat_line("Formula: ", deparse(x$call$formula))
     cli::cat_line("   Data: ", deparse(x$call$data))
     cli::cli_text("Number of obs: {comma(x$N)};
-                  groups: {comma(dim(x$map_sub)[1])}")
+                  groups: {comma(dim(x$map_sub)[3])}")
 
     cli::cli_text("Estimated distribution:")
     m = round(x$map, 3)
@@ -169,7 +173,7 @@ summary.est_weighted <- function(object, ...) {
     cat("\n")
 
     cli::cli_text("Number of observations: {comma(object$N)}")
-    cli::cli_text("Number of groups: {comma(dim(object$map_sub)[1])}")
+    cli::cli_text("Number of groups: {comma(dim(object$map_sub)[3])}")
     cat("\n")
 
     p_r = colMeans(object$p_ryxs)

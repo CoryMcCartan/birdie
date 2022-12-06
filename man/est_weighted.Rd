@@ -4,7 +4,7 @@
 \alias{est_weighted}
 \alias{print.est_weighted}
 \alias{summary.est_weighted}
-\title{Calculate Weighted Estimator of Outcomes By Race}
+\title{Calculate Weighted Estimate of Outcomes By Race}
 \usage{
 est_weighted(r_probs, formula, data, prefix = "pr_", se_boot = 0)
 
@@ -19,7 +19,8 @@ individual. The output of \code{\link[=bisg]{bisg()}} can be used directly here.
 \item{formula}{A two-sided formula object describing the estimator structure.
 The left-hand side is the outcome variable, which must be discrete.
 Subgroups for which to calculate estimates may be specified by adding
-covariates on the right-hand side.}
+covariates on the right-hand side. Subgroup estimates are available with
+\code{coef(..., subgroup=TRUE)} and \code{tidy(..., subgroup=TRUE)}.}
 
 \item{data}{An optional data frame containing the variables named in \code{formula}.}
 
@@ -64,7 +65,8 @@ pseudo_vf$zip = proc_zip(pseudo_vf$zip)
 
 est_weighted(r_probs, turnout ~ 1, data=pseudo_vf)
 
-est_weighted(r_probs, turnout ~ zip, data=pseudo_vf)
+est = est_weighted(r_probs, turnout ~ zip, data=pseudo_vf)
+tidy(est, subgroup=TRUE)
 
 }
 \references{
