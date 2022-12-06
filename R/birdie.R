@@ -176,6 +176,8 @@ birdie <- function(r_probs, formula, data=NULL, model=c("auto", "dir", "mmm"),
         prior = prior,
         tbl_gx = as_tibble(res$tbl_gx),
         prefix = prefix,
+        entropy = list(pre = entropy(p_rxs),
+                       post = entropy(p_ryxs)),
         algo = list(
             model = model,
             iters = res$iters,

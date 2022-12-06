@@ -157,9 +157,10 @@ glance.birdie <- function(x, ...) {
     ents = entropy(m)
 
     tibble(entropy.marg = entropy(p_r),
-           entropy.post.med = median(entropy(m)),
+           entropy.pre.med = median(x$entropy$pre),
+           entropy.post.med = median(x$entropy$post),
            nobs = nrow(m),
-           ngrp = dim(x$map_sub)[1])
+           ngrp = dim(x$map_sub)[3])
 }
 
 #' @describeIn birdie-class Augment data with individual race predictions from a BIRDiE model.
@@ -207,7 +208,7 @@ print.birdie <- function(x, ...) {
     cli::cat_line("Formula: ", deparse(x$call$formula))
     cli::cat_line("   Data: ", deparse(x$call$data))
     cli::cli_text("Number of obs: {comma(x$N)};
-                  groups: {comma(dim(x$map_sub)[1])}")
+                  groups: {comma(dim(x$map_sub)[3])}")
 
     cli::cli_text("Estimated distribution:")
     m = round(x$map, 3)
@@ -246,12 +247,14 @@ summary.birdie <- function(object, ...) {
     cat("\n")
 
     cli::cli_text("Number of observations: {comma(object$N)}")
-    cli::cli_text("Number of groups: {comma(dim(object$map_sub)[1])}")
+    cli::cli_text("Number of groups: {comma(dim(object$map_sub)[3])}")
     cat("\n")
 
     p_r = colMeans(object$p_ryxs)
     cli::cat_line("Entropy decrease from marginal race distribution:")
-    print(summary(entropy(p_r) - entropy(object$p_ryxs)))
+    print(summary(entropy(p_r) - object$entropy$post))
+    cli::cat_line("Entropy decrease from BISG probabilities:")
+    print(summary(object$entropy$pre - object$entropy$post))
     cat("\n")
 
     cli::cli_text("Estimated outcome-by-race distribution:")
