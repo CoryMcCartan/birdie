@@ -223,7 +223,7 @@ entropy <- function(x) {
     -rowSums(x * log(x), na.rm=TRUE)
 }
 
-#' @describeIn birdie-class Print a summary of the model fit.
+#' @describeIn birdie-class Print a more detailed summary of the model fit.
 #' @export
 summary.birdie <- function(object, ...) {
     cli::cli_text(switch(
@@ -260,6 +260,9 @@ summary.birdie <- function(object, ...) {
 
     invisible(object)
 }
+
+# WEIGHTED ESTIMATOR PRINT/SUMMARY GENERICS ARE IN `weighted.R`
+
 
 #' @describeIn bisg Summarize predicted race probabilities. Returns vector of individual entropies.
 #' @param object An object of class `bisg`, the result of running [bisg()].

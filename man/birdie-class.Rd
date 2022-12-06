@@ -110,7 +110,7 @@ the BIRDiE model estimates, if available.
 
 \item \code{print(birdie)}: Print a summary of the model fit.
 
-\item \code{summary(birdie)}: Print a summary of the model fit.
+\item \code{summary(birdie)}: Print a more detailed summary of the model fit.
 
 }}
 \examples{
