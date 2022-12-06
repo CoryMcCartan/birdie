@@ -20,12 +20,12 @@
 NULL
 
 
-#' @param complete If `TRUE`, return group-level (rather than marginal)
+#' @param subgroup If `TRUE`, return subgroup-level (rather than marginal)
 #'   coefficient estimates as a 3D array.
 #'
 #' @describeIn birdie-class Return estimated outcome-given-race distributions.
 #' @export
-coef.birdie <- function(object, complete=FALSE, ...) {
+coef.birdie <- function(object, subgroup=FALSE, ...) {
     if (isFALSE(complete)) {
         object$map
     } else {
@@ -120,13 +120,29 @@ generics::augment
 #' @describeIn birdie-class Put BIRDiE model coefficients in a tidy format.
 #' @method tidy birdie
 #' @export
-tidy.birdie <- function(x, ...) {
-    m = x$map
+tidy.birdie <- function(x, subgroup=FALSE, ...) {
+    resp_name = rlang::expr_name(rlang::f_lhs(x$call$formula))
+    d = dim(x$map_sub)
+    if (isFALSE(subgroup) || d[3] == 1) {
+        m = x$map
+        out = tibble(X = rep(rownames(m), ncol(m)),
+                     race = rep(colnames(m), each=nrow(m)),
+                     estimate = as.numeric(m))
+        names(out)[1] = resp_name
+    } else {
+        m = x$map_sub
+        dn = dimnames(m)
+        out = tibble(X = rep(dn[[1]], d[2]*d[3]),
+                     race = rep(dn[[2]], d[3], each=d[1]),
+                     .i = rep(seq_len(d[3]), each=d[1]*d[2]),
+                     estimate = as.numeric(m))
+        names(out)[1] = resp_name
 
-    out = tibble(X = rep(rownames(m), ncol(m)),
-                 race = rep(colnames(m), each=nrow(m)),
-                 estimate = as.numeric(m))
-    names(out)[1] = rlang::expr_name(rlang::f_lhs(x$call$formula))
+        gx = x$tbl_gx
+        gx$.i = seq_len(d[3])
+        out = left_join(gx, out, by=".i")
+        out$.i = NULL
+    }
 
     out
 }

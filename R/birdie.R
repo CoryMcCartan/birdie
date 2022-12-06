@@ -154,6 +154,7 @@ birdie <- function(r_probs, formula, data=NULL, model=c("auto", "dir", "mmm"),
     # add names
     colnames(res$map) = stringr::str_sub(colnames(p_rxs), nchar(prefix)+1L)
     rownames(res$map) = levels(Y_vec)
+    dimnames(res$ests) = c(dimnames(res$map), list(tbl_gx_names(res$tbl_gx)))
 
     # format p_ryxs
     colnames(res$p_ryxs) = colnames(p_rxs)
@@ -173,6 +174,7 @@ birdie <- function(r_probs, formula, data=NULL, model=c("auto", "dir", "mmm"),
         se = if (se_boot > 0) vcov_to_se(res$vcov, res$map) else NULL,
         N = length(Y_vec),
         prior = prior,
+        tbl_gx = as_tibble(res$tbl_gx),
         prefix = prefix,
         algo = list(
             model = model,
@@ -194,6 +196,7 @@ em_dir <- function(Y, p_rxs, formula, data, prior, boot, ctrl) {
 
     # create unique group IDs
     X = to_unique_ids(d_model)
+    idx_sub = vctrs::vec_unique_loc(X)
     n_x = max(X)
     est_dim = c(n_r, n_y, n_x)
 
@@ -220,9 +223,10 @@ em_dir <- function(Y, p_rxs, formula, data, prior, boot, ctrl) {
 
     out =  list(map = est,
                 ests = to_array_yrx(res$ests, est_dim),
+                p_ryxs = p_ryxs,
+                tbl_gx = d_model[idx_sub, , drop=FALSE],
                 iters = res$iters,
-                converge = res$converge,
-                p_ryxs = p_ryxs)
+                converge = res$converge)
 
     if (boot > 0) {
         boot_ests = boot_dir(res$ests, boot, Y, X, p_rxs, prior$alpha, n_x, ctrl)
@@ -383,8 +387,9 @@ em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
         matrix(n_y, n_r, byrow=TRUE)
 
     out = list(map = est,
-               ests = to_array_xyr(ests, est_dim),
+               ests = to_array_yrx(ests, est_dim),
+               p_ryxs = p_ryxs,
+               tbl_gx = d_model[idx_sub, , drop=FALSE],
                iters = res$iters,
-               converge = res$converge,
-               p_ryxs = p_ryxs)
+               converge = res$converge)
 }
