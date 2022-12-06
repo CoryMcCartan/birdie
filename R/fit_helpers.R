@@ -65,7 +65,13 @@ tbl_gx_names <- function(tbl_gx) {
     } else if (ncol(tbl_gx) == 1) {
         tbl_gx[[1]]
     } else {
-        tbl_gx = mutate(tbl_gx, across(where(is.numeric), function(x) abbreviate(x, 1)))
+        for (i in seq_len(ncol(tbl_gx))) {
+            if (is.numeric(tbl_gx[[i]])) {
+                tbl_gx[[i]] = abbreviate(tbl_gx[[i]], 1)
+            } else {
+                tbl_gx[[i]] = as.character(tbl_gx)
+            }
+        }
         Reduce(function(x, y) str_c(x, "/", y), tbl_gx)
     }
 }

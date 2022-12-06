@@ -2,6 +2,7 @@
 # Assumes everything is correctly formatted -- all safeguards turned off
 # Good general guide here <https://cran.r-project.org/web/packages/StanHeaders/vignettes/stanmath.html>
 # Also see rstan optimizing code <https://github.com/stan-dev/rstan/blob/develop/rstan/rstan/R/stanmodel-class.R#L346>
+# This file is called stanmodels.R so that rstantools::rstan_config() won't create one
 
 get_stanmodel <- function(module, data, seed=5118L) {
     methods::new(module, data, seed, function() stop("cxxfn"))
