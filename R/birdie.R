@@ -249,7 +249,6 @@ boot_dir <- function(mle, R=10, Y, X, p_rxs, prior, n_x, ctrl) {
 
     ones = rep_along(Y, 1)
     ones_mat = matrix(1, nrow=n_y, ncol=n_r)
-    iters = numeric(R)
 
     if (N > 1000 && R > 100) {
         mk_wt = function() tabulate(sample.int(N, N, replace=TRUE), N) / N
@@ -268,7 +267,6 @@ boot_dir <- function(mle, R=10, Y, X, p_rxs, prior, n_x, ctrl) {
 
             .Call(`_birdie_em_dirichlet_wt`, curr, Y, X, wt, p_rxs, prior$alpha, n_x)
         }, ctrl, n_x=n_x)
-        iters[i] = res$iters
 
         out[, i] = em_dirichlet_wt(res$ests, Y, ones, wt, p_rxs, ones_mat, 1)
 
