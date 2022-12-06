@@ -53,7 +53,7 @@ head(pseudo_vf)
 #> 6 CHURCH    28215 white yes
 ```
 
-To computing BISG probabilities, you \[provide the last name and
+To compute BISG probabilities, you provide the last name and
 (optionally) geography variables as part of a formula.
 
 ``` r

@@ -356,12 +356,14 @@ em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
 
             sm_ir = get_stanmodel(rstantools_model_multinom, standata)
             fit = optim_model(sm_ir, init=par_l[[r]], skeleton=skeleton,
+                              tol_rel_obj=10/ctrl$abstol,
                               tol_obj=10*ctrl$abstol, tol_param=ctrl$abstol)
             all_converged = all_converged && fit$converged
             curr[, r] = fit$par
         }
         last_iter_converge <<- all_converged
 
+        # cat(max(abs(curr - last)), "\n")
         as.numeric(curr)
     }, ctrl, n_x=n_upar*n_r*(4^2)) # extra factor since upar scale is different
     cli::cli_progress_done(id=pb_id)

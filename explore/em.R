@@ -10,7 +10,7 @@ p_r = with(d, prop.table(table(race)))
 
 r_probs_vn = bisg(~ nm(last_name) + zip(zip), d, p_r=p_r)
 r_probs_me = bisg_me(~ nm(last_name) + zip(zip), d, p_r=p_r, cores=4)
-r_probs = r_probs_vn
+r_probs = r_probs_me
 
 data = d |>
     mutate(zip = proc_zip(zip),
@@ -19,18 +19,6 @@ data = d |>
     left_join(census_race_geo_table("zcta", counts=FALSE), by=c("zip"="GEOID")) |>
     mutate(across(white:other, ~ coalesce(., p_r[cur_column()]))) |>
     select(party, zip, county, race, gender, age, n_voted, lic, white:other)
-
-if (FALSE) {
-    formula = party ~ zip
-    ctrl = birdie.ctrl()
-    prior = matrix(1.0001, 4, 6)
-    p_rxs = as.matrix(r_probs)
-    # later
-    Y = Y_vec
-
-    ests = dirichlet_map(as.integer(d$party), rep_len(1, nrow(d)), as.matrix(r_probs), rep(1.001, 4), 1)
-    em_step = function(curr) em_dirichlet(curr, as.integer(d$party), rep_len(1, nrow(d)), as.matrix(r_probs), rep(1.001, 4), 1)
-}
 
 Y =  data$party
 

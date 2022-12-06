@@ -1,7 +1,9 @@
 check_convergence <- function(est, last, abstol, reltol) {
     diff = abs(est - last)
+    absest = abs(est)
+    ok = absest > 0
 
-    (max(diff) < abstol) || (max(diff / est) < reltol)
+    (max(diff) < abstol) || (max(diff[ok] / absest[ok]) < reltol)
 }
 
 # shim. Only works if remaining columns all uniquely identify

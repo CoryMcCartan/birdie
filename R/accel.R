@@ -92,7 +92,7 @@ accel_anderson <- function(init, em_step, ctrl, n_x=1, ...) {
 }
 
 accel_squarem <- function(init, em_step, ctrl, n_x=1, ...) {
-    rlang::check_installed("SQUAREM", "For SQUAREM acceleration.")
+    # rlang::check_installed("SQUAREM", "For SQUAREM acceleration.")
     squarem_method = if (ctrl$order == 1) 3 else "rre"
     incr_factor = n_x^(1/2)
 
@@ -100,7 +100,7 @@ accel_squarem <- function(init, em_step, ctrl, n_x=1, ...) {
         init,
         em_step,
         control=list(K=ctrl$order, method=squarem_method, minimize=TRUE,
-                     square=TRUE, step.min0=1, step.max0=1, mstep=4, objfn.inc=1,
+                     square=TRUE, step.min0=0.5, step.max0=1, mstep=4, objfn.inc=1,
                      kr=1, tol=ctrl$abstol*incr_factor, maxiter=ctrl$max_iter,
                      trace=FALSE, intermed=FALSE)
     )
