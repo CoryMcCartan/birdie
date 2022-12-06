@@ -7,8 +7,10 @@
 disparities(x, subgroup = FALSE, races = TRUE)
 }
 \arguments{
+\item{x}{A \code{birdie} model object.}
+
 \item{subgroup}{If \code{TRUE}, return subgroup-level (rather than marginal)
-coefficient estimates as a 3D array.}
+disparity estimates.}
 
 \item{races}{A character vector of racial groups to compute disparities for.
 The special value \code{TRUE}, the default, computes disparities for all racial
