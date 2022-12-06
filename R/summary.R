@@ -3,7 +3,9 @@
 #' This function lets you easily compute differences in conditional expectations
 #' between all pairs of specified racial groups.
 #'
-#' @inheritParams birdie-class
+#' @param x A `birdie` model object.
+#' @param subgroup If `TRUE`, return subgroup-level (rather than marginal)
+#'   disparity estimates.
 #' @param races A character vector of racial groups to compute disparities for.
 #'   The special value `TRUE`, the default, computes disparities for all racial
 #'   groups.
