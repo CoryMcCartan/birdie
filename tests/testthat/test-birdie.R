@@ -25,6 +25,8 @@ test_that("BIRDiE models fit", {
 })
 
 test_that("BIRDiE produces correct and stable output", {
+    skip_on_cran()
+
     out = birdie(r_probs, turnout ~ 1, data=pseudo_vf)
     p_r =  with(pseudo_vf, prop.table(table(race)))
     p_xr = with(pseudo_vf, prop.table(table(turnout, race), 2))
@@ -33,7 +35,7 @@ test_that("BIRDiE produces correct and stable output", {
 
     expect_lt(tv, 0.015)
 
-    expect_snapshot_value(coef(out), style="json2")
+    expect_snapshot_value(coef(out), style="json2", tolerance=1e-5)
 })
 
 test_that("BIRDiE catches errors", {
