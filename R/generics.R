@@ -26,7 +26,7 @@ NULL
 #' @describeIn birdie-class Return estimated outcome-given-race distributions.
 #' @export
 coef.birdie <- function(object, subgroup=FALSE, ...) {
-    if (isFALSE(complete)) {
+    if (isFALSE(subgroup)) {
         object$map
     } else {
         object$map_sub
