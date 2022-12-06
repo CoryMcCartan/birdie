@@ -113,7 +113,7 @@
 <span><span class="co">#&gt; 4 SMITH     28677 black yes    </span></span>
 <span><span class="co">#&gt; 5 FAY       28748 white no     </span></span>
 <span><span class="co">#&gt; 6 CHURCH    28215 white yes</span></span></code></pre></div>
-<p>To computing BISG probabilities, you [provide the last name and (optionally) geography variables as part of a formula.</p>
+<p>To compute BISG probabilities, you provide the last name and (optionally) geography variables as part of a formula.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">r_probs</span> <span class="op">=</span> <span class="fu"><a href="reference/bisg.html">bisg</a></span><span class="op">(</span><span class="op">~</span> <span class="fu">nm</span><span class="op">(</span><span class="va">last_name</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/utils/zip.html" class="external-link">zip</a></span><span class="op">(</span><span class="va">zip</span><span class="op">)</span>, data<span class="op">=</span><span class="va">pseudo_vf</span><span class="op">)</span></span>
 <span></span>
