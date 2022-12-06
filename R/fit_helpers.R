@@ -59,6 +59,17 @@ vcov_to_se <- function(vcov, map) {
     out
 }
 
+tbl_gx_names <- function(tbl_gx) {
+    if (nrow(tbl_gx) <= 1) {
+        NULL
+    } else if (ncol(tbl_gx) == 1) {
+        tbl_gx[[1]]
+    } else {
+        tbl_gx = mutate(tbl_gx, across(where(is.numeric), function(x) abbreviate(x, 1)))
+        Reduce(function(x, y) str_c(x, "/", y), tbl_gx)
+    }
+}
+
 to_array_yrx <- function(ests, est_dim) {
     aperm(array(ests, est_dim), c(2L, 1L, 3L))
 }

@@ -17,7 +17,7 @@
 \alias{summary.birdie}
 \title{Class "birdie" of BIRDiE Models}
 \usage{
-\method{coef}{birdie}(object, complete = FALSE, ...)
+\method{coef}{birdie}(object, subgroup = FALSE, ...)
 
 \method{fitted}{birdie}(object, ...)
 
@@ -27,7 +27,7 @@
 
 \method{plot}{birdie}(x, log = FALSE, ...)
 
-\method{tidy}{birdie}(x, ...)
+\method{tidy}{birdie}(x, subgroup = FALSE, ...)
 
 \method{glance}{birdie}(x, ...)
 
@@ -46,7 +46,7 @@
 \arguments{
 \item{object, x}{A \code{birdie} model object}
 
-\item{complete}{If \code{TRUE}, return group-level (rather than marginal)
+\item{subgroup}{If \code{TRUE}, return subgroup-level (rather than marginal)
 coefficient estimates as a 3D array.}
 
 \item{...}{Potentially further arguments passed from other methods}
