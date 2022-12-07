@@ -69,7 +69,7 @@ tbl_gx_names <- function(tbl_gx) {
             if (is.numeric(tbl_gx[[i]])) {
                 tbl_gx[[i]] = abbreviate(tbl_gx[[i]], 1)
             } else {
-                tbl_gx[[i]] = as.character(tbl_gx)
+                tbl_gx[[i]] = as.character(tbl_gx[[i]])
             }
         }
         Reduce(function(x, y) str_c(x, "/", y), tbl_gx)
