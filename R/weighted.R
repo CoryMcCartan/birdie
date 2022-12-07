@@ -151,6 +151,8 @@ boot_wtd <- function(R=10, Y, n_y, p_rxs) {
 
 
 #' @describeIn est_weighted Print a summary of the model fit.
+#' @param object,x An object of class `est_weighted`.
+#' @param ... Additional arguments to generic methods (ignored).
 #' @export
 print.est_weighted <- function(x, ...) {
     cli::cli_text("Weighted estimator")
