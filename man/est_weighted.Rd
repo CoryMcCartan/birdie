@@ -33,6 +33,10 @@ approximate standard errors for the esitmator. When there are fewer than
 1,000 individuals or 100 or fewer replicates, a Bayesian bootstrap is used
 instead (i.e., weights are drawn from a \eqn{\text{Dirichlet}(1, 1, ...,
   1)} distribution, which produces more reliable estimates.}
+
+\item{...}{Additional arguments to generic methods (ignored).}
+
+\item{object, x}{An object of class \code{est_weighted}.}
 }
 \value{
 An object of class \code{est_weighted}, inheriting from
