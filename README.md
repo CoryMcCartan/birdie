@@ -25,8 +25,8 @@ You can install the development version of birdie from
 [GitHub](https://github.com/) with:
 
 ``` r
-# install.packages("devtools")
-devtools::install_github("CoryMcCartan/birdie")
+# install.packages("remotes")
+remotes::install_github("CoryMcCartan/birdie")
 ```
 
 ## Basic Usage
@@ -84,7 +84,7 @@ print(fit)
 #> Multinomial-Dirichlet BIRDiE model
 #> Formula: turnout ~ proc_zip(zip)
 #>    Data: pseudo_vf
-#> Number of obs: 5,000; groups: 2
+#> Number of obs: 5,000; groups: 618
 #> Estimated distribution:
 #>     white black  hisp asian  aian other
 #> no  0.286 0.358 0.376  0.55 0.644 0.534
@@ -101,18 +101,18 @@ estimated distributiosn (`plot()`).
 ``` r
 coef(fit)
 #>         white     black      hisp     asian      aian     other
-#> no  0.2855933 0.3583592 0.3761563 0.5501976 0.6443233 0.5341126
-#> yes 0.7144067 0.6416408 0.6238437 0.4498024 0.3556767 0.4658874
+#> no  0.2855931 0.3583592 0.3761561 0.5501976 0.6443233 0.5341151
+#> yes 0.7144069 0.6416408 0.6238439 0.4498024 0.3556767 0.4658849
 
 head(fitted(fit))
 #> # A tibble: 6 × 6
 #>   pr_white pr_black  pr_hisp pr_asian  pr_aian pr_other
 #>      <dbl>    <dbl>    <dbl>    <dbl>    <dbl>    <dbl>
-#> 1 9.46e- 1 7.48e-15 1.41e- 2 5.84e-12 1.21e- 2 2.77e- 2
-#> 2 5.57e-13 9.99e- 1 1.52e-11 4.93e-11 1.25e- 3 1.99e-14
-#> 3 9.52e- 1 7.52e- 3 4.22e-15 2.29e-15 1.95e-14 4.01e- 2
-#> 4 6.18e- 1 3.81e- 1 3.54e-15 1.04e-15 1.56e- 3 1.86e-13
-#> 5 9.90e- 1 4.33e- 3 6.23e-15 5.48e- 3 7.55e-11 7.66e-11
+#> 1 9.46e- 1 3.68e-15 1.41e- 2 3.81e-14 1.21e- 2 2.77e- 2
+#> 2 2.77e-15 9.99e- 1 5.45e-15 5.35e-15 1.25e- 3 1.99e-14
+#> 3 9.52e- 1 7.52e- 3 7.34e-15 4.13e-16 1.95e-14 4.01e- 2
+#> 4 6.18e- 1 3.81e- 1 3.54e-15 3.26e-13 1.56e- 3 3.02e-13
+#> 5 9.90e- 1 4.33e- 3 3.00e-11 5.48e- 3 1.10e-14 1.83e-13
 #> 6 5.63e- 1 2.65e- 1 9.76e- 2 6.42e- 3 2.74e- 3 6.55e- 2
 
 tidy(fit)

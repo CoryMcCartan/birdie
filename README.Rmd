@@ -35,8 +35,8 @@ in [Imai, Olivella, and Rosenman (2022)](https://arxiv.org/abs/2205.06129).
 You can install the development version of birdie from [GitHub](https://github.com/) with:
 
 ``` r
-# install.packages("devtools")
-devtools::install_github("CoryMcCartan/birdie")
+# install.packages("remotes")
+remotes::install_github("CoryMcCartan/birdie")
 ```
 
 ## Basic Usage
