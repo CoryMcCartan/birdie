@@ -1,5 +1,7 @@
 # UTILITIES for studying NC
 
+d_fips = filter(tigris::fips_codes, state == "NC")
+
 make_nc_statewide = function(voterfile) {
     counties = tigris::fips_codes$county[tigris::fips_codes$state == "NC"] %>%
         stringr::str_sub(end=-8)
@@ -28,8 +30,7 @@ make_nc_statewide = function(voterfile) {
 # Download and format voter file from NC
 make_nc_df = function(county="Dare") {
     rlang::check_installed("tigris", "NC voter data")
-    counties = tigris::fips_codes$county[tigris::fips_codes$state == "NC"]
-    county_i = match(paste(county, "County"), counties)
+    county_i = match(paste(county, "County"), d_fips$county)
 
     url = glue::glue("https://s3.amazonaws.com/dl.ncsbe.gov/data/ncvoter{county_i}.zip")
     tmp = withr::local_tempdir()
@@ -62,7 +63,7 @@ make_nc_df = function(county="Dare") {
                address = dplyr::na_if(res_street_address, "REMOVED"),
                city = res_city_desc,
                county_name = county,
-               county = paste0("37", tigris::fips_codes$county_code[county_i]),
+               county = paste0("37", d_fips$county_code[county_i]),
                reg_date = lubridate::mdy(registr_dt),
                lic = drivers_lic == "Y") %>%
         select(regnum=voter_reg_num, reg_date,
@@ -79,8 +80,7 @@ make_nc_df = function(county="Dare") {
 
 make_nc_vhist = function(county = "Dare", years=2012:2022, general_only=TRUE) {
     rlang::check_installed("tigris", "NC voter data")
-    counties = tigris::fips_codes$county[tigris::fips_codes$state == "NC"]
-    county_i = match(paste(county, "County"), counties)
+    county_i = match(paste(county, "County"), d_fips$county)
 
     url = glue::glue("https://s3.amazonaws.com/dl.ncsbe.gov/data/ncvhis{county_i}.zip")
     tmp = withr::local_tempdir()

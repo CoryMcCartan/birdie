@@ -7,7 +7,14 @@
 \alias{predict.bisg}
 \title{Bayesian Improved Surname Geocoding (BISG)}
 \usage{
-bisg(formula, data = NULL, p_r = p_r_natl(), p_rgx = NULL, p_rs = NULL)
+bisg(
+  formula,
+  data = NULL,
+  p_r = p_r_natl(),
+  p_rgx = NULL,
+  p_rs = NULL,
+  save_rgx = TRUE
+)
 
 bisg_me(
   formula,
@@ -68,6 +75,10 @@ be provided as a data frame, with a column of names and additional columns
 for each racial group. Users should not have to specify this argument in
 most cases, as the table will be built from published Census surname tables
 automatically. Counts are required for \code{bisg_me()}.}
+
+\item{save_rgx}{If \code{TRUE}, save the \code{p_rgx} table (matched to each
+individual) as the \code{"p_rgx"} and \code{"gx"} attributes of the output.
+Necessary for some sensitivity analyses.}
 
 \item{iter}{How many sampling iterations in the Gibbs sampler}
 

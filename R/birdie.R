@@ -118,10 +118,12 @@ birdie <- function(r_probs, formula, data=NULL, model=c("auto", "dir", "mmm"),
     check_covars(r_probs, covars, model)
 
     # set up race probability matrix
-    if (!is.matrix(r_probs)) {
+    if (is.matrix(r_probs)) {
+        p_rxs = r_probs
+    } else if (is.data.frame(r_probs)) {
         p_rxs = as.matrix(select(r_probs, starts_with(prefix)))
     } else {
-        p_rxs = r_probs
+        cli_abort("{.arg r_probs} must be a matrix or data frame.")
     }
 
     # check types
@@ -175,6 +177,9 @@ birdie <- function(r_probs, formula, data=NULL, model=c("auto", "dir", "mmm"),
         N = length(Y_vec),
         prior = prior,
         tbl_gx = as_tibble(res$tbl_gx),
+        vec_gx = res$vec_gx,
+        y = Y_vec,
+        y_name = covars[1],
         prefix = prefix,
         entropy = list(pre = entropy(p_rxs),
                        post = entropy(p_ryxs)),
@@ -227,11 +232,12 @@ em_dir <- function(Y, p_rxs, formula, data, prior, boot, ctrl) {
                 ests = to_array_yrx(res$ests, est_dim),
                 p_ryxs = p_ryxs,
                 tbl_gx = d_model[idx_sub, , drop=FALSE],
+                vec_gx = X,
                 iters = res$iters,
                 converge = res$converge)
 
     if (boot > 0) {
-        boot_ests = boot_dir(res$ests, boot, Y, X, p_rxs, prior$alpha, n_x, ctrl)
+        boot_ests = boot_dir(res$ests, boot, Y, X, p_rxs, prior, n_x, ctrl)
         out$vcov = cov(t(boot_ests))
     }
 
@@ -289,6 +295,7 @@ em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
 
     # find unique rows
     d_model = get_all_vars(formula, data=data)[-1]
+
     idx_uniq = to_unique_ids(d_model)
     idx_sub = vctrs::vec_unique_loc(idx_uniq)
     n_uniq = max(idx_uniq)
@@ -296,22 +303,27 @@ em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
 
     # create fixed effects matrix
     fixef_form = remove_ranef(formula)
-    X = model.matrix(fixef_form, data=data)[idx_sub, , drop=FALSE]
-    N = nrow(X)
+    X = model.matrix(fixef_form, data=get_all_vars(fixef_form, data=data))
+    N = length(idx_sub)
+    if (nrow(X) != length(Y)) {
+        cli_abort("Missing values found in data..", call=parent.frame())
+    }
+    X = X[idx_sub, , drop=FALSE]
 
     # create random effects vector
     if (count_ranef(formula) >= 1) {
         re_expr = attr(formula, "variables")[[2 + which(logi_ranef(formula))]][[3]]
-        Z = to_unique_ids(eval_tidy(re_expr, data=data)[idx_sub])
+        Z = eval_tidy(re_expr, data=data)
+        if (any(is.na(Z))) {
+            cli_abort("Missing values found in data.", call=parent.frame())
+        }
+        Z = to_unique_ids(Z[idx_sub])
         n_grp = max(Z)
     } else {
         Z = rep_along(idx_sub, 1L)
         n_grp = 1L
     }
 
-    if (any(is.na(Z)) || any(is.na(X))) {
-        cli_abort("Missing values found in data.", call=parent.frame())
-    }
 
     # init
     ests = dirichlet_map(Y, idx_uniq, p_rxs, ones_mat * 1.0001, n_uniq)
@@ -390,6 +402,7 @@ em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
                ests = to_array_yrx(ests, est_dim),
                p_ryxs = p_ryxs,
                tbl_gx = d_model[idx_sub, , drop=FALSE],
+               vec_gx = idx_uniq,
                iters = res$iters,
                converge = res$converge)
 }

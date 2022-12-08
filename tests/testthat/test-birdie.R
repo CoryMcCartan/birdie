@@ -38,6 +38,40 @@ test_that("BIRDiE produces correct and stable output", {
     expect_snapshot_value(coef(out), style="json2", tolerance=1e-5)
 })
 
+
+test_that("Key generics work correctly", {
+    ctrl = birdie.ctrl(abstol=1e-3, max_iter=200)
+
+    out = birdie(r_probs, turnout ~ proc_zip(zip), data=pseudo_vf, ctrl=ctrl)
+
+    expect_equal(dim(coef(out)), c(2, 6))
+    expect_equal(dim(coef(out, subgroup=TRUE)),
+                 c(2, 6, length(unique(zip_patched))))
+
+    expect_s3_class(fitted(out), "bisg")
+    expect_equal(rowSums(fitted(out)), rep(1, nrow(pseudo_vf)))
+
+    expect_equal(colMeans(residuals(out)), c(no=0, yes=0), tolerance=1e-6)
+    expect_s3_class(predict(out), "factor")
+
+    expect_equal(dim(tidy(out)), c(2*6, 3))
+    expect_equal(nobs(out), nrow(r_probs))
+})
+
+
+
+test_that("Sensitivity bounds satisfy logical constraints", {
+    ctrl = birdie.ctrl(abstol=1e-3, max_iter=200)
+
+    out = birdie(r_probs, turnout ~ proc_zip(zip), data=pseudo_vf, ctrl=ctrl)
+
+    expect_equal(
+        sens_bound(out, r_probs, c(white=1, black=-1)),
+        sens_bound(out, r_probs, c(white=-1, black=1))
+    )
+    expect_true(all( sens_bound(out, r_probs, c(hisp=1)) > 0 ))
+})
+
 test_that("BIRDiE catches errors", {
     ctrl = birdie.ctrl(abstol=1e-3, max_iter=200)
 

@@ -49,15 +49,18 @@
 #'
 #' @concept estimators
 #' @export
-est_weighted <- function(r_probs, formula, data, prefix="pr_", se_boot=0) {
+est_weighted <- function(r_probs, formula, data=NULL, prefix="pr_", se_boot=0) {
     Y_vec = eval_tidy(f_lhs(formula), data)
     tt = terms(formula, keep.order=TRUE)
+    covars = all.vars(tt)
 
     # set up race probability matrix
-    if (!is.matrix(r_probs)) {
+    if (is.matrix(r_probs)) {
+        p_rxs = r_probs
+    } else if (is.data.frame(r_probs)) {
         p_rxs = as.matrix(select(r_probs, starts_with(prefix)))
     } else {
-        p_rxs = r_probs
+        cli_abort("{.arg r_probs} must be a matrix or data frame.")
     }
 
     # check types
@@ -114,6 +117,9 @@ est_weighted <- function(r_probs, formula, data, prefix="pr_", se_boot=0) {
         se = if (se_boot > 0) vcov_to_se(vcov, est_glb) else NULL,
         N = length(Y_vec),
         tbl_gx = as_tibble(tbl_gx),
+        vec_gx = X,
+        y_name = covars[1],
+        y = Y_vec,
         prefix = prefix,
         entropy = list(pre = median(entropy(p_rxs)),
                        post = median(entropy(p_ryxs))),

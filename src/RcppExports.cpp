@@ -88,6 +88,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// resid_mult
+Eigen::VectorXd resid_mult(const Eigen::VectorXd m_coef, const Eigen::VectorXi idxs, const Eigen::MatrixXd r_probs, int k, int n_k);
+RcppExport SEXP _birdie_resid_mult(SEXP m_coefSEXP, SEXP idxsSEXP, SEXP r_probsSEXP, SEXP kSEXP, SEXP n_kSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< const Eigen::VectorXd >::type m_coef(m_coefSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXi >::type idxs(idxsSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd >::type r_probs(r_probsSEXP);
+    Rcpp::traits::input_parameter< int >::type k(kSEXP);
+    Rcpp::traits::input_parameter< int >::type n_k(n_kSEXP);
+    rcpp_result_gen = Rcpp::wrap(resid_mult(m_coef, idxs, r_probs, k, n_k));
+    return rcpp_result_gen;
+END_RCPP
+}
 // gibbs_me
 Eigen::MatrixXd gibbs_me(int iter, int warmup, const Eigen::VectorXi& S, const Eigen::VectorXi& GZ, const Eigen::MatrixXd& M_sr, const Eigen::MatrixXd& N_gzr, const Eigen::MatrixXd& alpha_gzr, const Eigen::MatrixXd& beta_sr, int cores, int verbosity);
 RcppExport SEXP _birdie_gibbs_me(SEXP iterSEXP, SEXP warmupSEXP, SEXP SSEXP, SEXP GZSEXP, SEXP M_srSEXP, SEXP N_gzrSEXP, SEXP alpha_gzrSEXP, SEXP beta_srSEXP, SEXP coresSEXP, SEXP verbositySEXP) {
@@ -140,6 +154,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_birdie_dirichlet_map", (DL_FUNC) &_birdie_dirichlet_map, 5},
     {"_birdie_em_dirichlet", (DL_FUNC) &_birdie_em_dirichlet, 7},
     {"_birdie_em_dirichlet_wt", (DL_FUNC) &_birdie_em_dirichlet_wt, 7},
+    {"_birdie_resid_mult", (DL_FUNC) &_birdie_resid_mult, 5},
     {"_birdie_gibbs_me", (DL_FUNC) &_birdie_gibbs_me, 10},
     {"_birdie_mat_rcatp", (DL_FUNC) &_birdie_mat_rcatp, 1},
     {"_birdie_rdirichlet", (DL_FUNC) &_birdie_rdirichlet, 2},

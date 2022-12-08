@@ -17,7 +17,7 @@ The special value \code{TRUE}, the default, computes disparities for all racial
 groups.}
 }
 \value{
-A tibble containing a row with every possible disparity for the
+A data frame containing a row with every possible disparity for the
 specified \code{races}, which are identified by columns \code{race_1} and \code{race_2}.
 The reported disparity is \code{estimate_1 - estimate_2}.
 }

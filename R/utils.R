@@ -45,3 +45,22 @@ print_cond = function(x, title=NULL, digits=1) {
     if (!is.null(title)) cat(toupper(title), "\n")
     print(round(out, digits))
 }
+
+#' Rake a joint distribution so that the margins match provided vectors
+#'
+#' @param est the starting joint distribution
+#' @param row the desired row sums / margins
+#' @param col the desired column sums / margins
+#' @param iter the number of raking iterations
+#'
+#' @returns a new matrix `est`
+#'
+#' @keywords internal
+#' @noRd
+rake = function(est, row=rowSums(est), col=colSums(est), iter=5) {
+    for (i in seq_len(iter)) {
+        est = est %*% diag(col / colSums(est))
+        est = diag(row / rowSums(est)) %*% est
+    }
+    est
+}

@@ -11,6 +11,7 @@
 #'   excellent choice as well that works across a range of problems, though it
 #'   requires installing the small `daarem` package. `"none"` is not
 #'   recommended unless other algorithms are running into numerical issues.
+#'   See the references below for details on these schemes.
 #' @param order The order to use in the acceleration algorithm. Interpretation
 #'   varies by algorithm. Can range from 1 (default) to 3 for SQUAREM and from 1
 #'   to the number of parameters for Anderson and DAAREM (default -1 allows the
@@ -20,7 +21,19 @@
 #' @param reltol The relative tolerance used in checking convergence.
 #'   Ignored if `accel = "squarem"` or `"daarem"`.
 #'
-#' @return A list containing the control parameters
+#' @return A list containing the control parameters.
+#'
+#' @references
+#' Varadhan, R., & Roland, C. (2004). Squared extrapolation methods (SQUAREM): A
+#' new class of simple and efficient numerical schemes for accelerating the
+#' convergence of the EM algorithm.
+#'
+#' Walker, H. F., & Ni, P. (2011). Anderson acceleration for fixed-point
+#' iterations. SIAM Journal on Numerical Analysis, 49(4), 1715-1735.
+#'
+#' Henderson, N. C., & Varadhan, R. (2019). Damped Anderson acceleration with
+#' restarts and monotonicity control for accelerating EM and EM-like algorithms.
+#' Journal of Computational and Graphical Statistics, 28(4), 834-846.
 #'
 #' @examples
 #' birdie.ctrl(max_iter=1000)

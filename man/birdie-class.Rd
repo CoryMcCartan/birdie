@@ -4,6 +4,7 @@
 \alias{birdie-class}
 \alias{coef.birdie}
 \alias{fitted.birdie}
+\alias{residuals.birdie}
 \alias{predict.birdie}
 \alias{simulate.birdie}
 \alias{plot.birdie}
@@ -20,6 +21,8 @@
 \method{coef}{birdie}(object, subgroup = FALSE, ...)
 
 \method{fitted}{birdie}(object, ...)
+
+\method{residuals}{birdie}(object, x_only = FALSE, ...)
 
 \method{predict}{birdie}(object, adj = NULL, ...)
 
@@ -50,6 +53,9 @@
 coefficient estimates as a 3D array.}
 
 \item{...}{Potentially further arguments passed from other methods}
+
+\item{x_only}{if \code{TRUE}, calculate fitted values using covariates only (i.e.,
+without using surnames).}
 
 \item{adj}{A point in the simplex that describes how BISG probabilities
 will be thresholded to produce point predictions. The probabilities are
@@ -82,6 +88,10 @@ directly. The generics listed here should be used instead.
 
 \item \code{fitted(birdie)}: Return an updated race probability table. \code{\link[=bisg]{bisg()}}
 estimates \code{Pr(R | G, X, S)}; this table estimates \code{Pr(R | Y, G, X, S)}.
+
+\item \code{residuals(birdie)}: Return the residuals for the outcome variable.
+Useful in sensitivity analyses and to get an idea of how well race,
+location, names, etc. predict the outcome.
 
 \item \code{predict(birdie)}: Create point predictions of individual race. Returns
 factor vector of individual race labels. Strongly not recommended for any
