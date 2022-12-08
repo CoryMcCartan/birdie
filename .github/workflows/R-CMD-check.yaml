@@ -3,10 +3,10 @@
 on:
   push:
     branches: [main]
-    paths: [R/**, src/**, man/**, vignettes/**, NAMESPACE, DESCRIPTION]
+    paths: ['R/**', 'src/**', 'man/**', 'vignettes/**', 'NAMESPACE', 'DESCRIPTION']
   pull_request:
     branches: [main]
-    paths: [R/**, src/**, man/**, vignettes/**, NAMESPACE, DESCRIPTION]
+    paths: ['R/**', 'src/**', 'man/**', 'vignettes/**', 'NAMESPACE', 'DESCRIPTION']
 
 name: R-CMD-check
 
