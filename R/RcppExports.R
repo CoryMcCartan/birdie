@@ -21,6 +21,10 @@ em_dirichlet_wt <- function(curr, Y, X, wt, p_rxs, prior_yr, n_x) {
     .Call(`_birdie_em_dirichlet_wt`, curr, Y, X, wt, p_rxs, prior_yr, n_x)
 }
 
+resid_mult <- function(m_coef, idxs, r_probs, k, n_k) {
+    .Call(`_birdie_resid_mult`, m_coef, idxs, r_probs, k, n_k)
+}
+
 gibbs_me <- function(iter, warmup, S, GZ, M_sr, N_gzr, alpha_gzr, beta_sr, cores = 0L, verbosity = 3L) {
     .Call(`_birdie_gibbs_me`, iter, warmup, S, GZ, M_sr, N_gzr, alpha_gzr, beta_sr, cores, verbosity)
 }

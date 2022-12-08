@@ -10,7 +10,7 @@
 #'   The special value `TRUE`, the default, computes disparities for all racial
 #'   groups.
 #'
-#' @return A tibble containing a row with every possible disparity for the
+#' @return A data frame containing a row with every possible disparity for the
 #'   specified `races`, which are identified by columns `race_1` and `race_2`.
 #'   The reported disparity is `estimate_1 - estimate_2`.
 #'

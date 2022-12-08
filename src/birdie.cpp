@@ -139,3 +139,23 @@ Eigen::VectorXd em_dirichlet_wt(
 
     return post;
 }
+
+// multiplication helper
+// [[Rcpp::export(rng=false)]]
+Eigen::VectorXd resid_mult(const Eigen::VectorXd m_coef, const Eigen::VectorXi idxs,
+                           const Eigen::MatrixXd r_probs, int k, int n_k) {
+    int N = r_probs.rows();
+    int n_r = r_probs.cols();
+    Eigen::VectorXd out(N);
+
+    k--; // to zero-index
+    for (int i = 0; i < N; i++) {
+        out[i] = 0;
+        for (int j = 0; j < n_r; j++) {
+            int idx = k + n_k * (j + n_r * (idxs[i] - 1));
+            out[i] += m_coef[idx] * r_probs(i, j);
+        }
+    }
+
+    return out;
+}

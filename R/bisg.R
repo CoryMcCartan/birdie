@@ -46,6 +46,9 @@
 #'   for each racial group. Users should not have to specify this argument in
 #'   most cases, as the table will be built from published Census surname tables
 #'   automatically. Counts are required for `bisg_me()`.
+#' @param save_rgx If `TRUE`, save the `p_rgx` table (matched to each
+#'   individual) as the `"p_rgx"` and `"gx"` attributes of the output.
+#'   Necessary for some sensitivity analyses.
 #'
 #' @return An object of class `bisg`, which is just a data frame with some
 #'   additional attributes. The data frame has rows matching the input data and
@@ -76,7 +79,8 @@
 #' @describeIn bisg The standard BISG model.
 #' @concept bisg
 #' @export
-bisg <- function(formula, data=NULL, p_r=p_r_natl(), p_rgx=NULL, p_rs=NULL) {
+bisg <- function(formula, data=NULL, p_r=p_r_natl(), p_rgx=NULL, p_rs=NULL,
+                 save_rgx=TRUE) {
     vars = parse_bisg_form(formula, data)
 
     l_name = make_name_tbl_vec(vars, p_r, p_rs, FALSE)
@@ -89,6 +93,10 @@ bisg <- function(formula, data=NULL, p_r=p_r_natl(), p_rgx=NULL, p_rs=NULL) {
     attr(out, "S_name") = vars$S_name
     attr(out, "GX_names") = colnames(vars$GX)
     attr(out, "p_r") = l_gx$p_r
+    if (isTRUE(save_rgx)) {
+        attr(out, "p_rgx") = l_gx$p_rgx
+        attr(out, "gx") = l_gx$GX
+    }
     attr(out, "method") = "std"
 
     out

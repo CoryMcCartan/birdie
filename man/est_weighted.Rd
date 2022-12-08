@@ -6,7 +6,7 @@
 \alias{summary.est_weighted}
 \title{Calculate Weighted Estimate of Outcomes By Race}
 \usage{
-est_weighted(r_probs, formula, data, prefix = "pr_", se_boot = 0)
+est_weighted(r_probs, formula, data = NULL, prefix = "pr_", se_boot = 0)
 
 \method{print}{est_weighted}(x, ...)
 

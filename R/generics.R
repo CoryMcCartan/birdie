@@ -40,6 +40,37 @@ fitted.birdie <- function(object, ...) {
     object$p_ryxs
 }
 
+#' @describeIn birdie-class Return the residuals for the outcome variable.
+#'   Useful in sensitivity analyses and to get an idea of how well race,
+#'   location, names, etc. predict the outcome.
+#' @param x_only if `TRUE`, calculate fitted values using covariates only (i.e.,
+#'   without using surnames).
+#' @export
+residuals.birdie <- function(object, x_only=FALSE, ...) {
+    m = as.numeric(coef.birdie(object, subgroup=TRUE))
+    r_probs = if (isFALSE(x_only)) {
+        as.matrix(object$p_ryxs)
+    } else {
+        tmp = attr(object$p_ryxs, "p_rgx")
+        if (is.null(tmp)) {
+            cli_abort(c("Cannot generate residuals with {.arg x_only=TRUE}.",
+                        "i"="Missing Pr(R | G, X) table.",
+                        ">"="Generate your {.fn bisg} predictions with
+                        {.arg save_rgx=TRUE}."))
+        }
+        as.matrix(tmp[attr(object$p_ryxs, "gx"), ])
+    }
+    n_y = nlevels(object$y)
+    y = as.integer(object$y)
+
+    out = do.call(cbind, lapply(seq_len(n_y), function(i) {
+        (y == i) - resid_mult(m, object$vec_gx, r_probs, i, n_y)
+    }))
+    colnames(out) = levels(object$y)
+    rownames(out) = NULL
+    out
+}
+
 #' @describeIn birdie-class Create point predictions of individual race. Returns
 #'   factor vector of individual race labels. Strongly not recommended for any
 #'   kind of inferential purpose, as biases may be extreme and in unpredictable
@@ -82,31 +113,31 @@ simulate.birdie <- function(object, nsim = 1, seed = NULL, ...) {
 plot.birdie <- function(x, log=FALSE, ...) {
     m = coef.birdie(x)
 
-    resp = as_label(f_lhs(formula(x)))
+    resp = x$y_name
     ylab = str_c("Pr(", resp, " | Race)")
     main = paste("Estimates of", resp, "by race")
     n_y = nrow(m)
 
     PAL_RAINIER = c("#465177", "#E4C22B", "#965127", "#29483A", "#759C44",
                              "#9FB6DA", "#DF3383")
-                             PAL_PUGET = c("#1D3024", "#123B2D", "#00473E", "#005252", "#005B66",
-                                                    "#00657D", "#386B91", "#5F6EA3", "#8172B1", "#A074B8",
-                                                    "#B87DB8", "#CB85B6", "#D992B2", "#E59FAE", "#EEADAB")
-                                                    if (n_y <= 7) {
-                                                        pal = PAL_RAINIER[seq_len(n_y)]
-                                                    } else {
-                                                        pal = colorRampPalette(PAL_PUGET)(nrow(m))
-                                                    }
+    PAL_PUGET = c("#1D3024", "#123B2D", "#00473E", "#005252", "#005B66",
+                "#00657D", "#386B91", "#5F6EA3", "#8172B1", "#A074B8",
+                "#B87DB8", "#CB85B6", "#D992B2", "#E59FAE", "#EEADAB")
 
+    if (n_y <= 7) {
+        pal = PAL_RAINIER[seq_len(n_y)]
+    } else {
+        pal = colorRampPalette(PAL_PUGET)(nrow(m))
+    }
 
-                             barplot(m, names.arg=toupper(colnames(m)), log=if (log) "y" else "",
-                                     cex.names=0.85, border=NA, space=c(0.1, 0.9), axis.lty=0,
-                                     ylab=ylab, xlab="Race", col=pal, beside=TRUE,
-                                     args.legend=list(x="topright", box.lwd=0, cex=0.9, y.intersp=0.1,
-                                                      horiz=TRUE, inset=c(0, -0.05)),
-                                     legend.text=TRUE, ...)
+    barplot(m, names.arg=toupper(colnames(m)), log=if (log) "y" else "",
+         cex.names=0.85, border=NA, space=c(0.1, 0.9), axis.lty=0,
+         ylab=ylab, xlab="Race", col=pal, beside=TRUE,
+         args.legend=list(x="topright", box.lwd=0, cex=0.9, y.intersp=0.1,
+                          horiz=TRUE, inset=c(0, -0.05)),
+         legend.text=TRUE, ...)
 
-                             invisible(m)
+    invisible(m)
 }
 
 #' @importFrom generics tidy glance augment
@@ -121,14 +152,13 @@ generics::augment
 #' @method tidy birdie
 #' @export
 tidy.birdie <- function(x, subgroup=FALSE, ...) {
-    resp_name = rlang::expr_name(rlang::f_lhs(x$call$formula))
     d = dim(x$map_sub)
     if (isFALSE(subgroup) || d[3] == 1) {
         m = x$map
         out = tibble(X = rep(rownames(m), ncol(m)),
                      race = rep(colnames(m), each=nrow(m)),
                      estimate = as.numeric(m))
-        names(out)[1] = resp_name
+        names(out)[1] = x$y_name
     } else {
         m = x$map_sub
         dn = dimnames(m)
@@ -136,7 +166,7 @@ tidy.birdie <- function(x, subgroup=FALSE, ...) {
                      race = rep(dn[[2]], d[3], each=d[1]),
                      .i = rep(seq_len(d[3]), each=d[1]*d[2]),
                      estimate = as.numeric(m))
-        names(out)[1] = resp_name
+        names(out)[1] = x$y_name
 
         gx = x$tbl_gx
         gx$.i = seq_len(d[3])
@@ -336,6 +366,8 @@ reconstruct.bisg <- function(new, old, cat_nms=NULL, ...) {
     attr(new, "S_name") = attr(old, "S_name")
     attr(new, "GX_names") = c(cat_nms, attr(old, "GX_names"))
     attr(new, "p_r") = attr(old, "p_r")
+    attr(new, "p_rgx") = attr(old, "p_rgx")
+    attr(new, "gx") = attr(old, "gx")
     attr(new, "method") = "birdie"
     class(new) = c("bisg", class(new))
     new

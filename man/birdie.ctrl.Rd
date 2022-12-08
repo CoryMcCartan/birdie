@@ -21,7 +21,8 @@ birdie.ctrl(
 when there are few parameters or very tight tolerances. \code{"daarem"} is an
 excellent choice as well that works across a range of problems, though it
 requires installing the small \code{daarem} package. \code{"none"} is not
-recommended unless other algorithms are running into numerical issues.}
+recommended unless other algorithms are running into numerical issues.
+See the references below for details on these schemes.}
 
 \item{order}{The order to use in the acceleration algorithm. Interpretation
 varies by algorithm. Can range from 1 (default) to 3 for SQUAREM and from 1
@@ -36,7 +37,7 @@ order to be determined by problem size).}
 Ignored if \code{accel = "squarem"} or \code{"daarem"}.}
 }
 \value{
-A list containing the control parameters
+A list containing the control parameters.
 }
 \description{
 Constructs control parameters for BIRDiE model fitting.
@@ -45,5 +46,17 @@ All arguments have defaults.
 \examples{
 birdie.ctrl(max_iter=1000)
 
+}
+\references{
+Varadhan, R., & Roland, C. (2004). Squared extrapolation methods (SQUAREM): A
+new class of simple and efficient numerical schemes for accelerating the
+convergence of the EM algorithm.
+
+Walker, H. F., & Ni, P. (2011). Anderson acceleration for fixed-point
+iterations. SIAM Journal on Numerical Analysis, 49(4), 1715-1735.
+
+Henderson, N. C., & Varadhan, R. (2019). Damped Anderson acceleration with
+restarts and monotonicity control for accelerating EM and EM-like algorithms.
+Journal of Computational and Graphical Statistics, 28(4), 834-846.
 }
 \concept{estimators}
