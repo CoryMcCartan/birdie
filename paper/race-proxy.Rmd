@@ -210,7 +210,7 @@ If race is binary (so $\cR=\{0,1\}$), then as $N\to\infty$, \[
 \]
 \end{theorem}
 ```
-This result implies that the conditional independence between individual's race and outcome given their surname, residence location, and other characteristics is sufficient to eliminate the bias of the weighting estimator.
+This result implies that the conditional independence between individual's race and outcome given their surname, residence location, and other characteristics is sufficient to eliminate the asymptotic bias of the weighting estimator.
 
 ```{=tex}
 \begin{assump}[Conditional independence of outcome and race] \label{a:indep-yr}
@@ -319,9 +319,11 @@ For example, if campaigns use the surnames of individual voters to decide whethe
 Yet another possible violation of the assumption is the existence of unobserved confounder that affects both outcome and surname.
 The country of origin for an immigrant may represent such a confounder.
 Even in these cases, however, conditioning on (unobserved) race is likely to substantially reduce the magnitude of association between outcome and surnames.
-<!-- In Section \ref{sec:sens}, we develop a sensitivity analysis for potential violation of this assumption. -->
+<!--# In Section \ref{sec:sens}, we develop a sensitivity analysis for potential violation of this assumption. -->
+This assumption rules out the possibility that surname directly affects the outcome whereas such a direct effect is allowed under Assumption \ref{a:indep-yr}.
 
 The following theorem shows that it is possible to nonparametrically identify racial disparities under Assumption \ref{a:indep-ys}.
+The proof of the theorem and all other results in this paper are deferred to the appendix.
 
 ```{=tex}
 \begin{theoremrep}[Nonparametric Identification] \label{thm:id}
@@ -513,33 +515,10 @@ Since it is fully nonparametric, the posterior will converge to the true $\Pr(Y\
 However, in practice, the model suffers from the curse of dimensionality: the number of $(G, X)$ cells may be relatively large compared to the amount of available data, or even exceed it, especially since in practice $G$ will be quite large, covering many blocks or ZIP codes.
 In these cases, the prior will dominate the data in each cell, which could have a large biasing effect even on overall inferences about $\Pr(Y\mid R)$.
 
-##### Geographic hierarchical model.
-
-Often researchers only have available $S$ and $G$ for BISG inferences, with no additional covariates $X$.
-In this common use case, we propose a hierarchical model, which maintains the flexibility of the saturated model while avoiding its high bias and variance in finite samples.
-The hierarchical structure partially pools estimates of $\Pr(Y\mid R, G)$ towards an overall
-estimate of $\Pr(Y\mid R)$, which in turn is pooled towards an overall estimate of $\Pr(Y)$.
-This partial pooling allows the model to share information between geographic areas and racial categories, and should prove especially useful in cases where some areas or racial categories have few observations.
-
-The proposed model is as follows. 
-This particular hierarchical structure is inspired by @azzimonti2017hierarchical, though other parametrizations would accomplish the same goal. 
-\begin{align*}
-    Y_i\mid R_i, G_i, X_i, \Theta &\sim \Categorical_{\cY}(\vb*\theta_{R_iG_i}) \\
-    \vb*\theta_{rg}\mid \phi_{\beta r},\vb*\beta_r  &\sim \Dirichlet(\phi_{\beta r}\vb*\beta_r) \\
-    \vb*\beta_r\mid \phi_\alpha, \vb*\alpha &\iid \Dirichlet(\phi_\alpha\vb*\alpha) \\
-    \vb*\alpha &\sim \Dirichlet(\vb*1) \\
-    \phi_{\beta r} &\iid \Gam(2, \frac{2\sigma_\beta^2}{\tfrac{1}{4}-\sigma_\beta^2}), \quad
-    \phi_\alpha \sim \Gam(2, \frac{2\sigma_\alpha^2}{\tfrac{1}{4}-\sigma_\alpha^2})
-\end{align*}
-Here $\phi_{\beta r}$ and $\phi_\alpha$ are effective sample sizes that control the amount of dispersion of the random effects $\vb*\theta_{rg}$ and $\vb*\beta_r$.
-The priors on these parameters is written in terms of hyperparameters $\sigma_\beta$ and $\sigma_\alpha$, which represent the *a priori* expectation of the standard deviation of entries of $\vb*\theta_{rg}$ around $\vb*\beta_r$, and $\vb*\beta_r$ around $\vb*\alpha$.
-For example, if we expect there to be little variation in $\vb*\theta_{rg}$ (i.e., the distribution of $Y\mid R$ is similar across levels of $G$) and moderate variation in $\vb*\beta_r$ (i.e., the distribution of $Y$ varies moderately across levels of $R$), we might set $\sigma_\beta=0.05$ and $\sigma_\alpha=0.4$.
-This would give the $\phi_{\beta r}$ a prior mean of 99 and give $\phi_\alpha$ a prior mean of 24.
-Both $\sigma_\beta$ and $\sigma_\alpha$ must lie in $(0, \half)$, since the maximum standard deviation of any entry in a Dirichlet-distributed vector is $\half$.
-
 ##### General mixed-effects model.
 
-Finally, in cases with covariates $X$, a multinomial mixed-effects model can be used:
+As a compromise between the complete-pooling and no-pooling model, a multinomial mixed-effects model can be used.
+Properly specified, the mixed-effects model maintains the flexibility of the saturated model while avoiding its high bias and variance in finite samples.
 \begin{align*}
     Y_i\mid R_i, G_i, X_i, \Theta &\sim \Categorical_{\cY}(g^{-1}(\vb*\mu_{rgx})) \\
     \mu_{rgxy} &= \vb W\vb*\beta_{ry} + \vb Z\vb u_{ry} \\
@@ -549,8 +528,12 @@ Finally, in cases with covariates $X$, a multinomial mixed-effects model can be 
 where $g^{-1}$ is a softmax or other link function, $\vb W$ and $\vb Z$ are matrices of fixed and random effects, respectively, $\vb*\phi$ is a vector of random-effect parameters, and $f_\beta$ and $f_\phi$ are some priors for the subscripted parameters.
 Some fixed or random effects could be shared across combinations of $R$ and $Y$, though this could complicate computation.
 We recommend including $X$ and especially $G$ in the model as random effects, with hierarchical structure as appropriate.
+Such a structure partially pools estimates of $\Pr(Y\mid R, G)$ towards an overall
+estimate of $\Pr(Y\mid R)$, allowing the model to share information between geographic areas.
+This should prove especially useful in cases where some areas have few or no observations for certain racial groups.
+
 We also recommend including group-level covariates as fixed effects, which will help share information across random effects and significantly improve generalization performance to unseen random effect levels.
-For example, if $G$ records counties, analysts could include fixed effects for racial and socioeconomic variables measured at the county level.
+For example, if $G$ records counties, analysts could include predictors for racial and socioeconomic variables measured at the county level.
 Ultimately the structure of this general model will have to be chosen based on the structure of the data and the relevant research question.
 
 ## Computation {#sec:compute}
@@ -577,86 +560,14 @@ When the number of parameters is not too large relative to the data size, simple
 BIRDiE, like the weighting and OLS estimators, relies upon Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc}, which are required for the BISG race probabilities to be accurate.
 Like the OLS estimators, it also crucially relies on \ref{a:indep-ys} for identification.
 Unfortunately, these assumptions may not exactly hold in practice, and are also not testable in observed data.
-In this section, we address this challenge by developing a sensitivity analysis that assesses how the bias in BISG race probabilities affect the estimates of racial disparities.
+In Appendix \ref{app:sens},<!--this section,--> we address this challenge by developing a sensitivity analysis that assesses how the bias in BISG race probabilities affect the estimates of racial disparities.
 
-
-In particular, we consider a setting where Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc} may be violated but Assumption \ref{a:indep-ys} still holds.
-For example, consider the existence of unobserved confounder that affects some or all of the variables except the outcome, i.e., $(R,S,G,X)$.
-This leads to the violation of Assumption \ref{a:indep-sgx}, but Assumption \ref{a:indep-ys} continues to be satisfied so long as such unobserved confounder does not affect the outcome.
-It is not possible to develop an analogous sensitivity analysis for Assumptions \ref{a:indep-ys}, since without it the model is not even identified.
-Unfortunately, even inaccurate BISG predictions can still lead to biased estimates of racial disparities.
-
-Specifically, if either the Census data are inaccurate, or the conditional independence relation does not hold $S\notindep G,X\mid R$, then the BISG predictions $\hat{\vb P}$ will differ from the "true" individual race probabilities $\vb P^*=\Pr(R\mid G, X, S)$.
-Our goal is to quantify how an error in these probabilities $\vb P^* - \hat{\vb P}$ shifts the posterior and hence the estimates of racial disparities.
-
-Denote by $\pi_{\vb*\delta}$ the posterior constructed using the error-corrected BISG race probabilities $\hat{\vb P}_i+\vb*\delta_i$ as the input probabilities for the model (see Equation \eqref{eq:posterior}), where $\pi_{\vb*\delta^*}$ is the true posterior with $\vb*\delta_i^* \dfeq \vb P^*_i - \hat{\vb P}_i$.
-Estimating how $\pi$ and $\pi_{\vb*\delta}$ differ in general is difficult, but we focus on the settings where $\vb*\delta$ is small enough to make a linear approximation appropriate.
-In sum, we aim to quantify how the small error in BISG probabilities can alter the estimates of racial disparities.
-
-For clarity, in this section we will use $\vb*\theta_{r G_iX_iY_i}$ to denote the model parameter or function thereof that represents $\pi(Y_i\mid R_i=r, G_i, X_i)$.
-This mirrors the notation of most of the specific models discussed in Section \@ref(sec:birdie) above.
-Then define the following perturbation weight, which represents the ratio of posterior based on the biased and error-corrected BISG race probabilities: $$
-    w(\Theta,\vb*\delta^*) \dfeq 
-    \prod_{i=1}^N 
-    \qty(1 + \frac{\vb*\theta_{Y_i}(G_i, X_i)^\top \vb*\delta_i^*}{
-    \vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i})
-    \propto \frac{\pi_{\vb*\delta^*}(\Theta\mid\vb Y,\vb G,\vb X,\vb S)}{\pi(\Theta\mid\vb Y,\vb G,\vb X,\vb S)},
-$$ Then, using a local linear approximation, we write the bias for a particular quantity of interest $g(\Theta)$ as \begin{align*}
-    \E_{\pi_{\vb*\delta^*}}[g(\Theta)] - \E_\pi[g(\Theta)]
-    &= \eval{\dv{\E_{\pi_{\vb*\delta}}[g(\Theta)]}{\vb*\delta}}_{\vb*\delta=0}^\top
-        \vb*\delta^* + o(\norm{\vb*\delta^*}) \\
-    &= \Cov_\pi\qty(g(\Theta), 
-        \eval{\dv{\log w(\Theta,\vb*\delta)}{\vb*\delta}}_{\vb*\delta=0})^\top
-        \vb*\delta^* + o(\norm{\vb*\delta^*}),
-        \numberthis\label{eq:bias-dv}
-\end{align*} where the second equality is due to Theorem 2.1 of [@giordano2018cov; see also the idea of *local sensitivity* from @gustafson1996local].
-
-With this representation, we can bound the total error in $\E_\pi[g(\Theta)]$ for sufficiently small $\vb*\delta$ as the following theorem shows.
-
-```{=tex}
-\begin{theoremrep}[Bias Bound] \label{thm:bound}
-Define $\tilde\vartheta_{ir}\dfeq 
-\frac{\theta_{Y_ir}(G_i,X_i)}{\vb*\theta_{Y_i}(G_i,X_i)^\top\hat{\vb P}_i}$.
-Then for any input probabilities with total error $\norm{\vb*\delta^*}^2
-=\sum_{i=1}^n\norm{\vb*\delta_i^*}^2\le \Delta^2$,
-\begin{equation} \label{eq:covbound}
-    |\E_{\pi^*}[g(\Theta)] - \E_\pi[g(\Theta)]|
-    \lesssim \Delta\norm{\Cov_\pi(g(\Theta), \tilde\vartheta)},
-\end{equation}
-as $\Delta\to 0$.
-\end{theoremrep}
-\begin{proof}
-This is immediate from \eqref{eq:bias-dv} once we compute 
-\begin{align*}
-    \dv{\log w(\Theta,\vb*\delta)}{\delta_{ir}} 
-    &= \dv{\delta_{ir}} \sum_{i=1}^N 
-        \log(1+\frac{\vb*\theta_{Y_i}(G_i, X_i)^\top \vb*\delta_i}{
-        \vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i}) \\
-    &= \dv{\delta_{ir}}
-        \log(1+\frac{\vb*\theta_{Y_i}(G_i, X_i)^\top \vb*\delta_i}{
-        \vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i}) \\
-    &= \frac{1}{1+\frac{\vb*\theta_{Y_i}(G_i, X_i)^\top \vb*\delta_i}{
-        \vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i}} \times
-        \frac{\theta_{Y_ir}(G_i, X_i)}{
-        \vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i} \\
-    &= \frac{\theta_{Y_ir}(G_i, X_i)}{
-        \vb*\theta_{Y_i}(G_i, X_i)^\top(\hat{\vb P}_i+\vb*\delta_i)}
-\end{align*}
-and evaluate at $\vb*\delta=0$, since the worst-case bias for a fixed total error can be obtained by having the maximum allowable $\vb*\delta$ point in the direction of the gradient of $\log w(\Theta,\vb*\delta)$.
-\end{proof}
-```
-The theorem shows that once researchers choose the amount of total error $\Delta$, then the bound on the shift in a quantity of interest can be computed readily from posterior draws.
-It is important to note that both $\vb*\delta^*$ and $\Cov_\pi(g(\Theta), \tilde\vartheta)$ are vectors whose dimension depends on the sample size $N$.
-Thus, all else being equal, their norms will each grow as $\sqrt{N}$.
-However, each entry $\Cov_\pi(g(\Theta), \tilde\vartheta_{ir})$ will tend to shrink as $N$ increases, since each observation exerts less leverage on the overall posterior.
-Thus the overall impact of the sample size on the bound in Equation \eqref{eq:covbound} may depend on specific features of the data.
-In particular, and as should be expected, the error is not guaranteed to vanish as $N\to\infty$.
-Practitioners should evaluate Equation \eqref{eq:covbound} under a range of plausible $\Delta$ to understand how robust their findings are to worst-case linear violations of Assumptions $\ref{a:indep-sgx}$ and $\ref{a:cens-acc}$.
-
-The appendix contains further results which are more qualitative but also do not require asymptotics.
-The key takeaway is that a pattern of uniform bias can arise when the prior $\vb q_R$ doesn't match the population distribution of race.
+<!--# The appendix contains further results which are more qualitative but also do not require asymptotics.
+The key takeaway is that a pattern of uniform bias can arise when the prior $\vb q_R$ doesn't match the population distribution of race.-->
+One key result is that a pattern of uniform bias can arise when the prior $\vb q_R$ doesn't match the population distribution of race.
 Specifically, when the target population differs from the entire U.S. population that is enumerated by the census, or if the census is out of date, a $\vb q_R$ taken from census tables alone will be incorrect.
 We recommend that practitioners use other data sources, such as surveys, to estimate the overall race distribution, and use this instead of the national census estimates for $\vb q_R$.
+
 
 # Validation Study {#sec:valid}
 
@@ -785,6 +696,7 @@ This likely explains the worsened accuracy for BIRDiE among this group, which ma
 x = readRDS("data/nc_bounds.rds")
 ```
 
+<!--#
 ## Sensitivity Analysis
 
 As noted above, the sampling error in all of these estimates is minimal---the widest 90% confidence interval in the ZIP code-level model estimates of the joint distribution of party ID by race is $(`r percent(x$ci_min, 0.01, suffix="\\%")`,`r percent(x$ci_max, 0.01, suffix="\\%")`)$---not enough to explain the residual TV error.
@@ -812,6 +724,7 @@ Since the bounds are for worst-case error, the actual robustness to realistic mo
 But these bounds provide a useful guarantee, and can can give an idea of the relative sensitivity of the estimates to data error.
 For example, even though the estimated gap between White and Black voters in Republican registration is smaller than the gap for Democratic registration, both disparities are roughly equally robust to error.
 In contrast, the disparity in independent registration could be eliminated by worst-case error on the order of `r round(100*x$max_err_party_wb["ind"], 1)` percentage points.
+-->
 
 ```{=html}
 <!--# 
@@ -842,25 +755,6 @@ Finally, there likely remain significant opportunities to improve computation fo
 \renewcommand\thefigure{\thesection\arabic{figure}}
 \setcounter{figure}{0}
 ```
-# Appendix: Comparison of Stochastic Variational Inference and MCMC
-
-We sample 100 voters from the Dare county, NC voter file, and generate BISG predictions.
-As in the validation section, we estimate the party-race relationship using the proposed Bayesian model.
-We note that due to the small sample size, neither posterior is particularly close to the true distribution of party and race.
-However, in this section, we are focused only on examining the accuracy of SVI in approximating the posterior that would be obtained without any approximation.
-We fit the model both with the stochastic variational inference (SVI) routine and with full MCMC sampling using the No U-Turn Sampler (NUTS), which we treat as the "gold standard" for inference from thsi model.
-All inference is done with routines provided by Pyro probabilistic programming framework [@bingham2018pyro].
-Fitting with SVI took 4 seconds, while fitting with MCMC took 54 seconds.
-
-In general, as the sample size grows, we expect the SVI approximation to improve, since the overall posterior will converge towards Normality.
-As Figure \@ref(fig:valid-nuts-compare) shows, even with just 100 observations, SVI provides an excellent approximation to the posterior obtained by the NUTS sampler, not just for the posterior median but for the posterior uncertainty as well.
-
-```{r valid-nuts-compare, fig.width=6.75}
-#| fig.cap: |
-#|     Posterior distributions for the model fit to a 100-person sample, 
-#|     obtained with SVI (approximate) and NUTS (“gold standard”) inference routines.
-knitr::include_graphics("figures/valid_nuts_compare.pdf")
-```
 
 # Appendix: Total Variation Decomposition by Racial Group
 
@@ -882,8 +776,84 @@ However, the weighting estimator is probably the "least bad" for this group.
 knitr::include_graphics("figures/nc_tv_detailed.pdf")
 ```
 
-# Appendix: Nonasymptotic Sensitivity Analysis
+# Appendix: Sensitivity Analysis {#app:sens}
 
+In this section, we address this challenge by developing a sensitivity analysis that assesses how the bias in BISG race probabilities affect the estimates of racial disparities.
+In particular, we consider a setting where Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc} may be violated but Assumption \ref{a:indep-ys} still holds.
+For example, consider the existence of unobserved confounder that affects some or all of the variables except the outcome, i.e., $(R,S,G,X)$.
+This leads to the violation of Assumption \ref{a:indep-sgx}, but Assumption \ref{a:indep-ys} continues to be satisfied so long as such unobserved confounder does not affect the outcome.
+It is not possible to develop an analogous sensitivity analysis for Assumptions \ref{a:indep-ys}, since without it the model is not even identified.
+Unfortunately, even inaccurate BISG predictions can still lead to biased estimates of racial disparities.
+
+Specifically, if either the Census data are inaccurate, or the conditional independence relation does not hold $S\notindep G,X\mid R$, then the BISG predictions $\hat{\vb P}$ will differ from the "true" individual race probabilities $\vb P^*=\Pr(R\mid G, X, S)$.
+Our goal is to quantify how an error in these probabilities $\vb P^* - \hat{\vb P}$ shifts the posterior and hence the estimates of racial disparities.
+
+Denote by $\pi_{\vb*\delta}$ the posterior constructed using the error-corrected BISG race probabilities $\hat{\vb P}_i+\vb*\delta_i$ as the input probabilities for the model (see Equation \eqref{eq:posterior}), where $\pi_{\vb*\delta^*}$ is the true posterior with $\vb*\delta_i^* \dfeq \vb P^*_i - \hat{\vb P}_i$.
+Estimating how $\pi$ and $\pi_{\vb*\delta}$ differ in general is difficult, but we focus on the settings where $\vb*\delta$ is small enough to make a linear approximation appropriate.
+In sum, we aim to quantify how the small error in BISG probabilities can alter the estimates of racial disparities.
+
+For clarity, in this section we will use $\vb*\theta_{r G_iX_iY_i}$ to denote the model parameter or function thereof that represents $\pi(Y_i\mid R_i=r, G_i, X_i)$.
+This mirrors the notation of most of the specific models discussed in Section \@ref(sec:birdie) above.
+Then define the following perturbation weight, which represents the ratio of posterior based on the biased and error-corrected BISG race probabilities: $$
+    w(\Theta,\vb*\delta^*) \dfeq 
+    \prod_{i=1}^N 
+    \qty(1 + \frac{\vb*\theta_{\cdot G_iX_iY_i}^\top \vb*\delta_i^*}{
+    \vb*\theta_{\cdot G_iX_iY_i}^\top \hat{\vb P}_i})
+    \propto \frac{\pi_{\vb*\delta^*}(\Theta\mid\vb Y,\vb G,\vb X,\vb S)}{\pi(\Theta\mid\vb Y,\vb G,\vb X,\vb S)},
+$$ Then, using a local linear approximation, we write the bias for a particular quantity of interest $g(\Theta)$ as \begin{align*}
+    \E_{\pi_{\vb*\delta^*}}[g(\Theta)] - \E_\pi[g(\Theta)]
+    &= \eval{\dv{\E_{\pi_{\vb*\delta}}[g(\Theta)]}{\vb*\delta}}_{\vb*\delta=0}^\top
+        \vb*\delta^* + o(\norm{\vb*\delta^*}) \\
+    &= \Cov_\pi\qty(g(\Theta), 
+        \eval{\dv{\log w(\Theta,\vb*\delta)}{\vb*\delta}}_{\vb*\delta=0})^\top
+        \vb*\delta^* + o(\norm{\vb*\delta^*}),
+        \numberthis\label{eq:bias-dv}
+\end{align*} where the second equality is due to Theorem 2.1 of [@giordano2018cov; see also the idea of *local sensitivity* from @gustafson1996local].
+
+With this representation, we can bound the total error in $\E_\pi[g(\Theta)]$ for sufficiently small $\vb*\delta$ as the following theorem shows.
+
+```{=tex}
+\begin{theorem}[Bias Bound] \label{thm:bound}
+Define $\tilde\vartheta_{ir}\dfeq 
+\frac{\theta_{rG_iX_iY_i}}{\theta_{\cdot G_iX_iY_i}^\top\hat{\vb P}_i}$.
+Then for any input probabilities with total error $\norm{\vb*\delta^*}^2
+=\sum_{i=1}^n\norm{\vb*\delta_i^*}^2\le \Delta^2$,
+\begin{equation} \label{eq:covbound}
+    |\E_{\pi^*}[g(\Theta)] - \E_\pi[g(\Theta)]|
+    \lesssim \Delta\norm{\Cov_\pi(g(\Theta), \tilde\vartheta)},
+\end{equation}
+as $\Delta\to 0$.
+\end{theorem}
+\begin{proof}
+This is immediate from \eqref{eq:bias-dv} once we compute 
+\begin{align*}
+    \dv{\log w(\Theta,\vb*\delta)}{\delta_{ir}} 
+    &= \dv{\delta_{ir}} \sum_{i=1}^N 
+        \log(1+\frac{\vb*\theta_{\cdot G_iX_iY_i}^\top \vb*\delta_i}{
+        \vb*\theta_{\cdot G_iX_iY_i}^\top \hat{\vb P}_i}) \\
+    &= \dv{\delta_{ir}}
+        \log(1+\frac{\vb*\theta_{\cdot G_iX_iY_i}^\top \vb*\delta_i}{
+        \vb*\theta_{\cdot G_iX_iY_i}^\top \hat{\vb P}_i}) \\
+    &= \frac{1}{1+\frac{\vb*\theta_{\cdot G_iX_iY_i}^\top \vb*\delta_i}{
+        \vb*\theta_{\cdot G_iX_iY_i}^\top \hat{\vb P}_i}} \times
+        \frac{\vb*\theta_{rG_iX_iY_i}}{
+        \vb*\theta_{\cdot G_iX_iY_i}^\top \hat{\vb P}_i} \\
+    &= \frac{\vb*\theta_{rG_iX_iY_i}}{
+        \vb*\theta_{\cdot G_iX_iY_i}^\top(\hat{\vb P}_i+\vb*\delta_i)}
+\end{align*}
+and evaluate at $\vb*\delta=0$, since the worst-case bias for a fixed total error can be obtained by having the maximum allowable $\vb*\delta$ point in the direction of the gradient of $\log w(\Theta,\vb*\delta)$.
+\end{proof}
+```
+The theorem shows that once researchers choose the amount of total error $\Delta$, then the bound on the shift in a quantity of interest can be computed readily from posterior draws.
+It is important to note that both $\vb*\delta^*$ and $\Cov_\pi(g(\Theta), \tilde\vartheta)$ are vectors whose dimension depends on the sample size $N$.
+Thus, all else being equal, their norms will each grow as $\sqrt{N}$.
+However, each entry $\Cov_\pi(g(\Theta), \tilde\vartheta_{ir})$ will tend to shrink as $N$ increases, since each observation exerts less leverage on the overall posterior.
+Thus the overall impact of the sample size on the bound in Equation \eqref{eq:covbound} may depend on specific features of the data.
+In particular, and as should be expected, the error is not guaranteed to vanish as $N\to\infty$.
+Practitioners should evaluate Equation \eqref{eq:covbound} under a range of plausible $\Delta$ to understand how robust their findings are to worst-case linear violations of Assumptions $\ref{a:indep-sgx}$ and $\ref{a:cens-acc}$.
+
+
+<!--# This section continues with the notational conventions of Section \@ref(sec:sens).-->
 For a more qualitative understanding of the effect of a particular $\vb\delta$, we can derive results on the direction of the error in $\E_\pi[g(\Theta)]$ for linear $g(\Theta)=\vec(\Theta)^\top\vb d$ and particular configurations of $\vb*\delta$.
 Unlike Theorem \ref{thm:bound}, these results hold across all sizes of $\vb*\delta$, and not just asymptotically as $\norm{\vb*\delta}\to 0$.
 

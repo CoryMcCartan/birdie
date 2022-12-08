@@ -91,7 +91,7 @@ fully interacted structure.
 
 The Multinomial mixed-effects model is specified as follows: \deqn{
     Y_i \mid R_i, X_i, \Theta \sim \text{Categorical}(g^{-1}(\mu_{R_iX_i})) \\
-    \mu_{rx} = W\beta_{ry} + Zu_{ry} \\
+    \mu_{rxy} = W\beta_{ry} + Zu_{ry} \\
     u_{ry} \mid \sigma^2_{ry} \sim \mathcal{N}(0, \sigma^2_{ry}) \\
     \beta_{ry} \sim \mathcal{N}(0, s_\beta) \\
     \sigma_{ry} \sim \text{Gamma}(2, 2/s_\sigma),
