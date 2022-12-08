@@ -3,10 +3,10 @@
 on:
   push:
     branches: [main]
-    paths: [man/**, _pkgdown.yml, README.md, NEWS.md, DESCRIPTION]
+    paths: ['man/**', '_pkgdown.yml', 'README.md', 'NEWS.md', 'DESCRIPTION']
   pull_request:
     branches: [main]
-    paths: [man/**, _pkgdown.yml, README.md, NEWS.md, DESCRIPTION]
+    paths: ['man/**', '_pkgdown.yml', 'README.md', 'NEWS.md', 'DESCRIPTION']
   release:
     types: [published]
   workflow_dispatch:
