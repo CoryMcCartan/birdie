@@ -37,12 +37,6 @@
     <loc>http://corymccartan.com/birdie/reference/bisg.html</loc>
   </url>
   <url>
-    <loc>http://corymccartan.com/birdie/reference/calc_joint_bisgz.html</loc>
-  </url>
-  <url>
-    <loc>http://corymccartan.com/birdie/reference/calc_joint_bisgz_ols.html</loc>
-  </url>
-  <url>
     <loc>http://corymccartan.com/birdie/reference/census_race_geo_table.html</loc>
   </url>
   <url>
@@ -50,9 +44,6 @@
   </url>
   <url>
     <loc>http://corymccartan.com/birdie/reference/est_weighted.html</loc>
-  </url>
-  <url>
-    <loc>http://corymccartan.com/birdie/reference/eval_joints.html</loc>
   </url>
   <url>
     <loc>http://corymccartan.com/birdie/reference/index.html</loc>
@@ -65,9 +56,6 @@
   </url>
   <url>
     <loc>http://corymccartan.com/birdie/reference/pseudo_vf.html</loc>
-  </url>
-  <url>
-    <loc>http://corymccartan.com/birdie/reference/rake.html</loc>
   </url>
   <url>
     <loc>http://corymccartan.com/birdie/reference/reexports.html</loc>
