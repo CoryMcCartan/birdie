@@ -91,8 +91,8 @@
 </h2>
 <p>You can install the development version of birdie from <a href="https://github.com/" class="external-link">GitHub</a> with:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"CoryMcCartan/birdie"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"CoryMcCartan/birdie"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="basic-usage">Basic Usage<a class="anchor" aria-label="anchor" href="#basic-usage"></a>
@@ -137,7 +137,7 @@
 <span><span class="co">#&gt; Multinomial-Dirichlet BIRDiE model</span></span>
 <span><span class="co">#&gt; Formula: turnout ~ proc_zip(zip)</span></span>
 <span><span class="co">#&gt;    Data: pseudo_vf</span></span>
-<span><span class="co">#&gt; Number of obs: 5,000; groups: 2</span></span>
+<span><span class="co">#&gt; Number of obs: 5,000; groups: 618</span></span>
 <span><span class="co">#&gt; Estimated distribution:</span></span>
 <span><span class="co">#&gt;     white black  hisp asian  aian other</span></span>
 <span><span class="co">#&gt; no  0.286 0.358 0.376  0.55 0.644 0.534</span></span>
@@ -146,18 +146,18 @@
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         white     black      hisp     asian      aian     other</span></span>
-<span><span class="co">#&gt; no  0.2855933 0.3583592 0.3761563 0.5501976 0.6443233 0.5341126</span></span>
-<span><span class="co">#&gt; yes 0.7144067 0.6416408 0.6238437 0.4498024 0.3556767 0.4658874</span></span>
+<span><span class="co">#&gt; no  0.2855931 0.3583592 0.3761561 0.5501976 0.6443233 0.5341151</span></span>
+<span><span class="co">#&gt; yes 0.7144069 0.6416408 0.6238439 0.4498024 0.3556767 0.4658849</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 6 × 6</span></span>
 <span><span class="co">#&gt;   pr_white pr_black  pr_hisp pr_asian  pr_aian pr_other</span></span>
 <span><span class="co">#&gt;      &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1 9.46e- 1 7.48e-15 1.41e- 2 5.84e-12 1.21e- 2 2.77e- 2</span></span>
-<span><span class="co">#&gt; 2 5.57e-13 9.99e- 1 1.52e-11 4.93e-11 1.25e- 3 1.99e-14</span></span>
-<span><span class="co">#&gt; 3 9.52e- 1 7.52e- 3 4.22e-15 2.29e-15 1.95e-14 4.01e- 2</span></span>
-<span><span class="co">#&gt; 4 6.18e- 1 3.81e- 1 3.54e-15 1.04e-15 1.56e- 3 1.86e-13</span></span>
-<span><span class="co">#&gt; 5 9.90e- 1 4.33e- 3 6.23e-15 5.48e- 3 7.55e-11 7.66e-11</span></span>
+<span><span class="co">#&gt; 1 9.46e- 1 3.68e-15 1.41e- 2 3.81e-14 1.21e- 2 2.77e- 2</span></span>
+<span><span class="co">#&gt; 2 2.77e-15 9.99e- 1 5.45e-15 5.35e-15 1.25e- 3 1.99e-14</span></span>
+<span><span class="co">#&gt; 3 9.52e- 1 7.52e- 3 7.34e-15 4.13e-16 1.95e-14 4.01e- 2</span></span>
+<span><span class="co">#&gt; 4 6.18e- 1 3.81e- 1 3.54e-15 3.26e-13 1.56e- 3 3.02e-13</span></span>
+<span><span class="co">#&gt; 5 9.90e- 1 4.33e- 3 3.00e-11 5.48e- 3 1.10e-14 1.83e-13</span></span>
 <span><span class="co">#&gt; 6 5.63e- 1 2.65e- 1 9.76e- 2 6.42e- 3 2.74e- 3 6.55e- 2</span></span>
 <span></span>
 <span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>

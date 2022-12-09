@@ -79,7 +79,8 @@ All arguments have defaults.</p>
 when there are few parameters or very tight tolerances. <code>"daarem"</code> is an
 excellent choice as well that works across a range of problems, though it
 requires installing the small <code>daarem</code> package. <code>"none"</code> is not
-recommended unless other algorithms are running into numerical issues.</p></dd>
+recommended unless other algorithms are running into numerical issues.
+See the references below for details on these schemes.</p></dd>
 
 
 <dt>order</dt>
@@ -106,7 +107,18 @@ Ignored if <code>accel = "squarem"</code> or <code>"daarem"</code>.</p></dd>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     
 
-<p>A list containing the control parameters</p>
+<p>A list containing the control parameters.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
+    <p>Varadhan, R., &amp; Roland, C. (2004). Squared extrapolation methods (SQUAREM): A
+new class of simple and efficient numerical schemes for accelerating the
+convergence of the EM algorithm.</p>
+<p>Walker, H. F., &amp; Ni, P. (2011). Anderson acceleration for fixed-point
+iterations. SIAM Journal on Numerical Analysis, 49(4), 1715-1735.</p>
+<p>Henderson, N. C., &amp; Varadhan, R. (2019). Damped Anderson acceleration with
+restarts and monotonicity control for accelerating EM and EM-like algorithms.
+Journal of Computational and Graphical Statistics, 28(4), 834-846.</p>
     </div>
 
     <div class="section level2">
@@ -129,7 +141,7 @@ Ignored if <code>accel = "squarem"</code> or <code>"daarem"</code>.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         trace = FALSE, intermed = FALSE))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     list(ests = res$par, iters = res$fpeval, converge = res$convergence)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x5601eafe4518&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x55c95073f2f0&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:birdie&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $order</span>
