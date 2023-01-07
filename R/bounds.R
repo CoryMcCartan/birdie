@@ -7,6 +7,9 @@
 #'   than the number of racial groups. Missing racial groups will have a
 #'   coefficient of zero. For example, to get a bound on disparities between
 #'   White and Black individuals, use `contrast=c(white=1, black=-1, hisp=0, ...)`.
+#' @param min_pr The minimum individual race probabilities to enforce. A
+#'   probability of zero causes estimation problems, so `r_probs` is rescaled to
+#'   have minimum at least `min_pr`.
 #'
 #' @return A vector containing the sensitivity bound factor for the selected
 #'   contrast, for each level of the outcome variable. This factor should be
@@ -14,7 +17,7 @@
 #'   surnames in order to produce a bound on the estimate of the bias
 #'
 #' @export
-sens_bound <- function(x, r_probs, contrast) {
+sens_bound <- function(x, r_probs, contrast, min_pr=5e-4) {
     if (!inherits(x, "birdie"))
         cli_abort("{.arg x} must be a {.cls birdie} object.")
     if (!inherits(r_probs, "bisg"))
@@ -30,9 +33,8 @@ sens_bound <- function(x, r_probs, contrast) {
                     ">"="Generate your {.fn bisg} predictions with
                         {.arg save_rgx=TRUE}."))
     }
-    eps = 5e-4
-    p_rgxs = as.matrix(r_probs) * (1 - eps) + eps
-    p_rgx = (attr(r_probs, "p_rgx") * (1 - eps) + eps)[attr(r_probs, "gx"), ]
+    p_rgxs = as.matrix(r_probs) * (1 - min_pr) + min_pr
+    p_rgx = (attr(r_probs, "p_rgx") * (1 - min_pr) + min_pr)[attr(r_probs, "gx"), ]
 
     e_alph2 = sqrt(sum(contr^2 * colMeans(1/p_rgxs - 1/p_rgx)))
     e_res = colMeans(residuals.birdie(x, x_only=TRUE)^2)
