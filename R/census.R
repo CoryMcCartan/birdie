@@ -52,12 +52,12 @@ census_race_geo_table <- function(geo=c("us", "state", "county", "zcta", "tract"
             cli_abort("Decennial census data only available for
                       {.arg year} = 2010 or 2020")
         }
-        d_raw = easycensus::cens_get_dec("P5", geo, check_geo=TRUE)
+        d_raw = easycensus::cens_get_dec("P5", geo, ..., check_geo=TRUE)
     } else {
         if (year == 2020 && survey == "acs1") {
             cli_abort("No 1-year ACS data for 2020 due to the COVID-19 pandemic.")
         }
-        d_raw = easycensus::cens_get_acs("B03002", geo, year=year,
+        d_raw = easycensus::cens_get_acs("B03002", geo, ..., year=year,
                                          survey=survey, check_geo=TRUE) %>%
             filter(.data$hsplo_race_sub == "total",
                    .data$hispanic_or_latino_origin != "total") %>%
