@@ -36,8 +36,13 @@ keywords:
 bibliography: references.bib
 biblio-style: apalike
 output:
-    latex_fragment:
+    bookdown::pdf_document2:
+        template: "template.tex"
         number_sections: true
+        keep_tex: true
+        includes: 
+            in_header: "header.tex"
+        latex_engine: pdflatex
         citation_package: natbib
 editor_options: 
     markdown: 
@@ -145,11 +150,10 @@ The BISG estimator of the probability that individual $i$ belongs to race $r \in
 The BISG estimator relies on two key assumptions.
 The first is the following conditional independence relation between an individual's surname and residence location (as well as other characteristics) given their unobserved race.
 
-```{=tex}
 \begin{assump}[Conditional independence of name and other proxy variables] \label{a:indep-sgx}
     For all $i$, $$S_i \indep \{G_i, X_i\}\mid R_i.$$
 \end{assump}
-```
+
 Assumption \ref{a:indep-sgx} implies, for example, that once we know an individual is White, knowing their surname is Smith tells us nothing about their residence location and other observed characteristics.
 Although this assumption appears to be reasonable, the lack of granularity in the coding of race may lead to its violation.
 For example, people with Chinese, Indian, Filipino, Vietnamese, Korean, or Japanese are all coded as one racial group "Asian" in the census.
@@ -159,7 +163,6 @@ For instance, unlike the Smith example, knowing that an Asian individual's surna
 
 The second assumption required by BISG is that the Census tables reflect the true population distributions of $R$, $S$, $G$, and $X$.
 
-```{=tex}
 \begin{assump}[Data accuracy] \label{a:cens-acc}
     For all $i$, 
     \begin{align*}
@@ -168,7 +171,7 @@ The second assumption required by BISG is that the Census tables reflect the tru
         \Pr(G_i=g, X_i=x\mid R_i = r) &= q_{gx|r}
     \end{align*}
 \end{assump}
-```
+
 Like Assumption \ref{a:indep-sgx}, Assumption \ref{a:cens-acc} may never hold exactly in practice.
 Despite the best efforts of the Census Bureau, the decennial census has intrinsic error, including undercounting minority racial groups [@census2022undercount; @censuscount; @racecounts], as well as error introduced by privacy-preserving mechanisms [@abowd2020].
 And because of births, deaths, and moves, census data are often out-of-date from the moment of publication.
@@ -185,12 +188,12 @@ Under Assumption \ref{a:indep-sgx}, by Bayes' Rule, $$
     \Pr(R_i=r\mid G_i,X_i,S_i)
     \propto \Pr(G_i, X_i\mid R_i=r)\Pr(S_i\mid R_i=r)\Pr(R_i=r).
 $$ This justifies the estimator given in Equation \eqref{eq:pr-bisg}, and provides us with the following immediate result.
-```{=tex}
+
 \begin{prop}[Accuracy of BISG] \label{p:bisg}
 Under Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc}, the BISG estimator is accurate. That is, we have
 $\hat P_{ir} = \Pr(R_i=r\mid G_i,X_i,S_i)$.
 \end{prop}
-```
+
 ## Bias of Racial Disparity Estimates based on BISG Probabilities
 
 Unfortunately, accurate and calibrated estimates of individual race predictions alone are not sufficient for unbiased estimation of racial disparities using standard methodologies.
@@ -207,21 +210,19 @@ $$
 \citet{chen2019fairness} show that the asymptotic bias of this weighting estimator is controlled by the residual correlation of $Y$ and $R$ after adjusting for $G$, $X$, and $S$.
 We reproduce this result here.
 
-```{=tex}
 \begin{theorem}[Theorem 3.1 of \citealt{chen2019fairness}] \label{thm:wt-bias}
 If race is binary (so $\cR=\{0,1\}$), then as $N\to\infty$, \[
     \hat\mu^{(\text{wtd})}_{Y|R}(y\mid r) - \Pr(Y=y\mid R=r)
     \cvas -\frac{\E[\Cov(\ind\{Y=y\}, \ind\{R=r\}\mid G,X,S)]}{\Pr(R=r)}.
 \]
 \end{theorem}
-```
+
 This result implies that the conditional independence between individual's race and outcome given their surname, residence location, and other characteristics is sufficient to eliminate the asymptotic bias of the weighting estimator.
 
-```{=tex}
 \begin{assump}[Conditional independence of outcome and race] \label{a:indep-yr}
 For all $i$, $$Y_i\indep R_i\mid G_i,X_i,S_i.$$
 \end{assump}
-```
+
 Figure \@ref(fig:dag)(a) shows a causal directed acyclic graph (DAG) that satisfies Assumption \ref{a:indep-yr} as well as Assumption \ref{a:indep-sgx}.
 This causal structure implies the conditional independence relation $Y\indep R\mid G,X,S$ because all paths from $R$ to $Y$ are blocked by $G$, $X$, or $S$.
 The key causal assumption of this DAG is that the effect of race $R$ on the outcome $Y$ must be entirely mediated by surname $S$, residence location $G$, and other observed characteristics $X$.
@@ -306,11 +307,10 @@ Finally, we propose a sensitivity analysis that addresses the potential violatio
 To reduce the potential bias of the weighting estimator, we propose an alternative identification assumption that may be applicable when Assumption \ref{a:indep-yr} is not credible.
 Specifically, we assume that surname, rather than race, satisfies the exclusion restriction conditional on (unobserved) race, residence location, and other observed characteristics.
 
-```{=tex}
 \begin{assump}[Conditional independence of outcome and name] \label{a:indep-ys}
 For all $i$, $$Y_i\indep S_i\mid R_i,G_i,X_i.$$
 \end{assump}
-```
+
 Figure \@ref(fig:dag)(b) shows one possible causal DAG that meets this assumption as well as Assumption \ref{a:indep-sgx}.
 In this DAG, race can have a direct effect on the outcome $Y$ as well as on residence location $G$ and other observed characteristics $X$, while all paths from $S$ to $Y$ are blocked by $G$, $X$, or $R$.
 
@@ -340,24 +340,11 @@ In these cases, both both the weighting estimator and our approach proposed belo
 The following theorem shows that it is possible to nonparametrically identify racial disparities under Assumption \ref{a:indep-ys}.
 The proof of the theorem and all other results in this paper are deferred to the appendix.
 
-```{=tex}
-\begin{theoremrep}[Nonparametric Identification] \label{thm:id}
+\begin{restatable}[Nonparametric Identification]{theorem}{thmid} \label{thm:id}
 For any given $g\in\cG$, $x\in\cX$, and $y\in\cY$, define a matrix $\vb P$ with entries $p_{rs}=\Pr(R=r\mid G=g, X=x, S=s)$  and a vector $\vb b$ with entries $b_s=\Pr(Y=y\mid G=g, X=x, S=s)$.
 Then under Assumption~\ref{a:indep-ys}, and assuming knowledge of the joint distribution $\Pr(R,G,X,S)$, the conditional probabilities $\Pr(Y=y\mid R, G=g, X=x)$ are identified if and only if both $\vb P$ and the augmented matrix $\mqty(\vb P&\vb b)$ have rank $|\cR|$.
-\end{theoremrep}
-\begin{proof}
-Applying the law of total probability and our conditional independence relation $S\indep Y\mid R,G,X$, we have,
-for all $y\in\cY$, $g\in\cG$, $x\in\cX$, and $s\in\cS$,
-\begin{align*}
-    \Pr(Y=y\mid G=g, X=x, S=s)
-    &= \sum_{r\in\cR} \Pr(Y=y\mid R=r, G=g, X=x, S=s)\Pr(R=r\mid G=g, X=x, S=s) \\
-    &= \sum_{r\in\cR} \Pr(Y=y\mid R=r, G=g, X=x)\Pr(R=r\mid G=g, X=x, S=s).
-\end{align*}
-The left-hand side is estimable from the data and the rightmost term $\Pr(R=r\mid G=g, X=x, S=s)$ is assumed known.
-So for each $y\in\cY$, $g\in\cG$, and $x\in\cX$, this relation is a linear system in unknown parameters $\Pr(Y=y\mid R=r, G=g, X=x)$.
-These parameters are identified if and only if this system has a unique solution, i.e. if the coefficient matrix $\vb P$ has rank $|\cR|$ and so does the augmented matrix $\mqty(\vb P&\vb b)$.
-\end{proof}
-```
+\end{restatable}
+
 The essence of this identification result is the following key observation.
 Under Assumption \ref{a:indep-ys}, we have, for all $y\in\cY$, $g\in\cG$, $x\in\cX$, and $s\in\cS$, \begin{equation} \label{eq:tprob}
     \Pr(Y=y\mid G=g, X=x, S=s)
@@ -384,102 +371,26 @@ $$ since $q_{gx|r}=\Pr(G=g,X=x\mid R=r)$ under Assumption \ref{a:cens-acc}.
 <!-- and where $\vb Y_{gx}$ is the vector of outcome variables for the individuals with $G_i=g$ and $X_i=x$. -->
 This estimator is unbiased, as the following theorem shows.
 
-```{=tex}
-\begin{theoremrep}[Unbiasedness of OLS Estimator] \label{thm:ols-bias}
+\begin{restatable}[Unbiasedness of OLS Estimator]{theorem}{thmolsbias} \label{thm:ols-bias}
 If Assumptions \ref{a:indep-sgx}, \ref{a:cens-acc}, and \ref{a:indep-ys} hold, 
 and the identification conditions in Theorem~\ref{thm:id} are satisfied,
 then for all $y\in\cY$ and $r\in\cR$, \[
     \E[\hat{\mu}^{(\text{p-ols})}_{Y\mid R}(y\mid r)] = \Pr(Y=y\mid R=r).
 \]
-\end{theoremrep}
-\begin{proof}
-Fix $y\in\cY$ and define $m_{gxr} = \E[\ind\{Y=y\}\mid R=r, G=g, X=x)]$.
-Then under Assumptions \ref{a:indep-sgx}, \ref{a:cens-acc}, and \ref{a:indep-ys},
-\begin{align*}
-    \E[\ind\{Y=y\}\mid G=g, X=x, S=s] &= 
-    \sum_{r\in\cR} \E[\ind\{Y=y\}\mid R=r, G=g,X=x)]\Pr(R=r\mid G=g,X=x,S=s) \\
-    &= \sum_{r\in\cR} m_{gxr} \hat p_r,
-\end{align*}
-where as in the main text $\vb{\hat p}$ is the (random) vector of BISG probabilities.
-In fact, since the right-hand side depends on $S$  only through $\hat{\vb p}$, we have \[
-    \E[\ind\{Y=y\}\mid G=g, X=x, \hat{\vb p}] 
-    = \sum_{r\in\cR} m_{gxr} \hat p_r.
-\]
-So the conditional expectation of $\ind\{Y=y\}$ given $X$, $G$, and the BISG probabilities $\vb{\hat p}$ is linear in those probabilities, with coefficients $m_{gxr}$.
-Consequently, the OLS estimate $\hat{\vb*\mu}^{(\text{ols})}_{Y\mid RGX}(y\mid\cdot,g,x)$ will be unbiased for $m_{gxr}$, by the standard results.
+\end{restatable}
 
-Now, we can expand $\Pr(Y=y\mid R=r)$ as \[
-    \Pr(Y=y\mid R=r) = \sum_{x\in\cX,g\in\cG} \Pr(Y=y\mid R=r, G=g, X=x)\Pr(G=g, X=x\mid R=r)
-    = \sum_{x\in\cX,g\in\cG} m_{gxr} q_{gx|r}.
-\]
-Since $\hat{\vb*\mu}^{(\text{ols})}_{Y\mid RGX}(y\mid \cdot, g,x)$ is unbiased for $m_{gxr}$,  by the linearity of expectation the poststratified estimator $\hat{\mu}^{(\text{p-ols})}_{Y\mid R}(y\mid r)$ is unbiased for $\Pr(Y=y\mid R=r)$.
-\end{proof}
-```
 It is worth comparing this OLS estimator with the weighting estimator $\hat{\mu}^{(\text{wtd})}_{y\mid r}$.
 The next theorem shows that within the $(G,X)$ cells these two estimators are guaranteed to disagree, unless either the BISG probabilities perfectly discriminate or the weighting estimator is constant across races.
 Unfortunately, these two conditions are almost never met in practice.
 This underscores the importance of selecting the appropriate assumption (Assumption \ref{a:indep-yr} or \ref{a:indep-ys}) for a particular analysis, since they imply different estimators with different results.
 
-```{=tex}
-\begin{theoremrep}[Necessary and Sufficient Condition for Equality of the Weighting and OLS Estimators] \label{thm:wtd-vs-ols}
+\begin{restatable}[Necessary and Sufficient Condition for Equality of the Weighting and OLS Estimators]{theorem}{thmwtdols} \label{thm:wtd-vs-ols}
 For any $y\in\cY$, $g\in\cG$ and $x\in\cX$, within the set of individuals with $G_i=g$ and $X_i=x$, we have that $\hat{\vb*\mu}^{(\text{wtd})}_{Y|R}(y\mid\cdot) = \hat{\vb*\mu}^{(\text{ols})}_{Y|R}(y\mid\cdot)$
 if and only if for every pair $j,k\in\cR$, either the BISG probabilities perfectly discriminate 
 (i.e., $\Pr(R_i=j\mid G_i,X_i,S_i)>0$ implies $\Pr(R_i=k\mid G_i,X_i,S_i)=0$ and vice versa) or 
 $\hat{\mu}^{(\text{wtd})}_{Y|R}(y\mid j)=\hat{\mu}^{(\text{wtd})}_{Y|R}(y\mid k)$.
-\end{theoremrep}
-\begin{proof}
-Fix a $y\in\cY$, $g\in\cG$ and $x\in\cX$.
-The weighting estimator of $\Pr(Y=y\mid R=r)$ within the set of individuals with $G_i=g$ and $X_i=x$ may be written $$
-    \hat\mu^{(\text{wtd})}_{Y|RGX}(y\mid r,g,x) 
-    = \frac{\hat{\vb P}_{\cI(xg) r}^\top \ind\{\vb Y_{\cI(xg)}=y\}}{\hat{\vb P}_{\cI(xg) r}^\top \vb 1}
-    = \frac{\norm{\proj_{\hat{\vb P}_{\cI(xg) r}}(\ind\{\vb Y_{\cI(xg)}=y\})}}{
-        \norm{\proj_{\hat{\vb P}_{\cI(xg) r}}(\vb 1)}},
-$$ the ratio of the projected length of the outcome vector $\ind\{\vb Y=y\}$ and the constant vector $\vb 1$ onto $\hat{\vb P}_{\cdot r}$.
-We can write the OLS estimator as $$
-    \hat{\vb*\mu}^{(\text{ols})}_{Y|R} = (\hat{\vb P}_{\cI(xg)}^\top\hat{\vb P}_{\cI(xg)})^{-1}
-            \hat{\vb P}_{\cI(xg)}^\top \ind\{{\vb Y}_{\cI(xg)}=y\}
-    = \mathrm{coord}_{\hat{\vb P}_{\cI(xg)}}(\proj_{\hat{\vb P}_{\cI(xg)}}(\ind\{{\vb Y}_{\cI(xg)}=y\}),
-$$ where $\mathrm{coord}_{\hat{\vb P}_{\cI(xg)}}$ is the function that returns the coordinates of its input vector in the $\hat{\vb P}_{\cI(xg)}$ basis (by assumption $\hat{\vb P}_{\cI(xg)}$ has rank $|\cR|$ and so its columns are linearly independent).
-To make the comparison even easier, notice that we can break the projection $\proj_{\hat{\vb P}_{\cI(xg) r}}$ into two steps, writing it instead as $\proj_{\hat{\vb P}_{\cI(xg) r}} = \proj_{\hat{\vb P}_{\cI(xg) r}} \circ \proj_{\hat{\vb P}}$.
-Letting $\vb Y_{\proj}=\proj_{\hat{\vb P}_{\cI(xg)}}(\ind\{{\vb Y}_{\cI(xg)}=y\})$, then, we can rewrite our estimators as $$
-    \hat\mu^{(\text{wtd})}_{Y|R}(y\mid r) 
-    = \frac{\norm{\proj_{\hat{\vb P}_{\cI(xg) r}}(\vb Y_\proj)}}{
-        \norm{\proj_{\hat{\vb P}_{\cI(xg) r}}(\vb 1)}}  \qand
-    \hat{\vb\mu}^{(\text{ols})}_{Y|R}(y\mid r)
-    = \mathrm{coord}_{\hat{\vb P}_{\cI(xg)}}(\vb Y_\proj)_r.
-$$ 
+\end{restatable}
 
-Now, since the individual BISG probabilities are nonnegative and sum to 1, a pair $j,k\in\cR$ of races has perfectly discriminating BISG probabilities if and only if the corresponding columns of $\hat{\vb P}$ are orthogonal, i.e., $\hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}=I$.
-Begin by writing $\vb Y_\proj$ in terms of the $\hat{\vb P}_{\cI(xg)}$ basis, so \[
-    \vb Y_\proj = \sum_{j\in\cR} c_j\hat{\vb P}_{\cI(xg) j},
-\] and thus $\hat{\vb\mu}^{(\text{ols})}_{Y|R}(y\mid j)=c_j$.
-Without loss of generality, suppose the $c_j$ are numbered as $c_1\ge c_2\ge \cdots\ge c_{|\cR|}$.
-We can also expand $\vb 1$ in the same basis. Since the individual probabilities must sum to one, in fact we have \(
-    \vb 1 = \sum_{j\in\cR} \hat{\vb P}_{\cI(xg) j}.
-\)
-
-For the forward direction, we assume $\hat{\mu}^{(\text{wtd})}_{Y|R}(y\mid j)=\hat{\mu}^{(\text{ols})}_{Y|R}(y\mid j)=c_j$;
-multiplying out the denominator of the weighting estimator, we have $\hat{\vb P}_{\cI(xg) j}^\top \vb Y=c_j\hat{\vb P}_{\cI(xg) j}^\top\vb 1$ for all $j$; substituting the basis expansions of $\vb Y_\proj$ and $\vb 1$, this yields \[
-    \sum_{k\in\cR} c_k \hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}
-    = \sum_{k\in\cR} c_j \hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}, \qq{so}
-    \sum_{k\in\cR} (c_j-c_k) \hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}=0.
-\] Now fix $j\in J_1=\argmax_j c_j$; this relation still holds, but now every term in the sum is nonnegative and in particular $c_j>c_k$ for all $k\not\in J_1$.
-Therefore we must have $\hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}=0$ for all $k\not\in J_1$.
-Then fix $j\in J_2=\argmax_{j\not\in J_1} c_j$; since $\hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) l}=0$ for all $l\in J_1$, every term in the sum is still nonnegative and in particular $c_j>c_k$ for all $k\not\in J_1\cup J_2$.
-Therefore we must have $\hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}=0$ for all $k\not\in J_1\cup J_2$.
-Proceeding this way through all sets of common values in the $c_j$ we find that for all $j,k\in\cR$, either $c_j=c_k$ or  $\hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}=0$.
-
-For the reverse direction, fix $j\in\cR$ and let $J=\{k\in\cR:c_k=c_j\}$, so that by assumption $\hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}=0$ for all $k\not\in J$.
-Then by the above basis expansion, $\hat{\mu}^{(\text{ols})}_{Y|RGX}(y\mid j)=c_j$, and \[
-    \hat{\mu}^{(\text{wtd})}_{Y|R}(y\mid j) 
-    = \frac{\sum_{k\in\cR} c_k \hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg)k}}{
-        \sum_{k\in\cR}\hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}}
-    = \frac{c_j \sum_{k\in J} \hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}}{
-        \sum_{k\in J}\hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}}
-    = c_j = \hat{\mu}^{(\text{ols})}_{Y|R}(y\mid j). \qedhere
-\]
-\end{proof}
-```
 Despite potential advantages over the weighting estimator, the OLS estimator is not well-suited to estimation in practice, since it ignores the fact that the unknown parameters are probabilities and thus constrained to be nonnegative and sum to 1.
 As a result, in any particular sample, the estimator can produce impossible or contradictory estimates.
 This is particularly problematic because a large number of unique surnames make both $\vb P$ and $\vb b$ high-dimensional.
@@ -642,14 +553,12 @@ This approach will likely perform better when $W$ consists of multiple predictor
 
 Both these approaches require the following identifying assumption, which generalizes Assumption \ref{a:indep-ys}.
 
-```{=tex}
 \begin{assump}[Conditional independence of outcome, predictor and name] \label{a:indep-yws}
 For all $i$, $(Y_i, W_i)\indep S_i\mid R_i,G_i,X_i$, or, equivalently, $$
     W_i\indep S_i\mid R_i,G_i,X_i \qand
     Y_i\indep S_i\mid W_i,R_i,G_i,X_i.
 $$
 \end{assump}
-```
 
 In the lending example, this would translate to the assumption that a measure of creditworthiness is independent of last name after controlling for race, location, and covariates, and that lending decisions are independent of last names after controlling for creditworthiness, race, location, and covariates.
 
@@ -963,6 +872,101 @@ Finally, the BIRDiE model could be extended to directly model more complex kinds
 \setcounter{figure}{0}
 ```
 
+# Proofs of Propositions
+
+\thmid*
+\begin{proof}
+Applying the law of total probability and our conditional independence relation $S\indep Y\mid R,G,X$, we have,
+for all $y\in\cY$, $g\in\cG$, $x\in\cX$, and $s\in\cS$,
+\begin{align*}
+    \Pr(Y=y\mid G=g, X=x, S=s)
+    &= \sum_{r\in\cR} \Pr(Y=y\mid R=r, G=g, X=x, S=s)\Pr(R=r\mid G=g, X=x, S=s) \\
+    &= \sum_{r\in\cR} \Pr(Y=y\mid R=r, G=g, X=x)\Pr(R=r\mid G=g, X=x, S=s).
+\end{align*}
+The left-hand side is estimable from the data and the rightmost term $\Pr(R=r\mid G=g, X=x, S=s)$ is assumed known.
+So for each $y\in\cY$, $g\in\cG$, and $x\in\cX$, this relation is a linear system in unknown parameters $\Pr(Y=y\mid R=r, G=g, X=x)$.
+These parameters are identified if and only if this system has a unique solution, i.e. if the coefficient matrix $\vb P$ has rank $|\cR|$ and so does the augmented matrix $\mqty(\vb P&\vb b)$.
+\end{proof}
+
+\thmolsbias*
+\begin{proof}
+Fix $y\in\cY$ and define $m_{gxr} = \E[\ind\{Y=y\}\mid R=r, G=g, X=x)]$.
+Then under Assumptions \ref{a:indep-sgx}, \ref{a:cens-acc}, and \ref{a:indep-ys},
+\begin{align*}
+    \E[\ind\{Y=y\}\mid G=g, X=x, S=s] &= 
+    \sum_{r\in\cR} \E[\ind\{Y=y\}\mid R=r, G=g,X=x)]\Pr(R=r\mid G=g,X=x,S=s) \\
+    &= \sum_{r\in\cR} m_{gxr} \hat p_r,
+\end{align*}
+where as in the main text $\vb{\hat p}$ is the (random) vector of BISG probabilities.
+In fact, since the right-hand side depends on $S$  only through $\hat{\vb p}$, we have \[
+    \E[\ind\{Y=y\}\mid G=g, X=x, \hat{\vb p}] 
+    = \sum_{r\in\cR} m_{gxr} \hat p_r.
+\]
+So the conditional expectation of $\ind\{Y=y\}$ given $X$, $G$, and the BISG probabilities $\vb{\hat p}$ is linear in those probabilities, with coefficients $m_{gxr}$.
+Consequently, the OLS estimate $\hat{\vb*\mu}^{(\text{ols})}_{Y\mid RGX}(y\mid\cdot,g,x)$ will be unbiased for $m_{gxr}$, by the standard results.
+
+Now, we can expand $\Pr(Y=y\mid R=r)$ as \[
+    \Pr(Y=y\mid R=r) = \sum_{x\in\cX,g\in\cG} \Pr(Y=y\mid R=r, G=g, X=x)\Pr(G=g, X=x\mid R=r)
+    = \sum_{x\in\cX,g\in\cG} m_{gxr} q_{gx|r}.
+\]
+Since $\hat{\vb*\mu}^{(\text{ols})}_{Y\mid RGX}(y\mid \cdot, g,x)$ is unbiased for $m_{gxr}$,  by the linearity of expectation the poststratified estimator $\hat{\mu}^{(\text{p-ols})}_{Y\mid R}(y\mid r)$ is unbiased for $\Pr(Y=y\mid R=r)$.
+\end{proof}
+
+\thmwtdols*
+\begin{proof}
+Fix a $y\in\cY$, $g\in\cG$ and $x\in\cX$.
+The weighting estimator of $\Pr(Y=y\mid R=r)$ within the set of individuals with $G_i=g$ and $X_i=x$ may be written $$
+    \hat\mu^{(\text{wtd})}_{Y|RGX}(y\mid r,g,x) 
+    = \frac{\hat{\vb P}_{\cI(xg) r}^\top \ind\{\vb Y_{\cI(xg)}=y\}}{\hat{\vb P}_{\cI(xg) r}^\top \vb 1}
+    = \frac{\norm{\proj_{\hat{\vb P}_{\cI(xg) r}}(\ind\{\vb Y_{\cI(xg)}=y\})}}{
+        \norm{\proj_{\hat{\vb P}_{\cI(xg) r}}(\vb 1)}},
+$$ the ratio of the projected length of the outcome vector $\ind\{\vb Y=y\}$ and the constant vector $\vb 1$ onto $\hat{\vb P}_{\cdot r}$.
+We can write the OLS estimator as $$
+    \hat{\vb*\mu}^{(\text{ols})}_{Y|R} = (\hat{\vb P}_{\cI(xg)}^\top\hat{\vb P}_{\cI(xg)})^{-1}
+            \hat{\vb P}_{\cI(xg)}^\top \ind\{{\vb Y}_{\cI(xg)}=y\}
+    = \mathrm{coord}_{\hat{\vb P}_{\cI(xg)}}(\proj_{\hat{\vb P}_{\cI(xg)}}(\ind\{{\vb Y}_{\cI(xg)}=y\}),
+$$ where $\mathrm{coord}_{\hat{\vb P}_{\cI(xg)}}$ is the function that returns the coordinates of its input vector in the $\hat{\vb P}_{\cI(xg)}$ basis (by assumption $\hat{\vb P}_{\cI(xg)}$ has rank $|\cR|$ and so its columns are linearly independent).
+To make the comparison even easier, notice that we can break the projection $\proj_{\hat{\vb P}_{\cI(xg) r}}$ into two steps, writing it instead as $\proj_{\hat{\vb P}_{\cI(xg) r}} = \proj_{\hat{\vb P}_{\cI(xg) r}} \circ \proj_{\hat{\vb P}}$.
+Letting $\vb Y_{\proj}=\proj_{\hat{\vb P}_{\cI(xg)}}(\ind\{{\vb Y}_{\cI(xg)}=y\})$, then, we can rewrite our estimators as $$
+    \hat\mu^{(\text{wtd})}_{Y|R}(y\mid r) 
+    = \frac{\norm{\proj_{\hat{\vb P}_{\cI(xg) r}}(\vb Y_\proj)}}{
+        \norm{\proj_{\hat{\vb P}_{\cI(xg) r}}(\vb 1)}}  \qand
+    \hat{\vb\mu}^{(\text{ols})}_{Y|R}(y\mid r)
+    = \mathrm{coord}_{\hat{\vb P}_{\cI(xg)}}(\vb Y_\proj)_r.
+$$ 
+
+Now, since the individual BISG probabilities are nonnegative and sum to 1, a pair $j,k\in\cR$ of races has perfectly discriminating BISG probabilities if and only if the corresponding columns of $\hat{\vb P}$ are orthogonal, i.e., $\hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}=I$.
+Begin by writing $\vb Y_\proj$ in terms of the $\hat{\vb P}_{\cI(xg)}$ basis, so \[
+    \vb Y_\proj = \sum_{j\in\cR} c_j\hat{\vb P}_{\cI(xg) j},
+\] and thus $\hat{\vb\mu}^{(\text{ols})}_{Y|R}(y\mid j)=c_j$.
+Without loss of generality, suppose the $c_j$ are numbered as $c_1\ge c_2\ge \cdots\ge c_{|\cR|}$.
+We can also expand $\vb 1$ in the same basis. Since the individual probabilities must sum to one, in fact we have \(
+    \vb 1 = \sum_{j\in\cR} \hat{\vb P}_{\cI(xg) j}.
+\)
+
+For the forward direction, we assume $\hat{\mu}^{(\text{wtd})}_{Y|R}(y\mid j)=\hat{\mu}^{(\text{ols})}_{Y|R}(y\mid j)=c_j$;
+multiplying out the denominator of the weighting estimator, we have $\hat{\vb P}_{\cI(xg) j}^\top \vb Y=c_j\hat{\vb P}_{\cI(xg) j}^\top\vb 1$ for all $j$; substituting the basis expansions of $\vb Y_\proj$ and $\vb 1$, this yields \[
+    \sum_{k\in\cR} c_k \hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}
+    = \sum_{k\in\cR} c_j \hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}, \qq{so}
+    \sum_{k\in\cR} (c_j-c_k) \hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}=0.
+\] Now fix $j\in J_1=\argmax_j c_j$; this relation still holds, but now every term in the sum is nonnegative and in particular $c_j>c_k$ for all $k\not\in J_1$.
+Therefore we must have $\hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}=0$ for all $k\not\in J_1$.
+Then fix $j\in J_2=\argmax_{j\not\in J_1} c_j$; since $\hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) l}=0$ for all $l\in J_1$, every term in the sum is still nonnegative and in particular $c_j>c_k$ for all $k\not\in J_1\cup J_2$.
+Therefore we must have $\hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}=0$ for all $k\not\in J_1\cup J_2$.
+Proceeding this way through all sets of common values in the $c_j$ we find that for all $j,k\in\cR$, either $c_j=c_k$ or  $\hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}=0$.
+
+For the reverse direction, fix $j\in\cR$ and let $J=\{k\in\cR:c_k=c_j\}$, so that by assumption $\hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}=0$ for all $k\not\in J$.
+Then by the above basis expansion, $\hat{\mu}^{(\text{ols})}_{Y|RGX}(y\mid j)=c_j$, and \[
+    \hat{\mu}^{(\text{wtd})}_{Y|R}(y\mid j) 
+    = \frac{\sum_{k\in\cR} c_k \hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg)k}}{
+        \sum_{k\in\cR}\hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}}
+    = \frac{c_j \sum_{k\in J} \hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}}{
+        \sum_{k\in J}\hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}}
+    = c_j = \hat{\mu}^{(\text{ols})}_{Y|R}(y\mid j). \qedhere
+\]
+\end{proof}
+
+
 <!--#
 # Appendix: Total Variation Decomposition by Racial Group
 
@@ -985,7 +989,7 @@ knitr::include_graphics("figures/nc_tv_detailed.pdf")
 ```
 -->
 
-# Appendix: Additional Small-area Accuracy Evaluation {#app:small}
+# Additional Small-area Accuracy Evaluation {#app:small}
 
 We evaluate the small-area estimates with two additional measures.
 First, we calculate the root-mean-square error (RMSE) of the estimated conditional probabilities by race within each geographic area, and then average this across all geographic areas.
@@ -1006,7 +1010,7 @@ Figure \ref{fig:nc-smallarea-app} summarizes our results, which closely track th
 The BIRDiE models are more accurate at all geographic levels and for both Black and White voters.
 The weighting estimator performs the worst of all the methods.
 
-# Appendix: Sensitivity Analysis {#app:sens}
+# Sensitivity Analysis {#app:sens}
 
 In this section, we address this challenge by developing a sensitivity analysis that assesses how the bias in BISG race probabilities affect the estimates of racial disparities.
 In particular, we consider a setting where Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc} may be violated but Assumption \ref{a:indep-ys} still holds.
@@ -1041,7 +1045,6 @@ $$ Then, using a local linear approximation, we write the bias for a particular 
 
 With this representation, we can bound the total error in $\E_\pi[g(\Theta)]$ for sufficiently small $\vb*\delta$ as the following theorem shows.
 
-```{=tex}
 \begin{theorem}[Bias Bound] \label{thm:bound}
 Define $\tilde\vartheta_{ir}\dfeq 
 \frac{\theta_{rG_iX_iY_i}}{\theta_{\cdot G_iX_iY_i}^\top\hat{\vb P}_i}$.
@@ -1072,7 +1075,7 @@ This is immediate from \eqref{eq:bias-dv} once we compute
 \end{align*}
 and evaluate at $\vb*\delta=0$, since the worst-case bias for a fixed total error can be obtained by having the maximum allowable $\vb*\delta$ point in the direction of the gradient of $\log w(\Theta,\vb*\delta)$.
 \end{proof}
-```
+
 The theorem shows that once researchers choose the amount of total error $\Delta$, then the bound on the shift in a quantity of interest can be computed readily from posterior draws.
 It is important to note that both $\vb*\delta^*$ and $\Cov_\pi(g(\Theta), \tilde\vartheta)$ are vectors whose dimension depends on the sample size $N$.
 Thus, all else being equal, their norms will each grow as $\sqrt{N}$.
@@ -1099,7 +1102,6 @@ We can write the bias for a particular quantity of interest $g(\Theta)$ as \begi
 \end{align*} where $\vb Y=(\vb Y,\vb G, \vb X,\vb S)$ is the observed data.
 This holds exactly, and is not just a linear approximations (notice the absence of a logarithm around the perturbation weights).
 
-```{=tex}
 \begin{lemma} \label{lem:biassign}
 For a vector $\vb d$, if \[
     \hat r_{ij}\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} -
@@ -1144,8 +1146,7 @@ Partial derivatives with respect to elements of $\vec(\Theta)$ are clearly zero 
 Since $\vb*\theta_{Y_i}(G_i, X_i)$ is nonnegative, a sufficient condition for the directional derivative to be nonnegative, and thus for $w_i$ to be monotonically increasing in $\vec(\Theta)^\top\vb d$, is for
 $\hat r_{ij}\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} - \delta_{ij}\hat{\vb P}_i^\top\vb d_{Y_i\cdot G_iX_i} \ge 0$ for all $j\in\cR$. Similarly, by reversing this inequality, we have a sufficient condition for $w_i$ to be monotonically decreasing in $\vec(\Theta)^\top\vb d$.
 \end{proof}
-```
-```{=tex}
+
 \begin{theorem}
 Let $r\in\cR$, $I\subseteq\{1,\dots,N\}$, and $\vb d$ a vector such that $\vb d_{Y_i\cdot G_iX_i}= c\vb e_r$ for all $i\in I$ and $0$ elsewhere, where $\vb e_r\in\R^{|\cR|}$ is the standard basis vector in the $r$ direction and $c>0$.
 Then if for all $i\in I$, $\delta_{ir}>0$ and $\delta_{ij}<\delta_{ir}$ for $j\neq r$, \[
@@ -1172,21 +1173,19 @@ thus by the lemma we conclude that \[
     \vec(\Theta)^\top\vb d \gvn\vb Y) \ge 0. \qedhere
 \]
 \end{proof}
-```
+
 By reversing the sign of $\vb*\delta_i$, we can reverse the direction of the bias.
 For the binary race case, we have the following translation of this result.
 
-```{=tex}
 \begin{corollary} \label{cor:errdir1}
 Suppose that race is binary, i.e., $\cR=\{0,1\}$.
 Then for any $y\in\cY$, the model-based estimate of $\Pr[Y=y\mid R=1]$, denoted $\E_\pi[\bar\Theta_{y1}\mid\vb Y]$, 
 will be biased downwards (upwards) if, for all $i$ with $Y_i=y$, the BISG probability $\hat r_{i1}$ is biased downwards (upwards).
 \end{corollary}
-```
+
 Racial disparities can be similarly estimated by setting entries of $\vb d$ to $-1$ and $1$, to contrast racial groups.
 The next theorem provides results for this case, and the subsequent corollary translates the common special case.
 
-```{=tex}
 \begin{theorem}
 Let $r,s\in\cR$, $I\subseteq\{1,\dots,N\}$, and $\vb d$ a vector such that $\vb d_{Y_i\cdot G_iX_i}= c_1(\vb e_r-\vb e_s)$ for all $i\in I$ and $0$ elsewhere, for some $c_1>0$.
 Then if for all $i\in I$, $\vb*\delta_i=c_{2i}(\vb e_r-\vb e_s)$ for some $c_{2i}>0$, \[
@@ -1217,17 +1216,16 @@ thus by the lemma we conclude that \[
     \vec(\Theta)^\top\vb d \gvn\vb Y) \ge 0. \qedhere
 \]
 \end{proof}
-```
+
 As above, we can reverse the direction of the bias by reversing the sign of $\vb*\delta_i$.
 
-```{=tex}
 \begin{corollary} \label{cor:errdir2}
 Suppose both the race and outcome variables are binary, i.e., $\cY=\cR=\{0,1\}$.
 Suppose that race is binary, i.e., $\cR=\{0,1\}$.
 Then for any $y\in\cY$, the model-based estimate of the disparity $\Pr[Y=y\mid R=1]-\Pr[Y=y\mid R=0]$, denoted $\E_\pi[\bar\Theta_{11}-\bar\Theta_{10}\mid\vb Y]$, 
 will be biased downwards (upwards) if, for all $i$ with $Y_i=y$, the BISG probability $\hat r_{i1}$ is biased downwards (upwards).
 \end{corollary}
-```
+
 Taken together, Corollaries \ref{cor:errdir1} and \ref{cor:errdir2} show that if the individual probabilities of belonging to a racial group are uniformly biased, so too will be the corresponding estimates of the conditional probabilities and disparities.
 Most of the time, these bias in the BISG probabilities will not be be so one-sided, and the error patterns will be more complex.
 As noted in the main text, a pattern of uniform bias will arise when the prior $\vb q_R$ doesn't match the population distribution of race.
