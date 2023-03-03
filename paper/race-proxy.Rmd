@@ -51,8 +51,10 @@ editor_options:
 
 ```{r setup, include=FALSE}
 library(knitr)
+library(kableExtra)
 library(here)
 library(scales)
+library(stringr)
 
 opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE,
                fig.path=here("paper/figures/"), fig.align="center",
@@ -67,7 +69,7 @@ bias_red = (bias_weight - bias_birdie) / bias_weight
 
 # Introduction
 
-The identification and estimation of racial disparities is of paramount importance to researchers, policymakers and organizations in a variety of areas including public health [@van2003paved; @williams2005social], employment [@conway1983reverse; @greene1984reverse], voting [@gay2001effect; @hajnal2005turnout; @barreto2007isi], criminal justice [@berk2021fairness; @chouldechova2017fair; @dressel2018accuracy], economic policy [@brown2022whiteness], taxation [@black2022algorithmic], housing [@kermani2021racial], and lending [@chen2018fair].
+The identification and estimation of racial disparities is of paramount importance to researchers, policymakers and organizations in a variety of areas including public health [@van2003paved; @williams2005social], employment [@conway1983reverse; @greene1984reverse], voting [@gay2001effect; @hajnal2005turnout; @barreto2007isi], criminal justice [@berk2021fairness; @chouldechova2017fair; @dressel2018accuracy], economic policy [@brown2022whiteness], taxation [@black2022algorithmic; @elzayn2023measuring], housing [@kermani2021racial], lending [@chen2018fair], and technology and fairness [@alao2021meta].
 Within the U.S. government, efforts to identify and remedy racial disparities have taken on greater urgency with the recent issuance of Executive Order 13985, which in part directs agencies to conduct equity assessments by developing appropriate methodology.
 
 In many of these areas, however, racial information is not available at the individual level.
@@ -82,11 +84,11 @@ Additionally, they all rely on accurate marginal information about race, which m
 Where the analysis of racial disparities involves large-scale administrative data, many analysts have adopted Bayesian Improved Surname Geocoding (BISG), which generates individual probabilities of belonging to different racial groups using Bayes’ rule applied to last names and geolocation [@fiscella2006bisg; @elliott2008bisg; @imai2016improving; @imai2022addressing].
 BISG leverages residential racial segregation and the hereditary association between self-reported race and surname to produce generally accurate and calibrated predictions of self-reported individual race [@kenny2021das; @deluca2022validating].
 
-Unfortunately, the accurate BISG racial prediction alone is not sufficient for unbiased estimation of disparities.
+Unfortunately, calibrated BISG racial prediction alone is not sufficient for unbiased estimation of disparities.
 Indeed, the most common techniques for estimating racial disparities using BISG probabilities are known to be biased when race is correlated with the outcome even after controlling on name and location [@chen2019fairness; @argyle2022misclassification].
 These approaches include the use of BISG probabilities as weights and thresholding the BISG probabilities to produce point estimates of individual race.
 As formally discussed in Section \@ref(sec:id), these standard methods of racial disparity estimation based on BISG predictions also require individuals' race to be conditionally independent of the outcome given their residence location, surnames, and other observable attributes.
-This key identification assumption, however, is unlikely to hold because race affects many aspects of today's society even after accounting for residence location, surnames, and other observable attributes.
+This key identification assumption, however, is unlikely to hold because race affects many aspects of society even after accounting for residence location, surnames, and other observable attributes.
 Other researchers have noted the implausibility of this assumption and have proposed methods to address it, but these alternative approaches are more general than the racial disparity setting and require additional data such as a partially labeled subset [@fong2021machine].
 
 To address this challenge, in Section \@ref(sec:est), we propose an alternative identification strategy.
@@ -198,11 +200,11 @@ $\hat P_{ir} = \Pr(R_i=r\mid G_i,X_i,S_i)$.
 
 Unfortunately, accurate and calibrated estimates of individual race predictions alone are not sufficient for unbiased estimation of racial disparities using standard methodologies.
 The reason is that the prediction error of race probabilities may be correlated with the outcome variable of interest.
-Specifically, consider the following weighting estimator commonly used by researchers, which attempts to capture the uncertainty inherent in race prediction:[^1] $$
+Specifically, consider the following weighting estimator commonly used by researchers, which attempts to capture the uncertainty inherent in race prediction:[^1] \[
     \hat\mu^{(\text{wtd})}_{Y|R}(y\mid r) 
         = \frac{\sum_{i=1}^N \ind\{Y_i=y\}\hat P_{ir}}{
             \sum_{i=1}^N \hat P_{ir}}.
-$$
+\]
 
 [^1]: An alternative is a *thresholding* or *classification* estimator, which deterministically assigns individuals to a predicted racial category based on the BISG estimates $\vb{\hat P}_i$ (either the largest $\hat P_{ir}$ or the one which exceeds a predetermined threshold).
     Unlike the weighting estimator, this classification estimator does not take into account prediction uncertainty, and its bias is harder to reason about than that of the weighting estimator \citep{chen2019fairness}.
@@ -217,7 +219,8 @@ If race is binary (so $\cR=\{0,1\}$), then as $N\to\infty$, \[
 \]
 \end{theorem}
 
-This result implies that the conditional independence between individual's race and outcome given their surname, residence location, and other characteristics is sufficient to eliminate the asymptotic bias of the weighting estimator.
+This result implies that when the BISG residuals $\ind\{R=r\}-\Pr(R=r\mid G,X,S)$ are correlated with the outcome, estimates will be biased, even with infinite data.
+Conversely, conditional independence between individual's race and outcome given their surname, residence location, and other characteristics is sufficient to eliminate the asymptotic bias of the weighting estimator.
 
 \begin{assump}[Conditional independence of outcome and race] \label{a:indep-yr}
 For all $i$, $$Y_i\indep R_i\mid G_i,X_i,S_i.$$
@@ -227,12 +230,6 @@ Figure \@ref(fig:dag)(a) shows a causal directed acyclic graph (DAG) that satisf
 This causal structure implies the conditional independence relation $Y\indep R\mid G,X,S$ because all paths from $R$ to $Y$ are blocked by $G$, $X$, or $S$.
 The key causal assumption of this DAG is that the effect of race $R$ on the outcome $Y$ must be entirely mediated by surname $S$, residence location $G$, and other observed characteristics $X$.
 This type of exclusion restriction may not be credible in many practical settings because race can affect the outcome through so many factors, biasing the weighting estimator.
-
-But in other settings, Assumption \ref{a:indep-yr} may be more plausible.
-For example, for a manager reviewing job applications on paper, race is typically unobserved, but the manager may be influenced by racial or gender cues in a candidate's name or address [@park2009names; @aaslund2012names].
-So long as we observe all information used by the manager and use it in the BISG estimation, the weighting estimator would give an asymptotically unbiased estimate.
-Similarly, in evaluating the fairness of algorithmic decision-making, as long as all the information used by the algorithm is incorporated into BISG, Assumption \ref{a:indep-yr} would be appropriate.
-Outside of these cases, however, the weighting estimator is likely to be biased.
 
 ```{=tex}
 \begin{figure}[ht]
@@ -290,19 +287,31 @@ Outside of these cases, however, the weighting estimator is likely to be biased.
 \end{subfigure}
 \end{center}
 
-\caption{Possible causal structures for which each of the labeled assumptions is satisfied, represented as a directed acyclic graph (DAG) where $G$ is residence location, $R$ is race, $S$ is surname, $X$ is observed covariates, and $Y$ is the outcome. Both DAGs also satisfy Assumption \ref{a:indep-sgx}: Conditional independence of $S$ and $(G,X)$ given $R$.}
+\caption[Causal DAGs comparing Assumptions \ref{a:indep-yr} and \ref{a:indep-ys}]{
+Possible causal structures for which each of the labeled assumptions is satisfied, represented as a directed acyclic graph (DAG) where $G$ is residence location, $R$ is race, $S$ is surname, $X$ is observed covariates, and $Y$ is the outcome. Both DAGs also satisfy Assumption \ref{a:indep-sgx}: Conditional independence of $S$ and $(G,X)$ given $R$.}
 \label{fig:dag}
 \end{figure}
 ```
+
+But in other settings, Assumption \ref{a:indep-yr} may be more plausible.
+For example, for a manager reviewing job applications on paper, race is typically unobserved, but the manager may be influenced by racial or gender cues in a candidate's name or address [@park2009names; @aaslund2012names].
+So long as we observe all information used by the manager and use it in the BISG estimation, the weighting estimator would give an asymptotically unbiased estimate.
+Similarly, in evaluating the fairness of algorithmic decision-making, as long as all the information used by the algorithm is incorporated into BISG, Assumption \ref{a:indep-yr} would be appropriate.
+Outside of these cases, however, the weighting estimator is likely to be biased.
+
+Finally, while the discussion in this section has been focused on the BISG methodology, the qualitative results and necessary assumptions carry over to other approaches which produce probabilistic predictions of individual race, such as those recently developed by @argyle2022misclassification and @decter2022.
+Just as with BISG, well-calibrated probabilities are not generally sufficient to produce unbiased estimates of racial disparities using the outputs of these methods.
+
 # The Proposed Methodology {#sec:est}
 
 In this section, we propose an alternative identification strategy.
 Specifically, we show that racial disparity is identifiable if surname is conditionally independent of the outcome given race, residence geolocation, and other observed information, assuming that BISG can nonparametrically identify race probabilities.
 We then develop a class of statistical models, called Bayesian Instrumental Regression for Disparity Estimation (BIRDiE), that estimate racial disparity under this identification condition by using surnames as a high-dimensional instrumental variable for race.
-We discuss computation for these models, as well as how the methodology can be extended to include an additional explanatory variable that was not used at the BISG stage.
+These models take as inputs the BISG probabilities, and so can be easily applied on top of existing analysis pipielines, including with alternative probabilistic race prediction methodologies.
+We next discuss computation for BIRDiE models, as well as how the methodology can be extended to include an additional explanatory variable that was not used at the BISG stage.
 Finally, we propose a sensitivity analysis that addresses the potential violation of several of the key assumptions.
 
-## Identification Strategy
+## Identification Strategy {#subsec:ident}
 
 To reduce the potential bias of the weighting estimator, we propose an alternative identification assumption that may be applicable when Assumption \ref{a:indep-yr} is not credible.
 Specifically, we assume that surname, rather than race, satisfies the exclusion restriction conditional on (unobserved) race, residence location, and other observed characteristics.
@@ -371,7 +380,7 @@ $$ since $q_{gx|r}=\Pr(G=g,X=x\mid R=r)$ under Assumption \ref{a:cens-acc}.
 <!-- and where $\vb Y_{gx}$ is the vector of outcome variables for the individuals with $G_i=g$ and $X_i=x$. -->
 This estimator is unbiased, as the following theorem shows.
 
-\begin{restatable}[Unbiasedness of OLS Estimator]{theorem}{thmolsbias} \label{thm:ols-bias}
+\begin{restatable}[Unbiasedness of OLS Estimator]{theorem}{thmolsunb} \label{thm:ols-unb}
 If Assumptions \ref{a:indep-sgx}, \ref{a:cens-acc}, and \ref{a:indep-ys} hold, 
 and the identification conditions in Theorem~\ref{thm:id} are satisfied,
 then for all $y\in\cY$ and $r\in\cR$, \[
@@ -554,10 +563,10 @@ This approach will likely perform better when $W$ consists of multiple predictor
 Both these approaches require the following identifying assumption, which generalizes Assumption \ref{a:indep-ys}.
 
 \begin{assump}[Conditional independence of outcome, predictor and name] \label{a:indep-yws}
-For all $i$, $(Y_i, W_i)\indep S_i\mid R_i,G_i,X_i$, or, equivalently, $$
+For all $i$, $(Y_i, W_i)\indep S_i\mid R_i,G_i,X_i$, or, equivalently, \[
     W_i\indep S_i\mid R_i,G_i,X_i \qand
-    Y_i\indep S_i\mid W_i,R_i,G_i,X_i.
-$$
+    Y_i\indep S_i\mid W_i,R_i,G_i,X_i. 
+\]
 \end{assump}
 
 In the lending example, this would translate to the assumption that a measure of creditworthiness is independent of last name after controlling for race, location, and covariates, and that lending decisions are independent of last names after controlling for creditworthiness, race, location, and covariates.
@@ -571,15 +580,107 @@ This section, along with Appendix \ref{app:sens}, develop a sensitivity analysis
 
 ##### Violations of Assumption \ref{a:indep-ys}.
 
+BIRDiE assumes that conditional on unobserved race and observed covariates, outcomes and surnames are independent.
+We can partially relax this assumption for the purposes of sensitivity analysis.
+
+Consider a low-dimensional summary statistic of surname, $f:\cS\to\R^d$, $d\ll|\cS|$.
+Then even if Assumption \ref{a:indep-ys} does not hold, the following weakened assumption might hold.
+
+\begin{assump}[Partial conditional independence of outcome and name] \label{a:indep-ysf}
+For all $i$, $$Y_i\indep S_i\mid f(S_i),R_i,G_i,X_i.$$
+\end{assump}
+
+Figure \ref{fig:dag2} compares possible causal DAGs that satisfy Assumption \ref{a:indep-ys} and \ref{a:indep-ysf}.
+In contrast to Assumption \ref{a:indep-ys}, Assumption \ref{a:indep-ysf} allows for limited confounding between surnames and outcome, or even a direct effect of surnames on the outcome via $f(S)$.
+
+```{=tex}
+\begin{figure}[ht]
+\begin{center}
+\begin{subfigure}[b]{0.4\textwidth}
+\centering
+    \tikzstyle{main node}=[circle,draw,font=\sffamily\Large\bfseries]
+    \tikzstyle{sub node}=[circle,draw,dashed,font=\sffamily\Large\bfseries]
+    \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2.5cm,thick]
+    
+        \node[main node] (G) {$G$};
+        \node[main node] (R) [below of=G] {$R$};
+        \node[main node] (S) [below left=0.5cm and 0.5cm of R] {$S$};
+        \node[main node] (Y) [right of=G] {$Y$};
+        \node[main node] (X) [below of=Y] {$X$};
+        
+        \path[every node/.style={font=\sffamily\small}]
+        (R) edge node  {} (G)
+        (R) edge node  {} (X)
+        (R) edge node  {} (Y)
+        (R) edge node  {} (S)
+        (G) edge node  {} (X)
+        (G) edge node  {} (Y)
+        (X) edge node  {} (Y);
+        
+        %\path[every node/.style={font=\sffamily\small}, <->]
+        %(G) edge [dashed, bend right] node  {} (S)
+        %(X) edge [dashed, bend left] node  {} (S);
+    \end{tikzpicture}
+    \caption{Assumption \ref{a:indep-ys}: Conditional independence of $Y$ and $S$ given $(G, R, X)$}
+\end{subfigure}
+\hspace{1em}
+\begin{subfigure}[b]{0.4\textwidth}
+\centering
+    \tikzstyle{main node}=[circle,draw,font=\sffamily\Large\bfseries]
+    \tikzstyle{sub node}=[circle,draw,dashed,font=\sffamily\Large\bfseries]
+    \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2.6cm,thick]
+    
+        \node[main node] (G) {$G$};
+        \node[main node] (R) [below of=G] {$R$};
+        \node[main node] (S) [below left=0.5cm and 0.5cm of R] {$S$};
+        \node[main node] (fS) [above left=0.65cm and 0.05cm of S] {\small $f(S)$};
+        \node[main node] (Y) [right of=G] {$Y$};
+        \node[main node] (X) [below of=Y] {$X$};
+        
+        \path[every node/.style={font=\sffamily\small}]
+        (R) edge node  {} (G)
+        (R) edge node  {} (X)
+        (R) edge node  {} (Y)
+        (R) edge node  {} (S)
+        (S) edge node  {} (fS)
+        (fS) edge[bend left=15,dashed] node {} (Y)
+        (Y) edge[bend right=15,dashed] node {} (fS)
+        (G) edge node  {} (X)
+        (G) edge node  {} (Y)
+        (X) edge node  {} (Y);
+    \end{tikzpicture}
+    \caption{Assumption \ref{a:indep-ysf}: Conditional independence of $Y$ and $S$ given $(f(S), R, G, X)$}
+\end{subfigure}
+\end{center}
+
+\caption[Causal DAGs comparing Assumptions \ref{a:indep-ys} and \ref{a:indep-ysf}]{
+Possible causal structures for which each of the labeled assumptions is satisfied, represented as a directed acyclic graph (DAG). 
+Double-ended dashed arrows indicate causal confounding of the connected variables.
+Both DAGs also satisfy Assumption \ref{a:indep-sgx}: Conditional independence of $S$ and $(G,X)$ given $R$.}
+\label{fig:dag2}
+\end{figure}
+```
+
+It is still possible to nonparametrically identify racial disparities under Assumption \ref{a:indep-ysf}, though the identification condition is slightly stronger than for Theorem \ref{thm:id}.
+
+\begin{restatable}[Nonparametric Identification Under Assumption \ref{a:indep-ysf}]{theorem}{thmidrel} \label{thm:id2}
+Let $f:\cS\to\R^d$, $d< |\cS|$, with range $f(\cS)$.
+For any given $g\in\cG$, $x\in\cX$, $z\in f(\cS)$, and $y\in\cY$, define a matrix $\vb P$ with entries $p_{rs}=\Pr(R=r\mid G=g, X=x, S=s)$  and a vector $\vb b$ with entries $b_s=\Pr(Y=y\mid G=g, X=x, S=s)$.
+Then under Assumption~\ref{a:indep-ysf}, and assuming knowledge of the joint distribution $\Pr(R,G,X,S)$, the conditional probabilities $\Pr(Y=y\mid R,f(S)=z,G=g, X=x)$ are identified if and only if both $\vb P$ and the augmented matrix $\mqty(\vb P&\vb b)$ have rank $|\cR|$.
+\end{restatable}
+
+As long as the dimension $d$ of the surname summary statistic $f(S)$ is much smaller than the (usually large) number of surnames $|\cS|$, racial disparities are likely to be identified under Theorem \ref{thm:id2} when they are already identified under Theorem \ref{thm:id}.
+
+Assumption \ref{a:indep-ysf} and Theorem \ref{thm:id2} can be used in conjunction with carefully chosen $f$ in order to probe likely failure modes of the more restrictive Assumption \ref{a:indep-ys}.
+As discussed in Section \ref{subsec:ident}, association between the outcome and country of origin or racial subgroups may lead to correlation between surnames and outcome even after controlling for race and geography.
+If $f$ can classify surnames into finer racial subgroups or countries of origin---even approximately---then it can be used to control for this channel of possible violations of Assumption \ref{a:indep-ys}.
+If estimates are not much affected by the inclusion of $f(S)$, then researchers can be more confident in the plausibility of Assumption \ref{a:indep-ys}.
+
 ##### Violations of Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc}.
 
 Bias can also arise from violations of the assumptions underlying the BISG methodology.
 Of course, this is not unique to the proposed methodology: violations of these assumptions will also affect the validity of other disparity estimators such as weighting or thresholding.
 However, since as discussed above the BISG assumptions may rarely hold exactly in practice, we provide in Appendix \ref{app:sens} several results characterizing how the model's estimates are affected by bias in the BISG probabilities.
-
-One key result is that a pattern of uniform bias can arise when the prior $\vb q_R$ doesn't match the population distribution of race.
-Specifically, when the target population differs from the entire U.S. population that is enumerated by the census, or if the census is out of date, a $\vb q_R$ taken from census tables alone will be incorrect.
-In these cases, we recommend that practitioners use other data sources, such as large surveys, to estimate the overall race distribution, and use this instead of national census estimates for $\vb q_R$.
 
 # Empirical Validation and Illustration {#sec:valid}
 
@@ -608,9 +709,10 @@ Altogether, `r percent(1 - 5754912/7389159, 0.1)` of records either had missing 
 
 ```{r nc-overview, out.width="6in"}
 #| fig.cap: |
-#|     Distribution of party identification by race, 
+#|     Distribution of party identification by race 
 #|     for a sample of 1,000,000 North Carolina voters. Parties are Libertarian (LIB),
 #|     Republican (REP), Independent (IND), and Democratic (DEM).
+#| fig.scap: Distribution of party identification by race for North Carolina voters
 knitr::include_graphics("figures/nc_overview.pdf")
 ```
 
@@ -657,6 +759,7 @@ The weakly informative prior on the random intercept scale is centered at 0.2 an
 #|     for other levels of geographic detail are generally similar.
 #|     Estimation uncertainty is minimal and hence suppressed from 
 #|     the figure for clarity.
+#| fig.scap: Error in racial disparity estimates for party identification, by estimation method
 x = readRDS(here("paper/data/nc_disp_ex.rds"))
 same_sat_mmm = if (abs(x$birdie_sat$disp_wb - x$birdie_mmm$disp_wb) < 0.1) "also" else ""
 knitr::include_graphics("figures/nc_disp.pdf")
@@ -683,6 +786,10 @@ The saturated and mixed-effects BIRDiE models perform similarly with no discerni
 #|     used in the BISG predictions.
 #|     The left plot shows the overall total variation distance,
 #|     whlie the right plot decomposes it by racial group.
+#| fig.scap: |
+#|     Total variation distance between the estimated and actual distribution of
+#|     party identification, by estimation method and level of geographic detail 
+#|     used in the BISG predictions
 knitr::include_graphics("figures/nc_tv.pdf")
 ```
 
@@ -721,6 +828,7 @@ Since in fitting the BIRDiE model to block-level BISG probabilities we used trac
 #| fig.cap: |
 #|     Accuracy of small-area estimates by race, as measured by 
 #|     the average total variation distance.
+#| fig.scap: Accuracy of small-area party identification estimates by race
 knitr::include_graphics("figures/nc_smallarea.pdf")
 ```
 
@@ -753,8 +861,11 @@ These updated probabilities may be more accurate than the original BISG probabil
 #|     Race probability predictive accuracy, as measured by the area under the 
 #|     receiver operating characteristic (ROC) curve, for the input BISG 
 #|     probabilities as well as the BIRDiE-updated probabilities, by race and
-#|     level of  geographic precision.
+#|     level of geographic precision.
 #|     Larger values indicate more precise predicions.
+#| fig.scap: |
+#|     Race probability predictive accuracy for the input BISG and 
+#|     BIRDiE-updated probabilities, by race and level of geographic precision
 knitr::include_graphics("figures/nc_roc.pdf")
 ```
 
@@ -793,6 +904,9 @@ The total variation distance between these estimates and the true distribution i
 #|     All methods used block-level data for this figure.
 #|     Estimation uncertainty is minimal and hence suppressed from 
 #|     the figure for clarity.
+#| fig.scap: | 
+#|     Error in the conditional expectation estimates for
+#|     party identification by turnout and race, by estimation method
 knitr::include_graphics("figures/nc_addlcov_error.pdf")
 ```
 
@@ -804,47 +918,53 @@ As discussed in Section \ref{sec:addlcov}, while both approaches produce highly 
 In contrast to the BIRDiE models, the weighting and thresholding estimates of party ID by 2020 turnout and race include large errors, especially for Black voters with all the errors exceeding 10 percentage points.
 The TV distance for the weighting estimator is `r number(x$weight, 1e-3)`, and the distance for the thresholding estimator is `r number(x$thresh, 1e-3)`---around 3--4 times higher than for the estimates based on the BIRDiE models.
 
-<!--#
-```{r}
-x = readRDS("data/nc_bounds.rds")
-```
-
 ## Sensitivity Analysis
 
-As noted above, the sampling error in all of these estimates is minimal---the widest 90% confidence interval in the ZIP code-level model estimates of the joint distribution of party ID by race is $(`r percent(x$ci_min, 0.01, suffix="\\%")`,`r percent(x$ci_max, 0.01, suffix="\\%")`)$---not enough to explain the residual TV error.
-This error results from a violation of Assumptions \ref{a:indep-sgx}--\ref{a:indep-ys}, likely in large part driven by outdated Census data and differences between the adult and registered voter populations.
+Finally, we can examine the sensitivity of our party identification estimates to violations of the key identifying Assumption \ref{a:indep-ys}, following the method outlined in Section \ref{sec:sens} of using a low-dimensional surname summary statistic.
+Using a publicly available sample of 5\% of the individual records for the 1930 Census [@cens1930], which contains individual names, individual and parental birthplace, and detailed race, ethnicity, and tribal codes, we can classify most surnames in the voter file into nine groups.
+We further supplement this data with around 3,000 Asian surnames classified into six regional subgroups [@asiannames], since many regions of Asia, particularly Vietnam, experienced little emigration to the United States before 1930.
+While necessarily somewhat arbitrary, these groups are chosen to combine countries of origin which had significant immigration to the United States during similar periods.
+A high-level description of the groupings, and the most common 50 surnames for each group, may be found in Appendix \ref{app:surgrp}.
 
-We can apply the theoretical bounds from Theorem \ref{thm:bound} to gain a better understanding of how these data issues, which lead to errors in the BISG probabilities, translate to errors in the proposed model's estimates.
-In particular, we can examine how large the average error in the individual BISG probabilities, $||\vb*\delta_i||$, would have to be in order to eliminate confidence in the estimated party ID disparity between voters.
+We can first evaluate the plausibility of Assumption \ref{a:indep-ys} by examining the correlation between the residuals of the BIRDiE model fit and indicator variables for each of the nine surname groups.
+Under Assumption \ref{a:indep-ys}, this residual correlation should be zero everywhere.
+As Figure \ref{fig:nc-sens} shows, however, for many groups and party labels, the correlation is nonzero and more extreme than would be expected given only sampling variation.
+Here, we use the residuals from the county-level saturated model specification, but the results are not sensitive to this choice.
 
-```{r nc-bounds}
+```{r nc-sens}
 #| fig.cap: |
-#|     Worst-case sensitivity analysis bounds, indicated by shaded areas,
-#|     for estimated disparities between racial groups in party identification.
-#|     ZIP code-level estimates are used.
-#|     When the shaded region meets the x-axis, a worst-case error of the 
-#|     indicated magnitude would be enough to eliminate the estimated disparity.
-knitr::include_graphics("figures/nc_bounds.pdf")
+#|     Residual correlation between party identification and nine surname groups,
+#|     after controlling for race and location.
+#|     Correlations whose 90\% confidence intervals exclude zero are marked with
+#|     an asterisk.
+#|     See Appendix \ref{app:surgrp} for details on the surname groups.
+#| fig.scap: | 
+#|     Residual correlation between party identification and nine surname groups 
+#|     in North Carolina.
+knitr::include_graphics("figures/nc_sens_grp.pdf")
 ```
 
-Figure \@ref(fig:nc-bounds) shows how worst-case error in the individual BISG probabilities could change the estimated White--Black and White--Hispanic disparities in party identification.
-Where the shaded regions meets the x-axis indicate the minimum error needed to eliminate the estimated disparity.
-For example, a worst-case total error $\Delta$ corresponding to an average individual error $||\vb*\delta_i||$ of `r round(100*x$max_err_party_wb["dem"], 1)` percentage points would be enough to wipe out the estimated disparity in Democratic registration between White and Black voters.
-In other words, the observed disparity of over 50 percentage points is robust to at least an error of this magnitude in the BISG probabilities.
+Notably, voters with names in the `ANGLOBL` group, which includes surnames that are relatively more common among many-generation residents of the U.S., such as Smith, Williams, and Brown, are significantly less likely to register as Democrats and independents, and more likely to identify as Republicans, even after controlling for race and geography.
+Meanwhile, voters with names in the `EUR_WAVE1` and `EUR_WAVE2` groups, which includes surnames more common among 19th and 20th century immigrants from Europe, display the opposite pattern.
+Differences among surname groups designed to correlate with membership in various Asian subgroups are also visible.
+However, all of these correlations are quite small in magnitude, with most on the order of 0.01 or so.
+Thus we might expect our party-by-race estimates to be little affected by the inclusion of the surname group indicators.
 
-Since the bounds are for worst-case error, the actual robustness to realistic modes and magnitudes of BISG error is likely significantly higher.
-But these bounds provide a useful guarantee, and can can give an idea of the relative sensitivity of the estimates to data error.
-For example, even though the estimated gap between White and Black voters in Republican registration is smaller than the gap for Democratic registration, both disparities are roughly equally robust to error.
-In contrast, the disparity in independent registration could be eliminated by worst-case error on the order of `r round(100*x$max_err_party_wb["ind"], 1)` percentage points.
--->
-
-```{=html}
-<!--# 
-# Application {#sec:appl}
-
--   Treasury data, no covariates
--->
+```{r}
+x = readRDS(here("paper/data/nc_sens_diff.rds")) # diffs between sens and original
+max_x = max(abs(x))
+max_loc = which(abs(x) == max_x, arr.ind=TRUE)
+max_race = str_to_title(colnames(x)[max_loc[, "col"]])
+max_party = c(dem="Democratic", ind="Independent", rep="Republican")[rownames(max_loc)]
 ```
+
+Indeed, re-fitting the county-level saturated model with an additional surname group covariate produces nearly identical results, albeit at a moderately higher computational cost given the increased number of $(G, X, f(S))$ cells.
+This re-fitting requires assuming that Assumption \ref{a:indep-ysf} holds rather than Assumption \ref{a:indep-ys}.
+Violations of Assumption \ref{a:indep-ys} that do not satisfy Assumption \ref{a:indep-ysf} are therefore not able to be accounted for.
+Nevertheless, the average party identification rate estimate changes by `r number(mean(abs(x)), 0.001)`, with the largest change being 
+`r number(max_x, 0.001)`, for the rate of `r max_party` identification among `r max_race` voters.
+All in all, this analysis provides confidence that violations of Assumption \ref{a:indep-ys} for the North Carolina voter file are likely minor and would have minimal effects on quantiative and qualitative conclusions.
+
 # Discussion {#sec:disc}
 
 We have introduced a new identifying assumption and accompanying model, BIRDiE, and clarified other assumptions implicit in approaches to disparity estimation from proxy data.
@@ -888,7 +1008,7 @@ So for each $y\in\cY$, $g\in\cG$, and $x\in\cX$, this relation is a linear syste
 These parameters are identified if and only if this system has a unique solution, i.e. if the coefficient matrix $\vb P$ has rank $|\cR|$ and so does the augmented matrix $\mqty(\vb P&\vb b)$.
 \end{proof}
 
-\thmolsbias*
+\thmolsunb*
 \begin{proof}
 Fix $y\in\cY$ and define $m_{gxr} = \E[\ind\{Y=y\}\mid R=r, G=g, X=x)]$.
 Then under Assumptions \ref{a:indep-sgx}, \ref{a:cens-acc}, and \ref{a:indep-ys},
@@ -927,13 +1047,13 @@ We can write the OLS estimator as $$
     = \mathrm{coord}_{\hat{\vb P}_{\cI(xg)}}(\proj_{\hat{\vb P}_{\cI(xg)}}(\ind\{{\vb Y}_{\cI(xg)}=y\}),
 $$ where $\mathrm{coord}_{\hat{\vb P}_{\cI(xg)}}$ is the function that returns the coordinates of its input vector in the $\hat{\vb P}_{\cI(xg)}$ basis (by assumption $\hat{\vb P}_{\cI(xg)}$ has rank $|\cR|$ and so its columns are linearly independent).
 To make the comparison even easier, notice that we can break the projection $\proj_{\hat{\vb P}_{\cI(xg) r}}$ into two steps, writing it instead as $\proj_{\hat{\vb P}_{\cI(xg) r}} = \proj_{\hat{\vb P}_{\cI(xg) r}} \circ \proj_{\hat{\vb P}}$.
-Letting $\vb Y_{\proj}=\proj_{\hat{\vb P}_{\cI(xg)}}(\ind\{{\vb Y}_{\cI(xg)}=y\})$, then, we can rewrite our estimators as $$
+Letting $\vb Y_{\proj}=\proj_{\hat{\vb P}_{\cI(xg)}}(\ind\{{\vb Y}_{\cI(xg)}=y\})$, then, we can rewrite our estimators as \[
     \hat\mu^{(\text{wtd})}_{Y|R}(y\mid r) 
     = \frac{\norm{\proj_{\hat{\vb P}_{\cI(xg) r}}(\vb Y_\proj)}}{
         \norm{\proj_{\hat{\vb P}_{\cI(xg) r}}(\vb 1)}}  \qand
     \hat{\vb\mu}^{(\text{ols})}_{Y|R}(y\mid r)
     = \mathrm{coord}_{\hat{\vb P}_{\cI(xg)}}(\vb Y_\proj)_r.
-$$ 
+\]
 
 Now, since the individual BISG probabilities are nonnegative and sum to 1, a pair $j,k\in\cR$ of races has perfectly discriminating BISG probabilities if and only if the corresponding columns of $\hat{\vb P}$ are orthogonal, i.e., $\hat{\vb P}_{\cI(xg) j}^\top\hat{\vb P}_{\cI(xg) k}=I$.
 Begin by writing $\vb Y_\proj$ in terms of the $\hat{\vb P}_{\cI(xg)}$ basis, so \[
@@ -966,28 +1086,24 @@ Then by the above basis expansion, $\hat{\mu}^{(\text{ols})}_{Y|RGX}(y\mid j)=c_
 \]
 \end{proof}
 
+\thmidrel*
+\begin{proof}
+The argument is identical to the proof of Theorem \ref{thm:id}.
 
-<!--#
-# Appendix: Total Variation Decomposition by Racial Group
+Applying the law of total probability and our conditional independence relation $S\indep Y\mid f(S),R,G,X$, we have,
+for all $y\in\cY$, $g\in\cG$, $x\in\cX$, and $s\in\cS$,
+\begin{align*}
+    \Pr(Y=y\mid G=g, X=x, S=s)
+    &= \sum_{r\in\cR} \Pr(Y=y\mid R=r, f(S)=s, G=g, X=x, S=s)\\
+    &\qquad\times\Pr(R=r\mid G=g, X=x, S=s) \\
+    &= \sum_{r\in\cR} \Pr(Y=y\mid R=r, f(S)=s, G=g, X=x)\\
+    &\qquad\times\Pr(R=r\mid G=g, X=x, S=s).
+\end{align*}
+The left-hand side is estimable from the data and the rightmost term $\Pr(R=r\mid G=g, X=x, S=s)$ is assumed known.
+So for each $y\in\cY$, $z\in f(\cS)$, $g\in\cG$, and $x\in\cX$, this relation is a linear system in unknown parameters $\Pr(Y=y\mid R=r, f(S)=s, G=g, X=x)$.
+These parameters are identified if and only if this system has a unique solution, i.e. if the coefficient matrix $\vb P$ has rank $|\cR|$ and so does the augmented matrix $\mqty(\vb P&\vb b)$.
+\end{proof}
 
-Figure \@ref(fig:nc-tv-detail) below is the same as Figure \@ref(fig:nc-tv) but with the total variation distance decomposed by racial group.
-Compared to Figure \@ref(fig:nc-tv), the results are more mixed for individual racial groups.
-It is important to remember that Black and White voters together comprise over 95% of the sample.
-In general, BIRDiE is more accurate than the other methods for the White and Black racial groups which together make up 96% of the sample.
-All estimators perform roughly equally well for Hispanic, Asian, and Native voters (though the thresholding estimator performs well for Asian voters in estimating party ID).
-The complete-pooling model performs poorly for the "Other" racial group, though no method performs particularly well for that group.
-
-
-```{r nc-tv-detail}
-#| fig.cap: |
-#|     Total variation distance (on a logarithmic scale)
-#|     between the estimated and actual distribution of
-#|     party identification,
-#|     by estimation method, level of geographic detail 
-#|     used in the BISG predictions, and race.
-knitr::include_graphics("figures/nc_tv_detailed.pdf")
-```
--->
 
 # Additional Small-area Accuracy Evaluation {#app:small}
 
@@ -1003,6 +1119,7 @@ A set of estimates which uniformly underestimates the proportion of Black voters
 #|     Accuracy of small-area estimates by race, as measureed by 
 #|     root-mean-square error (RMSE; lower is better) and the 
 #|     correlation between the estimates and ground truth (higher is better).
+#| fig.scap: Alternate measures of accuracy of small-area estimates by race
 knitr::include_graphics("figures/nc_smallarea_app.pdf")
 ```
 
@@ -1012,7 +1129,9 @@ The weighting estimator performs the worst of all the methods.
 
 # Sensitivity Analysis {#app:sens}
 
-In this section, we address this challenge by developing a sensitivity analysis that assesses how the bias in BISG race probabilities affect the estimates of racial disparities.
+## Local sensitivity analysis
+
+In this section, we develop a sensitivity analysis that assesses how the bias in BISG race probabilities affect the estimates of racial disparities.
 In particular, we consider a setting where Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc} may be violated but Assumption \ref{a:indep-ys} still holds.
 For example, consider the existence of unobserved confounder that affects some or all of the variables except the outcome, i.e., $(R,S,G,X)$.
 This leads to the violation of Assumption \ref{a:indep-sgx}, but Assumption \ref{a:indep-ys} continues to be satisfied so long as such unobserved confounder does not affect the outcome.
@@ -1084,149 +1203,155 @@ Thus the overall impact of the sample size on the bound in Equation \eqref{eq:co
 In particular, and as should be expected, the error is not guaranteed to vanish as $N\to\infty$.
 Practitioners should evaluate Equation \eqref{eq:covbound} under a range of plausible $\Delta$ to understand how robust their findings are to worst-case linear violations of Assumptions $\ref{a:indep-sgx}$ and $\ref{a:cens-acc}$.
 
+## OLS sensitivity analysis
 
-<!--# This section continues with the notational conventions of Section \@ref(sec:sens).-->
-For a more qualitative understanding of the effect of a particular $\vb\delta$, we can derive results on the direction of the error in $\E_\pi[g(\Theta)]$ for linear $g(\Theta)=\vec(\Theta)^\top\vb d$ and particular configurations of $\vb*\delta$.
-Unlike Theorem \ref{thm:bound}, these results hold across all sizes of $\vb*\delta$, and not just asymptotically as $\norm{\vb*\delta}\to 0$.
+For a different understanding of the effect of a particular $\vb\delta$, we can derive a result on the error in conditional probability estimates under the OLS estimator and particular configurations of $\vb*\delta$.
+Unlike Theorem \ref{thm:bound}, this result holds across all sizes of $\vb*\delta$, and not just asymptotically as $\norm{\vb*\delta}\to 0$.
+However, it applies to the OLS estimator, which, while unbiased, we do not recommend in practice.
+But we expect many of the qualitative conclusions to hold for BIRDiE models.
+The effect of any particular $\vb*\delta$ can of course be calculated directly by re-fitting the model to new race probabilities.
 
-The class of linear $g$ is still large enough to contain many of the usual estimands of interest.
-For example, estimating conditional expectations of $Y$ for certain racial groups can be achieved by setting the entries of $\vb d$ to 1 for those combinations of $Y$ and $R$.
-The first theorem below establishes results for this case, and the subsequent corollary translates a common special case.
+Here, we will work with a fixed $y\in\cY$ and among the subset of individuals with a particular $g\in\cG$ and $x\in\cX$.
+Then for notational simplicity we let $\hat{\vb*\mu}^{\text{(ols)}}$ be the  vector of estimates of $\Pr(Y=y\mid R, G=g, X=x)$, and $\vb*\mu$ the corresponding true probabilities.
+Similarly, we write $\hat{\vb P}$ for the matrix of individual race probability estimates for the subset of individuals with $g\in\cG$ and $x\in\cX$; elsewhere in the text this would be notated $\hat{\vb P}_{\cI(xg)}$ 
 
-First, however, we establish an important lemma.
-We can write the bias for a particular quantity of interest $g(\Theta)$ as \begin{align*}
-    \E_{\pi_{\vb*\delta^*}}[g(\Theta)] - \E_\pi[g(\Theta)]
-    &= \frac{\E_\pi[w(\Theta,\vb*\delta^*)g(\Theta)]}{\E_\pi[w(\Theta,\vb*\delta^*)]} - 
-        \E_\pi[g(\Theta)] \\
-    &= \Cov_\pi\qty(\frac{w(\Theta,\vb*\delta^*)}{\E_\pi[w(\Theta,\vb*\delta^*)]}, g(\Theta)),
-\end{align*} where $\vb Y=(\vb Y,\vb G, \vb X,\vb S)$ is the observed data.
-This holds exactly, and is not just a linear approximations (notice the absence of a logarithm around the perturbation weights).
-
-\begin{lemma} \label{lem:biassign}
-For a vector $\vb d$, if \[
-    \hat r_{ij}\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} -
-    \delta_{ij}\hat{\vb P}_i^\top\vb d_{Y_i\cdot G_iX_i} \ge 0
-\] for all $1\le i\le N$ and $j\in\cR$, then \[
-    \Cov_\pi\qty(\frac{w(\Theta,\vb*\delta)}{\E_\pi[w(\Theta,\vb*\delta)\mid\vb Y]}, 
-        \vec(\Theta)^\top\vb d\gvn\vb Y) \ge 0.
-\] Conversely, if \(
-    \hat r_{ij}\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} -
-    \delta_{ij}\hat{\vb P}_i^\top\vb d_{Y_i\cdot G_iX_i} \le 0
-\) for all $1\le i\le N$ and $j\in\cR$, then \[
-    \Cov_\pi\qty(\frac{w(\Theta,\vb*\delta)}{\E_\pi[w(\Theta,\vb*\delta)\mid\vb Y]}, 
-        \vec(\Theta)^\top\vb d\gvn\vb Y) \le 0.
+\begin{prop}[OLS Bias from incorrect $\hat{\vb P}$] \label{prop:ols-bias}
+Let Assumption \ref{a:indep-ys} hold.
+If the OLS estimator $\hat{\vb*\mu}^{\text{(ols)}}$ is 
+calculated using race probabilities $\hat{\vb P}$ which differ from the true 
+probabilities $\vb P^*=\hat{\vb P}+\vb*\delta$, then its bias satisfies \[
+    \E[\hat{\vb*\mu}^{\text{(ols)}}]  - \vb*\mu
+    = (\hat{\vb P}^\top \hat{\vb P})^{-1}
+    \hat{\vb P}^\top \vb*\delta \vb*\mu
 \]
-\end{lemma}
+\end{prop}
 \begin{proof}
-We will leverage the covariance inequality, which states that for a monotonically increasing function $g$ and monotonically increasing (decreasing) functions $f$, and any random variable $Y$, $\Cov(f(Y),g(Y))$ is nonnegative (nonpositive).
-Since $w$ is nonnegative, we need only consider $\Cov_\pi\qty(w(\Theta,\vb*\delta), \vec(\Theta)^\top\vb d\mid\vb Y)$, without the normalization constant $\E_\pi[w(\Theta,\vb*\delta)\mid\vb Y]$.
-In fact, since $w$ is a product of nonnegative terms, and the product of nonnegative monotonic functions is again monotonic, by the covariance inequality it suffices to show that each term \[
-    w_i \dfeq 1 + \frac{\vb*\theta_{Y_i}(G_i, X_i)^\top \vb*\delta_i}{
-        \vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i} 
-\] is monotonic in $\vec(\Theta)^\top\vb d$.
-
-Partial derivatives with respect to elements of $\vec(\Theta)$ are clearly zero except for those corresponding to $\vec(\Theta)_{Y_i\cdot G_iX_i}$. These are \[
-    \pdv{w_i}{\vec(\Theta)_{Y_irG_iX_i}}
-    = \frac{\vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i\delta_{ir} -
-        \vb*\theta_{Y_i}(G_i, X_i)^\top \vb*\delta_i \hat r_{ir}}{
-        \vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i}.
-\] The directional derivative along $\vb d$ is then 
+We can write the OLS estimate as \[
+    \hat{\vb*\mu}^{\text{(ols)}} 
+    = (\hat{\vb P}^\top \hat{\vb P})^{-1} \hat{\vb P}^\top \ind{\vb Y=y}.
+\]
+As shown in Theorem \ref{thm:ols-unb}, under Assumption \ref{a:indep-ys}, 
+$\Pr(Y=y\mid R=r,G=g,X=x)$ is linear in the true $\vb P^*$.
+Thus letting $\eps=\ind{\vb Y=y}-\Pr(Y=y\mid R=r,G=g,X=x)$, we can substitute and find
 \begin{align*}
-    \partial_{\vb d}w_i 
-    &= \frac{\vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i
-                \vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} - 
-                \vb*\theta_{Y_i}(G_i, X_i)^\top \vb*\delta_i
-                \hat{\vb P}_i^\top\vb d_{Y_i\cdot G_iX_i}}{
-            (\vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i)^2} \\
-    &= \frac{\vb*\theta_{Y_i}(G_i, X_i)^\top}{
-            (\vb*\theta_{Y_i}(G_i, X_i)^\top \hat{\vb P}_i)^2}
-            (\hat{\vb P}_i\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} - 
-            \vb*\delta_i\hat{\vb P}_i^\top\vb d_{Y_i\cdot G_iX_i}).
+    \hat{\vb*\mu}^{\text{(ols)}} 
+    &= (\hat{\vb P}^\top \hat{\vb P})^{-1} \hat{\vb P}^\top 
+    \qty(\vb P^*\vb*\mu+\eps) \\
+    &= (\hat{\vb P}^\top \hat{\vb P})^{-1} \hat{\vb P}^\top 
+    \qty((\hat{\vb P}+\vb*\delta)\vb*\mu+\eps).
 \end{align*}
-Since $\vb*\theta_{Y_i}(G_i, X_i)$ is nonnegative, a sufficient condition for the directional derivative to be nonnegative, and thus for $w_i$ to be monotonically increasing in $\vec(\Theta)^\top\vb d$, is for
-$\hat r_{ij}\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} - \delta_{ij}\hat{\vb P}_i^\top\vb d_{Y_i\cdot G_iX_i} \ge 0$ for all $j\in\cR$. Similarly, by reversing this inequality, we have a sufficient condition for $w_i$ to be monotonically decreasing in $\vec(\Theta)^\top\vb d$.
+Taking an expectation, since $\E[\eps]=0$ we find
+\begin{align*}
+    \E[\hat{\vb*\mu}^{\text{(ols)}}]
+    &= (\hat{\vb P}^\top \hat{\vb P})^{-1} \hat{\vb P}^\top 
+    \qty((\hat{\vb P}+\vb*\delta)\vb*\mu) \\
+    &= \vb*\mu + (\hat{\vb P}^\top \hat{\vb P})^{-1} \hat{\vb P}^\top 
+    \qty(\vb*\delta\vb*\mu);
+\end{align*}
+rearrangement yields the result.
 \end{proof}
 
-\begin{theorem}
-Let $r\in\cR$, $I\subseteq\{1,\dots,N\}$, and $\vb d$ a vector such that $\vb d_{Y_i\cdot G_iX_i}= c\vb e_r$ for all $i\in I$ and $0$ elsewhere, where $\vb e_r\in\R^{|\cR|}$ is the standard basis vector in the $r$ direction and $c>0$.
-Then if for all $i\in I$, $\delta_{ir}>0$ and $\delta_{ij}<\delta_{ir}$ for $j\neq r$, \[
-    \E_{\pi_{\vb*\delta^*}}[\vec(\Theta)^\top\vb d\mid\vb Y] \ge \E_{\pi}[\vec(\Theta)^\top\vb d\mid\vb Y].
-\]
-\end{theorem}
-\begin{proof}
-Let $i\in I$. Then by assumption $\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i}=c\delta_{ir}>0$. 
-Let $j\in\cR$. If $j=r$, \[
-    \hat r_{ir}\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} -
-    \delta_{ir}\hat{\vb P}_i^\top\vb d_{Y_i\cdot G_iX_i}
-    = \hat r_{ir}c\delta_{ir} - \delta_{ir}\hat r_{ir}c = 0,
-\]
-If $j\neq r$, we have \[
-    \hat r_{ij}\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} -
-    \delta_{ij}\hat{\vb P}_i^\top\vb d_{Y_i\cdot G_iX_i}
-    = \hat r_{ij}c\delta_{ir} - \delta_{ij}\hat r_{ij}c
-    = c\hat r_{ij}(\delta_{ir} - \delta_{ij})\ge 0.
-\]
-So the condition of Lemma~\ref{lem:biassign} is satisfied for all $j\in\cR$, and
-thus by the lemma we conclude that \[
-    \E_{\pi_{\vb*\delta^*}}[\vec(\Theta)^\top\vb d\mid\vb Y] - \E_{\pi}[\vec(\Theta)^\top\vb d\mid\vb Y]
-    = \Cov_\pi\qty(\frac{w(\Theta,\vb*\delta)}{\E_\pi[w(\Theta,\vb*\delta)]}, 
-    \vec(\Theta)^\top\vb d \gvn\vb Y) \ge 0. \qedhere
-\]
-\end{proof}
+Informally, for BISG error $\vb*\delta$ to cause problems with the OLS estimate, two things must happen.
+First, within individuals it must be "correlated" (i.e., have nonzero inner product) with the true conditional probabilities $\vb*\mu$.
+Since $\vb*\delta_i$ must always sum to zero, practically, this means that  positive BISG errors must tend to occur in racial groups which have a relatively high occurrence of outcome $y$: $\Pr(Y=y\mid R=r,G=g,X-x) > \Pr(Y=y\mid G=g,X-x)$.
+Second, the vector $\vb*\delta\vb*\mu$ (where each entry measures this "correlation" between errors and relative frequencies) must be correlated the BISG probabilities themselves $\hat{\vb P}$.
+For example, if $\vb*\delta_i\vb*\mu$ is positive and tends to be larger for individuals with a high BISG probability of being Hispanic, then the overall OLS estimator the conditional probability of $Y=y$ among Hispanics will be biased upwards.
 
-By reversing the sign of $\vb*\delta_i$, we can reverse the direction of the bias.
-For the binary race case, we have the following translation of this result.
+While Proposition \ref{prop:ols-bias} applies within a $(G,X)$ cell, if the same conditions hold across all $(G,X)$ combinations, then the overall poststratified estimator will be similarly biased.
 
-\begin{corollary} \label{cor:errdir1}
-Suppose that race is binary, i.e., $\cR=\{0,1\}$.
-Then for any $y\in\cY$, the model-based estimate of $\Pr[Y=y\mid R=1]$, denoted $\E_\pi[\bar\Theta_{y1}\mid\vb Y]$, 
-will be biased downwards (upwards) if, for all $i$ with $Y_i=y$, the BISG probability $\hat r_{i1}$ is biased downwards (upwards).
-\end{corollary}
 
-Racial disparities can be similarly estimated by setting entries of $\vb d$ to $-1$ and $1$, to contrast racial groups.
-The next theorem provides results for this case, and the subsequent corollary translates the common special case.
+# Surname Groupings for North Carolina Sensitivity Analysis {#app:surgrp}
 
-\begin{theorem}
-Let $r,s\in\cR$, $I\subseteq\{1,\dots,N\}$, and $\vb d$ a vector such that $\vb d_{Y_i\cdot G_iX_i}= c_1(\vb e_r-\vb e_s)$ for all $i\in I$ and $0$ elsewhere, for some $c_1>0$.
-Then if for all $i\in I$, $\vb*\delta_i=c_{2i}(\vb e_r-\vb e_s)$ for some $c_{2i}>0$, \[
-    \E_{\pi_{\vb*\delta^*}}[\vec(\Theta)^\top\vb d\mid\vb Y] \ge \E_{\pi}[\vec(\Theta)^\top\vb d\mid\vb Y].
-\]
-\end{theorem}
-\begin{proof}
-Let $i\in I$. Then by assumption $\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i}=c(|\delta_{ir}|+|\delta_{is}|)>0$. 
-Let $j\in\cR$. If $j=r$ we have \[
-    \hat r_{ir}\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} -
-    \delta_{ir}\hat{\vb P}_i^\top\vb d_{Y_i\cdot G_iX_i}
-    = \hat r_{ir}c_1(2c_{2i}) - c_{2i}c(\hat r_{ir}-\hat r_{is}) 
-    = c_1c_{2i}(\hat r_{ir} +\hat r_{is}) \ge 0.
-\]
-If $j=s$ we have \[
-    \hat r_{is}\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} -
-    \delta_{is}\hat{\vb P}_i^\top\vb d_{Y_i\cdot G_iX_i}
-    = \hat r_{is}c_1(2c_{2i}) + c_{2i}c(\hat r_{ir}-\hat r_{is}) 
-    = c_1c_{2i}(\hat r_{is} +\hat r_{i+}) \ge 0.
-\] If $j\not\in\{r,s\}$ then $\delta_{ij}=0$, so \[
-    \hat r_{ij}\vb*\delta_i^\top\vb d_{Y_i\cdot G_iX_i} -
-    \delta_{ij}\hat{\vb P}_i^\top\vb d_{Y_i\cdot G_iX_i}
-    = \hat r_{ij}c_1(2c_{2i}) \ge 0.
-\] So the condition of Lemma~\ref{lem:biassign} is satisfied for all $j\in\cR$, and
-thus by the lemma we conclude that \[
-    \E_{\pi_{\vb*\delta^*}}[\vec(\Theta)^\top\vb d\mid\vb Y] - \E_{\pi}[\vec(\Theta)^\top\vb d\mid\vb Y]
-    = \Cov_\pi\qty(\frac{w(\Theta,\vb*\delta)}{\E_\pi[w(\Theta,\vb*\delta)]}, 
-    \vec(\Theta)^\top\vb d \gvn\vb Y) \ge 0. \qedhere
-\]
-\end{proof}
+We classify every surname in the voter file into one of nine groups, each containing surnames from one or more of 22 surname groups that we provide in the replication data and software.
+These groups are organized mainly around different regions of the world and different waves of immigration to the United States.
+To create the surname groups, each individual in the 1930 Census data was classified into one of the 22 groups.
+Then among the set of individuals with each surname, the group with the highest number of individuals relative to the whole population was assigned to that surname.
+For example, while most people named "Smith" fall into the Anglosphere group (containing 3rd or more generation White U.S. residents as of 1930, as well as immigrants from the U.K., Canada, Australia, etc.), there are relatively more Smiths among Black people than any other of the 22 groups.
+Thus "Smith" is assigned to the Black surname group.
+The full code for creating the 22 surname groupings from the 1930 Census data is available in the replication materials.
 
-As above, we can reverse the direction of the bias by reversing the sign of $\vb*\delta_i$.
+Because of the demographics of the United States, as well as limitations of the source data there is more geographic specificity in the surname groupings for some regions (e.g., Europe) than for others (e.g., South America and Africa).
+We collapse the 22 surname groups to nine for the sensitivity analysis in Section \ref{sec:valid} based on the demographics of North Carolina specifically and to minimize the computational burden of performing the sensitivity analysis.
 
-\begin{corollary} \label{cor:errdir2}
-Suppose both the race and outcome variables are binary, i.e., $\cY=\cR=\{0,1\}$.
-Suppose that race is binary, i.e., $\cR=\{0,1\}$.
-Then for any $y\in\cY$, the model-based estimate of the disparity $\Pr[Y=y\mid R=1]-\Pr[Y=y\mid R=0]$, denoted $\E_\pi[\bar\Theta_{11}-\bar\Theta_{10}\mid\vb Y]$, 
-will be biased downwards (upwards) if, for all $i$ with $Y_i=y$, the BISG probability $\hat r_{i1}$ is biased downwards (upwards).
-\end{corollary}
+The 50 roughly most frequent surnames in each group, along with a brief description of the group, are listed below.
+We stress that for the purposes of sensitivity analysis, the surname groups need only be correlated with countries of origin and racial subgroups.
+Perfect alignment is neither possible nor necessary.
 
-Taken together, Corollaries \ref{cor:errdir1} and \ref{cor:errdir2} show that if the individual probabilities of belonging to a racial group are uniformly biased, so too will be the corresponding estimates of the conditional probabilities and disparities.
-Most of the time, these bias in the BISG probabilities will not be be so one-sided, and the error patterns will be more complex.
-As noted in the main text, a pattern of uniform bias will arise when the prior $\vb q_R$ doesn't match the population distribution of race.
-When the target population differs from the entire U.S. population that is enumerated by the census, or if the census is out of date, a $\vb q_R$ taken from census tables alone will be incorrect and will lead to exactly the kind of bias described in Corollaries \ref{cor:errdir1} and \ref{cor:errdir2}.
+```{r}
+surn = readRDS(here("paper/data/nm_grps.rds")) |> 
+    split(~ nm_grp)
+
+nm_tbl <- function(key) {
+    surn[[key]]$last_name |> 
+        paste0(1:50, ". ", nm=_) |> 
+        matrix(ncol=5) |> 
+        kable(format="latex", booktabs=TRUE, linesep="", toprule="", bottomrule="")
+}
+```
+
+#### Anlglosphere and Black surname group.
+Surnames which are relatively more prevalent among 3rd-or-more generation White
+U.S. residents and Black U.S. residents in 1930.
+
+```{r}
+nm_tbl("anglobl")
+```
+
+#### First wave European immigration surname group. 
+Surnames associated with German, Nordic, and Irish immigrants.
+
+```{r}
+nm_tbl("eur_wave1")
+```
+
+#### Second wave European immigration surname group.
+Surnames associated with Eastern European, Italian, Jewish,
+Russian, Greek, and other Southern European immigrants.
+
+```{r}
+nm_tbl("eur_wave2")
+```
+
+#### East Asian surname group.
+Surnames associated with Chinese, Japanese, and Korean immigrants.
+
+```{r}
+nm_tbl("easia")
+```
+
+#### South Asian surname group.
+Surnames associated with Indian and Southwest Asian immigrants.
+
+```{r}
+nm_tbl("sasia")
+```
+
+#### Southeast Asian and Pacific surname group.
+Surnames associated with Southeast Asian and Pacific Islander immigrants,
+including Vietnamese and Filipino immigrants.
+   
+```{r}
+nm_tbl("seasiapac")
+```
+                     
+#### Non-Cuban Hispanic surname group.
+Surnames associated with Mexian and Latin American immigrants,
+not including Cuban immigrants, and Puerto Rican residents.
+
+```{r}
+nm_tbl("hisp")
+```
+
+#### Cuban surname group.
+Surnames associated with Cuban immigrants.
+
+```{r}
+nm_tbl("cuba")
+```
+
+#### "Other" surname group.
+Surnames not associated with one of the other categories, including those associated with later Western European immigration, Middle Eastern & North African-associated surnames, Native-associated surnames and Afro-Carribean-associated surnames.
+
+```{r}
+nm_tbl("other")
+```

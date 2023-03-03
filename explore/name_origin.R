@@ -32,8 +32,18 @@ if (!file.exists(path <- here("data-raw/ipums-1930/proc_light.rds"))) {
     d = read_rds(path)
 }
 
-extra_asian <- read_csv(here("data-raw/asian_surnames.csv"), show_col_types=FALSE) |>
-    mutate(name = str_to_upper(name))
+extra_asian <- read_csv(here("data-raw/surname_list_total.csv"), show_col_types=FALSE) |>
+    filter(Count >= 4, Count/total >= 2e-4) |>
+    transmute(name = proc_name(Surname_Final),
+              group = as.character(fct_collapse(
+                  Group,
+                  china="Chinese", philippines="Filipino", india="Indian",
+                  japan="Japanese", korea="Korean", aisapac=c("NHPI", "Other"),
+                  vietnam="Vietnamese"
+              ))) |>
+    filter(str_length(name) > 1, !str_detect(name, "\\d")) |>
+    collapse::fgroup_by(name) |>
+    collapse::fmode()
 
 cens <- readRDS(system.file("extdata", "names_2010_counts.rds",
                             package="birdie", mustWork=TRUE)) |>
@@ -134,7 +144,7 @@ d <- d |>
     ) |>
     select(name, wt, race, hisp, bpl:ancestry)
 
-prior_ancs = prop.table(table(d$ancestry))
+prior_ancs = prop.table(500 + table(d$ancestry)) # normalize a bit
 
 d_grp = collapse::rsplit(d, d$name) |>
     lapply(function(x) {
@@ -169,80 +179,7 @@ d_grp = d_grp |>
 d_grp = tibble(last_name=cens, name=cens_matched) |>
     full_join(d_grp, by="name") |>
     mutate(last_name = coalesce(last_name, name)) |>
-    select(-name)
-
-
-d_surname = collapse::rsplit(d, d$name) |>
-    lapply(function(x) {
-        rel = prop.table(collapse::qtab(x$ancestry, w=x$wt)) / prior_ancs
-        names(which.max(rel))
-    }) |>
-    do.call(rbind, args=_) |>
-    as.data.frame() |>
-    tibble::rownames_to_column("name") |>
-    as_tibble()
-
-d_surname = collapse::rsplit(d, d$name) |>
-    lapply(function(x) {
-        prop.table(collapse::qtab(x$ancestry, w=x$wt))
-    }) |>
-    do.call(rbind, args=_) |>
-    as.data.frame() |>
-    tibble::rownames_to_column("name") |>
-    as_tibble()
-
-d_surname = tibble(last_name=cens, name=cens_matched) |>
-    full_join(d_surname, by="name") |>
-    mutate(last_name = coalesce(last_name, name)) |>
     select(-name) |>
-    mutate(across(-last_name, ~ coalesce(., 0) |> round(2)))
-write_rds(d_surname, here("data-out/surn_cov.rds"), compress="xz")
+    filter(!is.na(group))
 
-
-# exploratory
-top_surn <- function(col, val, n=50) {
-    x = rlang::eval_tidy(rlang::enquo(col), d)
-    nms = d$name[as.integer(x) == pmatch(val, levels(x), duplicates.ok=TRUE)]
-    table(nms) |>
-        sort(decreasing=TRUE) |>
-        head(n) |>
-        names()
-}
-
-sort(table(as.character(d$bpl_f)), decreasing=T)
-top_surn(bpl_f, "Afghanistan")
-
-nms = d$name[d$race=="Japanese" & (d$bpl == "Japan" | d$bpl_f == "Japan")] |> unique()
-
-
-voters = voters |>
-    left_join(d_surname, by="last_name") |>
-    mutate(across(anglo:sasia, ~ coalesce(., 0)))
-
-d_cor_dem = voters |>
-    filter(!is.na(party)) |>
-    group_by(race) |>
-    summarize(across(anglo:sasia, ~ cov(., party =="dem"))) |>
-    tidyr::pivot_longer(-race, names_to="group")
-d_cor_rep = voters |>
-    filter(!is.na(party)) |>
-    group_by(race) |>
-    summarize(across(anglo:sasia, ~ cov(., party =="rep"))) |>
-    tidyr::pivot_longer(-race, names_to="group")
-d_cor_turn = voters |>
-    group_by(race) |>
-    summarize(across(anglo:sasia, ~ cov(., turnout))) |>
-    tidyr::pivot_longer(-race, names_to="group")
-d_cor_lic = voters |>
-    group_by(race) |>
-    summarize(across(anglo:sasia, ~ cov(., lic))) |>
-    tidyr::pivot_longer(-race, names_to="group")
-
-library(ggplot2)
-library(wacolors)
-ggplot(d_cor_dem, aes(race, fct_rev(fct_inorder(group)), fill=value)) +
-    geom_tile() +
-    scale_fill_wa_c("vantage", midpoint=0) +
-    labs(x="Race", y="Surname-based group", fill="Covariance",
-         title="Within-race covariance with Dem. registration")
-
+write_rds(d_grp, here("data-out/surn_cov.rds"), compress="xz")

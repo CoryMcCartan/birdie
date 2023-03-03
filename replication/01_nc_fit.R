@@ -6,6 +6,8 @@ d_county = group_by(d_cens, county) %>%
     summarize(across(vap:vap_other, sum), .groups="drop") %>%
     mutate(tract = NA, block = NA)
 
+# voters = select(voters, last_name, zip:county, race, party, lic, turnout=voted_2020_11)
+
 # make a R|GZ table for predict_race_sgz
 make_p_rgx = function(voters, level=c("block", "tract", "county", "zip"), counts=FALSE) {
     if (level == "block") {
@@ -19,7 +21,7 @@ make_p_rgx = function(voters, level=c("block", "tract", "county", "zip"), counts
     } else if (level == "tract") {
         voters_geo = distinct(voters, county, tract)
         d = group_by(d_cens, county, tract) %>%
-            summarize(across(vap:vap_other, sum, na.rm=TRUE), .groups="drop") %>%
+            summarize(across(vap:vap_other, function(x) sum(x, na.rm=TRUE)), .groups="drop") %>%
             bind_rows(d_county) %>%
             right_join(voters_geo, by=c("county", "tract")) %>%
             mutate(GEOID = ifelse(is.na(tract), as.character(county),
@@ -68,6 +70,7 @@ d = voters |>
            party=coalesce(party, "ind")) |>
     slice_sample(n=1e6)
 print(as.character(head(d$last_name))) # ensure seed is working
+
 
 # Do BISG --------
 p_r = prop.table(table(d$race))
