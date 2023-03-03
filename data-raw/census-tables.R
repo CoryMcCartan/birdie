@@ -66,8 +66,16 @@ p_r = summarize(d, across(pop:pop_other, sum)) |>
     as.matrix() |>
     `[`(1, )
 
-d_raw = read_csv(here("data-raw/names/Names_2010Census.csv"),
-                 col_types="c-i--dddddd", na=c("", "NA", "(S)"))
+if (!file.exists(path <- here("data-raw/names/Names_2010Census.csv"))) {
+    url <- "https://www2.census.gov/topics/genealogy/2010surnames/names.zip"
+    zipfile <- here("data-raw/names.zip")
+    download.file(url, zipfile)
+    dir.create(dirname(path), showWarnings=FALSE)
+    unzip(zipfile, files="Names_2010Census.csv", exdir=dirname(path))
+    file.remove(zipfile)
+}
+d_raw = read_csv(path, col_types="c-i--dddddd", na=c("", "NA", "(S)"))
+
 
 d = d_raw |>
     select(last_name=name, count,
