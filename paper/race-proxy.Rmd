@@ -1000,6 +1000,8 @@ Finally, the BIRDiE model could be extended to directly model more complex types
 
 \bibliography{references.bib}
 
+\newpage
+
 # (APPENDIX) Appendix {.unnumbered}
 
 ```{=tex}
@@ -1308,6 +1310,7 @@ nm_tbl <- function(key) {
 Surnames which are relatively more prevalent among 3rd-or-more generation White
 U.S. residents and Black U.S. residents in 1930.
 
+\nopagebreak 
 ```{r}
 nm_tbl("anglobl")
 ```
@@ -1315,6 +1318,7 @@ nm_tbl("anglobl")
 #### First wave European immigration surname group. 
 Surnames associated with German, Nordic, and Irish immigrants.
 
+\nopagebreak 
 ```{r}
 nm_tbl("eur_wave1")
 ```
@@ -1323,6 +1327,7 @@ nm_tbl("eur_wave1")
 Surnames associated with Eastern European, Italian, Jewish,
 Russian, Greek, and other Southern European immigrants.
 
+\nopagebreak 
 ```{r}
 nm_tbl("eur_wave2")
 ```
@@ -1330,6 +1335,7 @@ nm_tbl("eur_wave2")
 #### East Asian surname group.
 Surnames associated with Chinese, Japanese, and Korean immigrants.
 
+\nopagebreak 
 ```{r}
 nm_tbl("easia")
 ```
@@ -1337,6 +1343,7 @@ nm_tbl("easia")
 #### South Asian surname group.
 Surnames associated with Indian and Southwest Asian immigrants.
 
+\nopagebreak 
 ```{r}
 nm_tbl("sasia")
 ```
@@ -1345,6 +1352,7 @@ nm_tbl("sasia")
 Surnames associated with Southeast Asian and Pacific Islander immigrants,
 including Vietnamese and Filipino immigrants.
    
+\nopagebreak 
 ```{r}
 nm_tbl("seasiapac")
 ```
@@ -1353,6 +1361,7 @@ nm_tbl("seasiapac")
 Surnames associated with Mexian and Latin American immigrants,
 not including Cuban immigrants, and Puerto Rican residents.
 
+\nopagebreak 
 ```{r}
 nm_tbl("hisp")
 ```
@@ -1360,6 +1369,7 @@ nm_tbl("hisp")
 #### Cuban surname group.
 Surnames associated with Cuban immigrants.
 
+\nopagebreak 
 ```{r}
 nm_tbl("cuba")
 ```
@@ -1367,6 +1377,7 @@ nm_tbl("cuba")
 #### "Other" surname group.
 Surnames not associated with one of the other categories, including those associated with later Western European immigration, Middle Eastern & North African-associated surnames, Native-associated surnames and Afro-Carribean-associated surnames.
 
+\nopagebreak 
 ```{r}
 nm_tbl("other")
 ```
