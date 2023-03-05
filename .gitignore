@@ -16,6 +16,8 @@ data-out
 *.aux
 *.out
 *.axp
+*.bbl
+*.zip
 *.log
 *.o
 *.so

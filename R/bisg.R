@@ -66,10 +66,10 @@
 #' Elliott, M. N., Fremont, A., Morrison, P. A., Pantoja, P., and Lurie, N.
 #' (2008). A new method for estimating race/ethnicity and associated disparities
 #' where administrative records lack self-reported race/ethnicity. *Health
-#' services research*, 43(5p1):1722–1736.
+#' Services Research*, 43(5p1):1722–1736.
 #'
 #' Fiscella, K. and Fremont, A. M. (2006). Use of geocoding and surname analysis
-#' to estimate race and ethnicity. *Health services research*,
+#' to estimate race and ethnicity. *Health Services Research*,
 #' 41(4p1):1482–1500.
 #'
 #' Imai, K., Olivella, S., and Rosenman, E. T. (2022). Addressing census data
