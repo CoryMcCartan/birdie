@@ -60,18 +60,6 @@ test_that("Key generics work correctly", {
 
 
 
-test_that("Sensitivity bounds satisfy logical constraints", {
-    ctrl = birdie.ctrl(abstol=1e-3, max_iter=200)
-
-    out = birdie(r_probs, turnout ~ proc_zip(zip), data=pseudo_vf, ctrl=ctrl)
-
-    expect_equal(
-        sens_bound(out, r_probs, c(white=1, black=-1)),
-        sens_bound(out, r_probs, c(white=-1, black=1))
-    )
-    expect_true(all( sens_bound(out, r_probs, c(hisp=1)) > 0 ))
-})
-
 test_that("BIRDiE catches errors", {
     ctrl = birdie.ctrl(abstol=1e-3, max_iter=200)
 

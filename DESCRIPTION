@@ -1,0 +1,56 @@
+Package: birdie
+Title: Bayesian Instrumental Regression for Disparity Estimation
+Version: 0.3.0
+Authors@R: c(
+    person("Cory", "McCartan", role=c("aut", "cre"), email="cmccartan@g.harvard.edu"),
+    person("Kosuke", "Imai", role="ctb", email="imai@harvard.edu"),
+    person("Daniel", "Ho", role="ctb", email="dho@law.stanford.edu"),
+    person("Jacob", "Goldin", role="ctb", email="jsgoldin@uchicago.edu"),
+    person("Robin", "Fisher", role="ctb", email="robin.fisher@treasury.gov"),
+    person("The Stan", "Development Team", role = "cph", comment = "include/rstan")
+    )
+Description: Bayesian models for accurately estimating conditional 
+    distributions by race, using Bayesian Improved Surname Geocoding (BISG) 
+    probability estimates of individual race. Implements the methods described
+    in McCartan, Goldin, Ho and Imai (2023) <arXiv:2303.XXXXX>.
+Depends: 
+    R (>= 3.5.0)
+Imports: 
+    rlang (>= 0.1.2),
+    Rcpp (>= 0.12.0),
+    cli,
+    vctrs,
+    generics,
+    dplyr,
+    methods,
+    stringi,
+    stringr,
+    RcppParallel (>= 5.0.1),
+    SQUAREM
+Suggests: 
+    daarem,
+    easycensus,
+    wru,
+    knitr,
+    roxygen2,
+    rmarkdown,
+    testthat (>= 3.0.0)
+LinkingTo: 
+    Rcpp (>= 0.12.0),
+    cli,
+    BH (>= 1.66.0),
+    RcppEigen (>= 0.3.3.3.0),
+    RcppParallel (>= 5.0.1),
+    RcppThread,
+    StanHeaders (>= 2.18.0)
+License: GPL (>= 3)
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+VignetteBuilder: knitr
+Config/testthat/edition: 3
+SystemRequirements: GNU make
+Biarch: true
+LazyData: true
+URL: https://github.com/CoryMcCartan/birdie, http://corymccartan.com/birdie/
+BugReports: https://github.com/CoryMcCartan/birdie/issues

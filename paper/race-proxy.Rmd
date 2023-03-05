@@ -1,5 +1,5 @@
 ---
-title: "Estimating Racial Disparities when Race is Not Observed"
+title: "Estimating Racial Disparities When\\ Race\\ is\\ Not\\ Observed"
 shorttitle: "Estimating Racial Disparities when Race is Not Observed"
 authors: 
     - name: Cory McCartan
@@ -68,6 +68,8 @@ bias_weight = with(x$weight, disp_wb - disp_wb_true)
 bias_birdie = with(x$birdie_mmm, disp_wb - disp_wb_true)
 bias_red = (bias_weight - bias_birdie) / bias_weight
 ```
+
+\newpage 
 
 # Introduction
 
