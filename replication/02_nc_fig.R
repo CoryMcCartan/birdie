@@ -237,6 +237,7 @@ ggplot(aes(level, tv, color=method, shape=method, group=method)) +
     geom_point(size=2.0, position=position_dodge(0.7)) +
     scale_color_manual(values=methods_col, labels=methods_short) +
     scale_shape_manual(values=methods_shp, labels=methods_short) +
+    scale_y_continuous(limits=c(0, NA), expand=expansion(mult=c(0, 0.05))) +
     labs(x="BISG geographic precision", y="Mean TV distance across areas", color="Method", shape="Method") +
     theme_paper() +
     theme(legend.margin=margin(),
@@ -250,6 +251,7 @@ ggplot(aes(level, rmse, color=method, shape=method, group=method)) +
     geom_point(size=2.0, position=position_dodge(0.7)) +
     scale_color_manual(values=methods_col, labels=methods_short) +
     scale_shape_manual(values=methods_shp, labels=methods_short) +
+    scale_y_continuous(limits=c(0, NA), expand=expansion(mult=c(0, 0.05))) +
     labs(x="BISG geographic precision", y="Mean RMSE across areas", color="Method", shape="Method") +
     theme_paper() +
     theme(legend.margin=margin(),
@@ -268,7 +270,7 @@ ggplot(aes(level, cor_all, color=method, shape=method, group=method)) +
     theme(legend.margin=margin(),
           plot.margin=margin(l=12))
 
-ggsave(here("paper/figures/nc_smallarea.pdf"), plot=p1, width=5, height=3)
+ggsave(here("paper/figures/nc_smallarea.pdf"), plot=p1, width=6.5, height=2.75)
 
 p = p2 + p3 + plot_layout(nrow=1, guides="collect")
 ggsave(here("paper/figures/nc_smallarea_app.pdf"), plot=p, width=8, height=3)

@@ -25,7 +25,7 @@ abstract: |
     The proposed strategy is applicable whenever one's surname is conditionally independent of the outcome given their (unobserved) race, residence location, and other observed characteristics.
     Leveraging this identification strategy, we introduce a new class of models, Bayesian Instrumental Regression for Disparity Estimation (BIRDiE), that estimate racial disparities by using surnames as a high-dimensional instrumental variable for race.
     Our estimation method is scalable, making it possible to analyze large-scale administrative data.
-    We also show how to address the potential violations of the key identification assumptions, including name-based discrimination.
+    We also show how to address potential violations of the key identification assumptions.
     A validation study based on the North Carolina voter file shows that BIRDiE reduces error by up to 84% in comparison to the standard approaches for estimating racial differences in party registration.
     Open-source software is available which implements the proposed methodology.
 keywords: 
@@ -103,7 +103,7 @@ Leveraging this identification strategy, we introduce a new class of models, Bay
 This approach includes built-in flexibility for researchers to make problem-specific modeling choices.
 We propose an EM algorithm for fitting BIRDiE models that can scale to hundreds of thousands or millions of observations.
 BIRDiE also produces updated BISG probabilities that incorporate the outcome variable, and are more accurate than the BISG probabilities based only on surnames and geolocation.
-Finally, we show how to address the potential violations of the key identification assumptions, including name-based discrimination, by exploiting auxiliary information about the relations between names and finer ethnic groups.
+Finally, we show how to address potential violations of the key identification assumptions, such as occurs with name-based discrimination, by exploiting auxiliary information about the relations between names and more specific ethnic groups.
 All of the proposed methodology is implemented in an open-source software package, `birdie`, that is made available with the paper.^[The software and accompanying documentation are available at <https://corymccartan.com/birdie/>.]
 
 <!--
@@ -231,8 +231,8 @@ For all $i$, $$Y_i\indep R_i\mid G_i,X_i,S_i.$$
 \end{assump}
 
 Figure \@ref(fig:dag)(a) shows a causal directed acyclic graph (DAG) that satisfies Assumption \ref{a:indep-yr} as well as Assumption \ref{a:indep-sgx}.
-Dashed node signifies the fact that race $R$ is unobserved.
-This causal structure implies the conditional independence relation $Y\indep R\mid G,X,S$ because all paths from $R$ to $Y$ are blocked by $G$, $X$, or $S$.
+The dashed node border for $R$ represents the fact that race is unobserved.
+The causal structure in Figure \@ref(fig:dag)(a) implies the conditional independence relation $Y\indep R\mid G,X,S$, because all paths from $R$ to $Y$ are blocked by $G$, $X$, or $S$.
 The key causal assumption of this DAG is that the effect of race $R$ on the outcome $Y$ must be entirely mediated by surname $S$, residence location $G$, and other observed characteristics $X$.
 This type of exclusion restriction may not be credible in many practical settings because race can affect the outcome through so many factors, biasing the weighting estimator.
 
@@ -293,7 +293,7 @@ This type of exclusion restriction may not be credible in many practical setting
 \end{center}
 
 \caption[Causal DAGs comparing Assumptions \ref{a:indep-yr} and \ref{a:indep-ys}]{
-Possible causal structures for which each of the labeled assumptions is satisfied, represented as a directed acyclic graph (DAG) where $G$ is residence location, $R$ is race, $S$ is surname, $X$ is observed covariates, and $Y$ is the outcome. Race $R$ is unobserved, which is signified by dashed node. Both DAGs also satisfy Assumption \ref{a:indep-sgx}: Conditional independence of $S$ and $(G,X)$ given $R$.}
+Possible causal structures for which each of the labeled assumptions is satisfied, represented as a directed acyclic graph (DAG) where $G$ is residence location, $R$ is race, $S$ is surname, $X$ is observed covariates, and $Y$ is the outcome. Race $R$ is unobserved, which is signified by a dashed node boundary. Both DAGs also satisfy Assumption \ref{a:indep-sgx}: Conditional independence of $S$ and $(G,X)$ given $R$.}
 \label{fig:dag}
 \end{figure}
 ```
@@ -310,11 +310,11 @@ Just as with BISG, well-calibrated probabilities are not generally sufficient to
 # The Proposed Methodology {#sec:est}
 
 In this section, we propose an alternative identification strategy.
-Specifically, we show that racial disparity is identifiable if surname is conditionally independent of the outcome given race, residence geolocation, and other observed information, under the aforementioned assumptions that guarantee the nonparametric identification of race probabilities with BISG or its variant.
+Specifically, we show that racial disparity is identifiable if surname is conditionally independent of the outcome given race, residence geolocation, and other observed information, under the aforementioned assumptions that guarantee the nonparametric identification of race probabilities with BISG or its variants.
 We then develop a class of statistical models, called Bayesian Instrumental Regression for Disparity Estimation (BIRDiE), that estimate racial disparity under this identification condition by using surnames as a high-dimensional instrumental variable for race.
 These models take as inputs the BISG probabilities, and so can be easily applied on top of existing analysis pipielines, including with alternative probabilistic race prediction methodologies.
 We next discuss computation for BIRDiE models, as well as how the methodology can be extended to include an additional explanatory variable that was not used at the BISG stage.
-Finally, we show how to addresses the potential violations of the key identifidation assumptions, including name-based discrimination.
+Finally, we show how to addresses the potential violations of the key identification assumptions, such as occurs with name-based discrimination.
 
 ## Identification Strategy {#subsec:ident}
 
@@ -477,7 +477,7 @@ estimate of $\Pr(Y\mid R)$, allowing the model to share information between geog
 This should prove especially useful in cases where some areas have few or no observations for certain racial groups.
 
 We also recommend including group-level covariates as fixed effects, which will help share information across random effects and significantly improve generalization performance to unseen random effect levels [@buttice2013does].
-For example, if $G$ records counties, analysts could include as predictors racial and socioeconomic variables measured at the county level.
+For example, if $G$ records counties, analysts could include racial and socioeconomic variables measured at the county level as predictors.
 This would help produce more accurate estimates of $\Pr(Y\mid R, G)$ to the extent that variation in these probabilities is associated with these racial and socioeconomic variables.
 Ultimately the structure of this general model will have to be chosen based on the data and the relevant research question.
 
@@ -495,7 +495,7 @@ Since $\vb R$ is discrete, we can marginalize it out as follows: $$
     \numberthis \label{eq:post-marg}
 $$ This decouples the total number of parameters from the sample size.
 Additionally, Equation \eqref{eq:post-marg} has only continuous parameters, and so can be used with any general Bayesian inference procedure such as Markov chain Monte Carlo (MCMC).
-However, the moderate-to-high dimensionality in practical settings, even after integrating out $\vb R$, makes MCMC algorithms computationally too expensive outside of small datasets.
+However, the moderate-to-high dimensionality in practical settings, even after integrating out $\vb R$, makes MCMC algorithms computationally too expensive outside of relatively small datasets.
 
 ##### Large samples: Expectation-Maximization.
 
@@ -565,7 +565,8 @@ Often, researchers are interested in not just $\Pr(Y\mid R)$ but also $\Pr(Y\mid
 For example, a lending firm auditing potential racial disparities in lending decisions would likely be interested both in how the rate of loan approval ($Y$) varies by race, but also how loan approval varies by race, conditional on a measure of creditworthiness ($W$).
 The unconditional disparities reflect realities of systemic racism and inequity, while the conditional disparities measure the fairness of the firm's lending decisions after controlling for these systemic factors.
 Such estimates could be used to compute various measures of algorithmic fairness, including calibration parity and false positive error rate balance.
-Another scenario is a policy evaluation study where researchers are interested in how the impact of policy varies across racial groups, requiring the incorporation of interaction between race and the treatment variable.
+Another scenario is a policy evaluation study, where researchers are interested in how the impact of policy varies across racial groups.
+Such an anlysis requires incorporating an interaction between race and the treatment variable.
 
 There are two main ways to perform such an analysis with our proposed methodology.
 The first, and perhaps simplest, is to apply the methodology to the combined variable $\underline{YW}\in\cY\times\cW$.
@@ -785,11 +786,11 @@ knitr::include_graphics("figures/nc_disp.pdf")
 
 We first examine the relative accuracy of the proposed methods in estimating the disparity between White and Black, and White and Hispanic voters, in party registration.
 For example, the true difference in Democratic registration between Black and White voters in the sample is $`r percent(-x$weight$disp_wb_true, 0.1)`$ percentage points, meaning Black voters register Democratic at a much higher rate.
-However, the standard weighting approach produces an estimate of only $`r percent(-x$weight$disp_wb, 0.1)`$ percentage points for this disparity---less than half the true value. **KI: Let's also describe the estimates based on the thresholding estimator.**
+However, the standard weighting approach produces an estimate of only $`r percent(-x$weight$disp_wb, 0.1)`$ percentage points for this disparity---less than half the true value. 
+The thresholding estimator, while slightly better, also misses the mark, with an estimate of $`r percent(-x$thresh$disp_wb, 0.1)`$ percentage points.
 In contrast, the saturated BIRDiE model produces an estimate of $`r percent(-x$birdie_sat$disp_wb, 0.1)`$ percentage points, and the mixed BIRDiE model `r same_sat_mmm` estimates $`r percent(-x$birdie_mmm$disp_wb, 0.1)`$.
 These estimates are only slightly lower than the ground truth.
 
-**KI: We should be consistent across figures.  How about using percentage points for Figures 4 and 5 as well? Also, for Figure 5, let's extend the y-axis to 0 like the other figures.**
 Figure \@ref(fig:nc-disp) compares the empirical performance of the BIRDiE models against that of the weighting and thresholding estimators across all of these possible disparity measurements, using the block-level BISG predictions.
 The true disparity is subtracted off from each estimate for ease of comparison, and so the figure plots the estimation error of racial disparity between two racial groups.
 For White--Black (left plot) and White-Hispanic (right plot) disparities in party registration, the BIRDiE models (solid circles and squares) substantially outperform the two commonly used estimators (open circles and crosses). 
@@ -843,7 +844,7 @@ This section examines the accuracy of the saturated and mixed-effects BIRDiE mod
 We study accuracy at the county, ZIP code, and tract level, using the BISG probabilities and BIRDiE models that were applied to each.
 Since in fitting the BIRDiE model to block-level BISG probabilities we used tract-level random intercepts, we do not present block-level estimates.
 
-```{r nc-smallarea, out.width="4in"}
+```{r nc-smallarea, out.width="5.5in"}
 #| fig.cap: |
 #|     Accuracy of small-area estimates by race, as measured by 
 #|     the average total variation distance.

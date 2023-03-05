@@ -31,9 +31,7 @@ write_rds(diffs, here("paper/data/nc_sens_diff.rds"))
 colSums(abs(coef(m_sens) - p_xr)) %*% p_r * 0.5
 colSums(abs(coef(fits_party$county$sat) - p_xr)) %*% p_r * 0.5
 
-# X_nm = Matrix::sparse.model.matrix(~ 0 + nm_grp, data=d)
 res = residuals(fits_party$county$sat)
-res_sens = residuals(m_sens)
 
 calc_cov = function(grp, n=10000) {
     m_cov = cov(cbind(d$nm_grp == grp, res))
