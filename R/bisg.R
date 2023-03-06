@@ -72,9 +72,9 @@
 #' to estimate race and ethnicity. *Health Services Research*,
 #' 41(4p1):1482–1500.
 #'
-#' Imai, K., Olivella, S., and Rosenman, E. T. (2022). Addressing census data
-#' problems in race imputation via fully Bayesian improved surname geocoding and
-#' name supplements. *arXiv preprint arXiv:2205.06129*.
+#' Imai, K., Olivella, S., & Rosenman, E. T. (2022). Addressing census data
+#' problems in race imputation via fully Bayesian Improved Surname Geocoding and
+#' name supplements. *Science Advances*, 8(49), eadc9824.
 #'
 #' @describeIn bisg The standard BISG model.
 #' @concept bisg
