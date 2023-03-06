@@ -1,0 +1,165 @@
+%\documentclass{beamer}
+\documentclass[handout]{beamer}
+
+%\documentclass{article}
+%\usepackage{beamerarticle}
+
+\mode<presentation>
+{
+ \usetheme{Madrid}
+ \usecolortheme{beaver}
+ \setbeamercovered{invisible}
+}
+\beamertemplatenavigationsymbolsempty
+\setbeamertemplate{footline}[frame number]{}
+\setbeamertemplate{blocks}[shadow=true]
+
+\usepackage{amsmath,amssymb,bm,latexsym,pifont}
+\usepackage[english]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{color}
+\definecolor{gold}{rgb}{0.85,0.66,0}
+\usepackage{comment}
+\usepackage{ulem}
+\usepackage{cancel}
+\usepackage{soul}
+
+
+% solving the undefined control sequence issue
+\makeatletter
+\let\@@magyar@captionfix\relax
+\makeatother
+
+
+\usepackage{subcaption}
+\usepackage[color,all,import,arrow]{xy}
+
+% === dcolumn package ===
+\usepackage{dcolumn}
+\newcolumntype{.}{D{.}{.}{-1}}
+\newcolumntype{d}[1]{D{.}{.}{#1}}
+
+% === new commands ===
+\newcommand\ud{\mathrm{d}}
+\newcommand\dist{\buildrel\rm d\over\sim}
+\newcommand\ind{\stackrel{\rm indep.}{\sim}}
+\newcommand\iid{\stackrel{\rm i.i.d.}{\sim}}
+\newcommand\logit{{\rm logit}}
+\renewcommand\r{\right}
+\renewcommand\l{\left}
+\newcommand\Cov{{\rm Cov}}
+\newcommand\bone{\mathbf{1}}
+\newcommand\E{\mathbb{E}}
+\newcommand\V{\mathbb{V}}
+\newcommand\bE{\mathbf{E}}
+\newcommand\bx{\mathbf{x}}
+\newcommand\bX{\mathbf{X}}
+\newcommand\bt{\mathbf{t}}
+\newcommand\bY{\mathbf{Y}}
+\newcommand\cZ{\mathcal{Z}}
+\newcommand\cN{\mathcal{N}}
+\newcommand\cS{\mathcal{S}}
+\newcommand\cU{\mathcal{U}}
+\newcommand\cP{\mathcal{P}}
+\newcommand\cO{\mathcal{O}}
+\newcommand\cX{\mathcal{X}}
+\newcommand{\diag}{\mathop{\mathrm{diag}}}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\def\independenT#1#2{\mathrel{\rlap{$#1#2$}\mkern2mu{#1#2}}}
+\DeclareMathOperator{\sgn}{sgn}
+\newcommand{\indep}{\mbox{$\perp\!\!\!\perp$}}
+
+\newcommand{\ACEP}{\textsf{APCEp}}
+\newcommand{\ACER}{\textsf{APCEr}}
+\newcommand{\ACES}{\textsf{APCEs}}
+\newcommand{\ACE}{\textsf{APCE}}
+
+
+% == theorems
+\setbeamertemplate{theorems}[numbered]
+\newcounter{asm}
+\setcounter{asm}{0}
+\newtheorem{assumption}[asm]{Assumption}
+
+% === tikz
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+\usetikzlibrary{decorations.markings}
+\usetikzlibrary{decorations.pathmorphing}
+\usetikzlibrary{shapes.geometric, arrows}
+\usetikzlibrary{arrows,decorations.pathmorphing,backgrounds,positioning,fit,matrix}
+\usetikzlibrary{shapes,decorations,arrows,calc,arrows.meta,fit,positioning}
+\tikzset{
+	-Latex,auto,node distance =1 cm and 1 cm,semithick,
+	state/.style ={circle, draw, minimum width = 0.7 cm},
+	point/.style = {circle, draw, inner sep=0.04cm,fill,node contents={}},
+	bidirected/.style={Latex-Latex,dashed},
+	el/.style = {inner sep=2pt, align=left, sloped}
+}
+\usetikzlibrary{positioning}
+\usetikzlibrary{fadings}
+\usetikzlibrary{intersections}
+
+% === for Todai
+\newcommand{\todai}{0}
+
+% === if you want more than one slides on one page ===
+\usepackage{pgfpages}
+%\setbeameroption{show notes on second screen}
+%\pgfpagesuselayout{2 on 1}[letterpaper,border shrink = 5mm]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% If you wish to uncover everything in a step-wise fashion, uncomment
+% the following command:
+\beamerdefaultoverlayspecification{<+->}
+
+
+\newcommand{\tit}{\bf Estimating Racial Disparities when\\ Race is Not Observed}
+
+% == titles
+\title[Algorithm-Assisted Human Decision]{\tit}
+
+\institute[Harvard]{\large Harvard University }
+
+\date{Department of Political Science, University of Michigan\\
+  March 10, 2023 \\  \vspace{.25in} Joint work with
+  Cory McCartan, Jacob Goldin, and Daniel E. Ho } 
+
+
+\author[Kosuke Imai]{\large Kosuke Imai }
+
+
+% == document begins
+\begin{document}
+
+%%% Title
+\frame{\titlepage}
+
+%%% Table of Contents
+% \frame{\tableofcontents}
+
+%%% Main Contents
+
+\section{Introduction}
+
+\begin{frame}
+
+  \frametitle{Motivation}
+
+  \begin{itemize}
+  \item Importance of racial disparity estimation
+    \begin{itemize}
+    \item public health, employment, voting, criminal justice,
+      taxation, housing, lending, and internet technology
+      \item Executive order 13985
+    \end{itemize}
+
+
+  \end{itemize}
+
+\end{frame}
+
+\end{document}
