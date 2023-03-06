@@ -15,7 +15,7 @@ probability estimates of individual race. This package implements BIRDiE
 as described in [McCartan, Fisher, Goldin, Ho and Imai (2022)](#). It
 also implements standard BISG and an improved measurement-error BISG
 model as described in [Imai, Olivella, and Rosenman
-(2022)](https://arxiv.org/abs/2205.06129).
+(2022)](https://www.science.org/doi/full/10.1126/sciadv.adc9824).
 
 <img src="man/figures/poster.svg" style="width: 100%" alt="BIRDiE Overview Poster" />
 

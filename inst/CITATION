@@ -1,9 +1,9 @@
-citHeader("To cite `birdie` in publications please use the first two citations",
+citHeader("To cite `birdie` in publications please use the two citations",
           "listed below, the first for the methodology (McCartan et al. 2023)",
           "and the second for the software (McCartan 2023).",
-          "You may also want to cite the general BISG methodology",
-          "(Fiscella and Fremont, 2006; Elliott et al., 2008),",
-          "and/or the improved fully Bayesian BISG methodology (Imai et al., 2022).")
+          "You may also want to cite the general BISG methodology,",
+          "and/or the improved fully Bayesian BISG methodology,",
+          "references for which can be found in the documentation for `bisg()`.")
 
 bibentry(
   bibtype = "Article",
@@ -21,42 +21,4 @@ bibentry(
   url = "https://github.com/CoryMcCartan/birdie",
   year = "2023",
   key = "birdie"
-)
-
-bibentry(
-  bibtype = "Article",
-  title = "Use of geocoding and surname analysis to estimate race and ethnicity",
-  author = "Kevin Fiscella, Allen M Fremont",
-  journal = "Health Services Research",
-  volume = "41",
-  year = "2006",
-  number="4p1",
-  pages="1482--1500",
-  publisher="Wiley Online Library",
-  key = "fiscella2006bisg"
-)
-
-bibentry(
-  bibtype = "Article",
-  title = "A new method for estimating race/ethnicity and associated disparities where administrative records lack self-reported race/ethnicity",
-  author="Marc N Elliott, Allen Fremont, Peter A Morrison, Philip Pantoja, Nicole Lurie",
-  journal = "Health Services Research",
-  volume = "43",
-  year = "2008",
-  number="5p1",
-  pages="1722--1736",
-  publisher="Wiley Online Library",
-  key = "elliott2008bisg"
-)
-
-bibentry(
-  bibtype = "Article",
-  title = "Addressing Census data problems in race imputation via fully Bayesian Improved Surname Geocoding and name supplements",
-  author="Kosuke Imai, Santiago Olivella, Evan TR Rosenman",
-  journal = "Science Advances",
-  volume = "8",
-  year = "2022",
-  number="49",
-  pages="1--10",
-  key = "imai2022fbisg"
 )
