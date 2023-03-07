@@ -79,7 +79,7 @@ Within the U.S. government, efforts to identify and remedy racial disparities ha
 In many of these areas, however, racial information is not available at the individual level.
 The unavailability of individual racial information makes it impossible for analysts to simply tabulate variables of interest against race to identify disparities among different racial groups.
 In fact, in some areas, the law explicitly prohibits the collection of racial information even as it demands fair treatment on the basis of race (see, e.g., the U.S. Equal Credit Opportunity Act).
-This creates a dilemma for organizations who wish to measure possible disparities in order to monitor the racial disparity of their decision-making or service provision.
+This creates a dilemma for organizations who wish to measure possible disparities in order to monitor the fairness of their decision-making or service provision.
 
 To estimate racial disparities without individual-level racial data, some researchers have turned to ecological inference methods [@goodman1953ecological; @king1997solution; @king2004ecological; @wakefield2004ecological; @imai2008bayesian; @greiner2009r].
 These methods, however, require strong assumptions, which can be difficult to verify and may provide misleading results [@cho2008ecological].
@@ -765,7 +765,7 @@ For the saturated BIRDiE model, we use geographic effects matching the geographi
 Due to the large number of individual census blocks, we use tract-level effects instead for this particular model.
 
 We use our software's default priors for both BIRDiE models.
-This is a uniform prior for the saturated model and a $\Norm(0, 1)$ prior on $\vb*\beta$ and a $\Gamma(2, 10)$ prior on the random intercept standard deviation for the mixed model.
+This is a uniform prior for the saturated model and a $\Norm(0, 1)$ prior on $\vb*\beta$ and a $\Gam(2, 10)$ prior on the random intercept standard deviation for the mixed model.
 With standardized covariates, the prior on the fixed effects $\vb*\beta$ is weakly informative, corresponding to a prior belief that a one-standard-deviation increase in the covariate level will generally correspond to a change in the linear predictor between --2 and 2.
 The weakly informative prior on the random intercept scale is centered at 0.2 and places most of its mass between 0.024 and 0.56.
 To give an idea of the computational efficiency of the proposed method, the maximum runtime of the saturated of the BIRDiE models fit to estimate party registration was 6.9 seconds (on a modern laptop with 8GB RAM), and the maximum runtime for the mixed model estimates was 22.6 seconds.
