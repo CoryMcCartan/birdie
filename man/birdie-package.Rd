@@ -8,7 +8,7 @@
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-Bayesian models for accurately estimating conditional distributions by race, using Bayesian Improved Surname Geocoding (BISG) probability estimates of individual race. Implements the methods described in McCartan, Goldin, Ho and Imai (2023) \href{https://arxiv.org/abs/2303.XXXXX}{arXiv:2303.XXXXX}.
+Bayesian models for accurately estimating conditional distributions by race, using Bayesian Improved Surname Geocoding (BISG) probability estimates of individual race. Implements the methods described in McCartan, Goldin, Ho and Imai (2023) \href{https://arxiv.org/abs/2303.02580}{arXiv:2303.02580}.
 }
 \seealso{
 Useful links:
