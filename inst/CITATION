@@ -9,7 +9,7 @@ bibentry(
   bibtype = "Article",
   title = "Estimating Racial Disparities When Race is Not Observed",
   author = "Cory McCartan, Jacob Goldin, Daniel E. Ho, Kosuke Imai",
-  journal = "arXiv preprint arXiv:2303.XXXXX",
+  journal = "arXiv preprint arXiv:2303.02580",
   year = "2023",
   key = "mccartan2023race"
 )
