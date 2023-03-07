@@ -122,7 +122,7 @@ fitted(fit)
 
 }
 \references{
-McCartan, C., Fisher, R., Goldin, J., Ho, D., & Imai, K. (2022).
+McCartan, C., Goldin, J., Ho, D.E., & Imai, K. (2022).
 Estimating Racial Disparities when Race is Not Observed.
 Available at \url{https://arxiv.org/abs/2303.02580}.
 }
