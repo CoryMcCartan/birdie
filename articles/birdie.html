@@ -189,7 +189,7 @@ the probabilities.</p>
 <span><span class="co">#&gt; 0.656372686 0.277807934 0.032031532 0.010139008 0.009564482 0.014084358</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">colMeans</a></span><span class="op">(</span><span class="va">r_probs_me</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  pr_white  pr_black   pr_hisp  pr_asian   pr_aian  pr_other </span></span>
-<span><span class="co">#&gt; 0.7089840 0.2002391 0.0433060 0.0185841 0.0118230 0.0170638</span></span>
+<span><span class="co">#&gt; 0.7090022 0.2000763 0.0434249 0.0186050 0.0118764 0.0170152</span></span>
 <span><span class="co"># actual </span></span>
 <span><span class="va">p_r</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -258,8 +258,8 @@ probabilities.</p>
 <span><span class="co">#&gt; Number of obs: 5,000; groups: 626</span></span>
 <span><span class="co">#&gt; Estimated distribution:</span></span>
 <span><span class="co">#&gt;     white black  hisp asian  aian other</span></span>
-<span><span class="co">#&gt; no  0.299 0.363 0.418 0.652 0.697 0.228</span></span>
-<span><span class="co">#&gt; yes 0.701 0.637 0.582 0.348 0.303 0.772</span></span></code></pre></div>
+<span><span class="co">#&gt; no  0.299 0.363 0.418 0.652 0.698 0.228</span></span>
+<span><span class="co">#&gt; yes 0.701 0.637 0.582 0.348 0.302 0.772</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="types-of-birdie-models">Types of BIRDiE Models<a class="anchor" aria-label="anchor" href="#types-of-birdie-models"></a>
 </h3>
@@ -299,17 +299,17 @@ plotting or in downstream analyses.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> yes     hisp     0.582</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> no      asian    0.652</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> yes     asian    0.348</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> no      aian     0.697</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> yes     aian     0.303</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> no      aian     0.698</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> yes     aian     0.302</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> no      other    0.228</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> yes     other    0.772</span></span></code></pre></div>
 <p>These estimates are quite close to the true distribution of turnout
 and race for most racial groups:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
-<span><span class="co">#&gt;         white     black     hisp     asian      aian     other</span></span>
-<span><span class="co">#&gt; no  0.2993734 0.3630044 0.418016 0.6515575 0.6974873 0.2283493</span></span>
-<span><span class="co">#&gt; yes 0.7006266 0.6369956 0.581984 0.3484425 0.3025127 0.7716507</span></span>
+<span><span class="co">#&gt;         white     black      hisp     asian      aian     other</span></span>
+<span><span class="co">#&gt; no  0.2993663 0.3630225 0.4180173 0.6515683 0.6975264 0.2282492</span></span>
+<span><span class="co">#&gt; yes 0.7006337 0.6369775 0.5819827 0.3484317 0.3024736 0.7717508</span></span>
 <span><span class="va">p_xr</span> <span class="co"># Actual</span></span>
 <span><span class="co">#&gt;      </span></span>
 <span><span class="co">#&gt;           white     black      hisp     asian      aian     other</span></span>
@@ -351,11 +351,11 @@ accurate than the standard BISG probabilities.</p>
 <span><span class="co">#&gt;   pr_white pr_black pr_hisp  pr_asian  pr_aian pr_other</span></span>
 <span><span class="co">#&gt;      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0.979    0.004<span style="text-decoration: underline;">47</span> 0.001<span style="text-decoration: underline;">64</span> 0.000<span style="text-decoration: underline;">070</span>2 0.005<span style="text-decoration: underline;">84</span>   0.008<span style="text-decoration: underline;">62</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  0.008<span style="text-decoration: underline;">22</span>  0.985   0.001<span style="text-decoration: underline;">31</span> 0.000<span style="text-decoration: underline;">182</span>  0.001<span style="text-decoration: underline;">20</span>   0.003<span style="text-decoration: underline;">64</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  0.008<span style="text-decoration: underline;">16</span>  0.986   0.001<span style="text-decoration: underline;">31</span> 0.000<span style="text-decoration: underline;">182</span>  0.001<span style="text-decoration: underline;">20</span>   0.003<span style="text-decoration: underline;">64</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  0.971    0.009<span style="text-decoration: underline;">20</span> 0.004<span style="text-decoration: underline;">80</span> 0.001<span style="text-decoration: underline;">66</span>   0.000<span style="text-decoration: underline;">382</span>  0.012<span style="text-decoration: underline;">9</span> </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  0.525    0.457   0.004<span style="text-decoration: underline;">13</span> 0.000<span style="text-decoration: underline;">113</span>  0.000<span style="text-decoration: underline;">680</span>  0.013<span style="text-decoration: underline;">8</span> </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  0.984    0.002<span style="text-decoration: underline;">28</span> 0.003<span style="text-decoration: underline;">90</span> 0.000<span style="text-decoration: underline;">761</span>  0.004<span style="text-decoration: underline;">64</span>   0.004<span style="text-decoration: underline;">44</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>  0.562    0.399   0.016<span style="text-decoration: underline;">0</span>  0.000<span style="text-decoration: underline;">496</span>  0.001<span style="text-decoration: underline;">34</span>   0.020<span style="text-decoration: underline;">7</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>  0.562    0.399   0.016<span style="text-decoration: underline;">0</span>  0.000<span style="text-decoration: underline;">495</span>  0.001<span style="text-decoration: underline;">34</span>   0.020<span style="text-decoration: underline;">7</span></span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">r_probs</span><span class="op">$</span><span class="va">pr_white</span>, <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">$</span><span class="va">pr_white</span>, cex<span class="op">=</span><span class="fl">0.1</span><span class="op">)</span></span></code></pre></div>
 <p><img src="birdie_files/figure-html/unnamed-chunk-12-1.png" width="700"></p>
@@ -381,9 +381,9 @@ using the <code><a href="https://rdrr.io/r/stats/vcov.html" class="external-link
 <span><span class="co">#&gt; <span style="color: #555555;">This message is displayed once per session.</span></span></span>
 <span></span>
 <span><span class="va">fit_boot</span><span class="op">$</span><span class="va">se</span></span>
-<span><span class="co">#&gt;          white     black       hisp     asian      aian     other</span></span>
-<span><span class="co">#&gt; no  0.01125688 0.0198605 0.05231009 0.1007488 0.1013596 0.3450487</span></span>
-<span><span class="co">#&gt; yes 0.01125688 0.0198605 0.05231009 0.1007488 0.1013596 0.3450487</span></span></code></pre></div>
+<span><span class="co">#&gt;          white      black       hisp      asian      aian     other</span></span>
+<span><span class="co">#&gt; no  0.01114784 0.02209294 0.04892776 0.09861813 0.1070002 0.3535303</span></span>
+<span><span class="co">#&gt; yes 0.01114784 0.02209294 0.04892776 0.09861813 0.1070002 0.3535303</span></span></code></pre></div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
