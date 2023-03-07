@@ -101,6 +101,37 @@ if (!file.exists(path <- here("paper/data/nc_bisg.rds"))) {
         write_rds(path)
 }
 
+if (FALSE) {
+    d_acc = imap_dfr(r_probs, function(tbl, lbl) {
+        d_auc = tbl |>
+            summarize(across(everything(), function(pr) {
+                fastAUC(pr, d$race == str_sub(cur_column(), 4))
+            })) |>
+            rename_with(~ str_sub(., 4)) |>
+            t()
+        tibble(level = lbl,
+               acc = mean(predict(tbl) == d$race),
+               race = rownames(d_auc),
+               auc = d_auc[, 1])
+    })
+
+    ggplot(d_acc, aes(fct_inorder(level), auc)) +
+        facet_wrap(~ fct_inorder(race)) +
+        geom_col() +
+        scale_y_continuous(expand=c(0, 0), limits=c(0, 1))
+
+    d_acc |>
+        filter(level=="county") |>
+    ggplot(aes(fct_inorder(toupper(race)), auc)) +
+        geom_col(fill="#2c3f4a") +
+        scale_y_continuous(name="AUROC", limits=c(0, 1),
+                           expand=c(0, 0), labels=percent) +
+        labs(x="Race") +
+        theme_bw(base_family="IBM Plex Sans", base_size=24)
+        # theme_paper()
+
+}
+
 
 # Party ID -----------
 ctrl = birdie.ctrl(abstol=1e-5)
