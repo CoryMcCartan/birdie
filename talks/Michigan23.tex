@@ -150,16 +150,151 @@
   \frametitle{Motivation}
 
   \begin{itemize}
-  \item Importance of racial disparity estimation
-    \begin{itemize}
-    \item public health, employment, voting, criminal justice,
-      taxation, housing, lending, and internet technology
-      \item Executive order 13985
-    \end{itemize}
+  \item Importance of racial disparity estimation in many fields:\\
+    public health, employment, voting, criminal justice, taxation,
+    housing, lending, and internet technology
 
+    \vfill
+  \item But, often individual race is not availablec
+    \begin{itemize}
+    \item 
+    \end{itemize}
 
   \end{itemize}
 
 \end{frame}
+
+
+\begin{frame}
+
+  \frametitle{Executive Order on Advancing Racial Equity and Support for Underserved Communities through the Federal Government}
+
+  \begin{itemize}
+  \item \alert{Sec. 4.  Identifying Methods to Assess Equity}.  (a)
+    The Director of the Office of Management and Budget (OMB) shall,
+    in partnership with the heads of agencies, study methods for
+    assessing whether agency policies and actions create or exacerbate
+    barriers to full and equal participation by all eligible
+    individuals.  The study should aim to identify the best methods,
+    consistent with applicable law, to assist agencies in assessing
+    equity with respect to race, ethnicity, religion, income,
+    geography, gender identity, sexual orientation, and disability.
+
+    \vfill
+  \item \alert{Sec. 5.  Conducting an Equity Assessment in Federal
+      Agencies.}  The head of each agency, or designee, shall, in
+    consultation with the Director of OMB, select certain of the
+    agency’s programs and policies for a review that will assess
+    whether underserved communities and their members face systemic
+    barriers in accessing benefits and opportunities available
+    pursuant to those policies and programs.
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+
+  \frametitle{Overview of the Talk}
+
+  \begin{enumerate}
+  \item Existing methods are likely to be biased
+    \begin{itemize}
+    \item BISG predictions are typically well calibrated
+    \item But, estimates of racial disparities are biased
+    \item This is because race affects many aspects of our society
+    \end{itemize}
+    \vfill
+  \item \alert{BIRDiE} eliminates bias
+    \begin{itemize}
+    \item New and more credible identification assumption
+    \item Flexible model allows for various racial disparity estimands
+    \item Sensitivity analysis for potential violation of the
+      assumption
+    \item Open-source software package \alert{birdie} available
+    \end{itemize}
+    \vfill
+  \item Empirical validation
+    \begin{itemize}
+    \item North Carolina voter file where self-reported race is
+      observed
+    \item Estimates of racial differences in party registration
+    \item BIRDiE yields much smaller bias than the standard methods
+    \item Results are robust to potential violation of assumptions
+    \end{itemize}
+  \end{enumerate}
+
+\end{frame}
+
+
+\begin{frame}
+
+\frametitle{The Setup}
+
+\begin{itemize}
+\item Data
+  \begin{itemize}
+  \item $Y_i$: outcome of interest 
+  \item $R_i$: (unobserved) race
+  \item $S_i$: surname
+  \item $G_i$: residence location
+  \item $X_i$: other Census variables (optional)
+  \item $Z_i$: covariates of interest
+  \end{itemize}
+\item Census data
+  \begin{itemize}
+  \item $\Pr(G_i = g, R_i = r, X_i = x)$
+  \item $\Pr(R_i = r, S_i =s)$ for frequently occuring surnames
+  \end{itemize}
+
+  \vfill
+\item Estimands
+  \begin{itemize}
+  \item $\E(Y_i \mid R_i)$: short regression
+  \item $\E(Y_i \mid R_i, X_i)$: long regression 
+  \end{itemize}
+
+\item Racial disparity:
+  \begin{itemize}
+  \item $\E(Y_i \mid R_i = r) - \E(Y_i \mid R_i = r^\prime)$ for $r
+    \ne r^\prime$
+  \item $\E(Y_i \mid R_i = r, Z_i = z) - \E(Y_i \mid R_i = r^\prime, Z_i = z)$
+  \end{itemize}
+
+\end{itemize}
+  
+\end{frame}
+
+\begin{frame}
+
+  \frametitle{Standard Estimation Methods}
+ 
+\begin{enumerate}
+\item Predict race via BISG (or its variant)
+  \begin{itemize}
+  \item Assumption: $G_i \indep  S_i \mid R_i$
+  \item Bayes rule:
+    \begin{align*}
+      \hat{P}_{ir} & \Pr(R_i = r \mid G_i = g, S_i = s) \\
+      = & \ \frac{\Pr(S_i =s\mid
+      \alert{G_i =g}, R_i = r)\Pr(G_i =g, R_i =r)}{\sum_{r^\prime} \Pr(S_i =s\mid
+          \alert{G_i =g}, R_i = r^\prime)\Pr(G_i =g, R_i =r^\prime)} \\
+      = & \ \frac{\Pr(S_i =s\mid
+       R_i = r)\Pr(G_i =g, R_i =r)}{\sum_{r^\prime} \Pr(S_i =s\mid
+       R_i = r^\prime)\Pr(G_i =g, R_i =r^\prime)}
+    \end{align*}
+  \item With covariates: $(G_i, X_i) \indep S_i \mid R_i$
+  \end{itemize}
+  \vfill
+\item Estimate racial disparities $\mu_{Y\mid R}(y \mid r) = \Pr(Y_i = y \mid R_i = r)$
+  \begin{itemize}
+  \item weighting
+    $$\hat\mu_{Y\mid R}^{\text{wtd}}(y \mid r) \ = \ \frac{\sum_i \mathbf{1}\{Y_i = y\}\hat{P}_{ir} }{\sum_i \hat{P}_{ir}}$$
+  \item thresholding
+  \end{itemize}
+\end{enumerate}
+
+\end{frame}
+
+
 
 \end{document}
