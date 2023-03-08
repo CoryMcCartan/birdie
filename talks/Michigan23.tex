@@ -157,9 +157,20 @@
     \vfill
   \item But, often individual race is not availablec
     \begin{itemize}
-    \item 
+    \item law may prohibits collection of information about race
+      (e.g., Equal Credit Opportunity Act)
+    \item agencies and companies may not wish to collect such information
+    \end{itemize}
+    \vfill
+  \item How should we estimate racial disparities when race is not
+    observed?
+    \begin{itemize}
+    \item Standard methods use BISG (Bayesian Improved Surname
+      Geocoding)
+    \item But, it has been shown that they are likely to yield biased estimates
     \end{itemize}
 
+  \item Can we improve the standard methods and eliminate their bias? 
   \end{itemize}
 
 \end{frame}
@@ -184,7 +195,7 @@
   \item \alert{Sec. 5.  Conducting an Equity Assessment in Federal
       Agencies.}  The head of each agency, or designee, shall, in
     consultation with the Director of OMB, select certain of the
-    agency’s programs and policies for a review that will assess
+    agency's programs and policies for a review that will assess
     whether underserved communities and their members face systemic
     barriers in accessing benefits and opportunities available
     pursuant to those policies and programs.
@@ -274,11 +285,11 @@
   \item Assumption: $G_i \indep  S_i \mid R_i$
   \item Bayes rule:
     \begin{align*}
-      \hat{P}_{ir} & \Pr(R_i = r \mid G_i = g, S_i = s) \\
-      = & \ \frac{\Pr(S_i =s\mid
+      \hat{P}_{ir} \ & = \ \Pr(R_i = r \mid G_i = g, S_i = s) \\
+      & = \ \frac{\Pr(S_i =s\mid
       \alert{G_i =g}, R_i = r)\Pr(G_i =g, R_i =r)}{\sum_{r^\prime} \Pr(S_i =s\mid
           \alert{G_i =g}, R_i = r^\prime)\Pr(G_i =g, R_i =r^\prime)} \\
-      = & \ \frac{\Pr(S_i =s\mid
+      & = \ \frac{\Pr(S_i =s\mid
        R_i = r)\Pr(G_i =g, R_i =r)}{\sum_{r^\prime} \Pr(S_i =s\mid
        R_i = r^\prime)\Pr(G_i =g, R_i =r^\prime)}
     \end{align*}
