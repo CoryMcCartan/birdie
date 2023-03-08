@@ -162,7 +162,8 @@ check_make_prior <- function(prior, model, n_y, n_r) {
 
     if (model == "dir") {
         if (!"alpha" %in% names(prior) ||
-                !is.numeric(prior$alpha) || any(is.na(prior$alpha))) {
+                !is.numeric(prior$alpha) || !is.matrix(prior$alpha) ||
+                any(is.na(prior$alpha))) {
             cli_abort(c("With {.arg model=\"dir\"}, {.arg prior} must have an entry
                         {.code alpha} which is a numeric matrix.",
                         "i"="See {.fn birdie::birdie} for details."),
@@ -175,6 +176,14 @@ check_make_prior <- function(prior, model, n_y, n_r) {
         if (ncol(prior$alpha) != n_r) {
             cli_abort("{.arg prior$alpha} must have the same number of columns
                       as there are racial groups", call=parent.frame())
+        }
+        if (any(prior$alpha) < 0) {
+            cli_abort("{.arg prior$alpha} must have nonnegative entries", call=parent.frame())
+        }
+        if (any(prior$alpha) <= 1) {
+            cli_warn("A {.arg prior$alpha} with entries that are not
+                     strictly greater than 1 may lead to numerical
+                     issues.", call=parent.frame())
         }
     } else if (model == "mmm") {
         if (!all(c("scale_sigma", "scale_beta") %in% names(prior)) ||
