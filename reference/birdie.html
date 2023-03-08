@@ -179,7 +179,7 @@ referenced below.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
-    <p>McCartan, C., Fisher, R., Goldin, J., Ho, D., &amp; Imai, K. (2022).
+    <p>McCartan, C., Goldin, J., Ho, D.E., &amp; Imai, K. (2022).
 Estimating Racial Disparities when Race is Not Observed.
 Available at <a href="https://arxiv.org/abs/2303.02580" class="external-link">https://arxiv.org/abs/2303.02580</a>.</p>
     </div>
@@ -196,6 +196,10 @@ Available at <a href="https://arxiv.org/abs/2303.02580" class="external-link">ht
 <span class="r-in"><span><span class="fu">birdie</span><span class="op">(</span><span class="va">r_probs</span>, <span class="va">turnout</span> <span class="op">~</span> <span class="fl">1</span>, data<span class="op">=</span><span class="va">pseudo_vf</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Using c(1+ε, 1+ε, ..., 1+ε) prior for Pr(X | R)</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #555555;">This message is displayed once per session.</span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>coercing argument of type 'double' to logical</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>coercing argument of type 'double' to logical</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>A `prior$alpha` with entries that are not strictly greater than 1 may lead to</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> numerical issues.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Multinomial-Dirichlet <span style="color: #0000BB;">BIRDiE</span> model</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Formula: turnout ~ 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Data: pseudo_vf</span>
@@ -206,6 +210,10 @@ Available at <a href="https://arxiv.org/abs/2303.02580" class="external-link">ht
 <span class="r-out co"><span class="r-pr">#&gt;</span> yes 0.699 0.642 0.608 0.387 0.222 0.746</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">birdie</span><span class="op">(</span><span class="va">r_probs</span>, <span class="va">turnout</span> <span class="op">~</span> <span class="va">zip</span>, data<span class="op">=</span><span class="va">pseudo_vf</span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>coercing argument of type 'double' to logical</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>coercing argument of type 'double' to logical</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>A `prior$alpha` with entries that are not strictly greater than 1 may lead to</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> numerical issues.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Multinomial-Dirichlet <span style="color: #0000BB;">BIRDiE</span> model</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Formula: turnout ~ zip</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Data: pseudo_vf</span>
@@ -227,7 +235,7 @@ Available at <a href="https://arxiv.org/abs/2303.02580" class="external-link">ht
 <span class="r-out co"><span class="r-pr">#&gt;</span> Formula: turnout ~ (1 | zip)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Data: pseudo_vf</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 6 iterations and 0.28 secs to convergence</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 6 iterations and 0.29 secs to convergence</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Number of observations: 5,000</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Number of groups: 618</span>

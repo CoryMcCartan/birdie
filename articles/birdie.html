@@ -189,7 +189,7 @@ the probabilities.</p>
 <span><span class="co">#&gt; 0.656372686 0.277807934 0.032031532 0.010139008 0.009564482 0.014084358</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">colMeans</a></span><span class="op">(</span><span class="va">r_probs_me</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  pr_white  pr_black   pr_hisp  pr_asian   pr_aian  pr_other </span></span>
-<span><span class="co">#&gt; 0.7090022 0.2000763 0.0434249 0.0186050 0.0118764 0.0170152</span></span>
+<span><span class="co">#&gt; 0.7090623 0.2000669 0.0433066 0.0185961 0.0118845 0.0170836</span></span>
 <span><span class="co"># actual </span></span>
 <span><span class="va">p_r</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -379,11 +379,16 @@ using the <code><a href="https://rdrr.io/r/stats/vcov.html" class="external-link
 <code class="sourceCode R"><span><span class="va">fit_boot</span> <span class="op">=</span> <span class="fu"><a href="../reference/birdie.html">birdie</a></span><span class="op">(</span><span class="va">r_probs</span>, <span class="va">turnout</span> <span class="op">~</span> <span class="fl">1</span>, data<span class="op">=</span><span class="va">pseudo_vf</span>, se_boot<span class="op">=</span><span class="fl">200</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Using c(1+ε, 1+ε, ..., 1+ε) prior for Pr(X | R)</span></span>
 <span><span class="co">#&gt; <span style="color: #555555;">This message is displayed once per session.</span></span></span>
+<span><span class="co">#&gt; Warning in any(prior$alpha): coercing argument of type 'double' to logical</span></span>
+<span></span>
+<span><span class="co">#&gt; Warning in any(prior$alpha): coercing argument of type 'double' to logical</span></span>
+<span><span class="co">#&gt; Warning in birdie(r_probs, turnout ~ 1, data = pseudo_vf, se_boot = 200): A `prior$alpha` with entries that are not strictly greater than 1 may lead to</span></span>
+<span><span class="co">#&gt; numerical issues.</span></span>
 <span></span>
 <span><span class="va">fit_boot</span><span class="op">$</span><span class="va">se</span></span>
-<span><span class="co">#&gt;          white      black       hisp      asian      aian     other</span></span>
-<span><span class="co">#&gt; no  0.01114784 0.02209294 0.04892776 0.09861813 0.1070002 0.3535303</span></span>
-<span><span class="co">#&gt; yes 0.01114784 0.02209294 0.04892776 0.09861813 0.1070002 0.3535303</span></span></code></pre></div>
+<span><span class="co">#&gt;          white     black       hisp      asian      aian     other</span></span>
+<span><span class="co">#&gt; no  0.01017874 0.0199184 0.05100077 0.09799814 0.1065865 0.3546501</span></span>
+<span><span class="co">#&gt; yes 0.01017874 0.0199184 0.05100077 0.09799814 0.1065865 0.3546501</span></span></code></pre></div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
