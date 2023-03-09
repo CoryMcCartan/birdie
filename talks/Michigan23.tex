@@ -214,8 +214,9 @@
     \item But, estimates of racial disparities are biased
     \item This is because race affects many aspects of our society
     \end{itemize}
-    \vfill
-  \item \alert{BIRDiE} eliminates bias
+    \bigskip
+  \item \alert{BIRDiE} (Bayesian Instrumental Regression for Disparity
+    Estimation) 
     \begin{itemize}
     \item New and more credible identification assumption
     \item Flexible model allows for various racial disparity estimands
@@ -223,7 +224,10 @@
       assumption
     \item Open-source software package \alert{birdie} available
     \end{itemize}
-    \vfill
+    \begin{flushright}
+      \vspace{-.5in}
+      \includegraphics[scale=0.165]{../man/figures/logo.png}
+     \end{flushright}
   \item Empirical validation
     \begin{itemize}
     \item North Carolina voter file where self-reported race is
@@ -280,7 +284,7 @@
   \frametitle{Standard Estimation Methods}
  
 \begin{enumerate}
-\item Predict race via BISG (or its variant)
+\item Predict race via \alert{BISG} (or its variant)
   \begin{itemize}
   \item Assumption: $G_i \indep  S_i \mid R_i$
   \item Bayes rule:
@@ -298,14 +302,123 @@
   \vfill
 \item Estimate racial disparities $\mu_{Y\mid R}(y \mid r) = \Pr(Y_i = y \mid R_i = r)$
   \begin{itemize}
-  \item weighting
+  \item \alert{weighting}:
     $$\hat\mu_{Y\mid R}^{\text{wtd}}(y \mid r) \ = \ \frac{\sum_i \mathbf{1}\{Y_i = y\}\hat{P}_{ir} }{\sum_i \hat{P}_{ir}}$$
-  \item thresholding
+  \item \alert{thresholding}: use the racial group with the largest
+    probability as imputed race
   \end{itemize}
 \end{enumerate}
 
 \end{frame}
 
+\begin{frame}
+
+  \frametitle{BISG Prediction Works Reasonably Well {\scriptsize (Imai
+      et al. 2022. {\it Sci. Adv.})}}
+
+  \includegraphics[width=\textwidth]{figs/AUCROC_Surnames.pdf}\\
+  \includegraphics[width=1.2\textwidth, trim = 100 0 0 0, clip]{figs/Calibration_Surnames.pdf}
+
+\end{frame}
+
+\begin{frame}
+
+  \frametitle{Good Prediction Can Yield Biased Racial
+    Disparity Estimates}
+
+  \begin{columns}
+    \begin{column}{0.575\textwidth}
+      \begin{itemize}
+      \item Bias of the weighted estimatorn {\scriptsize (Chen {\it et
+            al.} 2019)}
+        \begin{align*}
+          & \hat\mu_{Y\mid R}^{\text{wtd}}(y \mid r) - \Pr(Y_i = y
+            \mid R_i = r) \\
+= & - \frac{\E[\text{Cov}(\mathbf{1}\{Y_i = y\}, \mathbf{1}\{R_i = r\}\mid G_i,
+          X_i, S_i)]}{\Pr(R_i = r)}
+          \end{align*}
+
+          \vfill
+        \item Required assumption: $$Y_i \indep R_i \mid G_i, S_i, X_i$$
+          \vfill
+     \item Problem: race affects many aspects of the society
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.425\textwidth}
+      \tikzstyle{main node}=[circle,draw,font=\sffamily\Large\bfseries]
+      \tikzstyle{sub node}=[circle,draw,dashed,font=\sffamily\Large\bfseries]
+      \hspace{-.2in}\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2.6cm,thick]
+        
+        \node[main node] (G) {$G$};
+        \node[main node] (Y) [right of=G] {$Y$};
+        \node[main node] (S) [below left=1.3cm and 1.3cm of Y] {$S$};
+        \node[sub node] (R) [below left=0.8cm and 0.8cm of S] {$R$};
+        \node[main node] (X) [below of=Y] {$X$};
+        
+        \path[every node/.style={font=\sffamily\small}]
+        (R) edge node  {} (G)
+        (R) edge node  {} (X)
+        (S) edge node  {} (Y)
+        (R) edge node  {} (S)
+        (G) edge node  {} (X)
+        (G) edge node  {} (Y)
+        (X) edge node  {} (Y);
+    \end{tikzpicture}
+  \end{column}
+  \end{columns}
+
+\end{frame}
+
+\begin{frame}
+
+\frametitle{New Identification Strategy}
+
+
+  \begin{columns}
+    \begin{column}{0.425\textwidth}
+      \tikzstyle{main node}=[circle,draw,font=\sffamily\Large\bfseries]
+      \tikzstyle{sub node}=[circle,draw,dashed,font=\sffamily\Large\bfseries]
+   \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2.5cm,thick]
+    
+        \node[main node] (G) {$G$};
+        \node[sub node] (R) [below of=G] {$R$};
+        \node[main node] (S) [below left=0.5cm and 0.5cm of R] {$S$};
+        \node[main node] (Y) [right of=G] {$Y$};
+        \node[main node] (X) [below of=Y] {$X$};
+        
+        \path[every node/.style={font=\sffamily\small}]
+        (R) edge node  {} (G)
+        (R) edge node  {} (X)
+        (R) edge node  {} (Y)
+        (R) edge node  {} (S)
+        (G) edge node  {} (X)
+        (G) edge node  {} (Y)
+        (X) edge node  {} (Y);
+        
+        %\path[every node/.style={font=\sffamily\small}, <->]
+        %(G) edge [dashed, bend right] node  {} (S)
+        %(X) edge [dashed, bend left] node  {} (S);
+    \end{tikzpicture}
+  \end{column}
+   \begin{column}{0.575\textwidth}
+      \begin{itemize}
+        \item Required assumption: $$Y_i \indep S_i \mid G_i, R_i, X_i$$
+
+        \item Surname as a proxy for race
+        \item Race can directly or indirectly affects the outcome
+
+          \medskip
+        \item Potential violations:
+          \begin{itemize}
+          \item name-based discrimination
+          \item coarse racial categories
+          \end{itemize}
+        \item Anonymous application
+      \end{itemize}
+    \end{column}
+  \end{columns}
+  
+\end{frame}
 
 
 \end{document}
