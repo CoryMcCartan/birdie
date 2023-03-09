@@ -568,7 +568,128 @@ $$
 
 \end{frame}
 
+\begin{frame}
 
+  \frametitle{Sensitivity Analysis}
+
+  \begin{itemize}
+  \item Potential violation of the key identifying assumption
+    \begin{itemize}
+    \item name-based discrimination
+    \item racial category is too coarse
+    \end{itemize}
+
+  \item Suppose we can have information about finer ethnic groups
+    $$f:\cS\to\R^d,\  d\ll|\cS|$$
+    \begin{itemize}
+    \item $f(\text{Imai}) = \text{Japanese}$,  $f(\text{McCartan}) =
+      \text{Irish}$, etc.
+    \item Assume instead
+      $$Y_i\indep S_i\mid f(S_i),R_i,G_i,X_i$$
+    \end{itemize}
+
+  \item 1930 Census provides 22 groups
+    \begin{itemize}
+    \item Anglosphere and Black surname (third-or-more generation
+      Whites and Blacks): Smith, Williams, Brown,
+      ...
+    \item First wave European immigration (German, Nordic, and Irish): Burns, Olson, Wagner, ...
+    \item East Asian (Chinese, Japanese, Korean), South Asian
+      (Indian, Southwest Asian),
+      Southeast Asian and Pacific (Vietnamese, Filipino)
+    \item Non-Cuban Hispanic (Mexican, Latin American), Cuban 
+    \end{itemize}
+ \end{itemize}
+
+
+\end{frame}
+
+\begin{frame}
+
+  \frametitle{Empirical Validation}
+
+  \begin{itemize}
+  \item 2022 North Carolina voter file: 5.8 millon voters with
+    self-reported race
+  \item Subset 1 million voters $\rightsquigarrow$ negligible sampling
+    uncertainty
+
+    \vfill
+  \item Focus on party registration
+
+  \end{itemize}
+    \includegraphics[width=\textwidth]{../paper/figures/nc_overview.pdf}
+
+\end{frame}
+
+\begin{frame}
+
+  \frametitle{Estimates of Racial Disparity in Party Registration}
+
+  \includegraphics[width=\textwidth]{../paper/figures/nc_disp.pdf}
+
+
+\end{frame}
+
+
+\begin{frame}
+
+  \frametitle{Total Variation Distance}
+
+  \includegraphics[width=\textwidth]{../paper/figures/nc_tv.pdf}
+
+\end{frame}
+
+\begin{frame}
+
+  \frametitle{Small Area Estimation}
+
+ \includegraphics[width=\textwidth]{../paper/figures/nc_smallarea.pdf}
+
+
+\end{frame}
+
+\begin{frame}
+
+  \frametitle{Improved Race Probabilities}
+
+ \includegraphics[width=\textwidth]{../paper/figures/nc_roc.pdf}
+
+
+\end{frame}
+
+\begin{frame}
+
+  \frametitle{Estimates Conditional on an Additional Variable}
+
+ \includegraphics[width=\textwidth]{../paper/figures/nc_addlcov_error.pdf}
+
+
+\end{frame}
+
+\begin{frame}
+
+  \frametitle{Robustness Analysis}
+
+  \begin{itemize}
+  \item Surname groups from 1930 Census  
+  \item Added 3,000 Asian surnames to account for more recent
+    immigration
+    \vfill
+  \item Correlation between BIRDiE residuals and nine surname groups
+    \includegraphics[width=0.9\textwidth]{../paper/figures/nc_sens_grp.pdf}
+
+  \item Including these in BIRDiE does not substantially alter the estimates 
+  \end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+
+  \frametitle{Concluding Remarks}
+
+\end{frame}
 
 
 \end{document}
