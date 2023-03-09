@@ -1,8 +1,7 @@
 %\documentclass{beamer}
 \documentclass[handout]{beamer}
 
-%\documentclass{article}
-%\usepackage{beamerarticle}
+\input{../paper/header.tex}
 
 \mode<presentation>
 {
@@ -40,48 +39,6 @@
 \newcolumntype{.}{D{.}{.}{-1}}
 \newcolumntype{d}[1]{D{.}{.}{#1}}
 
-% === new commands ===
-\newcommand\ud{\mathrm{d}}
-\newcommand\dist{\buildrel\rm d\over\sim}
-\newcommand\ind{\stackrel{\rm indep.}{\sim}}
-\newcommand\iid{\stackrel{\rm i.i.d.}{\sim}}
-\newcommand\logit{{\rm logit}}
-\renewcommand\r{\right}
-\renewcommand\l{\left}
-\newcommand\Cov{{\rm Cov}}
-\newcommand\bone{\mathbf{1}}
-\newcommand\E{\mathbb{E}}
-\newcommand\V{\mathbb{V}}
-\newcommand\bE{\mathbf{E}}
-\newcommand\bx{\mathbf{x}}
-\newcommand\bX{\mathbf{X}}
-\newcommand\bt{\mathbf{t}}
-\newcommand\bY{\mathbf{Y}}
-\newcommand\cZ{\mathcal{Z}}
-\newcommand\cN{\mathcal{N}}
-\newcommand\cS{\mathcal{S}}
-\newcommand\cU{\mathcal{U}}
-\newcommand\cP{\mathcal{P}}
-\newcommand\cO{\mathcal{O}}
-\newcommand\cX{\mathcal{X}}
-\newcommand{\diag}{\mathop{\mathrm{diag}}}
-\newcommand{\argmax}{\operatornamewithlimits{argmax}}
-\newcommand{\argmin}{\operatornamewithlimits{argmin}}
-\def\independenT#1#2{\mathrel{\rlap{$#1#2$}\mkern2mu{#1#2}}}
-\DeclareMathOperator{\sgn}{sgn}
-\newcommand{\indep}{\mbox{$\perp\!\!\!\perp$}}
-
-\newcommand{\ACEP}{\textsf{APCEp}}
-\newcommand{\ACER}{\textsf{APCEr}}
-\newcommand{\ACES}{\textsf{APCEs}}
-\newcommand{\ACE}{\textsf{APCE}}
-
-
-% == theorems
-\setbeamertemplate{theorems}[numbered]
-\newcounter{asm}
-\setcounter{asm}{0}
-\newtheorem{assumption}[asm]{Assumption}
 
 % === tikz
 \usepackage{tikz}
@@ -420,5 +377,39 @@
   
 \end{frame}
 
+
+\begin{frame}
+
+  \frametitle{Surname as a High-dimensional Instrument}
+
+  \begin{itemize}
+  \item Identification
+    {\small\begin{align*}
+     & \overbrace{\Pr(Y=y\mid G=g, X=x, S=s)}^{\text{observed data}} \\
+    = & \sum_{r\in\mathcal{R}} \underbrace{\Pr(Y=y\mid R=r, G=g,
+        X=x)}_{\text{unknown parameters}}\times \underbrace{\Pr(R=r\mid
+        G=g, X=x, S=s)}_{\text{BISG probability}}
+           \end{align*}}
+         \begin{itemize}
+         \item $(|\mathcal{Y}|-1)\times|\mathcal{G}|\times|\mathcal{X}|\times|\mathcal{S}|$ equations
+         \item
+           $(|\mathcal{Y}|-1)\times|\mathcal{G}|\times|\mathcal{X}|\times|\mathcal{R}|$
+           unknown parameters
+         \end{itemize}
+         \vfill
+       \item OLS estimator:
+         $$
+    \hat{\vb*\mu}^{(\text{ols})}_{Y\mid RGX}(y\mid \cdot, g,x) 
+    =  (\hat{\vb P}_{\cI(xg)}^\top \hat{\vb P}_{\cI(xg)})^{-1}\hat{\vb P}_{\cI(xg)}\,\ind\{{\vb Y}_{\cI(xg)} = y\},
+    $$
+    \begin{itemize}
+    \item compute this for each $g$ and $x$, and aggregate
+    \item unbiased estimate of $\Pr(Y_i= y \mid R_i = r)$
+    \item ignores the fact that $\Pr(Y_i= y \mid R_i = r, G_i
+      = g, X_i = x)$ is probability
+  \end{itemize}
+  \end{itemize}
+
+\end{frame}
 
 \end{document}
