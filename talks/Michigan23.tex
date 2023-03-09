@@ -268,7 +268,7 @@
   \item $S_i$: surname
   \item $G_i$: residence location
   \item $X_i$: other Census variables (optional)
-  \item $Z_i$: covariates of interest
+  \item $W_i$: covariates of interest
   \end{itemize}
 \item Census data
   \begin{itemize}
@@ -287,7 +287,7 @@
   \begin{itemize}
   \item $\E(Y_i \mid R_i = r) - \E(Y_i \mid R_i = r^\prime)$ for $r
     \ne r^\prime$
-  \item $\E(Y_i \mid R_i = r, Z_i = z) - \E(Y_i \mid R_i = r^\prime, Z_i = z)$
+  \item $\E(Y_i \mid R_i = r, W_i = w) - \E(Y_i \mid R_i = r^\prime, W_i = w)$
   \end{itemize}
 
 \end{itemize}
@@ -472,9 +472,103 @@
 
 \begin{frame}
 
-  \frametitle{BIRDiE}
+  \frametitle{BIRDiE {\small (Bayesian Instrumental Regression for Disparity
+    Estimation)}}
 
+\begin{itemize}
+\item Flexible probabilistic model that integrates BISG and its variant
+
+\item Posterior:
+    $$\pi(\Theta, \vb R\mid \vb Y, \vb G, \vb X, \vb S)
+    \ \propto \ \pi(\Theta)\prod_{i=1}^N \underbrace{\pi(Y_i\mid R_i,
+      G_i, X_i, \Theta)}_{\text{complete-data model}}
+            \underbrace{\pi(R_i\mid G_i, X_i, S_i)}_{\text{BISG prob. } \hat{P}_{ir}}$$
+\item Models: 
+  \begin{enumerate}
+  \item Complete-pooling:
+$$Y_i\mid R_i, G_i, X_i, \Theta \sim \Categorical_{\cY}(\vb*\theta_{R_i}), \quad
+        \vb*\theta_r \iid \Dirichlet(\vb*\alpha)$$
+  \item Saturated (no pooling):
+$$Y_i\mid R_i, G_i, X_i, \Theta \sim \Categorical_{\cY}(\vb*\theta_{R_iG_iX_i}), \quad
+        \vb*\theta_{rgx} \iid \Dirichlet(\vb*\alpha)$$
+      \item Partial pooling (mixed effects): $\vb W$ group-level
+        covariates, $\vb Z=(X,G)$
+        \begin{align*}
+    Y_i\mid R_i, G_i, X_i, \Theta &\sim
+                                    \Categorical_{\cY}(g^{-1}(\vb*\mu_{rgx})), \quad
+    \mu_{rgxy} = \vb W\vb*\beta_{ry} + \vb Z\vb u_{ry} \\
+    \quad \vb u_{ry}\mid \phi_{ry} &\sim \Norm(0,
+                                     \Sigma(\vb*\phi_{ry})), \quad
+    \vb*\beta_{ry} \iid f_\beta, \quad \vb*\phi_{ry} \iid f_\phi
+        \end{align*}
+        \vspace{-.2in}
+  \end{enumerate}
+
+  
+\end{itemize}
 
 \end{frame}
-  
+
+
+\begin{frame}
+
+  \frametitle{Computation}
+
+  \begin{enumerate}
+  \item Small samples: \alert{direct inference}
+$$
+    \pi(\Theta\mid \vb Y, \vb G, \vb X, \vb S)
+    \propto \pi(\Theta) \prod_{i=1}^N \sum_{r\in\cR} \pi(Y_i\mid 
+    r, G_i, X_i, \Theta)\hat{P}_{ir}
+    $$
+    \begin{itemize}
+    \item low-dimensional parameter space, MCMC is applicable (e.g.,
+      Stan)
+    \item but it is not scalable
+    \end{itemize}
+    
+  \item Large samples: \alert{EM algorithm}
+    \begin{itemize}
+    \item E-step: update race probability (improvement upon BSIG prob.)
+      $$\tilde{P}_{ir\mid Y}^{(t)}
+    = \frac{\pi(Y_i\mid r, G_i,, X_i, \Theta^{(t)}) \hat P_{ir}}{
+        \sum_{r'\in\cR} \pi(Y_i\mid r', G_i,, X_i, \Theta^{(t)}) \hat P_{ir'} }$$
+    \item M-step: maximize each $(y,x,g)$ group separately
+      $$\log \pi(\Theta^{(t+1)}) + \sum_{r\in\cR}\sum_{y\in\cY}\sum_{x\in\cX}\sum_{g\in\cG} 
+        \log \pi(y\mid r, g, x, \Theta^{(t+1)}) 
+        \qty(\sum_{i\in\cI(yxg)} \tilde{P}_{ir\mid Y}^{(t)}) $$
+    \end{itemize}
+
+  \end{enumerate}
+
+\end{frame}
+
+\begin{frame}
+
+  \frametitle{Additional Explanatory Variables}
+
+  \begin{itemize}
+  \item Long regression: $\Pr(Y_i  = y \mid R_i = r, W_i = w)$ where
+    $W_i$ is not be part of $(X_i, G_i)$
+\vfill
+  \item Two strategies:
+    \begin{enumerate}
+    \item Joint modeling: $P(Y, W \mid R)$
+    \item Iterative modeling: fit $P(W \mid R)$ first and then use the
+      updated race probability to fit $P(Y \mid W, R)$
+    \end{enumerate}
+\vfill
+\item Both approaches require:
+   $$W_i\indep S_i\mid R_i,G_i,X_i \qand
+   Y_i\indep S_i\mid W_i,R_i,G_i,X_i$$
+   or equivalently
+   $$(Y_i, W_i)\indep S_i\mid R_i,G_i,X_i$$
+   \vspace{-.4in}
+  \end{itemize}
+
+\end{frame}
+
+
+
+
 \end{document}
