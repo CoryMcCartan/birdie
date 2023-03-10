@@ -130,6 +130,12 @@ if (FALSE) {
         theme_bw(base_family="IBM Plex Sans", base_size=24)
         # theme_paper()
 
+    ggplot(d, aes(fct_relabel(race, toupper), after_stat(count)/nrow(d))) +
+        geom_bar(fill="#2c3f4a") +
+        scale_y_continuous(name="Share of voter file", limits=c(0, 1),
+                           expand=c(0, 0), labels=percent) +
+        labs(x="Race") +
+        theme_bw(base_family="IBM Plex Sans", base_size=24)
 }
 
 
