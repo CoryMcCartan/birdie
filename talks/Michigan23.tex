@@ -1,5 +1,5 @@
-%\documentclass{beamer}
-\documentclass[handout]{beamer}
+\documentclass{beamer}
+%\documentclass[handout]{beamer}
 
 \mode<presentation>
 {
@@ -193,7 +193,7 @@
 
 \begin{frame}
 
-  \frametitle{Executive Order on Advancing Racial Equity and Support for Underserved Communities through the Federal Government}
+  \frametitle{Executive Order 13985: {\small Advancing Racial Equity and Support for Underserved Communities through the Federal Government}}
 
   \begin{itemize}
   \item \alert{Sec. 4.  Identifying Methods to Assess Equity}.  (a)
@@ -225,8 +225,8 @@
   \begin{enumerate}
   \item Existing methods are likely to be biased
     \begin{itemize}
-    \item BISG predictions are typically well calibrated
-    \item But, estimates of racial disparities are biased
+    \item BISG predictions are typically accurate and well calibrated
+    \item Still, estimates of racial disparities based on them can be biased
     \item This is because race affects many aspects of our society
     \end{itemize}
     \bigskip
@@ -277,17 +277,17 @@
   \end{itemize}
 
   \vfill
-\item Estimands
+\item Regression estimands
   \begin{itemize}
-  \item $\E(Y_i \mid R_i)$: short regression
-  \item $\E(Y_i \mid R_i, X_i)$: long regression 
+  \item $\Pr(Y_i = y \mid R_i = r)$: short regression
+  \item $\Pr(Y_i = y \mid R_i = r, X_i =x)$: long regression 
   \end{itemize}
 
-\item Racial disparity:
+\item Racial disparity estimands
   \begin{itemize}
-  \item $\E(Y_i \mid R_i = r) - \E(Y_i \mid R_i = r^\prime)$ for $r
+  \item $\Pr(Y_i =y \mid R_i = r) - \Pr(Y_i = y \mid R_i = r^\prime)$ for $r
     \ne r^\prime$
-  \item $\E(Y_i \mid R_i = r, W_i = w) - \E(Y_i \mid R_i = r^\prime, W_i = w)$
+  \item $\Pr(Y_i = y \mid R_i = r, W_i = w) - \Pr(Y_i = y \mid R_i = r^\prime, W_i = w)$
   \end{itemize}
 
 \end{itemize}
@@ -305,21 +305,22 @@
   \item Bayes rule:
     \begin{align*}
       \hat{P}_{ir} \ & = \ \Pr(R_i = r \mid G_i = g, S_i = s) \\
-      & = \ \frac{\Pr(S_i =s\mid
+      \onslide<3->{& = \ \frac{\Pr(S_i =s\mid
       \alert{G_i =g}, R_i = r)\Pr(G_i =g, R_i =r)}{\sum_{r^\prime} \Pr(S_i =s\mid
-          \alert{G_i =g}, R_i = r^\prime)\Pr(G_i =g, R_i =r^\prime)} \\
-      & = \ \frac{\Pr(S_i =s\mid
+          \alert{G_i =g}, R_i = r^\prime)\Pr(G_i =g, R_i =r^\prime)}} \\
+      \onslide<4->{& = \ \frac{\Pr(S_i =s\mid
        R_i = r)\Pr(G_i =g, R_i =r)}{\sum_{r^\prime} \Pr(S_i =s\mid
-       R_i = r^\prime)\Pr(G_i =g, R_i =r^\prime)}
+       R_i = r^\prime)\Pr(G_i =g, R_i =r^\prime)}}
     \end{align*}
-  \item With covariates: $(G_i, X_i) \indep S_i \mid R_i$
+  \item<5-> With covariates: $(G_i, X_i) \indep S_i \mid R_i$
+  \item<6-> {\sc wru} software package {\scriptsize (Imai and Kahna 2016)}
   \end{itemize}
   \vfill
-\item Estimate racial disparities $\mu_{Y\mid R}(y \mid r) = \Pr(Y_i = y \mid R_i = r)$
+\item<7-> Estimate racial disparities $\mu_{Y\mid R}(y \mid r) = \Pr(Y_i = y \mid R_i = r)$
   \begin{itemize}
-  \item \alert{weighting}:
+  \item<8-> \alert{weighting}:
     $$\hat\mu_{Y\mid R}^{\text{wtd}}(y \mid r) \ = \ \frac{\sum_i \mathbf{1}\{Y_i = y\}\hat{P}_{ir} }{\sum_i \hat{P}_{ir}}$$
-  \item \alert{thresholding}: use the racial group with the largest
+  \item<9-> \alert{thresholding}: use the racial group with the largest
     probability as imputed race
   \end{itemize}
 \end{enumerate}
@@ -332,13 +333,13 @@
       et al. 2022. {\it Sci. Adv.})}}
 
   \includegraphics[width=\textwidth]{figs/AUCROC_Surnames.pdf}\\
-  \includegraphics[width=1.2\textwidth, trim = 100 0 0 0, clip]{figs/Calibration_Surnames.pdf}
+  \onslide<2->{\includegraphics[width=1.2\textwidth, trim = 100 0 0 0, clip]{figs/Calibration_Surnames.pdf}}
 
 \end{frame}
 
 \begin{frame}
 
-  \frametitle{Good Prediction Can Yield Biased Racial
+  \frametitle{Good Race Prediction Can Bias Racial
     Disparity Estimates}
 
   \begin{columns}
@@ -417,7 +418,7 @@
   \end{column}
    \begin{column}{0.575\textwidth}
       \begin{itemize}
-        \item Required assumption: $$Y_i \indep S_i \mid G_i, R_i, X_i$$
+        \item<2-> Required assumption: $$Y_i \indep S_i \mid G_i, R_i, X_i$$
 
         \item Surname as a proxy for race
         \item Race can directly or indirectly affects the outcome
@@ -441,13 +442,14 @@
   \frametitle{Surname as a High-dimensional Instrument}
 
   \begin{itemize}
-  \item Identification
+  \item Identification {\scriptsize (Kuroki and Pearl, 2014)}
     {\small\begin{align*}
-     & \overbrace{\Pr(Y=y\mid G=g, X=x, S=s)}^{\text{observed data}} \\
-    = & \sum_{r\in\mathcal{R}} \underbrace{\Pr(Y=y\mid R=r, G=g,
-        X=x)}_{\text{unknown parameters}}\times \underbrace{\Pr(R=r\mid
-        G=g, X=x, S=s)}_{\text{BISG probability}}
+     & \overbrace{\Pr(Y_i=y\mid G_i=g, X_i=x, S_i=s)}^{\text{observed data}} \\
+    = & \sum_{r\in\mathcal{R}} \underbrace{\alert{\Pr(Y_i=y\mid R_i=r, G_i=g,
+        X_i=x)}}_{\text{unknown parameters}}\ \underbrace{\Pr(R_i=r\mid
+        G_i=g, X_i=x, S_i=s)}_{\text{BISG probability}}
            \end{align*}}
+    \vspace{-.2in}
          \begin{itemize}
          \item $(|\mathcal{Y}|-1)\times|\mathcal{G}|\times|\mathcal{X}|\times|\mathcal{S}|$ equations
          \item
@@ -455,11 +457,12 @@
            unknown parameters
          \end{itemize}
          \vfill
-       \item OLS estimator:
+       \item OLS estimator {\scriptsize (Fong and Tyler, 2021)}:
          $$
     \hat{\vb*\mu}^{(\text{ols})}_{Y\mid RGX}(y\mid \cdot, g,x) 
     =  (\hat{\vb P}_{\cI(xg)}^\top \hat{\vb P}_{\cI(xg)})^{-1}\hat{\vb P}_{\cI(xg)}\,\ind\{{\vb Y}_{\cI(xg)} = y\},
     $$
+    \vspace{-.2in}
     \begin{itemize}
     \item compute this for each $g$ and $x$, and aggregate
     \item unbiased estimate of $\Pr(Y_i= y \mid R_i = r)$
@@ -476,7 +479,7 @@
     Estimation)}}
 
 \begin{itemize}
-\item Flexible probabilistic model that integrates BISG and its variant
+\item Flexible and scalable probabilistic model that integrates BISG 
 
 \item Posterior:
     $$\pi(\Theta, \vb R\mid \vb Y, \vb G, \vb X, \vb S)
@@ -549,13 +552,13 @@ $$
 
   \begin{itemize}
   \item Long regression: $\Pr(Y_i  = y \mid R_i = r, W_i = w)$ where
-    $W_i$ is not be part of $(X_i, G_i)$
+    $W_i$ is not part of $(X_i, G_i)$
 \vfill
   \item Two strategies:
     \begin{enumerate}
-    \item Joint modeling: $P(Y, W \mid R)$
-    \item Iterative modeling: fit $P(W \mid R)$ first and then use the
-      updated race probability to fit $P(Y \mid W, R)$
+    \item Joint modeling: $\Pr(Y_i, W_i \mid R_i)$
+    \item Iterative modeling: fit $\Pr(W_i \mid R_i)$ first and then use the
+      updated race probability to fit $\Pr(Y_i \mid W_i, R_i)$
     \end{enumerate}
 \vfill
 \item Both approaches require:
@@ -618,7 +621,7 @@ $$
   \item Focus on party registration
 
   \end{itemize}
-    \includegraphics[width=\textwidth]{../paper/figures/nc_overview.pdf}
+  \onslide<4->{\includegraphics[width=\textwidth]{../paper/figures/nc_overview.pdf}}
 
 \end{frame}
 
@@ -709,13 +712,13 @@ $$
   \end{itemize}
 
   \vfill
-  \begin{center}
+  \onslide<10->{\begin{center}
     The paper is available at
     \alert{\url{https://imai.fas.harvard.edu/research/birdie.html}} \\
     \vfill
     The software is available at \\
     \alert{\url{https://corymccartan.com/birdie/}} 
-  \end{center}
+  \end{center}}
   \vspace{-.7in}
   \begin{flushright}
      \includegraphics[scale=0.165]{../man/figures/logo.png}
