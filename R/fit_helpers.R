@@ -177,10 +177,10 @@ check_make_prior <- function(prior, model, n_y, n_r) {
             cli_abort("{.arg prior$alpha} must have the same number of columns
                       as there are racial groups", call=parent.frame())
         }
-        if (any(prior$alpha) < 0) {
+        if (any(prior$alpha < 0)) {
             cli_abort("{.arg prior$alpha} must have nonnegative entries", call=parent.frame())
         }
-        if (any(prior$alpha) <= 1) {
+        if (any(prior$alpha <= 1)) {
             cli_warn("A {.arg prior$alpha} with entries that are not
                      strictly greater than 1 may lead to numerical
                      issues.", call=parent.frame())

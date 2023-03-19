@@ -52,5 +52,5 @@ Config/testthat/edition: 3
 SystemRequirements: GNU make
 Biarch: true
 LazyData: true
-URL: https://github.com/CoryMcCartan/birdie, http://corymccartan.com/birdie/
+URL: https://github.com/CoryMcCartan/birdie, https://corymccartan.com/birdie/
 BugReports: https://github.com/CoryMcCartan/birdie/issues

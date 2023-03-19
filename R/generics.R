@@ -12,6 +12,9 @@
 #' @param data A data frame to augment with `Pr(R | Y, X, S)` probabilities
 #' @param ... Potentially further arguments passed from other methods
 #'
+#' @return Varies, depending on the method. See generic functions' documentation
+#'   for details.
+#'
 #' @examples
 #' methods(class="birdie")
 #'

@@ -72,6 +72,10 @@ adjustment.}
 
 \item{data}{A data frame to augment with \code{Pr(R | Y, X, S)} probabilities}
 }
+\value{
+Varies, depending on the method. See generic functions' documentation
+for details.
+}
 \description{
 The output of \code{\link[=birdie]{birdie()}} is an object of class \code{birdie}, which supports
 many generic functions. Notably \code{coef.birdie()} returns the main model
