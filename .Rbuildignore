@@ -3,6 +3,7 @@
 ^\.Rproj\.user$
 ^explore$
 ^paper$
+^talks$
 ^replication$
 __pycache__
 .*\.pyc$

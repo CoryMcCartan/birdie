@@ -14,7 +14,7 @@ Bayesian models for accurately estimating conditional distributions by race, usi
 Useful links:
 \itemize{
   \item \url{https://github.com/CoryMcCartan/birdie}
-  \item \url{http://corymccartan.com/birdie/}
+  \item \url{https://corymccartan.com/birdie/}
   \item Report bugs at \url{https://github.com/CoryMcCartan/birdie/issues}
 }
 
