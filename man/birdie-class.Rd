@@ -59,7 +59,7 @@ without using surnames).}
 
 \item{adj}{A point in the simplex that describes how BISG probabilities
 will be thresholded to produce point predictions. The probabilities are
-divied by \code{adj}, then the racial category with the highest probability is
+divided by \code{adj}, then the racial category with the highest probability is
 predicted. Can be used to trade off types of prediction error. Must be
 nonnegative but will be normalized to sum to 1. The default is to make no
 adjustment.}

@@ -20,7 +20,7 @@
 #'   probabilities will be selected as those with names starting with `prefix`.
 #'   The default will work with the output of [bisg()].
 #' @param se_boot The number of bootstrap replicates to use to compute
-#'   approximate standard errors for the esitmator. When there are fewer than
+#'   approximate standard errors for the estimator. When there are fewer than
 #'   1,000 individuals or 100 or fewer replicates, a Bayesian bootstrap is used
 #'   instead (i.e., weights are drawn from a \eqn{\text{Dirichlet}(1, 1, ...,
 #'   1)} distribution, which produces more reliable estimates.
