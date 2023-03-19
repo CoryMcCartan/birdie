@@ -76,7 +76,7 @@ To generate fBISG probabilities, `birdie` provides the `bisg_me()` function, whi
 r_probs_me = bisg_me(~ nm(last_name) + zip(zip), data=pseudo_vf, p_r=p_r, iter=2000)
 ```
 
-Comparing to the standard BISG probabilities, the measurment-error-adjusted probabilities are often more calibrated.
+Comparing to the standard BISG probabilities, the measurement-error-adjusted probabilities are often more calibrated.
 One way to see this is to estimate the marginal distribution of race from the probabilities.
 
 ```{r}
@@ -129,7 +129,7 @@ BIRDiE supports two other general types of models as well: the complete-pooling 
 The former uses a formula like `turnout ~ 1` and only estimates a single, global relationship between turnout and race.
 The model therefore assumes that turnout has no association with geography, after controlling for race.
 The latter model uses a formula like `turnout ~ proc_zip(zip)`.
-While this model can be more computationally efficient to fit than the mixed-effects model, its perfromance can suffer on smaller datasets like the one used here.
+While this model can be more computationally efficient to fit than the mixed-effects model, its performance can suffer on smaller datasets like the one used here.
 We recommend the mixed-effects model for general use.
 
 ### Extracting population and small-area  estimates

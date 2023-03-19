@@ -97,7 +97,7 @@ things. We can extract the estimated conditional distributions with
 `coef()`. We can also get updated BISG probabilities that additionally
 condition on turnout using `fitted()`. Additional functions allow us to
 extract a tidy version of our estimates (`tidy()`) and visualize the
-estimated distributiosn (`plot()`).
+estimated distributions (`plot()`).
 
 ``` r
 coef(fit)
