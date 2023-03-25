@@ -62,7 +62,7 @@ census_race_geo_table <- function(geo=c("us", "state", "county", "zcta", "tract"
             filter(.data$hsplo_race_sub == "total",
                    .data$hispanic_or_latino_origin != "total") %>%
             select(-"hsplo_race_sub") %>%
-            mutate(value = easycensus::get_est(.data$value))
+            mutate(value = easycensus::get_est(.data$estimate))
     }
 
     d = d_raw %>%
