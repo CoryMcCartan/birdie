@@ -39,7 +39,7 @@
     
     <a class="navbar-brand me-2" href="index.html">birdie</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -142,7 +142,7 @@
 <span><span class="co">#&gt;     white black  hisp asian  aian other</span></span>
 <span><span class="co">#&gt; no  0.286 0.358 0.376  0.55 0.644 0.534</span></span>
 <span><span class="co">#&gt; yes 0.714 0.642 0.624  0.45 0.356 0.466</span></span></code></pre></div>
-<p>The <code><a href="reference/preproc.html">proc_zip()</a></code> function fills in missing ZIP codes, among other things. We can extract the estimated conditional distributions with <code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code>. We can also get updated BISG probabilities that additionally condition on turnout using <code><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted()</a></code>. Additional functions allow us to extract a tidy version of our estimates (<code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy()</a></code>) and visualize the estimated distributiosn (<code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>).</p>
+<p>The <code><a href="reference/preproc.html">proc_zip()</a></code> function fills in missing ZIP codes, among other things. We can extract the estimated conditional distributions with <code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code>. We can also get updated BISG probabilities that additionally condition on turnout using <code><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted()</a></code>. Additional functions allow us to extract a tidy version of our estimates (<code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy()</a></code>) and visualize the estimated distributions (<code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>).</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         white     black      hisp     asian      aian     other</span></span>

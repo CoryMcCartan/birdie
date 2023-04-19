@@ -33,7 +33,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">birdie</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -108,7 +108,7 @@ is to estimate turnout rates by race.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> SZCZYGIEL <span style="color: #BB0000;">NA</span>    white yes    </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> SUMMERS   28152 black yes    </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> STARLING  28650 white yes    </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># … with 4,990 more rows</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 4,990 more rows</span></span></span></code></pre></div>
 <p>You’ll notice that we have a <code>race</code> column in our data.
 That will allow us to check our work once we’re done. For now, we’ll
 generate the <em>true</em> distribution of turnout given race, along
@@ -154,7 +154,7 @@ types of geographies can be used as well—just read the documentation for
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>    0.991  0.007<span style="text-decoration: underline;">94</span> 0.000<span style="text-decoration: underline;">766</span> 0        0         0      </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>    0.701  0.283   0.001<span style="text-decoration: underline;">83</span>  0.000<span style="text-decoration: underline;">160</span> 0.001<span style="text-decoration: underline;">36</span>   0.012<span style="text-decoration: underline;">2</span> </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>    0.854  0.133   0.002<span style="text-decoration: underline;">65</span>  0.000<span style="text-decoration: underline;">204</span> 0.002<span style="text-decoration: underline;">41</span>   0.008<span style="text-decoration: underline;">45</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># … with 4,990 more rows</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 4,990 more rows</span></span></span></code></pre></div>
 <p>Each row <code>r_probs</code> matches a row in
 <code>pseudo_vf</code>. It’s important to note that here we are assuming
 that we know the overall racial distribution of our population
@@ -180,7 +180,7 @@ minority populations.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">r_probs_me</span> <span class="op">=</span> <span class="fu"><a href="../reference/bisg.html">bisg_me</a></span><span class="op">(</span><span class="op">~</span> <span class="fu">nm</span><span class="op">(</span><span class="va">last_name</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/utils/zip.html" class="external-link">zip</a></span><span class="op">(</span><span class="va">zip</span><span class="op">)</span>, data<span class="op">=</span><span class="va">pseudo_vf</span>, p_r<span class="op">=</span><span class="va">p_r</span>, iter<span class="op">=</span><span class="fl">2000</span><span class="op">)</span></span></code></pre></div>
 <p>Comparing to the standard BISG probabilities, the
-measurment-error-adjusted probabilities are often more calibrated. One
+measurement-error-adjusted probabilities are often more calibrated. One
 way to see this is to estimate the marginal distribution of race from
 the probabilities.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
@@ -189,7 +189,7 @@ the probabilities.</p>
 <span><span class="co">#&gt; 0.656372686 0.277807934 0.032031532 0.010139008 0.009564482 0.014084358</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">colMeans</a></span><span class="op">(</span><span class="va">r_probs_me</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  pr_white  pr_black   pr_hisp  pr_asian   pr_aian  pr_other </span></span>
-<span><span class="co">#&gt; 0.7089420 0.2001877 0.0433253 0.0186468 0.0118867 0.0170115</span></span>
+<span><span class="co">#&gt; 0.7090223 0.2001466 0.0432971 0.0185738 0.0118975 0.0170627</span></span>
 <span><span class="co"># actual </span></span>
 <span><span class="va">p_r</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -274,7 +274,7 @@ model therefore assumes that turnout has no association with geography,
 after controlling for race. The latter model uses a formula like
 <code>turnout ~ proc_zip(zip)</code>. While this model can be more
 computationally efficient to fit than the mixed-effects model, its
-perfromance can suffer on smaller datasets like the one used here. We
+performance can suffer on smaller datasets like the one used here. We
 recommend the mixed-effects model for general use.</p>
 </div>
 <div class="section level3">
@@ -381,9 +381,9 @@ using the <code><a href="https://rdrr.io/r/stats/vcov.html" class="external-link
 <span><span class="co">#&gt; <span style="color: #555555;">This message is displayed once per session.</span></span></span>
 <span></span>
 <span><span class="va">fit_boot</span><span class="op">$</span><span class="va">se</span></span>
-<span><span class="co">#&gt;         white      black       hisp      asian      aian     other</span></span>
-<span><span class="co">#&gt; no  0.0105847 0.02161647 0.05131842 0.09558014 0.1124541 0.3518539</span></span>
-<span><span class="co">#&gt; yes 0.0105847 0.02161647 0.05131842 0.09558014 0.1124541 0.3518539</span></span></code></pre></div>
+<span><span class="co">#&gt;          white      black       hisp    asian      aian     other</span></span>
+<span><span class="co">#&gt; no  0.01003227 0.02137376 0.05070346 0.094712 0.1228962 0.3585306</span></span>
+<span><span class="co">#&gt; yes 0.01003227 0.02137376 0.05070346 0.094712 0.1228962 0.3585306</span></span></code></pre></div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
