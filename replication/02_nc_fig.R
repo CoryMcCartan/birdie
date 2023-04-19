@@ -104,8 +104,8 @@ methods_col = c(birdie_pool=PAL_R[3], birdie_sat=PAL_R[3], birdie_mmm=PAL_R[3],
 methods_shp = c(birdie_pool=16, birdie_sat=15, birdie_mmm=16,
                 ols=3, thresh=4, weight=1)
 
-make_disp_plot = function(d, x, y, title, xlab) {
-    filter(d, level=="block") |>
+make_disp_plot = function(d, x, y, title, xlab, lev="block") {
+    filter(d, level==lev) |>
     ggplot(aes({{ x }}, {{ y }}, color=method, shape=method)) +
         # facet_wrap(~ factor(geos[level], levels=geos)) +
         geom_hline(yintercept=0.0, color="#00000077") +
