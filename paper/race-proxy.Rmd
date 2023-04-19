@@ -1185,7 +1185,11 @@ Second, to measure how well each method captures relative differences between ge
 As in the main text, we remove area-race cells with fewer than 5 voters.
 A set of estimates which uniformly underestimates the proportion of Black voters which are registered Democrats, but which otherwise correctly orders geographic areas according to their proportion of Black Democrats, will score high on the correlation measure but also higher in RMSE.
 
-```{r nc-smallarea-app}
+Figure \ref{fig:nc-smallarea-app} summarizes our results, which closely track the findings of Section \ref{sec:small}.
+The BIRDiE models are more accurate at all geographic levels and for both Black and White voters.
+The weighting estimator performs the worst of all the methods.
+
+```{r nc-smallarea-app, fig.pos="htb"}
 #| fig.cap: |
 #|     Accuracy of small-area estimates by race, as measureed by 
 #|     root-mean-square error (RMSE; lower is better) and the 
@@ -1193,10 +1197,6 @@ A set of estimates which uniformly underestimates the proportion of Black voters
 #| fig.scap: Alternate measures of accuracy of small-area estimates by race
 knitr::include_graphics("figures/nc_smallarea_app.pdf")
 ```
-
-Figure \ref{fig:nc-smallarea-app} summarizes our results, which closely track the findings of Section \ref{sec:small}.
-The BIRDiE models are more accurate at all geographic levels and for both Black and White voters.
-The weighting estimator performs the worst of all the methods.
 
 # Sensitivity Analysis {#app:sens}
 
