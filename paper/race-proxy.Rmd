@@ -525,7 +525,7 @@ Since $\vb R$ is discrete, we can marginalize it out as follows: $$
     \numberthis \label{eq:post-marg}
 $$ This decouples the total number of parameters from the sample size.
 Additionally, Equation \eqref{eq:post-marg} has only continuous parameters, and so can be used with any general Bayesian inference procedure such as Markov chain Monte Carlo (MCMC).
-However, the moderate-to-high dimensionality in practical settings, even after integrating out $\vb R$, makes MCMC algorithms computationally too expensive outside of relatively small datasets.
+However, the moderate-to-high dimensionality in practical settings, even after integrating out $\vb R$, and the expensive likelihood calculation due to the sum nested within the outer product, makes MCMC algorithms computationally too expensive outside of relatively small datasets.
 
 ##### Large samples: Expectation-Maximization.
 
@@ -593,7 +593,7 @@ While more study is required, for downstream settings where weights are needed, 
 
 Often, researchers are interested in not just $\Pr(Y\mid R)$ but also $\Pr(Y\mid W, R)$, for some variable $W\in\cW$ which is not part of the BISG predictors $(X, G)$.
 For example, a lending firm auditing potential racial disparities in lending decisions would likely be interested both in how the rate of loan approval ($Y$) varies by race, but also how loan approval varies by race, conditional on a measure of creditworthiness ($W$).
-The unconditional disparities reflect realities of systemic racism and inequity, while the conditional disparities measure the fairness of the firm's lending decisions after controlling for these systemic factors.
+The unconditional disparities reflect realities of systemic racism and inequality, while the conditional disparities measure the fairness of the firm's lending decisions after controlling for these systemic factors.
 Such estimates could be used to compute various measures of algorithmic fairness, including calibration parity and false positive error rate balance.
 Another scenario is a policy evaluation study, where researchers are interested in how the impact of policy varies across racial groups.
 Such an anlysis requires incorporating an interaction between race and the treatment variable.
