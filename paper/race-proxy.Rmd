@@ -14,12 +14,12 @@ authors:
     - name: Kosuke Imai
       department: Department of Government and Department of Statistics
       affiliation: Harvard University
-      thanks: "Corresponding author. Email: imai@harvard.edu, URL: https://imai.fas.harvard.edu.  We thank Bruce Willsie, CEO of L2, Inc., for providing us with the geocoded voter file we use in this paper."
+      thanks: "Corresponding author. Email: imai@harvard.edu, URL: https://imai.fas.harvard.edu.  We thank Bruce Willsie, CEO of L2, Inc., for providing us with the geocoded voter file we use in this paper.  We also thank Hiroto Katsumata, Soichiro Yamauchi, and an anonymous reviewer of the Alexander and Diviya Magaro Peer Pre-Review Program for useful feedback."
 abstract: |
     The estimation of racial disparities in health care, financial services, voting, and other contexts is often hampered by the lack of individual-level racial information in administrative records.
     In many cases, the law prohibits the collection of such information to prevent direct racial discrimination.
     As a result, many analysts have adopted Bayesian Improved Surname Geocoding (BISG), which combines individual names and addresses with Census data to predict race.
-    Although BISG tends to produce well-calibrated racial predictions, its residuals are often correlated with the outcomes of interest, yielding biased estimates of racial disparities, often in the direction of minimizing the disparity.
+    Although BISG tends to produce well-calibrated racial predictions, its residuals are often correlated with the outcomes of interest, yielding biased estimates of racial disparities, commonly in the direction of minimizing the disparity.
     We propose an alternative identification strategy that corrects this bias.
     The proposed strategy is applicable whenever one's surname is conditionally independent of the outcome given their (unobserved) race, residence location, and other observed characteristics.
     Leveraging this identification strategy, we introduce a new class of models, Bayesian Instrumental Regression for Disparity Estimation (BIRDiE), that estimate racial disparities by using surnames as a high-dimensional instrumental variable for race.
@@ -92,8 +92,9 @@ Unfortunately, broadly accurate BISG racial prediction alone is not sufficient f
 To estimate disparities, BISG probabilities must be combined with information on the outcome variable for which the disparities are of interest.
 But the most common techniques for doing so are known to be biased when race is correlated with the outcome even after controlling on name and location [@chen2019fairness; @argyle2022misclassification].
 These approaches include *weighting* the outcome variable by the BISG probabilities, and *thresholding* the BISG probabilities to produce point estimates of individual race (e.g., imputing "Black" as the race for an individual with a 61% probability of being Black according to BISG).
+
 In fact, these methods often *underestimate* the true magnitude of racial disparities, which is problematic for policymakers and analysts who aim to identify and reduce these disparities.
-As formally discussed in Section \@ref(sec:id), these standard methods of racial disparity estimation based on BISG predictions implicitly require individuals' race to be conditionally independent of the outcome given their residence location, surnames, and other observable attributes.
+As formally discussed in Section \@ref(sec:id), the standard methods of racial disparity estimation based on BISG predictions implicitly require individuals' race to be conditionally independent of the outcome given their residence location, surnames, and other observable attributes.
 This key identification assumption, however, is unlikely to hold because race affects many aspects of society even after accounting for residence location, surnames, and other observable attributes.
 Other researchers have noted the implausibility of this assumption and have proposed methods to address it, but these alternative approaches are more general than the racial disparity setting and require additional data such as a partially labeled subset [@fong2021machine].
 
@@ -101,13 +102,14 @@ To address this challenge, in Section \@ref(sec:est), we propose an alternative 
 Specifically, we assume that the outcome is conditionally independent of surname given (unobserved) individual's race, residence location, and other observed attributes.
 This assumption is a type of exclusion restriction where surname serves as an instrumental variable for unobserved race.
 It implies that for two individuals who live in the same area, belong to the same racial group, and share the observable attributes, their surnames have no predictive power of the outcome.
-Somewhat counterintuitively, the high-dimensionality of surnames aids rather than hinders identification.
-We argue that this new identification assumption is more credible unless surname is directly used to determine the outcome of interest (i.e., name-based discrimination).
+Somewhat counter-intuitively, the high-dimensionality of surnames aids rather than hinders identification because it provides a large number of instruments.
+We argue that this new identification assumption is more credible than the commonly invoked assumption unless surname is directly used to determine the outcome of interest (i.e., name-based discrimination).
+
 Leveraging this identification strategy, we introduce a new class of models, Bayesian Instrumental Regression for Disparity Estimation (BIRDiE), that accurately estimates racial disparities.
 This approach includes built-in flexibility for researchers to make problem-specific modeling choices.
 We propose an EM algorithm for fitting BIRDiE models that can scale to hundreds of thousands or millions of observations.
-BIRDiE also produces updated BISG probabilities that incorporate the outcome variable, and are more accurate than the BISG probabilities based only on surnames and geolocation.
-Finally, we show how to address potential violations of the key identification assumptions, such as occurs with name-based discrimination, by exploiting auxiliary information about the relations between names and more specific ethnic groups.
+BIRDiE also produces updated BISG probabilities that incorporate the outcome variable, and are likely to be more accurate than the BISG probabilities based only on surnames and geolocation.
+Finally, we address potential violations of the key identification assumption, such as name-based discrimination, by exploiting auxiliary information about the relations between names and more specific ethnic groups.
 All of the proposed methodology is implemented in an open-source software package, `birdie`, that is made available with the paper.^[The software and accompanying documentation are available at <https://corymccartan.com/birdie/>.]
 
 <!--
@@ -189,10 +191,11 @@ For example, people with Chinese, Indian, Filipino, Vietnamese, Korean, or Japan
 These groups, however, have varying sets of surnames and have different demographic and geographic distributions.
 For instance, unlike the Smith example, knowing that an Asian individual's surname is Gupta makes it more likely that they have a higher income and live in the Eastern U.S [@budiman2019key].
 <!--# Nevertheless, Assumption \ref{a:indep-sgx} appears to approximately hold in practice for White, Black, and Hispanic individuals, which make up a substantial majority of the U.S. population. -->
+@greengard2023bisg relax this assumption by raking BISG probabilities with auxiliary data.
 
 Even though Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc} may not hold exactly, researchers find that BISG produces accurate and generally well-calibrated estimates in practice [@imai2016improving; @kenny2021das; @deluca2022validating].
 We observe this pattern as well in the validation study in Section \@ref(sec:valid).
-New methods continue to be developed that improve the calibration of BISG probabilities, including some machine learning methods based on labeled data [@imai2022addressing; @argyle2022misclassification; @decter2022].
+New methods continue to be developed that improve the calibration of BISG probabilities, including some machine learning methods based on labeled data [@imai2022addressing; @argyle2022misclassification; @decter2022; @greengard2023bisg].
 
 Under Assumption \ref{a:indep-sgx}, by Bayes' Rule, $$
     \Pr(R_i=r\mid G_i,X_i,S_i)
@@ -236,7 +239,7 @@ If race is binary (so $\cR=\{0,1\}$), then as $N\to\infty$, \[
 \end{theorem}
 
 This result implies that when the BISG residuals $\ind\{R=r\}-\Pr(R=r\mid G,X,S)$ are correlated with the outcome, estimates will be biased, even with infinite data.
-In fact, the weighting estimator will often underestimate the magnitude of a disparity, as the following corollary makes precise. Thus for instance in measuring disparities in loan approval ($Y$), if Black respondents are less likely to be approved for loans across all locations and surnames, then the weighting estimator would understate the resulting overall White-Black disparity in loan approval rates.
+In fact, the weighting estimator will often underestimate the magnitude of a disparity, as the following corollary shows. Thus, for instance, in measuring disparities in loan approval ($Y$), if Blacks are less likely to be approved for loans across all locations and surnames than Whites, then the weighting estimator would understate the resulting overall White-Black disparity in loan approval rates.
 
 \begin{restatable}{corollary}{corunder} \label{cor:under}
 Let $y\in\cY$. If race is binary (so $\cR=\{0,1\}$), and 
@@ -247,13 +250,13 @@ then \[
 \]
 \end{restatable}
 
-Conversely, conditional independence between individual's race and outcome given their surname, residence location, and other characteristics is sufficient to eliminate the asymptotic bias of the weighting estimator.
+Conversely, Theorem \ref{thm:wt-bias} implies that conditional independence between individual's race and outcome given their surname, residence location, and other characteristics is sufficient to eliminate the asymptotic bias of the weighting estimator.
 
 \begin{assump}[Conditional independence of outcome and race] \label{a:indep-yr}
 For all $i$, $$Y_i\indep R_i\mid G_i,X_i,S_i.$$
 \end{assump}
 
-The same kind of assumption is made in the analysis of surrogate outcomes in causal inference, where the effect of treatment on the outcome is assumed to occur entirely through a set of surrogate variables [see, e.g., @athey2016estimating].
+<!-- A similar assumption is made in the analysis of surrogate outcomes in causal inference, where the effect of treatment on the outcome is assumed to occur entirely through a set of surrogate variables [see, e.g., @athey2016estimating].-->
 Figure \@ref(fig:dag)(a) shows a causal directed acyclic graph (DAG) that satisfies Assumption \ref{a:indep-yr} as well as Assumption \ref{a:indep-sgx}.
 The dashed node border for $R$ represents the fact that race is unobserved.
 The causal structure in Figure \@ref(fig:dag)(a) implies the conditional independence relation $Y\indep R\mid G,X,S$, because all paths from $R$ to $Y$ are blocked by $G$, $X$, or $S$.
