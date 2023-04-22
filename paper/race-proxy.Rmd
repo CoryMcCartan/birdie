@@ -819,7 +819,8 @@ knitr::include_graphics("figures/nc_disp.pdf")
 
 We first examine the relative accuracy of the proposed methods in estimating the disparity between White and Black, and White and Hispanic voters, in party registration.
 For example, the true difference in Democratic registration between Black and White voters in the sample is $`r percent(-x$weight$disp_wb_true, 0.1)`$ percentage points, meaning Black voters register Democratic at a much higher rate.
-However, the standard weighting approach produces an estimate of only $`r percent(-x$weight$disp_wb, 0.1)`$ percentage points for this disparity---less than half the true value. 
+However, the standard weighting approach produces an estimate of only $`r percent(-x$weight$disp_wb, 0.1)`$ percentage points for this disparity---less than half the true value.
+This is consistent with Corollary \ref{cor:under}, which states that the weighting estimator tends to underestimate the magnitude of racial disparity.
 The thresholding estimator, while slightly better, also misses the mark, with an estimate of $`r percent(-x$thresh$disp_wb, 0.1)`$ percentage points.
 In contrast, the saturated BIRDiE model produces an estimate of $`r percent(-x$birdie_sat$disp_wb, 0.1)`$ percentage points, and the mixed BIRDiE model `r same_sat_mmm` estimates $`r percent(-x$birdie_mmm$disp_wb, 0.1)`$.
 These estimates are only slightly lower than the ground truth.
