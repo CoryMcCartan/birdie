@@ -44,7 +44,7 @@ Constructs control parameters for BIRDiE model fitting.
 All arguments have defaults.
 }
 \examples{
-birdie.ctrl(max_iter=1000)
+str(birdie.ctrl(max_iter=100))
 
 }
 \references{

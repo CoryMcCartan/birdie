@@ -36,7 +36,7 @@
 #' Journal of Computational and Graphical Statistics, 28(4), 834-846.
 #'
 #' @examples
-#' birdie.ctrl(max_iter=1000)
+#' str(birdie.ctrl(max_iter=100))
 #'
 #' @concept estimators
 #' @export
