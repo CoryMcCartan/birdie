@@ -109,7 +109,7 @@ Leveraging this identification strategy, we introduce a new class of models, Bay
 This approach includes built-in flexibility for researchers to make problem-specific modeling choices.
 We propose an EM algorithm for fitting BIRDiE models that can scale to hundreds of thousands or millions of observations.
 BIRDiE also produces updated BISG probabilities that incorporate the outcome variable, and are likely to be more accurate than the BISG probabilities based only on surnames and geolocation.
-Finally, we address potential violations of the key identification assumption, such as name-based discrimination, by exploiting auxiliary information about the relations between names and more specific ethnic groups.
+Finally, we address potential violations of the key identification assumption, such as can happen with overly coarse racial categories, by exploiting auxiliary information about the relations between names and more specific ethnic groups.
 All of the proposed methodology is implemented in an open-source software package, `birdie`, that is made available with the paper.^[The software and accompanying documentation are available at <https://corymccartan.com/birdie/>.]
 
 <!--
