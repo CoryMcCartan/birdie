@@ -123,39 +123,14 @@ Journal of Computational and Graphical Statistics, 28(4), 834-846.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">birdie.ctrl</span><span class="op">(</span>max_iter<span class="op">=</span><span class="fl">1000</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $max_iter</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $accel</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> function (init, em_step, ctrl, n_x = 1, ...) </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     squarem_method = if (ctrl$order == 1) </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     else "rre"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     incr_factor = n_x^(1/2)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     res = SQUAREM::squarem(init, em_step, control = list(K = ctrl$order, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         method = squarem_method, minimize = TRUE, square = TRUE, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         step.min0 = 0.5, step.max0 = 1, mstep = 4, objfn.inc = 1, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         kr = 1, tol = ctrl$abstol * incr_factor, maxiter = ctrl$max_iter, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         trace = FALSE, intermed = FALSE))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     list(ests = res$par, iters = res$fpeval, converge = res$convergence)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x559c8efecb10&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:birdie&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $order</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $restart</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $abstol</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1e-06</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $reltol</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1e-06</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="fu">birdie.ctrl</span><span class="op">(</span>max_iter<span class="op">=</span><span class="fl">100</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> List of 6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ max_iter: int 100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ accel   :function (init, em_step, ctrl, n_x = 1, ...)  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ order   : num 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ restart : logi TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ abstol  : num 1e-06</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ reltol  : num 1e-06</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
