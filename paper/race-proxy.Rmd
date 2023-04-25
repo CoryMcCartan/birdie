@@ -193,7 +193,7 @@ For instance, unlike the Smith example, knowing that an Asian individual's surna
 <!--# Nevertheless, Assumption \ref{a:indep-sgx} appears to approximately hold in practice for White, Black, and Hispanic individuals, which make up a substantial majority of the U.S. population. -->
 @greengard2023bisg relax this assumption by raking BISG probabilities with auxiliary data.
 
-Even though Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc} may not hold exactly, researchers find that BISG produces accurate and generally well-calibrated estimates in practice [@imai2016improving; @kenny2021das; @deluca2022validating].
+Even though Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc} may not hold exactly, researchers find that BISG produces accurate and generally well-calibrated estimates in practice [@imai2016improving; @zhang2018bisg; @kenny2021das; @deluca2022validating].
 We observe this pattern as well in the validation study in Section \@ref(sec:valid).
 New methods continue to be developed that improve the calibration of BISG probabilities, including some machine learning methods based on labeled data [@imai2022addressing; @argyle2022misclassification; @decter2022; @greengard2023bisg].
 
