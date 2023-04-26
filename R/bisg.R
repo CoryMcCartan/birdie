@@ -372,9 +372,12 @@ make_gx_tbl_vec <- function(vars, p_r, p_rgx) {
             p_rgx = rbind(p_rgx, new_row)
         }
 
+        rowtot = rep_len(0, nrow(p_rgx))
         for (nm in names(p_r_tmp)) {
             p_rgx[[nm]] = coalesce(p_rgx[[nm]], p_r_tmp[nm])
+            rowtot = rowtot + p_rgx[[nm]]
         }
+        p_rgx = p_rgx[rowtot > 0, ] # drop rows with no people
 
         match_idx = match(vars$GX[[1]], p_rgx[[GX_names]])
         idx_miss = which(is.na(match_idx))
@@ -401,7 +404,7 @@ make_gx_tbl_vec <- function(vars, p_r, p_rgx) {
     # subset to needed rows
     d_match = left_join(vars$GX, p_rgx, by=GX_names)
     GX_vec = as.factor(vctrs::vec_duplicate_id(d_match))
-    p_rgx = as.matrix(d_match[!duplicated(GX_vec), idx_names])
+    p_rgx = as.matrix(d_match[vctrs::vec_unique_loc(GX_vec), idx_names])
 
     # flip which margin sums to 1
     p_gx = prop.table(table(GX_vec))
