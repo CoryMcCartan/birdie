@@ -135,7 +135,9 @@ remove_ranef <- function(formula) {
 
 
 # Check (and possibly create default) prior
-check_make_prior <- function(prior, model, n_y, n_r) {
+check_make_prior <- function(prior, model, outcomes, races) {
+    n_y = length(outcomes)
+    n_r = length(races)
     if (is.null(prior)) {
         if (model == "dir") {
             cli_inform("Using c(1+\u03B5, 1+\u03B5, ..., 1+\u03B5) prior for Pr(X | R)",
@@ -152,15 +154,22 @@ check_make_prior <- function(prior, model, n_y, n_r) {
 
             cli_inform(c("Using default prior for Pr(X | R):",
                          ">"="Prior scale on fixed effects coefficients:
-                              {format(prior$scale_beta, nsmall=1)}",
+                              {format(prior$scale_beta[1], nsmall=1)}",
                          ">"="Prior mean of random effects standard deviation:
-                              {format(prior$scale_sigma, nsmall=2)}"),
+                              {format(prior$scale_sigma[1], nsmall=2)}"),
                        .frequency="once", .frequency_id="birdie_prior_mmm",
                        call=parent.frame())
         }
     }
 
     if (model == "dir") {
+        if (!is.null(colnames(prior$alpha))) {
+            prior$alpha = prior$alpha[, match(colnames(prior$alpha), races)]
+        }
+        if (!is.null(rownames(prior$alpha))) {
+            prior$alpha = prior$alpha[match(rownames(prior$alpha), outcomes), ]
+        }
+
         if (!"alpha" %in% names(prior) ||
                 !is.numeric(prior$alpha) || !is.matrix(prior$alpha) ||
                 any(is.na(prior$alpha))) {
@@ -186,13 +195,28 @@ check_make_prior <- function(prior, model, n_y, n_r) {
                      issues.", call=parent.frame())
         }
     } else if (model == "mmm") {
+        if (!is.null(names(prior$scale_beta))) {
+            prior$scale_beta = prior$scale_beta[match(names(prior$scale_beta), races)]
+        }
+        if (!is.null(names(prior$scale_sigma))) {
+            prior$scale_sigma = prior$scale_sigma[match(names(prior$scale_sigma), races)]
+        }
+
+
         if (!all(c("scale_sigma", "scale_beta") %in% names(prior)) ||
-                !is.numeric(prior$scale_beta) || length(prior$scale_beta) != 1 ||
-                !is.numeric(prior$scale_sigma) || length(prior$scale_sigma) != 1) {
+                !is.numeric(prior$scale_beta) || !length(prior$scale_beta) %in% c(1L, n_r) ||
+                !is.numeric(prior$scale_sigma) || !length(prior$scale_sigma) %in% c(1L, n_r)) {
             cli_abort(c("With {.arg model=\"mmm\"}, {.arg prior} must have two
-                        scalar entries {.code scale_beta} and {.code scale_sigma}.",
+                        scalar or vector entries {.code scale_beta} and {.code scale_sigma}.",
                         "i"="See {.fn birdie::birdie} for details."),
                       call=parent.frame())
+        }
+
+        if (length(prior$scale_beta) != n_r) {
+            prior$scale_beta = rep(prior$scale_beta, n_r)
+        }
+        if (length(prior$scale_sigma) != n_r) {
+            prior$scale_sigma = rep(prior$scale_sigma, n_r)
         }
     }
 

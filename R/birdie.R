@@ -26,8 +26,8 @@
 #'     Y_i \mid R_i, X_i, \Theta \sim \text{Categorical}(g^{-1}(\mu_{R_iX_i})) \\
 #'     \mu_{rxy} = W\beta_{ry} + Zu_{ry} \\
 #'     u_{ry} \mid \sigma^2_{ry} \sim \mathcal{N}(0, \sigma^2_{ry}) \\
-#'     \beta_{ry} \sim \mathcal{N}(0, s_\beta) \\
-#'     \sigma_{ry} \sim \text{Gamma}(2, 2/s_\sigma),
+#'     \beta_{ry} \sim \mathcal{N}(0, s^2_{r\beta}) \\
+#'     \sigma_{ry} \sim \text{Gamma}(2, 2/s_{r\sigma}),
 #' } where \eqn{\beta_{ry}} are the fixed effects, \eqn{u_{ry}} is the random
 #' intercept, and \eqn{g} is a softmax link function.
 #'
@@ -48,15 +48,20 @@
 #'   covariates or a fully-interacted structure, and `"mmm"` otherwise. More
 #'   details on the model specifications can be found in the "Details" section
 #'   below.
-#' @param prior A list with entries specifying the model prior. When
-#'   `model="dir"` the only entry is `alpha`, which should be a matrix of
+#' @param prior A list with entries specifying the model prior.
+#'
+#'   When `model="dir"` the only entry is `alpha`, which should be a matrix of
 #'   Dirichlet hyperparameters. The matrix should have one row for every level
 #'   of the outcome variable and one column for every racial group. The default
 #'   prior is a matrix with all entries set to \eqn{1+\epsilon}. When
 #'   `model="mmm"`, the `prior` list should contain two scalar entries:
 #'   `scale_beta`, the standard deviation on the Normal prior for the fixed
 #'   effects, and `scale_sigma`, the prior mean of the standard deviation of the
-#'   random intercepts.
+#'   random intercepts. These can be a single scalar or a vector with an entry
+#'   for each racial group.
+#'
+#'   The prior is stored after model fitting in the `$prior` element of the
+#'   fitted model object.
 #' @param prefix If `r_probs` is a data frame, the columns containing racial
 #'   probabilities will be selected as those with names starting with `prefix`.
 #'   The default will work with the output of [bisg()].
@@ -125,6 +130,7 @@ birdie <- function(r_probs, formula, data=NULL, model=c("auto", "dir", "mmm"),
     } else {
         cli_abort("{.arg r_probs} must be a matrix or data frame.")
     }
+    races = stringr::str_sub(colnames(p_rxs), nchar(prefix)+1L)
 
     # check types
     if (!check_vec(Y_vec))
@@ -136,7 +142,7 @@ birdie <- function(r_probs, formula, data=NULL, model=c("auto", "dir", "mmm"),
     n_y = nlevels(Y_vec)
     n_r = ncol(p_rxs)
 
-    prior = check_make_prior(prior, model, n_y, n_r)
+    prior = check_make_prior(prior, model, levels(Y_vec), races)
 
     # run inference
     t1 <- Sys.time()
@@ -154,7 +160,7 @@ birdie <- function(r_probs, formula, data=NULL, model=c("auto", "dir", "mmm"),
     }
 
     # add names
-    colnames(res$map) = stringr::str_sub(colnames(p_rxs), nchar(prefix)+1L)
+    colnames(res$map) = races
     rownames(res$map) = levels(Y_vec)
     dimnames(res$ests) = c(dimnames(res$map), list(tbl_gx_names(res$tbl_gx)))
 
@@ -297,8 +303,8 @@ em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
         X = X,
         grp = Z,
 
-        prior_sigma = prior$scale_sigma,
-        prior_beta = prior$scale_beta
+        prior_sigma = prior$scale_sigma[1],
+        prior_beta = prior$scale_beta[1]
     )
 
     sm = get_stanmodel(rstantools_model_multinom, standata)
@@ -329,6 +335,8 @@ em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
         all_converged = TRUE
         for (r in seq_len(n_r)) {
             standata$Y = cts[, , r]
+            standata$prior_sigma = prior$scale_sigma[r]
+            standata$prior_beta = prior$scale_beta[r]
 
             sm_ir = get_stanmodel(rstantools_model_multinom, standata)
             fit = optim_model(sm_ir, init=par_l[[r]], skeleton=skeleton,

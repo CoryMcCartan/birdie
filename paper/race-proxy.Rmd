@@ -500,9 +500,9 @@ Properly specified, the mixed-effects model maintains the flexibility of the sat
     Y_i\mid R_i, G_i, X_i, \Theta &\sim \Categorical_{\cY}(g^{-1}(\vb*\mu_{rgx})) \\
     \mu_{rgxy} &= \vb W\vb*\beta_{ry} + \vb Z\vb u_{ry} \\
     \quad \vb u_{ry}\mid \phi_{ry} &\sim \Norm(0, \Sigma(\vb*\phi_{ry})) \\
-    \vb*\beta_{ry} &\iid f_\beta, \quad \vb*\phi_{ry} \iid f_\phi ,
+    \vb*\beta_{ry} &\iid f^{(\beta)}_r, \quad \vb*\phi_{ry} \iid f^{(\phi)}_r ,
 \end{align*}
-where $g^{-1}$ is a softmax or other link function, $\vb W$ and $\vb Z$ are matrices of fixed and random effects, respectively, $\vb*\phi$ is a vector of random-effect parameters, and $f_\beta$ and $f_\phi$ are some priors for the subscripted parameters.
+where $g^{-1}$ is a softmax or other link function, $\vb W$ and $\vb Z$ are matrices of fixed and random effects, respectively, $\vb*\phi$ is a vector of random-effect parameters, and $f^{(\beta)}$ and $f^{(\phi)}$ are some priors for the superscripted parameters.
 Some fixed or random effects could be shared across combinations of $R$ and $Y$, though this could complicate computation.
 We recommend including $X$ and especially $G$ in the model as random effects, with hierarchical structure as appropriate.
 Such a structure partially pools estimates of $\Pr(Y\mid R, X, G)$ towards an overall
