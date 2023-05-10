@@ -19,13 +19,14 @@ abstract: |
     The estimation of racial disparities in health care, financial services, voting, and other contexts is often hampered by the lack of individual-level racial information in administrative records.
     In many cases, the law prohibits the collection of such information to prevent direct racial discrimination.
     As a result, many analysts have adopted Bayesian Improved Surname Geocoding (BISG), which combines individual names and addresses with Census data to predict race.
-    Although BISG tends to produce well-calibrated racial predictions, its residuals are often correlated with the outcomes of interest, yielding biased estimates of racial disparities, commonly in the direction of minimizing the disparity.
+    Although BISG tends to produce well-calibrated racial predictions, its residuals are often correlated with the outcomes of interest.
+    As a result, standard techniques yield biased estimates of racial disparities, commonly in the direction of minimizing the disparity.
     We propose an alternative identification strategy that corrects this bias.
     The proposed strategy is applicable whenever one's surname is conditionally independent of the outcome given their (unobserved) race, residence location, and other observed characteristics.
-    Leveraging this identification strategy, we introduce a new class of models, Bayesian Instrumental Regression for Disparity Estimation (BIRDiE), that estimate racial disparities by using surnames as a high-dimensional instrumental variable for race.
+    Leveraging this identification strategy, we introduce a new class of models, Bayesian Instrumental Regression for Disparity Estimation (BIRDiE), that take BISG probabilities as inputs and produce estimates of racial disparities by using surnames as a high-dimensional instrumental variable for race.
     Our estimation method is scalable, making it possible to analyze large-scale administrative data.
     We also show how to address potential violations of the key identification assumptions.
-    A validation study based on the North Carolina voter file shows that BIRDiE reduces error by up to 84% in comparison to the standard approaches for estimating racial differences in party registration.
+    A validation study based on the North Carolina voter file shows that BISG+BIRDiE reduces error by up to 84% in comparison to the standard approaches for estimating racial differences in party registration.
     Open-source software is available which implements the proposed methodology.
 keywords: 
     - BISG
@@ -105,12 +106,16 @@ It implies that for two individuals who live in the same area, belong to the sam
 Somewhat counter-intuitively, the high-dimensionality of surnames aids rather than hinders identification because it provides a large number of instruments.
 We argue that this new identification assumption is more credible than the commonly invoked assumption unless surname is directly used to determine the outcome of interest (i.e., name-based discrimination).
 
-Leveraging this identification strategy, we introduce a new class of models, Bayesian Instrumental Regression for Disparity Estimation (BIRDiE), that accurately estimates racial disparities.
-This approach includes built-in flexibility for researchers to make problem-specific modeling choices.
-We propose an EM algorithm for fitting BIRDiE models that can scale to hundreds of thousands or millions of observations.
-BIRDiE also produces updated BISG probabilities that incorporate the outcome variable, and are likely to be more accurate than the BISG probabilities based only on surnames and geolocation.
-Finally, we address potential violations of the key identification assumption, such as can happen with overly coarse racial categories, by exploiting auxiliary information about the relations between names and more specific ethnic groups.
-All of the proposed methodology is implemented in an open-source software package, `birdie`, that is made available with the paper.^[The software and accompanying documentation are available at <https://corymccartan.com/birdie/>.]
+Leveraging this identification strategy, in Section \@ref(sec:birdie) we introduce a new class of models, Bayesian Instrumental Regression for Disparity Estimation (BIRDiE), that accurately estimates racial disparities using BISG probabilities.
+Beyond accuracy, BIRDiE improves on standard methodology in a number of ways:
+
+- BIRDiE includes built-in flexibility for researchers to make problem-specific modeling choices (Section \@ref(sec:birdie)).
+- BIRDiE can be fit with an EM algorithm that can scale to hundreds of thousands or millions of observations (Section \@ref(sec:compute)).
+- BIRDiE produces updated BISG probabilities that incorporate the outcome variable, and are likely to be more accurate than the BISG probabilities based only on surnames and geolocation (Section \@ref(sec:update-bisg)).
+- BIRDiE can be used iteratively to condition on additional variables whose distribution by race is not known *a priori* (Section \@ref(sec:addlcov)). For example, party identification can be estimated by race and turnout.
+
+Finally, in Section \@ref(sec:sens) we address potential violations of the key identification assumption, such as can happen with overly coarse racial categories, by exploiting auxiliary information about the relations between names and more specific ethnic groups.
+All of the proposed methodology is implemented in a computationally efficient open-source software package, `birdie`, that is made available with the paper.^[The software and accompanying documentation are available at <https://corymccartan.com/birdie/>.]
 
 <!--
 In large datasets, sampling-based uncertainty is overwhelmed by error that arises from violations of our assumptions about the data.
@@ -119,9 +124,9 @@ Section \@ref(sec:sens) proposes a method to evaluate the sensitivity of estimat
 -->
 
 In Section \@ref(sec:valid), we validate the proposed methodology using real-world data taken from the voter file in North Carolina, where self-reported individual-race is observed and can be used to construct the ground-truth of racial disparities.
-BIRDiE substantially outperforms existing estimators across different error measures, two different outcome variables, and multiple levels of geolocation specificity.
-For example, the most popular existing BISG disparity estimator pegs the gap at Democratic party registration between White and Black voters at `r round(-100*x$weight$disp_wb, 1)` percentage points, while the actual gap is `r round(-100*x$weight$disp_wb_true, 1)` percentage points---more than double.
-Our preferred BIRDiE model yields an estimate of `r round(-100*x$birdie_mmm$disp_wb, 1)` percentage points.
+BIRDiE substantially outperforms existing estimators across different error measures and multiple levels of geolocation specificity.
+For example, the most popular existing BISG-only disparity estimator pegs the gap at Democratic party registration between White and Black voters at `r round(-100*x$weight$disp_wb, 1)` percentage points, while the actual gap is `r round(-100*x$weight$disp_wb_true, 1)` percentage points---more than double.
+Our preferred BIRDiE model using the same BISG probabilities yields an estimate of `r round(-100*x$birdie_mmm$disp_wb, 1)` percentage points.
 This represents about a `r round(100*bias_red)`% reduction in bias.
 
 ```{=html}
@@ -213,6 +218,7 @@ To estimate racial disparities, BISG probabilities must be combined with the out
 There are several common ways researchers do this.
 
 The most frequent is perhaps the *thresholding* or *classification* estimator, which deterministically assigns individuals to a predicted racial category based on the BISG estimates $\vb{\hat P}_i$ (either the largest $\hat P_{ir}$ or the one which exceeds a predetermined threshold).
+Estimates of $\Pr(Y=y\mid R=r)$ are then obtained by tabulating the data by these assigned categories.
 
 Another common approach, which attempts to capture the uncertainty inherent in race prediction, is the following *weighting* estimator: \[
     \hat\mu^{(\text{wtd})}_{Y|R}(y\mid r) 
@@ -623,7 +629,7 @@ For all $i$, $(Y_i, W_i)\indep S_i\mid R_i,G_i,X_i$, or, equivalently, \[
 
 In the lending example, this would translate to the assumption that a measure of creditworthiness is independent of last name after controlling for race, location, and covariates, and that lending decisions are independent of last names after controlling for creditworthiness, race, location, and covariates.
 
-## Addressing the Potential Violations of the Assumptions {#sec:sens}
+## Addressing Potential Violations of the Assumptions {#sec:sens}
 
 BIRDiE crucially relies on Assumption \ref{a:indep-ys} for identification. 
 In addition, like the weighting and thresholding estimators, it also relies upon Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc}, which are required for the BISG race probabilities to be accurate.
@@ -972,7 +978,7 @@ As discussed in Section \ref{sec:addlcov}, while both approaches produce highly 
 In contrast to the BIRDiE models, the weighting and thresholding estimates of party registration by 2020 turnout and race include large errors, especially for Black voters with all the errors exceeding 10 percentage points.
 The TV distance for the weighting estimator is `r number(x$weight, 1e-3)`, and the distance for the thresholding estimator is `r number(x$thresh, 1e-3)`---around 3--4 times higher than for the estimates based on the BIRDiE models.
 
-## Sensitivity Analysis
+## Sensitivity Analysis {#sec:nc-sens}
 
 Finally, we examine the sensitivity of our party registration estimates to potential violations of the key identifying Assumption \ref{a:indep-ys}, following the method outlined in Section \ref{sec:sens} that is based on a low-dimensional summary statistic of surnames.
 We use a publicly available sample of 5\% of the individual records for the 1930 Census [@cens1930], which contains individual names, individual and parental birthplace, and detailed race, ethnicity, and tribal codes.
@@ -1031,11 +1037,55 @@ As our empirical demonstration showed, in realistic settings BIRDiE can substant
 The BIRDiE methodology also produces improved BISG probabilities, and can be used to estimate disparities conditional on other variables.
 These additional features should prove helpful in practical settings.
 
+## Recommendations for Practitioners
+
+Given the large amount of missing data inherent to the type of racial disparity estimation studied here, choices about data selection, processing, and modeling can have a large impact on estimates and substantive conclusions.
+We collect here several recommendations for practitioners using BISG and BIRDiE methodology in their research.
+
+- **Choose estimation methodology and input data based on the specifics of the research question.**
+As we have stressed, the causal structure of the research setting determines whether BISG should be used with the weighting or BIRDiE estimators.
+Research on populations which are very different from the general U.S. population may also benefit from the use of alternative or additional data on race and geography specific to that population.
+The choice of whether to use state-, county-, ZIP-, tract-, or block-level data likewise depends on aspects of the data under study, and the scale of geographic variation in the outcome variable and quantities of interest.
+
+- **Focus on the calibration, not the predictive accuracy, of BISG probabilities.**
+Traditionally, BISG methods have been evaluated by their predictive accuracy, measured by the mean agreement between the thresholded racial categories and ground truth, or the AUROC of the BISG probabilities.
+We find that, especially in cases with abundant individual-level data, far more important than maximizing predictive accuracy is ensuring that the BISG probabilities are properly calibrated.
+Accurate but biased BISG probabilities will lead to bias in downstream estimates, regardless of which disparity estimator is used.
+To evaluate BISG calibration in validation settings, we recommend visual diagnostics like binned residual plots, as well as numerical summaries like the logarithmic score.
+
+- **Decide whether additional covariates need to be collected.**
+Additional covariates can make the BISG and BIRDiE assumptions more plausible, and can increase the accuracy of BISG probabilities and the precision of BIRDiE estimates.
+Prioritize covariates which are highly predictive of both outcome and race.
+However, including all available covariates without considering their effect on the various BISG and BIRDiE assumptions is likely to cause problems.
+In particular, if a covariate's distribution against both race and geography is not known, avoid making unrealistic independence assumptions in order to allow the covariate to be included in the BISG model.
+Rather, follow the approach outlined in Section \@ref(sec:addlcov).
+Covariate choice should be driven by substantive considerations, not convenience.
+
+- **Unless computational limits are severe, use the mixed-effects BIRDiE model with group-level covariates.**
+The mixed-effects model uses the data itself to determine how much to pool disparity estimates across different geographies.
+This avoids the dual pitfalls of Simpson's paradox (a risk if no geographical information is used) and over-regularization (caused by the prior if no pooling is performed).
+When using the mixed-effects model, group-level covariates are likely to improve both overall and especially small-area accuracy, and they are easy to collect from public sources.
+For example, a good default for a ZIP-code level model applied to a political outcome variable would be to include the percentages of the major racial groups in the ZIP code, as well as the ZIP code's income level, population density, and partisanship, in the model.
+
+- **Perform sensitivity analyses.**
+Both the BISG and BIRDiE models use priors, which should be perturbed to examine the sensitivity of the results to prior selection.
+The sensitivity of BIRDiE to its key identifying assumption should also be assessed, at minimum using the auxiliary covariate approach demonstrated in Section \@ref(sec:nc-sens).
+
+- **Consider validating estimates with a small-scale survey.**
+Even with administrative microdata observations in the millions, there is no substitute for a high-quality random sample of individuals for whom race can be observed.
+Such a sample can be used to validate the various assumptions made by BISG and BIRDiE, as well as providing a sanity check against  BIRDiE disparity estimates.
+Future improvements to BIRDiE could also directly integrate survey data into the workflow.
+
+## Future Research
+
 Much work remains to be done in accurately and reliably measuring racial disparities.
 First, the BISG probabilities themselves can be improved.
-One approach to doing so is given by @imai2022addressing, which accounts for some Census measurement error while remaining computationally tractable.
+Approaches to doing so include @imai2022addressing, which accounts for some Census measurement error while remaining computationally tractable, and @greengard2023bisg, which rakes BISG margins to improve calibration.
+More work on identifying and producing data sources which can be used as BISG inputs, rather than relying solely on Census tabulations which may be a decade old, will also pay dividends for BISG quality.
+
 Beyond the BISG probabilities, further empirical analyses could determine useful additional variables to condition on, which could allow analysts to weaken the required assumption.
-Finally, the BIRDiE model could be extended to directly model more complex types of outcome variables.
+Additional study, possibly combined with qualitative research, could identify causal pathways that might threaten the assumptions that BISG and BIRDiE rely on, and develop data sources, like our auxiliary 1930 Census data, that could be used to evaluate the plausibility of those assumptions in real-world analyses, and their effect on numerical conclusions.
+Finally, the BIRDiE model could also be extended to directly model more complex types of outcome variables.
 
 \bibliography{references.bib}
 
