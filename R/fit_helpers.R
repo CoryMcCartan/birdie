@@ -148,8 +148,8 @@ check_make_prior <- function(prior, model, outcomes, races) {
             )
         } else if (model == "mmm") {
             prior = list(
-                scale_sigma = 0.2,
-                scale_beta = 1.0
+                scale_sigma = rep(0.1, n_r),
+                scale_beta = rep(0.2, n_r)
             )
 
             cli_inform(c("Using default prior for Pr(X | R):",
