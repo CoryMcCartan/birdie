@@ -34,15 +34,20 @@ covariates or a fully-interacted structure, and \code{"mmm"} otherwise. More
 details on the model specifications can be found in the "Details" section
 below.}
 
-\item{prior}{A list with entries specifying the model prior. When
-\code{model="dir"} the only entry is \code{alpha}, which should be a matrix of
+\item{prior}{A list with entries specifying the model prior.
+
+When \code{model="dir"} the only entry is \code{alpha}, which should be a matrix of
 Dirichlet hyperparameters. The matrix should have one row for every level
 of the outcome variable and one column for every racial group. The default
 prior is a matrix with all entries set to \eqn{1+\epsilon}. When
 \code{model="mmm"}, the \code{prior} list should contain two scalar entries:
 \code{scale_beta}, the standard deviation on the Normal prior for the fixed
 effects, and \code{scale_sigma}, the prior mean of the standard deviation of the
-random intercepts.}
+random intercepts. These can be a single scalar or a vector with an entry
+for each racial group.
+
+The prior is stored after model fitting in the \verb{$prior} element of the
+fitted model object.}
 
 \item{prefix}{If \code{r_probs} is a data frame, the columns containing racial
 probabilities will be selected as those with names starting with \code{prefix}.
@@ -93,8 +98,8 @@ The Multinomial mixed-effects model is specified as follows: \deqn{
     Y_i \mid R_i, X_i, \Theta \sim \text{Categorical}(g^{-1}(\mu_{R_iX_i})) \\
     \mu_{rxy} = W\beta_{ry} + Zu_{ry} \\
     u_{ry} \mid \sigma^2_{ry} \sim \mathcal{N}(0, \sigma^2_{ry}) \\
-    \beta_{ry} \sim \mathcal{N}(0, s_\beta) \\
-    \sigma_{ry} \sim \text{Gamma}(2, 2/s_\sigma),
+    \beta_{ry} \sim \mathcal{N}(0, s^2_{r\beta}) \\
+    \sigma_{ry} \sim \text{Gamma}(2, 2/s_{r\sigma}),
 } where \eqn{\beta_{ry}} are the fixed effects, \eqn{u_{ry}} is the random
 intercept, and \eqn{g} is a softmax link function.
 
