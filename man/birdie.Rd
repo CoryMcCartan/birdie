@@ -102,6 +102,8 @@ The Multinomial mixed-effects model is specified as follows: \deqn{
     \sigma_{ry} \sim \text{Gamma}(2, 2/s_{r\sigma}),
 } where \eqn{\beta_{ry}} are the fixed effects, \eqn{u_{ry}} is the random
 intercept, and \eqn{g} is a softmax link function.
+Estimates for \eqn{\beta_{ry}} and \eqn{\sigma_{ry}} are stored in the
+\verb{$betas} and \verb{$sigmas} elements of the fitted model object.
 
 More details on the models and their properties may be found in the paper
 referenced below.

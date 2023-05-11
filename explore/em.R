@@ -24,7 +24,9 @@ Y =  data$party
 
 x0 = birdie(r_probs, Y ~ 1, data)
 x1 = birdie(r_probs, Y ~ zip, data)
-x2 = birdie(r_probs, Y ~ white + black + hisp + (1|zip), data, ctrl=birdie.ctrl(abstol=1e-5))
+x2 = birdie(r_probs, Y ~ white + black + hisp + (1|zip), data,
+            prior = list(scale_sigma=0.05, scale_beta=0.2),
+            ctrl=birdie.ctrl(abstol=5e-6))
 
 {
     par(mfrow=c(3,2), mar=c(2, 2, 0.2, 0.2))
@@ -35,11 +37,14 @@ x2 = birdie(r_probs, Y ~ white + black + hisp + (1|zip), data, ctrl=birdie.ctrl(
         points(theta %*% triangle, cex=0.7, pch=16, col="#00000022")
         points(coef(x2)[1:3, r] %*% triangle, cex=2, col="red", pch=8)
         text(triangle, labels=toupper(rownames(coef(x1))[1:3]), cex=1.0)
-        text(0.1, 0.9, labels=names(p_r[r]), cex=2)
+        text(0.1, 0.9, labels=toupper(names(p_r[r])), cex=1.5)
     }
     par(mfrow=c(1,1), mar=c(5, 4, 4, 2) + 0.1)
 }
 
+sum(colSums(abs(coef(x0) - p_xr)) * p_r) / 2
+sum(colSums(abs(coef(x1) - p_xr)) * p_r) / 2
+sum(colSums(abs(coef(x2) - p_xr)) * p_r) / 2
 
 
 xr = list(

@@ -30,6 +30,8 @@
 #'     \sigma_{ry} \sim \text{Gamma}(2, 2/s_{r\sigma}),
 #' } where \eqn{\beta_{ry}} are the fixed effects, \eqn{u_{ry}} is the random
 #' intercept, and \eqn{g} is a softmax link function.
+#' Estimates for \eqn{\beta_{ry}} and \eqn{\sigma_{ry}} are stored in the
+#' `$betas` and `$sigmas` elements of the fitted model object.
 #'
 #' More details on the models and their properties may be found in the paper
 #' referenced below.
@@ -150,6 +152,18 @@ birdie <- function(r_probs, formula, data=NULL, model=c("auto", "dir", "mmm"),
         res = em_dir(Y_vec, p_rxs, tt, data, prior, boot=se_boot, ctrl=ctrl)
     } else if (model == "mmm") {
         res = em_mmm(Y_vec, p_rxs, tt, data, prior, ctrl=ctrl)
+        # add names
+        ex_beta = res$betas[[1]]
+        res$betas = array(do.call(cbind, res$betas), dim=c(nrow(ex_beta), n_y, n_r))
+        dimnames(res$betas) = list(rownames(ex_beta), levels(Y), races)
+        res$betas = aperm(res$betas, c(2L, 3L, 1L))
+
+        names(res$sigmas) = races
+        res$sigmas = do.call(cbind, res$sigmas)
+
+        res$linpred = array(do.call(cbind, res$linpred), dim=c(nrow(res$tbl_gx), n_y, n_r))
+        dimnames(res$linpred) = list(tbl_gx_names(res$tbl_gx), levels(Y), races)
+        res$linpred = aperm(res$linpred, c(2L, 3L, 1L))
     }
     t2 <- Sys.time()
 
@@ -181,6 +195,9 @@ birdie <- function(r_probs, formula, data=NULL, model=c("auto", "dir", "mmm"),
         vcov = if (se_boot > 0) res$vcov else NULL,
         se = if (se_boot > 0) vcov_to_se(res$vcov, res$map) else NULL,
         N = length(Y_vec),
+        betas = if (model == "mmm") res$betas else NULL,
+        sigmas = if (model == "mmm") res$sigmas else NULL,
+        linpred = if (model == "mmm") res$linpred else NULL,
         prior = prior,
         tbl_gx = as_tibble(res$tbl_gx),
         vec_gx = res$vec_gx,
@@ -253,7 +270,8 @@ em_dir <- function(Y, p_rxs, formula, data, prior, boot, ctrl) {
 
 # Multinomial mixed-effects model
 em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
-    n_y = nlevels(Y)
+    outcomes = levels(Y)
+    n_y = length(outcomes)
     n_r = ncol(p_rxs)
     Y = as.integer(Y)
     ones_mat = matrix(1, nrow=n_y, ncol=n_r)
@@ -357,9 +375,9 @@ em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
                       call=parent.frame())
     }
 
-    ests = matrix(res$ests, nrow=n_upar, ncol=n_r) %>%
-        apply(2, function(x) constrain_pars(sm, skeleton, x)) %>%
-        to_ests_vec(n_y, n_r, N)
+    par_l = matrix(res$ests, nrow=n_upar, ncol=n_r) %>%
+        apply(2, function(x) constrain_pars(sm, skeleton, x))
+    ests = to_ests_vec(par_l, n_y, n_r, N)
 
     # final global mean and R|YXS
     p_ryxs = calc_bayes(Y, idx_uniq, ests, p_rxs, n_uniq, n_y)
@@ -369,6 +387,17 @@ em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
     out = list(map = est,
                ests = to_array_yrx(ests, est_dim),
                p_ryxs = p_ryxs,
+               betas = lapply(par_l, function(x) {
+                   out = x$beta
+                   colnames(out) = outcomes
+                   rownames(out) = colnames(X)
+                   out
+               }),
+               sigmas = lapply(par_l, function(x) setNames(x$sigma_grp, outcomes)),
+               linpreds = lapply(par_l, function(x) {
+                   m = exp(X %*% x$beta)
+                   m / rowSums(m)
+               }),
                tbl_gx = d_model[idx_sub, , drop=FALSE],
                vec_gx = idx_uniq,
                iters = res$iters,
