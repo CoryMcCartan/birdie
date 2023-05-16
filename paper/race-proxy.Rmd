@@ -1027,13 +1027,12 @@ All in all, this analysis provides confidence that violations of Assumption \ref
 # Discussion {#sec:disc}
 
 We have introduced a new identifying assumption and accompanying model, BIRDiE, and clarified other assumptions implicit in approaches to disparity estimation from proxy data.
-In many real-world applications, we believe the new model and identification condition are appropriate and will produce significantly improved estimates.
-However, there is no one-size-fits-all approach for the estimation of disparities.
+In many real-world applications, we believe that the new model and identification condition are appropriate and will produce significantly improved estimates.
+However, there is no one-size-fits-all approach for the estimation of racial disparities.
 For example, the existence of name-based discrimination may violate our identification assumption especially when racial categories, for which data are available, are coarse.
-Careful consideration of the underlying causal and information structure is required to avoid making the incorrect conclusions.
-We also provide a sensitivity analysis that partially addresses this concern.
+Although we provide a sensitivity analysis that partially addresses this concern, careful consideration of the underlying causal and information structure is required to avoid making the incorrect conclusions.
 
-As our empirical demonstration showed, in realistic settings BIRDiE can substantially outperform existing estimators of racial disparities, both in aggregate and for small areas.
+As our empirical demonstration shows, in realistic settings BIRDiE can substantially outperform existing estimators of racial disparities, both in aggregate and for small areas.
 The BIRDiE methodology also produces improved BISG probabilities, and can be used to estimate disparities conditional on other variables.
 These additional features should prove helpful in practical settings.
 
@@ -1081,7 +1080,7 @@ Future improvements to BIRDiE could also directly integrate survey data into the
 Much work remains to be done in accurately and reliably measuring racial disparities.
 First, the BISG probabilities themselves can be improved.
 Approaches to doing so include @imai2022addressing, which accounts for some Census measurement error while remaining computationally tractable, and @greengard2023bisg, which rakes BISG margins to improve calibration.
-More work on identifying and producing data sources which can be used as BISG inputs, rather than relying solely on Census tabulations which may be a decade old, will also pay dividends for BISG quality.
+More work on identifying and producing data sources which can be used as BISG inputs, rather than relying solely on Census tabulations, will also pay dividends for BISG quality.
 
 Beyond the BISG probabilities, further empirical analyses could determine useful additional variables to condition on, which could allow analysts to weaken the required assumption.
 Additional study, possibly combined with qualitative research, could identify causal pathways that might threaten the assumptions that BISG and BIRDiE rely on, and develop data sources, like our auxiliary 1930 Census data, that could be used to evaluate the plausibility of those assumptions in real-world analyses, and their effect on numerical conclusions.
