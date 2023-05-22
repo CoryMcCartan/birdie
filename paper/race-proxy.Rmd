@@ -393,7 +393,7 @@ The proof of the theorem and all other results in this paper are deferred to the
 
 \begin{restatable}[Nonparametric Identification]{theorem}{thmid} \label{thm:id}
 For any given $g\in\cG$, $x\in\cX$, and $y\in\cY$, define a matrix $\vb P\in\R^{|\cS|\times|\cR|}$ with entries $p_{sr}=\Pr(R=r\mid G=g, X=x, S=s)$  and a vector $\vb b\in\R^{|\cS|}$ with entries $b_s=\Pr(Y=y\mid G=g, X=x, S=s)$.
-Then under Assumption~\ref{a:indep-ys}, and assuming knowledge of the joint distribution $\Pr(Y,G,X,S)$, the conditional probabilities $\Pr(Y=y\mid R, G=g, X=x)$ are identified if and only if both $\vb P$ and the augmented matrix $\mqty(\vb P&\vb b)$ have rank $|\cR|$.
+Then under Assumption~\ref{a:indep-ys}, and assuming knowledge of the joint distribution $\Pr(R,G,X,S)$, the conditional probabilities $\Pr(Y=y\mid R, G=g, X=x)$ are identified if and only if both $\vb P$ and the augmented matrix $\mqty(\vb P&\vb b)$ have rank $|\cR|$.
 \end{restatable}
 
 The essence of this identification result is the following simple observation.
@@ -725,7 +725,7 @@ The next theorem shows that it is still possible to nonparametrically identify r
 \begin{restatable}[Nonparametric Identification Under Assumption \ref{a:indep-ysf}]{theorem}{thmidrel} \label{thm:id2}
 Let $f:\cS\to\R^d$, $d< |\cS|$, with range $f(\cS)$.
 For any given $g\in\cG$, $x\in\cX$, $z\in f(\cS)$, and $y\in\cY$, define a matrix $\vb P\in\R^{|\cS|\times|\cR|}$ with entries $p_{sr}=\Pr(R=r\mid G=g, X=x, S=s)$  and a vector $\vb b\in\R^{|\cS|}$ with entries $b_s=\Pr(Y=y\mid G=g, X=x, S=s)$.
-Then under Assumption~\ref{a:indep-ysf}, and assuming knowledge of the joint distribution $\Pr(Y,G,X,S)$, the conditional probabilities $\Pr(Y=y\mid R,f(S)=z,G=g, X=x)$ are identified if and only if both $\vb P$ and the augmented matrix $\mqty(\vb P&\vb b)$ have rank $|\cR|$.
+Then under Assumption~\ref{a:indep-ysf}, and assuming knowledge of the joint distribution $\Pr(R,G,X,S)$, the conditional probabilities $\Pr(Y=y\mid R,f(S)=z,G=g, X=x)$ are identified if and only if both $\vb P$ and the augmented matrix $\mqty(\vb P&\vb b)$ have rank $|\cR|$.
 \end{restatable}
 
 As long as the dimension $d$ of the surname summary statistic $f(S)$ is much smaller than the (usually large) number of surnames $|\cS|$, racial disparities are likely to be identified under Theorem \ref{thm:id2} when they are already identified under Theorem \ref{thm:id}.
