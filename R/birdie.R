@@ -155,14 +155,14 @@ birdie <- function(r_probs, formula, data=NULL, model=c("auto", "dir", "mmm"),
         # add names
         ex_beta = res$betas[[1]]
         res$betas = array(do.call(cbind, res$betas), dim=c(nrow(ex_beta), n_y, n_r))
-        dimnames(res$betas) = list(rownames(ex_beta), levels(Y), races)
+        dimnames(res$betas) = list(rownames(ex_beta), levels(Y_vec), races)
         res$betas = aperm(res$betas, c(2L, 3L, 1L))
 
         names(res$sigmas) = races
         res$sigmas = do.call(cbind, res$sigmas)
 
         res$linpred = array(do.call(cbind, res$linpred), dim=c(nrow(res$tbl_gx), n_y, n_r))
-        dimnames(res$linpred) = list(tbl_gx_names(res$tbl_gx), levels(Y), races)
+        dimnames(res$linpred) = list(tbl_gx_names(res$tbl_gx), levels(Y_vec), races)
         res$linpred = aperm(res$linpred, c(2L, 3L, 1L))
     }
     t2 <- Sys.time()
