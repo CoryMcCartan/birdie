@@ -13,7 +13,7 @@
 #' @importFrom Rcpp sourceCpp
 #' @importFrom RcppParallel CxxFlags
 #' @importFrom stats na.omit na.fail .lm.fit fitted simulate median cov
-#' @importFrom stats terms get_all_vars model.frame model.matrix
+#' @importFrom stats terms get_all_vars model.frame model.matrix setNames
 #' @importFrom stats formula update.formula as.formula nobs vcov residuals
 #' @importFrom utils tail unstack relist head
 #' @importFrom graphics barplot
