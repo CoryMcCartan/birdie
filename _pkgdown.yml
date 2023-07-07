@@ -1,6 +1,16 @@
 url: http://corymccartan.com/birdie/
 template:
   bootstrap: 5
+  includes:
+    in_header: |
+      <!-- Google tag (gtag.js) -->
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-2KH5JZ6JS1"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-2KH5JZ6JS1');
+      </script>
 reference:
 - title: Estimating Racial Disparities
   desc: Functions to estimate the distribution of an outcome by race.
