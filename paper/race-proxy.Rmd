@@ -85,12 +85,12 @@ To estimate racial disparities without individual-level racial data, some resear
 These methods, however, require strong assumptions, which can be difficult to verify and may provide misleading results [@cho2008ecological].
 Additionally, they all rely on accurate marginal information about race, which may not always be available.
 
-Where the analysis of racial disparities involves large-scale administrative data, many analysts have adopted Bayesian Improved Surname Geocoding (BISG), which generates individual probabilities of belonging to different racial groups using Bayes’ rule applied to last names and geographic location [@fiscella2006bisg; @elliott2008bisg; @imai2016improving; @imai2022addressing].
+Where the analysis of racial disparities involves large-scale administrative data, many analysts have adopted Bayesian Improved Surname Geocoding (BISG), which generates individual probabilities of belonging to different racial groups using Bayes’ rule applied to last names and geographic location [@fiscella2006bisg; @elliott2008bisg; @imai2016improving].
 BISG leverages residential racial segregation and the hereditary association between self-reported race and surname to produce generally accurate and calibrated predictions of self-reported individual race [@kenny2021das; @deluca2022validating].
 
-Much attention has been given to ways of increasing the accuracy of BISG and related methods for race *prediction*.
+Much attention has been given to ways of increasing the accuracy of BISG and related methods for race *prediction* [@voicu2018; @zrp; @argyle2022misclassification; @imai2022addressing; @decter2022; @greengard2023bisg].
 Unfortunately, broadly accurate BISG racial prediction alone is not sufficient for the unbiased estimation of racial *disparities*, the primary goal of this paper.
-To estimate disparities, BISG probabilities must be combined with information on the outcome variable for which the disparities are of interest.
+To estimate disparities, BISG probabilities (or any other racial predictions) must be combined with information on the outcome variable for which the disparities are of interest.
 But the most common techniques for doing so are known to be biased when race is correlated with the outcome even after controlling on name and location [@chen2019fairness; @argyle2022misclassification].
 These approaches include *weighting* the outcome variable by the BISG probabilities, and *thresholding* the BISG probabilities to produce point estimates of individual race (e.g., imputing "Black" as the race for an individual with a 61% probability of being Black according to BISG).
 
@@ -200,7 +200,6 @@ For instance, unlike the Smith example, knowing that an Asian individual's surna
 
 Even though Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc} may not hold exactly, researchers find that BISG produces accurate and generally well-calibrated estimates in practice [@imai2016improving; @zhang2018bisg; @kenny2021das; @deluca2022validating].
 We observe this pattern as well in the validation study in Section \@ref(sec:valid).
-New methods continue to be developed that improve the calibration of BISG probabilities, including some machine learning methods based on labeled data [@imai2022addressing; @argyle2022misclassification; @decter2022; @greengard2023bisg].
 
 Under Assumption \ref{a:indep-sgx}, by Bayes' Rule, $$
     \Pr(R_i=r\mid G_i,X_i,S_i)
@@ -212,9 +211,12 @@ Under Assumptions \ref{a:indep-sgx} and \ref{a:cens-acc}, the BISG estimator pro
 $\hat P_{ir} = \Pr(R_i=r\mid G_i,X_i,S_i)$.
 \end{prop}
 
+New methods continue to be developed that improve the calibration of BISG probabilities, including some machine learning methods based on labeled data [@zrp; @imai2022addressing; @argyle2022misclassification; @decter2022; @greengard2023bisg].
+Fundamentally, these approaches focus on building a more accurate model for $R\mid G,X,S$ at the individual level.
+
 ## Bias of Racial Disparity Estimates based on BISG Probabilities
 
-To estimate racial disparities, BISG probabilities must be combined with the outcome variable.
+To estimate racial disparities, BISG probabilities (or other racial predictions) must be combined with the outcome variable.
 There are several common ways researchers do this.
 
 The most frequent is perhaps the *thresholding* or *classification* estimator, which deterministically assigns individuals to a predicted racial category based on the BISG estimates $\vb{\hat P}_i$ (either the largest $\hat P_{ir}$ or the one which exceeds a predetermined threshold).
@@ -339,7 +341,8 @@ So long as we observe all information used by the manager and use it in the BISG
 Similarly, in evaluating the fairness of algorithmic decision-making, as long as all the information used by the algorithm is incorporated into BISG, Assumption \ref{a:indep-yr} would be appropriate.
 Outside of these cases, however, the weighting estimator is likely to be biased.
 
-Finally, while the discussion in this section has been focused on the BISG methodology, the qualitative results and necessary assumptions carry over to other approaches which produce probabilistic predictions of individual race, such as those recently developed by @argyle2022misclassification and @decter2022.
+Finally, while the discussion in this section has been focused on the BISG methodology, the qualitative results and necessary assumptions carry over to other approaches which produce probabilistic predictions of individual race, such as those recently developed by @zrp, @argyle2022misclassification, and @decter2022.
+Just like standard BISG, all of these methods are based on individual names, geographic location (and sometimes other geographic attributes, like ACS or decennial census statistics), and possibly additional individual covariates.
 Just as with BISG, well-calibrated probabilities are not generally sufficient to produce unbiased estimates of racial disparities using the standard weighting or thresholding estimators.
 
 # The Proposed Methodology {#sec:est}
@@ -462,7 +465,7 @@ The BIRDiE posterior is obtained by applying Assumptions \ref{a:indep-sgx}, \ref
             \pi(R_i\mid G_i, X_i, S_i) \nonumber \\
     &= \pi(\Theta) \prod_{i=1}^N \pi(Y_i\mid R_i, G_i, X_i, \Theta) \hat{P_i}_{R_i}, \label{eq:posterior}
 \end{align} where as above $\hat{\vb P}_i$ are the BISG probability estimates for individual $i$, which depend on Census data represented in $\vb q_{GX\mid R}$, $\vb q_{S\mid R}$, and $\vb q_R$, but not on the outcome-model parameters $\Theta$.
-As a result these "first-stage" BISG estimates can be plugged directly into the BIRDiE posterior computation without any loss of Bayesian coherency.^[This remains true if a more complex model is used in place of the BISG probabilities [such as those of @imai2022addressing; @argyle2022misclassification; and @decter2022], so long as the parameters of the first-stage model are *a priori* independent of the parameters of the BIRDiE model.]
+As a result these "first-stage" BISG estimates can be plugged directly into the BIRDiE posterior computation without any loss of Bayesian coherency.^[This remains true if a more complex model is used in place of the BISG probabilities [such as those of @zrp; @imai2022addressing; @argyle2022misclassification; and @decter2022], so long as the parameters of the first-stage model are *a priori* independent of the parameters of the BIRDiE model.]
 
 To apply this general BIRDiE model to a particular analysis requires choosing a complete-data outcome model, given by the likelihood $\pi(Y_i\mid R_i, G_i, X_i, \Theta)$ and prior $\pi(\Theta)$.
 Since $Y$ is discrete, a categorical regression model is appropriate for $\pi(Y_i\mid R_i, G_i, X_i, \Theta)$.
@@ -796,7 +799,12 @@ The logarithmic scores for the BISG probabilities are -`r score["county"]` for c
 For comparison, the prior-only logarithmic score (i.e., using no name or geographic information) is -`r number(x$base_score, 0.001)`.
 The worsened performance for block-level versus tract-level probabilities likely stems from the larger impact of census measurement error at smaller geographies, a problem that could be addressed using newer BISG methods such as those of @imai2022addressing.
 
-For a given set of BISG probabilities, we estimate the conditional distribution of each outcome variable given race using BIRDiE with both saturated pooling and multinomial mixed-effects models introduced above.
+Since the goal of our validation study is to compare BIRDiE estimates with weighting and thresholding estimates, we do not make additional comparisons between BISG probabilities and those generated with alternative racial prediction methods.
+To the extent competing racial prediction methods improve prediction accuracy, we expect the gap between different disparity estimation methods (weighting, thresholding, BIRDiE) to narrow, consistent with Theorems \ref{thm:wt-bias} and \ref{thm:wtd-vs-ols}.
+However, as we have discussed, high accuracy alone is neither necessary nor sufficient for accurate estimation of racial disparities.
+If other racial prediction methods produce increased accuracy at the cost of worsened calibration, accuracy in estimating racial disparities may be poor whether using weighting, thresholding, or BIRDiE estimates.
+
+In our validation, for a given set of BISG probabilities, we estimate the conditional distribution of each outcome variable given race using BIRDiE with both saturated pooling and multinomial mixed-effects models introduced above.
 We then compare the resulting estimates based on these BIRDiE models against those of the two existing estimators --- the weighting estimator as well as a thresholding estimator that deterministically assigns each individual the maximum *a posteriori* racial category.
 For the saturated BIRDiE model, we use geographic effects matching the geographic level used in the BISG probabilities (e.g., county effects for the county-level BISG probabilities), except for the block-level probabilities.
 Due to the large number of individual census blocks, we use tract-level effects instead for this particular model.
@@ -1047,10 +1055,10 @@ Research on populations which are very different from the general U.S. populatio
 The choice of whether to use state-, county-, ZIP-, tract-, or block-level data likewise depends on aspects of the data under study, and the scale of geographic variation in the outcome variable and quantities of interest.
 
 - **Focus on the calibration, not the predictive accuracy, of BISG probabilities.**
-Traditionally, BISG methods have been evaluated by their predictive accuracy, measured by the mean agreement between the thresholded racial categories and ground truth, or the AUROC of the BISG probabilities.
+Traditionally, BISG-type methods have been evaluated by their predictive accuracy, measured by the mean agreement between the thresholded racial categories and ground truth, or the AUROC of the BISG probabilities.
 We find that, especially in cases with abundant individual-level data, far more important than maximizing predictive accuracy is ensuring that the BISG probabilities are properly calibrated.
-Accurate but biased BISG probabilities will lead to bias in downstream estimates, regardless of which disparity estimator is used.
-To evaluate BISG calibration in validation settings, we recommend visual diagnostics like binned residual plots, as well as numerical summaries like the logarithmic score.
+Accurate but biased racial probabilities will lead to bias in downstream estimates, regardless of which disparity estimator is used.
+To evaluate probabilistic calibration in validation settings, we recommend visual diagnostics like binned residual plots, as well as numerical summaries like the logarithmic score.
 
 - **Decide whether additional covariates need to be collected.**
 Additional covariates can make the BISG and BIRDiE assumptions more plausible, and can increase the accuracy of BISG probabilities and the precision of BIRDiE estimates.
@@ -1074,6 +1082,24 @@ The sensitivity of BIRDiE to its key identifying assumption should also be asses
 Even with administrative microdata observations in the millions, there is no substitute for a high-quality random sample of individuals for whom race can be observed.
 Such a sample can be used to validate the various assumptions made by BISG and BIRDiE, as well as providing a sanity check against  BIRDiE disparity estimates.
 Future improvements to BIRDiE could also directly integrate survey data into the workflow.
+
+## Ethical Considerations
+
+As researchers have increasingly applied racial prediction and imputation methods to administrative datasets, including many public datasets, there has been growing concern about ethical and privacy considerations around performing such predictions.
+While some scholars do not view racial prediction methods as privacy risks [@buncomment], we believe it is important for researchers to consider the implications of their use of racial prediction methods.
+
+Recently, @lee2023ethical studied public perception of these ethical considerations through a large factorial survey experiment that asked participants if they viewed a hypothetical study as ethically permissible based on three study factors.
+Among other findings, their data established that asking for consent in data collection is strongly associated with the study being viewed as more ethically permissible.
+They also found that studies which focused on accurate estimation of racial disparities were viewed as more ethically permissible than studies that overestimated or underestimated the size of disparities.
+
+Compared to previous approaches to racial disparity estimation, which emphasized maximizing accuracy of individual racial predictions to minimize measurement error, BIRDiE focuses on the accuracy of estimating racial disparities.
+In fact, as our validation study demonstrated, different sets of individual race predictions of varying individual accuracies (county-based versus block-based BISG) produced very similar estimates of racial disparities.
+To the extent that BIRDiE allows researchers to focus less on maximizing individual predictive accuracy, the method could alleviate some privacy concerns and reduce incentives to collect and link more personal data in an attempt to further increase accuracy.
+We view this as a welcome change, consistent with the public's preference for focusing on accurate disparity information.
+
+However, BIRDiE does allow for the creation of improved BISG probabilities that incorporate the outcome variable and thus can be more accurate.
+While this accuracy gain is a purely statistical phenomenon based on variables already present in the individual dataset under study, researchers should be cautious, for example, in releasing these improved racial predictions publicly.
+We urge practitioners to view racial prediction tools as a means to the end of accurate disparity estimation, and treat the intermediate probabilistic predictions with appropriate care.
 
 ## Future Research
 
