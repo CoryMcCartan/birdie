@@ -149,7 +149,7 @@ When we are not referring to a particular individual, we will drop the subscript
 Note that individual race is unobservable but all other variables are assumed to be observed.
 The availability of particular (or any) $X$ is not required for either the standard or proposed methodology.
 
-We assume throughout that these variables are discrete, taking a finite set of values, i.e., $|\cY|=C_Y$, $|\cR|=C_R$, $|\cG|=C_G$, $|\cX|=C_X$, and $|\cS|=C_S$ where $C_Y$, $C_R$, $C_G$, $C_X$, and $C_S$ are constants.
+We assume throughout that these variables are discrete, taking a finite set of values, i.e., $|\cY|$, $|\cR|$, $|\cG|$, $|\cX|$, and $|\cS|$ are constants.
 Note that typically $S$ is high-dimensional as there exist a large number of unique surnames.
 In practice, residence location $G$ is also discrete, since joint information about location, race, and other variables is generally only available down to the Census block level.
 For the sake of simplicity, we assume that the outcome variable $Y$ is also discrete, though it is possible to extend the standard and proposed methodologies to continuous outcome variables.
@@ -1086,7 +1086,7 @@ Future improvements to BIRDiE could also directly integrate survey data into the
 ## Ethical Considerations
 
 As researchers have increasingly applied racial prediction and imputation methods to administrative datasets, including many public datasets, there has been growing concern about ethical and privacy considerations around performing such predictions.
-While some scholars do not view racial prediction methods as privacy risks [@buncomment], we believe it is important for researchers to consider the implications of their use of racial prediction methods.
+While some scholars do not view racial prediction methods as privacy risks [@buncomment, "Statistical Inference is Not a Privacy Violation"], we believe it is important for researchers to consider the implications of their use of racial prediction methods.
 
 Recently, @lee2023ethical studied public perception of these ethical considerations through a large factorial survey experiment that asked participants if they viewed a hypothetical study as ethically permissible based on three study factors.
 Among other findings, their data established that asking for consent in data collection is strongly associated with the study being viewed as more ethically permissible.
