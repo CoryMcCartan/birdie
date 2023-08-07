@@ -1097,7 +1097,7 @@ In fact, as our validation study demonstrated, different sets of individual race
 To the extent that it allows researchers to focus on calibration of racial prediction rather than maximizing individual predictive accuracy, BIRDiE may alleviate some privacy concerns and reduce incentives to collect and link more personal data in an attempt to further increase accuracy.
 We view this as a welcome change, consistent with the public's preference for focusing on accurate disparity information.
 
-However, BIRDiE does allow for the creation of improved BISG probabilities that incorporate the outcome variable and thus can be more accurate as well as more calibrated.
+However, BIRDiE does allow for the creation of improved BISG probabilities that incorporate the outcome variable and thus can be more accurate as well as better calibrated.
 While this accuracy gain is a purely statistical phenomenon based on variables already present in the individual dataset under study, researchers should be cautious, for example, in releasing these improved racial predictions publicly.
 We urge practitioners to view racial prediction tools as a means to the end of accurate disparity estimation, and treat the intermediate probabilistic predictions with appropriate care.
 
