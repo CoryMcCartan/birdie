@@ -801,7 +801,7 @@ The worsened performance for block-level versus tract-level probabilities likely
 
 Since the goal of our validation study is to compare BIRDiE estimates with weighting and thresholding estimates, we do not make additional comparisons between BISG probabilities and those generated with alternative racial prediction methods.
 To the extent competing racial prediction methods improve prediction accuracy, we expect the gap between different disparity estimation methods (weighting, thresholding, BIRDiE) to narrow, consistent with Theorems \ref{thm:wt-bias} and \ref{thm:wtd-vs-ols}.
-However, as we have discussed, high accuracy alone is neither necessary nor sufficient for accurate estimation of racial disparities.
+However, as we have discussed, high accuracy of racial prediction alone is neither necessary nor sufficient for accurate estimation of racial disparities.
 If other racial prediction methods produce increased accuracy at the cost of worsened calibration, accuracy in estimating racial disparities may be poor whether using weighting, thresholding, or BIRDiE estimates.
 
 In our validation, for a given set of BISG probabilities, we estimate the conditional distribution of each outcome variable given race using BIRDiE with both saturated pooling and multinomial mixed-effects models introduced above.
@@ -1057,7 +1057,7 @@ The choice of whether to use state-, county-, ZIP-, tract-, or block-level data 
 - **Focus on the calibration, not the predictive accuracy, of BISG probabilities.**
 Traditionally, BISG-type methods have been evaluated by their predictive accuracy, measured by the mean agreement between the thresholded racial categories and ground truth, or the AUROC of the BISG probabilities.
 We find that, especially in cases with abundant individual-level data, far more important than maximizing predictive accuracy is ensuring that the BISG probabilities are properly calibrated.
-Accurate but biased racial probabilities will lead to bias in downstream estimates, regardless of which disparity estimator is used.
+Accurate but biased racial prediction will lead to bias in downstream estimates, regardless of which disparity estimator is used.
 To evaluate probabilistic calibration in validation settings, we recommend visual diagnostics like binned residual plots, as well as numerical summaries like the logarithmic score.
 
 - **Decide whether additional covariates need to be collected.**
@@ -1085,19 +1085,19 @@ Future improvements to BIRDiE could also directly integrate survey data into the
 
 ## Ethical Considerations
 
-As researchers have increasingly applied racial prediction and imputation methods to administrative datasets, including many public datasets, there has been growing concern about ethical and privacy considerations around performing such predictions.
-While some scholars do not view racial prediction methods as privacy risks [@buncomment, "Statistical Inference is Not a Privacy Violation"], we believe it is important for researchers to consider the implications of their use of racial prediction methods.
+As researchers have increasingly applied racial prediction and imputation methods to administrative records, including many publicly available datasets, there has been growing concern about ethical and privacy considerations around performing such predictions.
+While some scholars do not view racial prediction methods as privacy risks [@buncomment, "Statistical Inference is Not a Privacy Violation"], we believe it is important for researchers to consider the implications of their use of racial prediction methods [@kenny2023comment].
 
 Recently, @lee2023ethical studied public perception of these ethical considerations through a large factorial survey experiment that asked participants if they viewed a hypothetical study as ethically permissible based on three study factors.
-Among other findings, their data established that asking for consent in data collection is strongly associated with the study being viewed as more ethically permissible.
-They also found that studies which focused on accurate estimation of racial disparities were viewed as more ethically permissible than studies that overestimated or underestimated the size of disparities.
+Among other findings, their study shows that asking for consent in data collection is strongly associated with the study being viewed as more ethically permissible.
+They also find that studies which focused on accurate estimation of racial disparities were viewed as more ethically permissible than studies that overestimated or underestimated the size of disparities.
 
 Compared to previous approaches to racial disparity estimation, which emphasized maximizing accuracy of individual racial predictions to minimize measurement error, BIRDiE focuses on the accuracy of estimating racial disparities.
-In fact, as our validation study demonstrated, different sets of individual race predictions of varying individual accuracies (county-based versus block-based BISG) produced very similar estimates of racial disparities.
-To the extent that BIRDiE allows researchers to focus less on maximizing individual predictive accuracy, the method could alleviate some privacy concerns and reduce incentives to collect and link more personal data in an attempt to further increase accuracy.
+In fact, as our validation study demonstrated, different sets of individual race predictions of varying individual accuracies (county-based versus block-based BISG), when used with BIRDiE, produced similar estimates of racial disparities.
+To the extent that it allows researchers to focus on calibration of racial prediction rather than maximizing individual predictive accuracy, BIRDiE may alleviate some privacy concerns and reduce incentives to collect and link more personal data in an attempt to further increase accuracy.
 We view this as a welcome change, consistent with the public's preference for focusing on accurate disparity information.
 
-However, BIRDiE does allow for the creation of improved BISG probabilities that incorporate the outcome variable and thus can be more accurate.
+However, BIRDiE does allow for the creation of improved BISG probabilities that incorporate the outcome variable and thus can be more accurate as well as more calibrated.
 While this accuracy gain is a purely statistical phenomenon based on variables already present in the individual dataset under study, researchers should be cautious, for example, in releasing these improved racial predictions publicly.
 We urge practitioners to view racial prediction tools as a means to the end of accurate disparity estimation, and treat the intermediate probabilistic predictions with appropriate care.
 
