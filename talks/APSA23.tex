@@ -1,0 +1,534 @@
+%\documentclass{beamer}
+\documentclass[handout]{beamer}
+
+\mode<presentation>
+{
+ \usetheme{Madrid}
+ \usecolortheme{beaver}
+ \setbeamercovered{invisible}
+}
+\beamertemplatenavigationsymbolsempty
+\setbeamertemplate{footline}[frame number]{}
+\setbeamertemplate{blocks}[shadow=true]
+
+% packages
+\hypersetup{hidelinks}
+\usepackage{placeins}
+\usepackage[format=plain,
+            labelfont={bf,it},
+            textfont=it]{caption}
+\setlength{\captionmargin}{0.3in}
+\usepackage{mathtools}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{cancel}
+\usepackage[italicdiff]{physics}
+% \usepackage{tocloft}
+\usepackage{dsfont}
+\usepackage{thmtools}
+\usepackage{graphicx}
+% \usepackage{longtable}
+
+\usepackage{tikz}
+\usetikzlibrary{bayesnet}
+
+\setlength{\marginparwidth}{0.75in}
+
+\allowdisplaybreaks
+
+% paper-specific
+\renewcommand{\vec}{\mathrm{vec}}
+\newcommand{\proj}{\mathrm{proj}}
+
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
+
+\newcommand{\m}[1]{\begin{pmatrix}#1\end{pmatrix}}  % a matrix or vector
+\newcommand{\sm}[1]{\begin{psmallmatrix}#1\end{psmallmatrix}}
+\newcommand{\f}[1]{\frac{\StrBefore{#1}{/}}{\StrBehind{#1}{/}}} % easier fractions
+\renewcommand{\sf}[1]{\tfrac{\StrBefore{#1}{/}}{\StrBehind{#1}{/}}}
+\newcommand{\half}{\frac{1}{2}}
+\newcommand{\thalf}{\tfrac{1}{2}}
+\newcommand{\third}{\frac{1}{3}}
+\newcommand{\quarter}{\frac{1}{4}}
+
+\newcommand{\eps}{\varepsilon}
+\newcommand{\clos}[1]{\overline{#1}}
+\newcommand{\conj}[1]{\overline{#1}}
+\newcommand{\dfeq}{\coloneqq}
+
+\let\sp\undefined
+\DeclareMathOperator{\id}{id}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+\DeclareMathOperator{\E}{\mathbb{E}}
+\let\Pr\undefined
+\DeclareMathOperator{\Pr}{\mathbb{P}}
+\newcommand{\indep}{\mathbin{\perp\!\!\!\!\!\:\perp}}
+\newcommand{\notindep}{\mathbin{\perp\!\!\!\!\not\!\:\perp}}
+\newcommand{\gvn}{\;\middle|\;}
+\newcommand{\R}{\ensuremath{\mathbb{R}}}
+\newcommand{\F}{\ensuremath{\mathcal{F}}}
+\newcommand{\B}{\ensuremath{\mathcal{B}}}
+\newcommand{\ind}{\mathds{1}}
+\newcommand{\iid}{\mathrel{\stackrel{iid}{\sim}}}
+\newcommand{\rv}{random variable}
+\newcommand{\rvs}{random variables}
+\newcommand{\iidt}{independent and identically distributed}
+\newcommand{\cvp}{\xrightarrow{\:p\,}}
+\newcommand{\cvw}{\xrightarrow{\,w\,}}
+\newcommand{\cvd}{\xrightarrow{\,d\,}}
+\newcommand{\cvas}{\xrightarrow{\;\!a.s.\:\!}}
+\newcommand{\cvlp}[1]{\xrightarrow{\;\!L^{#1}\,\!}}
+
+\DeclareMathOperator{\Var}{\mathbb{V}}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\Corr}{Corr}
+\DeclareMathOperator{\Unif}{Unif}
+\DeclareMathOperator{\Expo}{Expo}
+\DeclareMathOperator{\Cauchy}{Cauchy}
+\DeclareMathOperator{\logit}{logit}
+\newcommand{\Inv}{\mathrm{Inv-}}
+\newcommand{\Pois}{\mathrm{Pois}\qty}
+\newcommand{\Beta}{\mathrm{Beta}\qty}
+\newcommand{\Categorical}{\mathrm{Cat}}
+\newcommand{\Dirichlet}{\mathrm{Dir}\qty}
+\newcommand{\Gam}{\mathrm{Gamma}\qty}
+\newcommand{\Wei}{\mathrm{Wei}\qty}
+\newcommand{\Hyper}{\mathrm{HGeom}\qty}
+\newcommand{\Binom}{\mathrm{Bin}\qty}
+\newcommand{\NBinom}{\mathrm{NBin}\qty}
+\newcommand{\Multinom}{\mathrm{Multinom}\qty}
+\newcommand{\Bern}{\mathrm{Bern}\qty}
+\newcommand{\Bernoulli}{\mathrm{Bernoulli}\qty}
+\newcommand{\Norm}{\mathcal{N}\qty}
+\newcommand{\MVNorm}[1][]{\mathcal{N}_{#1}\qty}
+\DeclareMathOperator{\Student}{Student-\mathit{t}}
+
+\DeclarePairedDelimiter\br{\langle}{\rangle}
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+\DeclarePairedDelimiter\round{\lceil}{\rfloor}
+\DeclarePairedDelimiter\set{\{}{\}}
+
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\diag}{diag}
+\providecommand{\norm}[1]{\lVert#1\rVert}
+
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cR}{\mathcal{R}}
+\newcommand{\cG}{\mathcal{G}}
+\newcommand{\cZ}{\mathcal{Z}}
+\newcommand{\cX}{\mathcal{X}}
+\newcommand{\cY}{\mathcal{Y}}
+\newcommand{\cW}{\mathcal{W}}
+\newcommand{\cI}{\mathcal{I}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% If you wish to uncover everything in a step-wise fashion, uncomment
+% the following command:
+\beamerdefaultoverlayspecification{<+->}
+
+
+\newcommand{\tit}{\bf Estimating Racial Disparities when\\ Race is Not Observed}
+
+% == titles
+\title[]{\tit}
+
+\institute[Harvard]{\large Harvard University }
+
+\date{Annual Meeting of the American Political Science Association\\
+  September 2, 2023 \\  \vspace{.25in} Joint work with
+  Cory McCartan, Jacob Goldin, and Daniel E. Ho } 
+
+
+\author[Kosuke Imai]{\large Kosuke Imai }
+
+
+% == document begins
+\begin{document}
+
+%%% Title
+\frame{\titlepage}
+
+%%% Table of Contents
+% \frame{\tableofcontents}
+
+%%% Main Contents
+
+\section{Introduction}
+
+\begin{frame}
+
+  \frametitle{Motivation}
+
+  \begin{itemize}
+  \item Importance of racial disparity estimation in many fields:\\
+    public health, employment, voting, criminal justice, taxation,
+    housing, lending, and internet technology
+
+    \vfill
+  \item But, often individual race is not available
+    \begin{itemize}
+    \item law may prohibit collection of information about race
+      (e.g., Equal Credit Opportunity Act)
+    \item agencies and companies may not wish to collect such information
+    \end{itemize}
+    \vfill
+  \item How should we estimate racial disparities when race is not
+    observed?
+    \begin{itemize}
+    \item Standard methods use BISG (Bayesian Improved Surname
+      Geocoding)
+    \item But, it has been shown that they are likely to yield biased estimates
+    \end{itemize}
+
+  \item Can we improve the standard methods and eliminate their bias? 
+  \end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+
+\frametitle{The Setup}
+
+\begin{itemize}
+\item Data
+  \begin{itemize}
+  \item $Y_i$: outcome of interest 
+  \item $R_i$: (unobserved) race
+  \item $S_i$: surname
+  \item $G_i$: residence location
+  \item $X_i$: other Census variables (optional)
+  \item $W_i$: covariates of interest
+  \end{itemize}
+\item Census data
+  \begin{itemize}
+  \item $\Pr(G_i = g, R_i = r, X_i = x)$
+  \item $\Pr(R_i = r, S_i =s)$ for frequently occurring surnames
+  \end{itemize}
+
+  \vfill
+\item Regression estimands
+  \begin{itemize}
+  \item $\Pr(Y_i = y \mid R_i = r)$: short regression
+  \item $\Pr(Y_i = y \mid R_i = r, X_i =x)$: long regression 
+  \end{itemize}
+
+\item Racial disparity estimands
+  \begin{itemize}
+  \item $\Pr(Y_i =y \mid R_i = r) - \Pr(Y_i = y \mid R_i = r^\prime)$ for $r
+    \ne r^\prime$
+  \item $\Pr(Y_i = y \mid R_i = r, W_i = w) - \Pr(Y_i = y \mid R_i = r^\prime, W_i = w)$
+  \end{itemize}
+
+\end{itemize}
+  
+\end{frame}
+
+\begin{frame}
+
+  \frametitle{Standard Estimation Methods}
+ 
+\begin{enumerate}
+\item Predict race via \alert{BISG} (or its variant)
+  \begin{itemize}
+  \item Assumption: $G_i \indep  S_i \mid R_i$
+  \item Bayes rule:
+    \begin{align*}
+      \hat{P}_{ir} \ & = \ \Pr(R_i = r \mid G_i = g, S_i = s) \\
+      \onslide<3->{& = \ \frac{\Pr(S_i =s\mid
+      \alert{G_i =g}, R_i = r)\Pr(G_i =g, R_i =r)}{\sum_{r^\prime} \Pr(S_i =s\mid
+          \alert{G_i =g}, R_i = r^\prime)\Pr(G_i =g, R_i =r^\prime)}} \\
+      \onslide<4->{& = \ \frac{\Pr(S_i =s\mid
+       R_i = r)\Pr(G_i =g, R_i =r)}{\sum_{r^\prime} \Pr(S_i =s\mid
+       R_i = r^\prime)\Pr(G_i =g, R_i =r^\prime)}}
+    \end{align*}
+  \item<5-> With covariates: $(G_i, X_i) \indep S_i \mid R_i$
+  \item<6-> {\sc wru} software package {\scriptsize (Imai and Kahna 2016)}
+  \end{itemize}
+  \vfill
+\item<7-> Estimate racial disparities $\mu_{Y\mid R}(y \mid r) = \Pr(Y_i = y \mid R_i = r)$
+  \begin{itemize}
+  \item<8-> \alert{weighting}:
+    $$\hat\mu_{Y\mid R}^{\text{wtd}}(y \mid r) \ = \ \frac{\sum_i \mathbf{1}\{Y_i = y\}\hat{P}_{ir} }{\sum_i \hat{P}_{ir}}$$
+  \item<9-> \alert{thresholding}: use the racial group with the largest
+    probability as imputed race
+  \end{itemize}
+\end{enumerate}
+
+\end{frame}
+
+\begin{frame}
+
+  \frametitle{BISG Prediction Works Reasonably Well {\scriptsize (Imai
+      et al. 2022. {\it Sci. Adv.})}}
+
+  \includegraphics[width=\textwidth]{figs/AUCROC_Surnames.pdf}\\
+  \onslide<2->{\includegraphics[width=1.2\textwidth, trim = 100 0 0 0, clip]{figs/Calibration_Surnames.pdf}}
+
+\end{frame}
+
+\begin{frame}
+
+  \frametitle{Good Race Prediction Can Bias Racial
+    Disparity Estimates}
+
+  \begin{columns}
+    \begin{column}{0.575\textwidth}
+      \begin{itemize}
+      \item Bias of the weighted estimator {\scriptsize (Chen {\it et
+            al.} 2019)}
+        \begin{align*}
+          & \hat\mu_{Y\mid R}^{\text{wtd}}(y \mid r) - \Pr(Y_i = y
+            \mid R_i = r) \\
+= & - \frac{\E[\text{Cov}(\mathbf{1}\{Y_i = y\}, \mathbf{1}\{R_i = r\}\mid G_i,
+          X_i, S_i)]}{\Pr(R_i = r)}
+          \end{align*}
+
+          \vfill
+        \item Required assumption: $$Y_i \indep R_i \mid G_i, S_i, X_i$$
+          \vfill
+     \item Problem: race affects many aspects of the society
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.425\textwidth}
+      \tikzstyle{main node}=[circle,draw,font=\sffamily\Large\bfseries]
+      \tikzstyle{sub node}=[circle,draw,dashed,font=\sffamily\Large\bfseries]
+      \hspace{-.2in}\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2.6cm,thick]
+        
+        \node[main node] (G) {$G$};
+        \node[main node] (Y) [right of=G] {$Y$};
+        \node[main node] (S) [below left=1.3cm and 1.3cm of Y] {$S$};
+        \node[sub node] (R) [below left=0.8cm and 0.8cm of S] {$R$};
+        \node[main node] (X) [below of=Y] {$X$};
+        
+        \path[every node/.style={font=\sffamily\small}]
+        (R) edge node  {} (G)
+        (R) edge node  {} (X)
+        (S) edge node  {} (Y)
+        (R) edge node  {} (S)
+        (G) edge node  {} (X)
+        (G) edge node  {} (Y)
+        (X) edge node  {} (Y);
+    \end{tikzpicture}
+  \end{column}
+  \end{columns}
+
+\end{frame}
+
+\begin{frame}
+
+\frametitle{New Identification Strategy}
+
+
+  \begin{columns}
+    \begin{column}{0.425\textwidth}
+      \tikzstyle{main node}=[circle,draw,font=\sffamily\Large\bfseries]
+      \tikzstyle{sub node}=[circle,draw,dashed,font=\sffamily\Large\bfseries]
+   \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2.5cm,thick]
+    
+        \node[main node] (G) {$G$};
+        \node[sub node] (R) [below of=G] {$R$};
+        \node[main node] (S) [below left=0.5cm and 0.5cm of R] {$S$};
+        \node[main node] (Y) [right of=G] {$Y$};
+        \node[main node] (X) [below of=Y] {$X$};
+        
+        \path[every node/.style={font=\sffamily\small}]
+        (R) edge node  {} (G)
+        (R) edge node  {} (X)
+        (R) edge node  {} (Y)
+        (R) edge node  {} (S)
+        (G) edge node  {} (X)
+        (G) edge node  {} (Y)
+        (X) edge node  {} (Y);
+        
+        %\path[every node/.style={font=\sffamily\small}, <->]
+        %(G) edge [dashed, bend right] node  {} (S)
+        %(X) edge [dashed, bend left] node  {} (S);
+    \end{tikzpicture}
+  \end{column}
+   \begin{column}{0.575\textwidth}
+      \begin{itemize}
+        \item<2-> Required assumption: $$Y_i \indep S_i \mid G_i, R_i, X_i$$
+
+        \item Surname as a proxy for race
+        \item Race can directly or indirectly affects the outcome
+
+          \medskip
+        \item Potential violations:
+          \begin{itemize}
+          \item name-based discrimination
+          \item coarse racial categories
+          \end{itemize}
+        \item Anonymous application
+      \end{itemize}
+    \end{column}
+  \end{columns}
+  
+\end{frame}
+
+
+\begin{frame}
+
+  \frametitle{Surname as a High-dimensional Instrument}
+
+  \begin{itemize}
+  \item Identification {\scriptsize (see also Kuroki and Pearl, 2014)}:
+    {\small\begin{align*}
+     & \overbrace{\Pr(Y_i=y\mid G_i=g, X_i=x, S_i=s)}^{\text{observed data}} \\
+    = & \sum_{r\in\mathcal{R}} \underbrace{\alert{\Pr(Y_i=y\mid R_i=r, G_i=g,
+        X_i=x)}}_{\text{unknown parameters}}\ \underbrace{\Pr(R_i=r\mid
+        G_i=g, X_i=x, S_i=s)}_{\text{BISG probability}}
+           \end{align*}}
+    \vspace{-.2in}
+         \begin{itemize}
+         \item $(|\mathcal{Y}|-1)\times|\mathcal{G}|\times|\mathcal{X}|\times|\mathcal{S}|$ equations
+         \item
+           $(|\mathcal{Y}|-1)\times|\mathcal{G}|\times|\mathcal{X}|\times|\mathcal{R}|$
+           unknown parameters
+         \end{itemize}
+         \vfill
+       \item OLS estimator {\scriptsize (see also Fong and Tyler, 2021)}:
+         $$
+    \hat{\vb*\mu}^{(\text{ols})}_{Y\mid RGX}(y\mid \cdot, g,x) 
+    =  (\hat{\vb P}_{\cI(xg)}^\top \hat{\vb P}_{\cI(xg)})^{-1}\hat{\vb P}_{\cI(xg)}\,\ind\{{\vb Y}_{\cI(xg)} = y\},
+    $$
+    \vspace{-.2in}
+    \begin{itemize}
+    \item compute this for each $g$ and $x$, and aggregate
+    \item unbiased estimate of $\Pr(Y_i= y \mid R_i = r)$
+    \item ignores the fact that $\Pr(Y_i= y \mid R_i = r, G_i
+      = g, X_i = x)$ is probability
+  \end{itemize}
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+
+  \frametitle{BIRDiE {\small (Bayesian Instrumental Regression for Disparity
+    Estimation)}}
+
+\begin{itemize}
+\item Flexible and scalable probabilistic model that integrates BISG 
+
+\item Posterior:
+    $$\pi(\Theta, \vb R\mid \vb Y, \vb G, \vb X, \vb S)
+    \ \propto \ \pi(\Theta)\prod_{i=1}^N \underbrace{\pi(Y_i\mid R_i,
+      G_i, X_i, \Theta)}_{\text{complete-data model}}
+            \underbrace{\pi(R_i\mid G_i, X_i, S_i)}_{\text{BISG prob. } \hat{P}_{ir}}$$
+\item Models (Categorical $\sim$ Dirichlet) 
+  \begin{enumerate}
+  \item Complete-pooling
+  \item Saturated (no pooling)
+  \item Partial pooling (mixed effects)
+  \end{enumerate}
+
+  \vfill
+\item Computation:
+  \begin{enumerate}
+  \item Small samples: full MCMC (e.g., via Stan)
+  \item Large samples: EM algorithm
+  \end{enumerate}
+  
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+
+  \frametitle{Empirical Validation}
+
+  \begin{itemize}
+  \item 2022 North Carolina voter file: 5.8 millon voters with
+    self-reported race
+  \item Subset 1 million voters $\rightsquigarrow$ negligible sampling
+    uncertainty
+
+    \vfill
+  \item Focus on party registration
+
+  \end{itemize}
+  \onslide<4->{\includegraphics[width=\textwidth]{../paper/figures/nc_overview.pdf}}
+
+\end{frame}
+
+\begin{frame}
+
+  \frametitle{Estimates of Racial Disparity in Party Registration}
+
+  \includegraphics[width=\textwidth]{../paper/figures/nc_disp.pdf}
+
+
+\end{frame}
+
+
+\begin{frame}
+
+  \frametitle{Total Variation Distance}
+
+  \includegraphics[width=\textwidth]{../paper/figures/nc_tv.pdf}
+
+\end{frame}
+
+\begin{frame}
+
+  \frametitle{Small Area Estimation}
+
+ \includegraphics[width=\textwidth]{../paper/figures/nc_smallarea.pdf}
+
+
+\end{frame}
+
+\begin{frame}
+
+  \frametitle{Improved Race Probabilities}
+
+ \includegraphics[width=\textwidth]{../paper/figures/nc_roc.pdf}
+
+
+\end{frame}
+
+\begin{frame}
+
+  \frametitle{Concluding Remarks}
+
+  \begin{itemize}
+  \item BIRDiE
+    \begin{itemize}
+    \item New identification assumption
+    \item Flexible modeling with scalable estimation
+    \item Improved BISG race probabilities
+    \item Sensitivity analysis
+    \end{itemize}
+    \vfill
+
+  \item Future work
+    \begin{itemize}
+    \item additional empirical validations: understanding bias
+    \item better use of auxiliary information in sensitivity analysis
+    \item make BIRDiE more robust to small bias in BISG probabilities
+
+    \end{itemize}
+  \end{itemize}
+
+  \vfill
+  \onslide<10->{\begin{center}
+    The paper is available at
+    \alert{\url{https://imai.fas.harvard.edu/research/birdie.html}} \\
+    \vfill
+    The software is available at \\
+    \alert{\url{https://corymccartan.com/birdie/}} 
+  \end{center}}
+  \vspace{-.7in}
+  \begin{flushright}
+     \includegraphics[scale=0.165]{../man/figures/logo.png}
+  \end{flushright}
+\end{frame}
+
+
+\end{document}
