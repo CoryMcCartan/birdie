@@ -1,5 +1,5 @@
-%\documentclass{beamer}
-\documentclass[handout]{beamer}
+\documentclass{beamer}
+%\documentclass[handout]{beamer}
 
 \mode<presentation>
 {
@@ -214,8 +214,8 @@
   \vfill
 \item Regression estimands
   \begin{itemize}
-  \item $\Pr(Y_i = y \mid R_i = r)$: short regression
-  \item $\Pr(Y_i = y \mid R_i = r, X_i =x)$: long regression 
+  \item short regression: $\Pr(Y_i = y \mid R_i = r)$
+  \item long regression: $\Pr(Y_i = y \mid R_i = r, X_i =x)$
   \end{itemize}
 
 \item Racial disparity estimands
@@ -224,7 +224,7 @@
     \ne r^\prime$
   \item $\Pr(Y_i = y \mid R_i = r, W_i = w) - \Pr(Y_i = y \mid R_i = r^\prime, W_i = w)$
   \end{itemize}
-
+\vspace{-.25in}
 \end{itemize}
   
 \end{frame}
@@ -239,10 +239,7 @@
   \item Assumption: $G_i \indep  S_i \mid R_i$
   \item Bayes rule:
     \begin{align*}
-      \hat{P}_{ir} \ & = \ \Pr(R_i = r \mid G_i = g, S_i = s) \\
-      \onslide<3->{& = \ \frac{\Pr(S_i =s\mid
-      \alert{G_i =g}, R_i = r)\Pr(G_i =g, R_i =r)}{\sum_{r^\prime} \Pr(S_i =s\mid
-          \alert{G_i =g}, R_i = r^\prime)\Pr(G_i =g, R_i =r^\prime)}} \\
+      \onslide<3->{\hat{P}_{ir} \ & = \ \Pr(R_i = r \mid G_i = g, S_i = s)} \\
       \onslide<4->{& = \ \frac{\Pr(S_i =s\mid
        R_i = r)\Pr(G_i =g, R_i =r)}{\sum_{r^\prime} \Pr(S_i =s\mid
        R_i = r^\prime)\Pr(G_i =g, R_i =r^\prime)}}
@@ -267,7 +264,7 @@
   \frametitle{BISG Prediction Works Reasonably Well {\scriptsize (Imai
       et al. 2022. {\it Sci. Adv.})}}
 
-  \includegraphics[width=\textwidth]{figs/AUCROC_Surnames.pdf}\\
+  \includegraphics<1->[width=\textwidth]{figs/AUCROC_Surnames.pdf}\\
   \onslide<2->{\includegraphics[width=1.2\textwidth, trim = 100 0 0 0, clip]{figs/Calibration_Surnames.pdf}}
 
 \end{frame}
@@ -278,9 +275,9 @@
     Disparity Estimates}
 
   \begin{columns}
-    \begin{column}{0.575\textwidth}
+    \begin{column}{0.65\textwidth}
       \begin{itemize}
-      \item Bias of the weighted estimator {\scriptsize (Chen {\it et
+      \item<1-> Bias of the weighted estimator {\scriptsize (Chen {\it et
             al.} 2019)}
         \begin{align*}
           & \hat\mu_{Y\mid R}^{\text{wtd}}(y \mid r) - \Pr(Y_i = y
@@ -288,14 +285,15 @@
 = & - \frac{\E[\text{Cov}(\mathbf{1}\{Y_i = y\}, \mathbf{1}\{R_i = r\}\mid G_i,
           X_i, S_i)]}{\Pr(R_i = r)}
           \end{align*}
-
+          \begin{itemize}
+          \item<2-> bias tends to be large for minority groups
+          \item<3-> racial disparity tends to be underestimated
+          \end{itemize}
           \vfill
-        \item Required assumption: $$Y_i \indep R_i \mid G_i, S_i, X_i$$
-          \vfill
-     \item Problem: race affects many aspects of the society
+        \item<4-> Required assumption: $$Y_i \indep R_i \mid G_i, S_i, X_i$$
       \end{itemize}
     \end{column}
-    \begin{column}{0.425\textwidth}
+    \onslide<4->{\begin{column}{0.425\textwidth}
       \tikzstyle{main node}=[circle,draw,font=\sffamily\Large\bfseries]
       \tikzstyle{sub node}=[circle,draw,dashed,font=\sffamily\Large\bfseries]
       \hspace{-.2in}\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2.6cm,thick]
@@ -315,8 +313,9 @@
         (G) edge node  {} (Y)
         (X) edge node  {} (Y);
     \end{tikzpicture}
-  \end{column}
+  \end{column}}
   \end{columns}
+\onslide<5->{Problem: race affects many aspects of the society}
 
 \end{frame}
 
@@ -363,6 +362,7 @@
           \begin{itemize}
           \item name-based discrimination
           \item coarse racial categories
+          \item but conditional on true race
           \end{itemize}
         \item Anonymous application
       \end{itemize}
@@ -444,9 +444,9 @@
   \frametitle{Empirical Validation}
 
   \begin{itemize}
-  \item 2022 North Carolina voter file: 5.8 millon voters with
+  \item 2022 North Carolina voter file: 5.8M voters with
     self-reported race
-  \item Subset 1 million voters $\rightsquigarrow$ negligible sampling
+  \item Subset 1M voters $\rightsquigarrow$ negligible sampling
     uncertainty
 
     \vfill
@@ -500,10 +500,10 @@
   \begin{itemize}
   \item BIRDiE
     \begin{itemize}
-    \item New identification assumption
-    \item Flexible modeling with scalable estimation
-    \item Improved BISG race probabilities
-    \item Sensitivity analysis
+    \item new identification assumption
+    \item flexible modeling with scalable estimation
+    \item improved BISG race probabilities
+    \item sensitivity analysis
     \end{itemize}
     \vfill
 
