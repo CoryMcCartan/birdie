@@ -196,33 +196,33 @@
 \frametitle{The Setup}
 
 \begin{itemize}
-\item Data
+\item<1-> Data
   \begin{itemize}
-  \item $Y_i$: outcome of interest 
-  \item $R_i$: (unobserved) race
-  \item $S_i$: surname
-  \item $G_i$: residence location
-  \item $X_i$: other Census variables (optional)
-  \item $W_i$: covariates of interest
+  \item<1-> $Y_i$: outcome of interest 
+  \item<1-> $R_i$: (unobserved) race
+  \item<1-> $S_i$: surname
+  \item<1-> $G_i$: residence location
+  \item<1-> $X_i$: other Census variables (optional)
+  \item<1-> $W_i$: covariates of interest
   \end{itemize}
-\item Census data
+\item<2-> Census data
   \begin{itemize}
-  \item $\Pr(G_i = g, R_i = r, X_i = x)$
-  \item $\Pr(R_i = r, S_i =s)$ for frequently occurring surnames
+  \item<2-> $\Pr(G_i = g, R_i = r, X_i = x)$
+  \item<2-> $\Pr(R_i = r, S_i =s)$ for frequently occurring surnames
   \end{itemize}
 
   \vfill
-\item Regression estimands
+\item<3-> Regression estimands
   \begin{itemize}
-  \item short regression: $\Pr(Y_i = y \mid R_i = r)$
-  \item long regression: $\Pr(Y_i = y \mid R_i = r, X_i =x)$
+  \item<3-> short regression: $\Pr(Y_i = y \mid R_i = r)$
+  \item<3-> long regression: $\Pr(Y_i = y \mid R_i = r, X_i =x)$
   \end{itemize}
 
-\item Racial disparity estimands
+\item<4-> Racial disparity estimands
   \begin{itemize}
-  \item $\Pr(Y_i =y \mid R_i = r) - \Pr(Y_i = y \mid R_i = r^\prime)$ for $r
+  \item<4-> $\Pr(Y_i =y \mid R_i = r) - \Pr(Y_i = y \mid R_i = r^\prime)$ for $r
     \ne r^\prime$
-  \item $\Pr(Y_i = y \mid R_i = r, W_i = w) - \Pr(Y_i = y \mid R_i = r^\prime, W_i = w)$
+  \item<4-> $\Pr(Y_i = y \mid R_i = r, W_i = w) - \Pr(Y_i = y \mid R_i = r^\prime, W_i = w)$
   \end{itemize}
 \vspace{-.25in}
 \end{itemize}
@@ -286,14 +286,14 @@
           X_i, S_i)]}{\Pr(R_i = r)}
           \end{align*}
           \begin{itemize}
-          \item<2-> bias tends to be large for minority groups
-          \item<3-> racial disparity tends to be underestimated
+          \item<3-> bias tends to be large for minority groups
+          \item<4-> racial disparity tends to be underestimated
           \end{itemize}
           \vfill
-        \item<4-> Required assumption: $$Y_i \indep R_i \mid G_i, S_i, X_i$$
+        \item<5-> Required assumption: $$Y_i \indep R_i \mid G_i, S_i, X_i$$
       \end{itemize}
     \end{column}
-    \onslide<4->{\begin{column}{0.425\textwidth}
+    \onslide<5->{\begin{column}{0.425\textwidth}
       \tikzstyle{main node}=[circle,draw,font=\sffamily\Large\bfseries]
       \tikzstyle{sub node}=[circle,draw,dashed,font=\sffamily\Large\bfseries]
       \hspace{-.2in}\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2.6cm,thick]
@@ -315,7 +315,7 @@
     \end{tikzpicture}
   \end{column}}
   \end{columns}
-\onslide<5->{Problem: race affects many aspects of the society}
+\onslide<6->{Problem: race affects many aspects of the society}
 
 \end{frame}
 
@@ -512,7 +512,7 @@
     \item additional empirical validations: understanding bias
     \item better use of auxiliary information in sensitivity analysis
     \item make BIRDiE more robust to small bias in BISG probabilities
-
+    \item more general approach to data combination and record linkage
     \end{itemize}
   \end{itemize}
 
