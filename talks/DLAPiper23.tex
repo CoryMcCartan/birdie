@@ -1,5 +1,5 @@
-%\documentclass{beamer}
-\documentclass[handout]{beamer}
+\documentclass{beamer}
+%\documentclass[handout]{beamer}
 
 \mode<presentation>
 {
@@ -397,7 +397,7 @@ Impact Testing of AI Systems\\
 
 
   \begin{columns}
-    \begin{column}{0.425\textwidth}
+    \begin{column}{0.35\textwidth}
       \tikzstyle{main node}=[circle,draw,font=\sffamily\Large\bfseries]
       \tikzstyle{sub node}=[circle,draw,dashed,font=\sffamily\Large\bfseries]
    \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2.5cm,thick]
@@ -422,7 +422,7 @@ Impact Testing of AI Systems\\
         %(X) edge [dashed, bend left] node  {} (S);
     \end{tikzpicture}
   \end{column}
-   \begin{column}{0.575\textwidth}
+   \begin{column}{0.65\textwidth}
       \begin{itemize}
         \item<2-> Required assumption: $$Y_i \indep S_i \mid G_i, R_i, X_i$$
 
@@ -437,8 +437,8 @@ Impact Testing of AI Systems\\
          \end{itemize}
        \item The assumption holds for:
          \begin{itemize}
-         \item anonymous application
-         \item algorithmic decision
+         \item anonymous applications
+         \item algorithmic decisions without use of names
          \end{itemize}
       \end{itemize}
     \end{column}
@@ -461,9 +461,9 @@ Impact Testing of AI Systems\\
            \end{align*}}
     \vspace{-.2in}
          \begin{itemize}
-         \item $(|\mathcal{Y}|-1)\times|\mathcal{G}|\times|\mathcal{X}|\times|\mathcal{S}|$ equations
+         \item $(|\mathcal{Y}|-1)\times|\mathcal{G}|\times|\mathcal{X}|\times\alert{|\mathcal{S}|}$ equations
          \item
-           $(|\mathcal{Y}|-1)\times|\mathcal{G}|\times|\mathcal{X}|\times|\mathcal{R}|$
+           $(|\mathcal{Y}|-1)\times|\mathcal{G}|\times|\mathcal{X}|\times\alert{|\mathcal{R}|}$
            unknown parameters
          \end{itemize}
          \vfill
@@ -478,6 +478,7 @@ Impact Testing of AI Systems\\
     \item unbiased estimate of $\Pr(Y_i= y \mid R_i = r)$
     \item ignores the fact that $\Pr(Y_i= y \mid R_i = r, G_i
       = g, X_i = x)$ is probability
+    \item connections to two-stage least squares
   \end{itemize}
   \end{itemize}
 
@@ -598,7 +599,7 @@ $$
     \item $f(\text{Imai}) = \text{Japanese}$,  $f(\text{McCartan}) =
       \text{Irish}$, etc.
     \item Assume instead
-      $$Y_i\indep S_i\mid f(S_i),R_i,G_i,X_i$$
+      $$Y_i\indep S_i\mid \alert{f(S_i)},R_i,G_i,X_i$$
     \end{itemize}
 
   \item 1930 Census provides 22 groups
