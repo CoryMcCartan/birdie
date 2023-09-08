@@ -222,44 +222,6 @@ Impact Testing of AI Systems\\
 
 \begin{frame}
 
-  \frametitle{Overview of the Talk}
-
-  \begin{enumerate}
-  \item Existing methods are likely to be biased
-    \begin{itemize}
-    \item BISG predictions are typically accurate and well calibrated
-    \item still, estimates of racial disparities based on them can be biased
-    \item this is because race affects many aspects of our society
-    \end{itemize}
-    \bigskip
-  \item \alert{BIRDiE} (Bayesian Instrumental Regression for Disparity
-    Estimation) 
-    \begin{itemize}
-    \item new and more credible identification assumption
-    \item flexible model allows for various racial disparity estimands
-    \item sensitivity analysis for potential violation of the
-      assumption
-    \item open-source software package \alert{birdie} available
-    \end{itemize}
-    \begin{flushright}
-      \vspace{-.5in}
-      \includegraphics[scale=0.165]{../man/figures/logo.png}
-     \end{flushright}
-  \item Empirical validation
-    \begin{itemize}
-    \item North Carolina voter file where self-reported race is
-      observed
-    \item estimates of racial differences in party registration
-    \item BIRDiE yields much smaller bias than the standard methods
-    \item results are robust to potential violation of assumptions
-    \end{itemize}
-  \end{enumerate}
-
-\end{frame}
-
-
-\begin{frame}
-
 \frametitle{The Setup}
 
 
@@ -309,21 +271,17 @@ Impact Testing of AI Systems\\
     \begin{align*}
       \hat{P}_{ir} \ & = \ \Pr(R_i = r \mid G_i = g, S_i = s) \\
       \onslide<3->{& = \ \frac{\Pr(S_i =s\mid
-      \alert{G_i =g}, R_i = r)\Pr(G_i =g, R_i =r)}{\sum_{r^\prime} \Pr(S_i =s\mid
-          \alert{G_i =g}, R_i = r^\prime)\Pr(G_i =g, R_i =r^\prime)}} \\
-      \onslide<4->{& = \ \frac{\Pr(S_i =s\mid
        R_i = r)\Pr(G_i =g, R_i =r)}{\sum_{r^\prime} \Pr(S_i =s\mid
        R_i = r^\prime)\Pr(G_i =g, R_i =r^\prime)}}
     \end{align*}
-  \item<5-> With covariates: $(G_i, X_i) \indep S_i \mid R_i$
-  \item<6-> {\sc wru} software package {\scriptsize (Imai and Kahna 2016)}
+  \item<4-> {\sc wru} software package {\scriptsize (Imai and Kahna 2016)}
   \end{itemize}
   \vfill
-\item<7-> Estimate racial disparities $\mu_{Y\mid R}(y \mid r) = \Pr(Y_i = y \mid R_i = r)$
+\item<5-> Estimate racial disparities $\mu_{Y\mid R}(y \mid r) = \Pr(Y_i = y \mid R_i = r)$
   \begin{itemize}
-  \item<8-> \alert{weighting}:
+  \item<6-> \alert{weighting}:
     $$\hat\mu_{Y\mid R}^{\text{wtd}}(y \mid r) \ = \ \frac{\sum_i \mathbf{1}\{Y_i = y\}\hat{P}_{ir} }{\sum_i \hat{P}_{ir}}$$
-  \item<9-> \alert{thresholding}: use the racial group with the largest
+  \item<7-> \alert{thresholding}: use the racial group with the largest
     probability as imputed race
   \end{itemize}
 \end{enumerate}
@@ -393,8 +351,8 @@ Impact Testing of AI Systems\\
 
 \begin{frame}
 
-\frametitle{New Identification Strategy}
-
+  \frametitle{BIRDiE {\small (Bayesian Instrumental Regression for Disparity 
+    Estimation)}}
 
   \begin{columns}
     \begin{column}{0.35\textwidth}
@@ -425,8 +383,6 @@ Impact Testing of AI Systems\\
    \begin{column}{0.65\textwidth}
       \begin{itemize}
         \item<2-> Required assumption: $$Y_i \indep S_i \mid G_i, R_i, X_i$$
-
-        \item Surname as a proxy for race
         \item Race can directly or indirectly affects the outcome
 
           \bigskip
@@ -443,165 +399,30 @@ Impact Testing of AI Systems\\
       \end{itemize}
     \end{column}
   \end{columns}
-  
+  \bigskip
+  \begin{itemize}
+  \item BIRDiE incorporates BISG and its variable, estimates racial
+    disparity, and produces improved race probabilities
+  \end{itemize}
 \end{frame}
+
 
 
 \begin{frame}
 
-  \frametitle{Surname as a High-dimensional Instrument}
+  \frametitle{Incorporating Finer Racial Categories}
 
   \begin{itemize}
-  \item Identification {\scriptsize (Kuroki and Pearl, 2014)}
-    {\small\begin{align*}
-     & \overbrace{\Pr(Y_i=y\mid G_i=g, X_i=x, S_i=s)}^{\text{observed data}} \\
-    = & \sum_{r\in\mathcal{R}} \underbrace{\alert{\Pr(Y_i=y\mid R_i=r, G_i=g,
-        X_i=x)}}_{\text{unknown parameters}}\ \underbrace{\Pr(R_i=r\mid
-        G_i=g, X_i=x, S_i=s)}_{\text{BISG probability}}
-           \end{align*}}
-    \vspace{-.2in}
-         \begin{itemize}
-         \item $(|\mathcal{Y}|-1)\times|\mathcal{G}|\times|\mathcal{X}|\times\alert{|\mathcal{S}|}$ equations
-         \item
-           $(|\mathcal{Y}|-1)\times|\mathcal{G}|\times|\mathcal{X}|\times\alert{|\mathcal{R}|}$
-           unknown parameters
-         \end{itemize}
-         \vfill
-       \item OLS estimator {\scriptsize (see also Fong and Tyler, 2021)}:
-         $$
-    \hat{\vb*\mu}^{(\text{ols})}_{Y\mid RGX}(y\mid \cdot, g,x) 
-    =  (\hat{\vb P}_{\cI(xg)}^\top \hat{\vb P}_{\cI(xg)})^{-1}\hat{\vb P}_{\cI(xg)}\,\ind\{{\vb Y}_{\cI(xg)} = y\},
-    $$
-    \vspace{-.2in}
-    \begin{itemize}
-    \item compute this for each $g$ and $x$, and aggregate
-    \item unbiased estimate of $\Pr(Y_i= y \mid R_i = r)$
-    \item ignores the fact that $\Pr(Y_i= y \mid R_i = r, G_i
-      = g, X_i = x)$ is probability
-    \item connections to two-stage least squares
-  \end{itemize}
-  \end{itemize}
-
-\end{frame}
-
-\begin{frame}
-
-  \frametitle{BIRDiE {\small (Bayesian Instrumental Regression for Disparity
-    Estimation)}}
-
-\begin{itemize}
-\item Flexible and scalable probabilistic model that integrates BISG 
-
-\item Posterior:
-    $$\pi(\Theta, \vb R\mid \vb Y, \vb G, \vb X, \vb S)
-    \ \propto \ \pi(\Theta)\prod_{i=1}^N \underbrace{\pi(Y_i\mid R_i,
-      G_i, X_i, \Theta)}_{\text{complete-data model}}
-            \underbrace{\pi(R_i\mid G_i, X_i, S_i)}_{\text{BISG prob. } \hat{P}_{ir}}$$
-\item Models: 
-  \begin{enumerate}
-  \item Complete-pooling:
-$$Y_i\mid R_i, G_i, X_i, \Theta \sim \Categorical_{\cY}(\vb*\theta_{R_i}), \quad
-        \vb*\theta_r \iid \Dirichlet(\vb*\alpha)$$
-  \item Saturated (no pooling):
-$$Y_i\mid R_i, G_i, X_i, \Theta \sim \Categorical_{\cY}(\vb*\theta_{R_iG_iX_i}), \quad
-        \vb*\theta_{rgx} \iid \Dirichlet(\vb*\alpha)$$
-      \item Partial pooling (mixed effects): $\vb W$ group-level
-        covariates, $\vb Z=(X,G)$
-        \begin{align*}
-    Y_i\mid R_i, G_i, X_i, \Theta &\sim
-                                    \Categorical_{\cY}(g^{-1}(\vb*\mu_{rgx})), \quad
-    \mu_{rgxy} = \vb W\vb*\beta_{ry} + \vb Z\vb u_{ry} \\
-    \quad \vb u_{ry}\mid \phi_{ry} &\sim \Norm(0,
-                                     \Sigma(\vb*\phi_{ry})), \quad
-    \vb*\beta_{ry} \iid f_\beta, \quad \vb*\phi_{ry} \iid f_\phi
-        \end{align*}
-        \vspace{-.2in}
-  \end{enumerate}
-
-  
-\end{itemize}
-
-\end{frame}
-
-
-\begin{frame}
-
-  \frametitle{Computation}
-
-  \begin{enumerate}
-  \item Small samples: \alert{direct inference}
-$$
-    \pi(\Theta\mid \vb Y, \vb G, \vb X, \vb S)
-    \propto \pi(\Theta) \prod_{i=1}^N \sum_{r\in\cR} \pi(Y_i\mid 
-    r, G_i, X_i, \Theta)\hat{P}_{ir}
-    $$
-    \begin{itemize}
-    \item low-dimensional parameter space, MCMC is applicable (e.g.,
-      Stan)
-    \item but it is not scalable
-    \end{itemize}
-    
-  \item Large samples: \alert{EM algorithm}
-    \begin{itemize}
-    \item E-step: update race probability (improvement upon BISG prob.)
-      $$\tilde{P}_{ir\mid Y}^{(t)}
-    = \frac{\pi(Y_i\mid r, G_i,, X_i, \Theta^{(t)}) \hat P_{ir}}{
-        \sum_{r'\in\cR} \pi(Y_i\mid r', G_i,, X_i, \Theta^{(t)}) \hat P_{ir'} }$$
-    \item M-step: maximize each $(y,x,g)$ group separately
-      $$\log \pi(\Theta^{(t+1)}) + \sum_{r\in\cR}\sum_{y\in\cY}\sum_{x\in\cX}\sum_{g\in\cG} 
-        \log \pi(y\mid r, g, x, \Theta^{(t+1)}) 
-        \qty(\sum_{i\in\cI(yxg)} \tilde{P}_{ir\mid Y}^{(t)}) $$
-    \end{itemize}
-
-  \end{enumerate}
-
-\end{frame}
-
-\begin{frame}
-
-  \frametitle{Additional Explanatory Variables}
-
-  \begin{itemize}
-  \item Long regression: $\Pr(Y_i  = y \mid R_i = r, W_i = w)$ where
-    $W_i$ is not part of $(X_i, G_i)$
-\vfill
-  \item Two strategies:
-    \begin{enumerate}
-    \item Joint modeling: $\Pr(Y_i, W_i \mid R_i)$
-    \item Iterative modeling: fit $\Pr(W_i \mid R_i)$ first and then use the
-      updated race probability to fit $\Pr(Y_i \mid W_i, R_i)$
-    \end{enumerate}
-\vfill
-\item Both approaches require:
-   $$W_i\indep S_i\mid R_i,G_i,X_i \qand
-   Y_i\indep S_i\mid W_i,R_i,G_i,X_i$$
-   or equivalently
-   $$(Y_i, W_i)\indep S_i\mid R_i,G_i,X_i$$
-   \vspace{-.4in}
-  \end{itemize}
-
-\end{frame}
-
-\begin{frame}
-
-  \frametitle{Sensitivity Analysis}
-
-  \begin{itemize}
-  \item Potential violation of the key identifying assumption
-    \begin{itemize}
-    \item name-based discrimination
-    \item racial category is too coarse
-    \end{itemize}
-
-  \item Suppose we can have information about finer ethnic groups
-    $$f:\cS\to\R^d,\  d\ll|\cS|$$
+  \item Suppose we can have information about finer ethnic groups $f$
     \begin{itemize}
     \item $f(\text{Imai}) = \text{Japanese}$,  $f(\text{McCartan}) =
       \text{Irish}$, etc.
     \item Assume instead
       $$Y_i\indep S_i\mid \alert{f(S_i)},R_i,G_i,X_i$$
+    \item Can include $f(S_i)$ as a covariate in BIRDiE
     \end{itemize}
 
+    \vfill
   \item 1930 Census provides 22 groups
     \begin{itemize}
     \item Anglosphere and Black surname (third-or-more generation
@@ -671,33 +492,6 @@ $$
 
 
 \end{frame}
-
-\begin{frame}
-
-  \frametitle{Estimates Conditional on an Additional Variable}
-
- \includegraphics[width=\textwidth]{../paper/figures/nc_addlcov_error.pdf}
-
-
-\end{frame}
-
-\begin{frame}
-
-  \frametitle{Robustness Analysis}
-
-  \begin{itemize}
-  \item Surname groups from 1930 Census  
-  \item Added 3,000 Asian surnames to account for more recent
-    immigration
-    \vfill
-  \item Correlation between BIRDiE residuals and nine surname groups
-    \includegraphics[width=0.9\textwidth]{../paper/figures/nc_sens_grp.pdf}
-
-  \item Including these in BIRDiE does not substantially alter the estimates 
-  \end{itemize}
-
-\end{frame}
-
 
 \begin{frame}
 
