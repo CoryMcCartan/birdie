@@ -46,7 +46,7 @@ calc_disp <- function(ests) {
         select(-starts_with("est_"))
 }
 
-eval_fit_tv = function(ests) {
+eval_fit_tv = function(ests, p_r) {
     tv_overall = ests |>
         group_by(level, method) |>
         summarize(tv = sum(abs(est - est_true)*p_r[race])/2) |>
@@ -60,12 +60,18 @@ eval_fit_tv = function(ests) {
 }
 
 
-ests_party = make_est_d(fits_party, party, d)
-write_rds(ests_party, here("data-out/nc_ests_party.rds"), compress="gz")
+if (!file.exists(path <- here("data-out/nc_ests_party.rda"))) {
+    ests_party = make_est_d(fits_party, party, d)
+    save(ests_party, p_r, file=path, compress="gzip")
+    write_rds(ests_party, path, compress="gz")
+} else {
+    load(path)
+    ests_party = read_rds(path)
+}
 
 disp_party = calc_disp(ests_party)
 
-tv_party = eval_fit_tv(ests_party)
+tv_party = eval_fit_tv(ests_party, p_r)
 
 filter(disp_party, level=="zip", party=="dem") |>
     select(-level, -party) |>
@@ -104,27 +110,39 @@ methods_col = c(birdie_pool=PAL_R[3], birdie_sat=PAL_R[3], birdie_mmm=PAL_R[3],
 methods_shp = c(birdie_pool=16, birdie_sat=15, birdie_mmm=16,
                 ols=3, thresh=4, weight=1)
 
-make_disp_plot = function(d, x, y, title, xlab, lev="block") {
-    filter(d, level==lev) |>
-    ggplot(aes({{ x }}, {{ y }}, color=method, shape=method)) +
-        # facet_wrap(~ factor(geos[level], levels=geos)) +
-        geom_hline(yintercept=0.0, color="#00000077") +
-        geom_point(size=2.4, position=position_dodge(width=0.7)) +
-        scale_y_continuous("Error in disparity estimation",
-                           labels=label_number(1, scale=100, suffix="pp")) +
-        scale_color_manual(values=methods_col, labels=methods) +
-        scale_shape_manual(values=methods_shp, labels=methods) +
-        labs(x=xlab, title=title, color="Method", shape="Method") +
-        theme_paper()
-}
 
-p1 = make_disp_plot(disp_party, str_to_upper(party), disp_wb - disp_wb_true,
-                    "White-Black disparity error", "Party")
-p2 = make_disp_plot(disp_party, str_to_upper(party), disp_wh - disp_wh_true,
-                    "White-Hispanic disparity error", "Party")
+d_ann <- tibble(
+    x = 1.4,
+    y = with(disp_party, disp_wb_true[party == "dem"][1]),
+    label = "True disparity",
+    groups = "wb"
+)
+filter(disp_party, level == "block") |>
+    rename(disp_wb_est=disp_wb, disp_wh_est=disp_wh) |>
+    pivot_longer(starts_with("disp"), names_pattern="disp_(w.)_(.+)", names_to=c("groups", "version")) |>
+    pivot_wider(names_from=version) |>
+ggplot(aes(str_to_upper(party), est, color=method, shape=method, group=method)) +
+    facet_wrap(~ groups, labeller = \(...) list(
+        groups=c("White-Black disparity", "White-Hispanic disparity")
+    )) +
+    geom_hline(yintercept=0.0, color="#00000077") +
+    geom_blank() +
+    geom_segment(aes(x=as.integer(as.factor(party))-0.35,
+                     xend=as.integer(as.factor(party))+0.35,
+                     y=true, yend=true),
+                 lty="11", col="#444444", linewidth=0.6) +
+    geom_point(size=2.4, position=position_dodge(width=0.7)) +
+    geom_text(aes(x=x, y=y, label=label), data=d_ann, inherit.aes=FALSE,
+              hjust=0, size=2.5, family="Times") +
+    scale_y_continuous("Disparity estimate",
+                       labels=label_number(1, scale=100, suffix="pp")) +
+    scale_color_manual(values=methods_col, labels=methods) +
+    scale_shape_manual(values=methods_shp, labels=methods) +
+    labs(x="Party", color="Method", shape="Method") +
+    theme_paper()
 
-p = p1 + p2 + plot_layout(guides="collect")
-ggsave(here("paper/figures/nc_disp.pdf"), plot=p, width=8, height=3.25) # old h 5
+ggsave(here("paper/figures/nc_disp.pdf"), width=8, height=3.5) # old h 5
+
 
 
 # TV plots -----
