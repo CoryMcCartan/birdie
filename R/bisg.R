@@ -169,7 +169,7 @@ parse_bisg_form <- function(formula, data=NULL) {
                   specifying the surname variable.", call=parent.frame())
     }
     S = d_model[[nm_loc]]
-    if (!check_vec(S)) {
+    if (!check_discrete(S)) {
         cli_abort("The names vector provided in {.fn nm} must be
                    a character or factor with no missing values.",
                   call=parent.frame())

@@ -210,6 +210,13 @@ formula.birdie <- function(x, ...) {
     NextMethod()
 }
 
+#' @describeIn birdie-class Return the BIRDiE complete-data model family.
+#' @method nobs birdie
+#' @export
+family.birdie <- function(object, ...) {
+    object$family
+}
+
 #' @describeIn birdie-class Return the number of observations used to fit a BIRDiE model.
 #' @method nobs birdie
 #' @export

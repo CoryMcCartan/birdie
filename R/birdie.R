@@ -2,17 +2,17 @@
 #'
 #' Fits one of two possible Bayesian Instrumental Regression for Disparity
 #' Estimation (BIRDiE) models to BISG probabilities and covariates. The simplest
-#' Multinomial-Dirichlet model (`dir`) is appropriate when there are no covariates or when
-#' all covariates are discrete and fully interacted with another. The more
-#' general Multinomial mixed-effects model (`mmm`) is a supports any number of
-#' fixed effects and up to one random intercept.
+#' Multinomial-Dirichlet model ([cat_dir()]) is appropriate when there are no
+#' covariates or when all covariates are discrete and fully interacted with
+#' another. The more general Multinomial mixed-effects model ([cat_mixed()]) is
+#' a supports any number of fixed effects and up to one random intercept.
 #'
 #' `birdie()` uses an expectation-maximization (EM) routine to find the maximum
 #' *a posteriori* (MAP) estimate for the specified model. Asymptotic
 #' variance-covariance matrices for the MAP estimate are available for the
 #' Multinomial-Dirichlet model via bootstrapping (`se_boot`).
 #'
-#' The Multinomial-Dirichlet model is specified as follows: \deqn{
+#' The Categorical-Dirichlet model is specified as follows: \deqn{
 #'     Y_i \mid R_i, X_i, \Theta \sim \text{Categorical}(\theta_{R_iX_i}) \\
 #'     \theta_{rx} \sim \text{Dirichlet}(\alpha_r),
 #' } where \eqn{Y} is the outcome variable, \eqn{R} is race, \eqn{X} are
@@ -22,7 +22,7 @@
 #' covariates, hence the need for `formula` to either have no covariates or a
 #' fully interacted structure.
 #'
-#' The Multinomial mixed-effects model is specified as follows: \deqn{
+#' The Categorical mixed-effects model is specified as follows: \deqn{
 #'     Y_i \mid R_i, X_i, \Theta \sim \text{Categorical}(g^{-1}(\mu_{R_iX_i})) \\
 #'     \mu_{rxy} = W\beta_{ry} + Zu_{ry} \\
 #'     u_{ry} \mid \sigma^2_{ry} \sim \mathcal{N}(0, \sigma^2_{ry}) \\
@@ -43,6 +43,16 @@
 #'   random intercept term, denoted with a vertical bar (`"(1 | <term>)"`), is
 #'   supported on the right-hand side.
 #' @param data An optional data frame containing the variables named in `formula`.
+#' @param family A description of the complete-data model type to fit. Options
+#'   are:
+#'
+#'   - [cat_dir()]: Categorical-Dirichlet model. All covariates must be fully
+#'   interacted.
+#'   - [cat_mixed()]: Categorical mixed-effects model. Up to one random effect
+#'   is supported.
+#'
+#' See the Details section below for more information on the various models.
+#'
 #' @param model A string specifying the type of model to fit: either `"dir"` for
 #'   the Multinomial-Dirichlet model or `"mmm"` for the Multinomial
 #'   mixed-effects model. The default, `"auto"`, will select the most
@@ -52,11 +62,14 @@
 #'   below.
 #' @param prior A list with entries specifying the model prior.
 #'
-#'   When `model="dir"` the only entry is `alpha`, which should be a matrix of
-#'   Dirichlet hyperparameters. The matrix should have one row for every level
-#'   of the outcome variable and one column for every racial group. The default
-#'   prior is a matrix with all entries set to \eqn{1+\epsilon}. When
-#'   `model="mmm"`, the `prior` list should contain two scalar entries:
+#'   - For the `cat_dir` model, the only entry is `alpha`, which should be a matrix
+#'   of Dirichlet hyperparameters. The matrix should have one row for every
+#'   level of the outcome variable and one column for every racial group. The
+#'   default prior (used when `prior=NULL`) is an empirical Bayes prior equal to
+#'   1 plus the weighted-mean estimate of the outcome-race table. A fully
+#'   noninformative prior with all entries set to \eqn{1+\epsilon} can be
+#'   obtained by setting `prior=NA`.
+#'   - For the `cat_mixed` model, the `prior` list should contain two scalar entries:
 #'   `scale_beta`, the standard deviation on the Normal prior for the fixed
 #'   effects, and `scale_sigma`, the prior mean of the standard deviation of the
 #'   random intercepts. These can be a single scalar or a vector with an entry
@@ -108,20 +121,21 @@
 #'
 #' @concept estimators
 #' @export
-birdie <- function(r_probs, formula, data=NULL, model=c("auto", "dir", "mmm"),
+birdie <- function(r_probs, formula, data=NULL, family=cat_dir(), model=NULL,
                    prior=NULL, prefix="pr_", se_boot=0, ctrl=birdie.ctrl()) {
     # figure out type of model and extract response vector
     Y_vec = eval_tidy(f_lhs(formula), data)
     tt = terms(formula, keep.order=TRUE)
     covars = all.vars(tt)
     full_int = check_full_int(tt, covars)
-    model = match.arg(model)
-    if (model == "auto") {
-        model = if (count_ranef(tt) == 0 && full_int) "dir" else "mmm"
+    # deprecated model arg
+    if (!missing(model)) {
+        cli_abort(c("{.arg model} was deprecated in {.pkg birdie} 0.4.0.",
+                    ">"="Please specify the desired model with the {.arg family} argument instead."))
     }
 
     # check formula and predictors against model and r_probs
-    check_model(model, tt, covars, full_int, se_boot)
+    model = check_model(family, tt, covars, full_int, se_boot)
     check_covars(r_probs, covars, model)
 
     # set up race probability matrix
@@ -135,24 +149,19 @@ birdie <- function(r_probs, formula, data=NULL, model=c("auto", "dir", "mmm"),
     races = stringr::str_sub(colnames(p_rxs), nchar(prefix)+1L)
 
     # check types
-    if (!check_vec(Y_vec))
-        cli_abort("Response variable must be a character or factor with no missing values.")
     if (!is.null(data) && nrow(data) != nrow(r_probs))
         cli_abort("{.arg data} and {.arg r_probs} must have the same number of rows.")
 
-    Y_vec = as.factor(Y_vec)
-    n_y = nlevels(Y_vec)
     n_r = ncol(p_rxs)
-
-    prior = check_make_prior(prior, model, levels(Y_vec), races)
 
     # run inference
     t1 <- Sys.time()
-    if (model == "dir") {
-        res = em_dir(Y_vec, p_rxs, tt, data, prior, boot=se_boot, ctrl=ctrl)
-    } else if (model == "mmm") {
-        res = em_mmm(Y_vec, p_rxs, tt, data, prior, ctrl=ctrl)
+    if (model == "cat_dir") {
+        res = em_cat_dir(Y_vec, p_rxs, tt, data, prior, boot=se_boot, ctrl=ctrl)
+    } else if (model == "cat_mixed") {
+        res = em_cat_mixed(Y_vec, p_rxs, tt, data, prior, ctrl=ctrl)
         # add names
+        n_y = nrow(res$map)
         ex_beta = res$betas[[1]]
         res$betas = array(do.call(cbind, res$betas), dim=c(nrow(ex_beta), n_y, n_r))
         dimnames(res$betas) = list(rownames(ex_beta), levels(Y_vec), races)
@@ -195,10 +204,10 @@ birdie <- function(r_probs, formula, data=NULL, model=c("auto", "dir", "mmm"),
         vcov = if (se_boot > 0) res$vcov else NULL,
         se = if (se_boot > 0) vcov_to_se(res$vcov, res$map) else NULL,
         N = length(Y_vec),
-        betas = if (model == "mmm") res$betas else NULL,
-        sigmas = if (model == "mmm") res$sigmas else NULL,
-        linpred = if (model == "mmm") res$linpred else NULL,
-        prior = prior,
+        betas = if (model == "cat_mixed") res$betas else NULL,
+        sigmas = if (model == "cat_mixed") res$sigmas else NULL,
+        linpred = if (model == "cat_mixed") res$linpred else NULL,
+        prior = res$prior,
         tbl_gx = as_tibble(res$tbl_gx),
         vec_gx = res$vec_gx,
         y = Y_vec,
@@ -208,20 +217,26 @@ birdie <- function(r_probs, formula, data=NULL, model=c("auto", "dir", "mmm"),
                        post = entropy(p_ryxs)),
         algo = list(
             model = model,
+            family = family$family,
             iters = res$iters,
             converge = res$converge,
-            runtime = as.numeric(t2 - t1, units = "secs")
+            runtime = as.numeric(t2 - t1, units = "secs"),
+            version = as.character(packageVersion("birdie"))
         ),
         call = match.call()
     ), class="birdie")
 }
 
 # Fixed-effects model (includes complete pooling and no pooling)
-em_dir <- function(Y, p_rxs, formula, data, prior, boot, ctrl) {
+em_cat_dir <- function(Y, p_rxs, formula, data, prior, boot, ctrl) {
     d_model = model.frame(formula, data=data, na.action=na.fail)[-1]
 
+    if (!check_discrete(Y))
+        cli_abort("Response variable must be a character or factor with no missing values.")
+    Y = as.factor(Y)
     n_y = nlevels(Y)
     n_r = ncol(p_rxs)
+    prior = check_make_prior_cat_dir(prior, Y, p_rxs, races)
     Y = as.integer(Y)
 
     # create unique group IDs
@@ -251,16 +266,17 @@ em_dir <- function(Y, p_rxs, formula, data, prior, boot, ctrl) {
     est = dirichlet_map(Y, rep_along(Y, 1), p_ryxs, ones_mat, 1) %>%
         matrix(n_y, n_r, byrow=TRUE)
 
-    out =  list(map = est,
-                ests = to_array_yrx(res$ests, est_dim),
-                p_ryxs = p_ryxs,
-                tbl_gx = d_model[idx_sub, , drop=FALSE],
-                vec_gx = X,
-                iters = res$iters,
-                converge = res$converge)
+    out = list(map = est,
+               ests = to_array_yrx(res$ests, est_dim),
+               p_ryxs = p_ryxs,
+               tbl_gx = d_model[idx_sub, , drop=FALSE],
+               vec_gx = X,
+               prior = prior,
+               iters = res$iters,
+               converge = res$converge)
 
     if (boot > 0) {
-        boot_ests = boot_dir(res$ests, boot, Y, X, p_rxs, prior, n_x, ctrl)
+        boot_ests = boot_cat_dir(res$ests, boot, Y, X, p_rxs, prior, n_x, ctrl)
         out$vcov = cov(t(boot_ests))
     }
 
@@ -269,10 +285,15 @@ em_dir <- function(Y, p_rxs, formula, data, prior, boot, ctrl) {
 
 
 # Multinomial mixed-effects model
-em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
+em_cat_mixed <- function(Y, p_rxs, formula, data, prior, ctrl) {
+    if (!check_discrete(Y))
+        cli_abort("Response variable must be a character or factor with no missing values.")
+    Y = as.factor(Y)
     outcomes = levels(Y)
     n_y = length(outcomes)
     n_r = ncol(p_rxs)
+    prior = check_make_prior_cat_mixed(prior, Y, races)
+
     Y = as.integer(Y)
     ones_mat = matrix(1, nrow=n_y, ncol=n_r)
     ones = rep_along(Y, 1)
@@ -400,6 +421,7 @@ em_mmm <- function(Y, p_rxs, formula, data, prior, ctrl) {
                }),
                tbl_gx = d_model[idx_sub, , drop=FALSE],
                vec_gx = idx_uniq,
+               prior = prior,
                iters = res$iters,
                converge = res$converge)
 }

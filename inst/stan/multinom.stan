@@ -8,8 +8,10 @@ data {
     matrix[N, n_y] Y;
     int<lower=1, upper=n_grp> grp[N];
 
+    int<lower=0, upper=1> has_int;
     real<lower=0> prior_sigma;
     real<lower=0> prior_beta;
+    real<lower=0> prior_int;
 }
 
 transformed data {
@@ -17,6 +19,7 @@ transformed data {
 }
 
 parameters {
+    real intercept;
     matrix[p, n_y] beta;
     matrix[n_grp, n_y] u;
 
@@ -29,7 +32,7 @@ transformed parameters {
     {
         matrix[N, n_y] linpred;
         matrix[n_y, n_y] Sigma = diag_pre_multiply(sigma_grp, L);
-        linpred = X * beta + (Sigma * u[grp]')';
+        linpred = has_int*intercept + X * beta + (Sigma * u[grp]')';
 
         // manual log softmax
         lsft = linpred - rep_matrix(log(exp(linpred) * ones_y), n_y);
@@ -39,6 +42,7 @@ transformed parameters {
 model {
     target += sum(Y .* lsft);
 
+    intercept ~ normal(0, prior_int);
     to_vector(beta) ~ normal(0, prior_beta);
     to_vector(u) ~ std_normal();
 
