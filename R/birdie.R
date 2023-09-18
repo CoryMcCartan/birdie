@@ -304,6 +304,7 @@ em_cat_mixed <- function(Y, p_rxs, formula, data, prior, races, ctrl) {
 
     # create fixed effects matrix
     fixef_form = remove_ranef(formula)
+    attr(fixef_form, "intercept") = 0 # remove intercept
     X = model.matrix(fixef_form, data=get_all_vars(fixef_form, data=data))
     N = length(idx_sub)
     if (nrow(X) != length(Y)) {
@@ -411,11 +412,14 @@ em_cat_mixed <- function(Y, p_rxs, formula, data, prior, races, ctrl) {
                    out = x$beta
                    colnames(out) = outcomes
                    rownames(out) = colnames(X)
+                   if (standata$has_int == 1) {
+                       out = rbind(intercept=x$intercept, out)
+                   }
                    out
                }),
                sigmas = lapply(par_l, function(x) setNames(x$sigma_grp, outcomes)),
                linpreds = lapply(par_l, function(x) {
-                   m = exp(X %*% x$beta)
+                   m = exp(standata$has_int * x$intercept + X %*% x$beta)
                    m / rowSums(m)
                }),
                tbl_gx = d_model[idx_sub, , drop=FALSE],
