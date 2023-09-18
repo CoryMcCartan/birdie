@@ -18,6 +18,15 @@ test_that("BISG checks input", {
     expect_error(bisg(~ zip(zip), pseudo_vf))
 })
 
+test_that("BISG is robust to ordering", {
+    data(pseudo_vf)
+    p_r = p_r_natl(2010)
+
+    expect_s3_class(bisg(~ nm(last_name), pseudo_vf, p_r=rev(p_r)), "bisg")
+    expect_error(bisg(~ nm(last_name), pseudo_vf, p_r=p_r[1:3]), "doesn't match")
+    expect_error(bisg(~ nm(last_name), pseudo_vf, p_r=unname(p_r)), "must have names")
+})
+
 
 test_that("BISG results are directionally correct", {
     d = tibble(S=rep(c("Hernandez", "Mc Cartan"), 2),

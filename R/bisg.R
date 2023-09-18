@@ -257,7 +257,7 @@ make_name_tbl_vec <- function(vars, p_r, p_rs, for_me=FALSE) {
             cli_abort("{.arg p_rs} contains missing, negative,
                       or otherwise invalid values.", call=parent.frame())
         }
-        if (length(p_r) != ncol(p_rs) + 1) {
+        if (p_r != "estimate" && length(p_r) != ncol(p_rs) + 1) {
             cli_abort("Number of racial categories in {.arg p_rs}
                       and {.arg p_r} must match.", call=parent.frame())
         }
@@ -267,23 +267,28 @@ make_name_tbl_vec <- function(vars, p_r, p_rs, for_me=FALSE) {
         p_s = prop.table(table(S))
         p_rs = as.matrix(p_rs[, -name_col])
         p_sr = p_rs / rowSums(p_rs)
-        for (i in seq_along(p_r)) {
+        for (i in seq_len(ncol(p_sr))) {
             p_sr[, i] = p_sr[, i] * p_s
             p_sr[, i] = p_sr[, i] / sum(p_sr[, i])
         }
     }
 
-    idx_names = match(names(p_r), colnames(p_sr))
-    if (any(is.na(idx_names))) {
-        cli_abort(c("Names of {.arg p_r} and column names of {.arg p_rs} must match.",
-                    "i"="Names for {.arg p_r}: {.val {names(p_r)}}",
-                    "i"="Names for {.arg p_rs}: {.val {names(p_rs)}}",
-                    ">"="If you provided {.arg p_r} but not {.arg p_rs}, make sure
+    # reorder columns to match `p_r`
+    if (p_r[1] != "estimate") {
+        if (is.null(names(p_r))) cli_abort("{.arg p_r} must have names.", call=parent.frame())
+        if (is.null(colnames(p_sr))) cli_abort("{.arg p_rs} must have column names.", call=parent.frame())
+        idx_names = match(names(p_r), colnames(p_sr))
+        if (any(is.na(idx_names))) {
+            cli_abort(c("Names of {.arg p_r} and column names of {.arg p_rs} must match.",
+                        "i"="Names for {.arg p_r}: {.val {names(p_r)}}",
+                        "i"="Names for {.arg p_rs}: {.val {names(p_rs)}}",
+                        ">"="If you provided {.arg p_r} but not {.arg p_rs}, make sure
                     {.arg p_r} has {.fn names} matching `white`, `black`,
                     `hisp`, `asian`, `aian`, and `other`."),
-                  call=parent.frame())
+                    call=parent.frame())
+        }
+        p_sr = p_sr[, idx_names]
     }
-    p_sr = p_sr[, idx_names]
 
     list(S = S,
          p_sr = p_sr) # p_sr is actualy p_rs, unormalized, if `for_me=TRUE`
