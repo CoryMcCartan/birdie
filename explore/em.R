@@ -5,7 +5,8 @@ suppressMessages({
 })
 
 d = readRDS(here("data-raw/nc_voters_small.rds")) |>
-    filter(!is.na(party))
+    filter(!is.na(party)) |>
+    head(1e4)
 p_r = with(d, prop.table(table(race)))
 p_xr = with(d, prop.table(table(party, race), 2))
 
@@ -29,8 +30,11 @@ xw = est_weighted(r_probs, Y ~ 1, data)
 x0 = birdie(r_probs, Y ~ 1, data)
 x1 = birdie(r_probs, Y ~ zip, data)
 x2 = birdie(r_probs, Y ~ white + black + hisp + (1|zip), data,
-            prior = list(scale_sigma=0.05, scale_beta=0.2),
-            ctrl=birdie.ctrl(abstol=5e-6))
+            prior = list(scale_int=2, scale_sigma=0.05, scale_beta=0.2),
+            family = cat_mixed(), ctrl=birdie.ctrl(abstol=5e-6))
+x2 = birdie(r_probs, Y ~ white, data,
+            prior = list(scale_int=2, scale_sigma=0.05, scale_beta=0.2),
+            family = cat_mixed(), ctrl=birdie.ctrl(abstol=5e-6))
 
 {
     par(mfrow=c(3,2), mar=c(2, 2, 0.2, 0.2))

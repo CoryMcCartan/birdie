@@ -129,7 +129,7 @@ remove_ranef <- function(formula) {
     re = re_terms(formula)
     if (length(re) == 0) return(formula)
     re_adj = str_c("(", re, ")", collapse=" - ")
-    update.formula(formula, str_c("~ . -", re_adj))
+    terms(update.formula(formula, str_c("~ . -", re_adj)))
 }
 
 
@@ -193,7 +193,7 @@ check_make_prior_cat_mixed <- function(prior, Y, races) {
         prior = list(
             scale_int = rep(2, n_r),
             scale_beta = rep(0.2, n_r),
-            scale_sigma = rep(0.1, n_r)
+            scale_sigma = rep(0.05, n_r)
         )
 
         cli_inform(c("Using default prior for Pr(X | R):",
@@ -331,6 +331,10 @@ check_model <- function(family, tt, covars, full_int, se_boot) {
                             "x"="Found: {.code {re}}."),
                           call=parent.frame())
             }
+        }
+        if (length(re) == 0 & length(attr(tt, "factors") == 0)) {
+            cli_abort("{.fn cat_mixed} requires at least one covariate or random effect.",
+                      call=parent.frame())
         }
 
         if (se_boot > 0) {

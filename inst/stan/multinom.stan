@@ -16,10 +16,11 @@ data {
 
 transformed data {
     vector[n_y] ones_y = rep_vector(1, n_y);
+    vector[N] int_col = rep_vector(has_int, N);
 }
 
 parameters {
-    real intercept;
+    row_vector[n_y] intercept;
     matrix[p, n_y] beta;
     matrix[n_grp, n_y] u;
 
@@ -32,7 +33,7 @@ transformed parameters {
     {
         matrix[N, n_y] linpred;
         matrix[n_y, n_y] Sigma = diag_pre_multiply(sigma_grp, L);
-        linpred = has_int*intercept + X * beta + (Sigma * u[grp]')';
+        linpred = int_col * intercept + X * beta + (Sigma * u[grp]')';
 
         // manual log softmax
         lsft = linpred - rep_matrix(log(exp(linpred) * ones_y), n_y);

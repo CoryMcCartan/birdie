@@ -19,7 +19,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_multinom");
-    reader.add_event(53, 51, "end", "model_multinom");
+    reader.add_event(54, 52, "end", "model_multinom");
     return reader;
 }
 #include <stan_meta_header.hpp>
@@ -38,6 +38,7 @@ private:
         double prior_beta;
         double prior_int;
         vector_d ones_y;
+        vector_d int_col;
 public:
     model_multinom(stan::io::var_context& context__,
         std::ostream* pstream__ = 0)
@@ -174,25 +175,31 @@ public:
             ones_y = Eigen::Matrix<double, Eigen::Dynamic, 1>(n_y);
             stan::math::fill(ones_y, DUMMY_VAR__);
             stan::math::assign(ones_y,rep_vector(1, n_y));
+            current_statement_begin__ = 19;
+            validate_non_negative_index("int_col", "N", N);
+            int_col = Eigen::Matrix<double, Eigen::Dynamic, 1>(N);
+            stan::math::fill(int_col, DUMMY_VAR__);
+            stan::math::assign(int_col,rep_vector(has_int, N));
             // execute transformed data statements
             // validate transformed data
             // validate, set parameter ranges
             num_params_r__ = 0U;
             param_ranges_i__.clear();
-            current_statement_begin__ = 22;
-            num_params_r__ += 1;
             current_statement_begin__ = 23;
+            validate_non_negative_index("intercept", "n_y", n_y);
+            num_params_r__ += n_y;
+            current_statement_begin__ = 24;
             validate_non_negative_index("beta", "p", p);
             validate_non_negative_index("beta", "n_y", n_y);
             num_params_r__ += (p * n_y);
-            current_statement_begin__ = 24;
+            current_statement_begin__ = 25;
             validate_non_negative_index("u", "n_grp", n_grp);
             validate_non_negative_index("u", "n_y", n_y);
             num_params_r__ += (n_grp * n_y);
-            current_statement_begin__ = 26;
+            current_statement_begin__ = 27;
             validate_non_negative_index("sigma_grp", "n_y", n_y);
             num_params_r__ += n_y;
-            current_statement_begin__ = 27;
+            current_statement_begin__ = 28;
             validate_non_negative_index("L", "n_y", n_y);
             validate_non_negative_index("L", "n_y", n_y);
             num_params_r__ += ((n_y * (n_y - 1)) / 2);
@@ -213,20 +220,24 @@ public:
         (void) pos__; // dummy call to supress warning
         std::vector<double> vals_r__;
         std::vector<int> vals_i__;
-        current_statement_begin__ = 22;
+        current_statement_begin__ = 23;
         if (!(context__.contains_r("intercept")))
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable intercept missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("intercept");
         pos__ = 0U;
-        context__.validate_dims("parameter initialization", "intercept", "double", context__.to_vec());
-        double intercept(0);
-        intercept = vals_r__[pos__++];
+        validate_non_negative_index("intercept", "n_y", n_y);
+        context__.validate_dims("parameter initialization", "intercept", "row_vector_d", context__.to_vec(n_y));
+        Eigen::Matrix<double, 1, Eigen::Dynamic> intercept(n_y);
+        size_t intercept_j_1_max__ = n_y;
+        for (size_t j_1__ = 0; j_1__ < intercept_j_1_max__; ++j_1__) {
+            intercept(j_1__) = vals_r__[pos__++];
+        }
         try {
-            writer__.scalar_unconstrain(intercept);
+            writer__.row_vector_unconstrain(intercept);
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable intercept: ") + e.what()), current_statement_begin__, prog_reader__());
         }
-        current_statement_begin__ = 23;
+        current_statement_begin__ = 24;
         if (!(context__.contains_r("beta")))
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable beta missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("beta");
@@ -247,7 +258,7 @@ public:
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable beta: ") + e.what()), current_statement_begin__, prog_reader__());
         }
-        current_statement_begin__ = 24;
+        current_statement_begin__ = 25;
         if (!(context__.contains_r("u")))
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable u missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("u");
@@ -268,7 +279,7 @@ public:
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable u: ") + e.what()), current_statement_begin__, prog_reader__());
         }
-        current_statement_begin__ = 26;
+        current_statement_begin__ = 27;
         if (!(context__.contains_r("sigma_grp")))
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable sigma_grp missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("sigma_grp");
@@ -285,7 +296,7 @@ public:
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable sigma_grp: ") + e.what()), current_statement_begin__, prog_reader__());
         }
-        current_statement_begin__ = 27;
+        current_statement_begin__ = 28;
         if (!(context__.contains_r("L")))
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable L missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("L");
@@ -331,35 +342,35 @@ public:
         try {
             stan::io::reader<local_scalar_t__> in__(params_r__, params_i__);
             // model parameters
-            current_statement_begin__ = 22;
-            local_scalar_t__ intercept;
+            current_statement_begin__ = 23;
+            Eigen::Matrix<local_scalar_t__, 1, Eigen::Dynamic> intercept;
             (void) intercept;  // dummy to suppress unused var warning
             if (jacobian__)
-                intercept = in__.scalar_constrain(lp__);
+                intercept = in__.row_vector_constrain(n_y, lp__);
             else
-                intercept = in__.scalar_constrain();
-            current_statement_begin__ = 23;
+                intercept = in__.row_vector_constrain(n_y);
+            current_statement_begin__ = 24;
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, Eigen::Dynamic> beta;
             (void) beta;  // dummy to suppress unused var warning
             if (jacobian__)
                 beta = in__.matrix_constrain(p, n_y, lp__);
             else
                 beta = in__.matrix_constrain(p, n_y);
-            current_statement_begin__ = 24;
+            current_statement_begin__ = 25;
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, Eigen::Dynamic> u;
             (void) u;  // dummy to suppress unused var warning
             if (jacobian__)
                 u = in__.matrix_constrain(n_grp, n_y, lp__);
             else
                 u = in__.matrix_constrain(n_grp, n_y);
-            current_statement_begin__ = 26;
+            current_statement_begin__ = 27;
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> sigma_grp;
             (void) sigma_grp;  // dummy to suppress unused var warning
             if (jacobian__)
                 sigma_grp = in__.vector_lb_constrain(0, n_y, lp__);
             else
                 sigma_grp = in__.vector_lb_constrain(0, n_y);
-            current_statement_begin__ = 27;
+            current_statement_begin__ = 28;
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, Eigen::Dynamic> L;
             (void) L;  // dummy to suppress unused var warning
             if (jacobian__)
@@ -367,7 +378,7 @@ public:
             else
                 L = in__.cholesky_factor_corr_constrain(n_y);
             // transformed parameters
-            current_statement_begin__ = 31;
+            current_statement_begin__ = 32;
             validate_non_negative_index("lsft", "N", N);
             validate_non_negative_index("lsft", "n_y", n_y);
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, Eigen::Dynamic> lsft(N, n_y);
@@ -375,28 +386,28 @@ public:
             stan::math::fill(lsft, DUMMY_VAR__);
             // transformed parameters block statements
             {
-            current_statement_begin__ = 33;
+            current_statement_begin__ = 34;
             validate_non_negative_index("linpred", "N", N);
             validate_non_negative_index("linpred", "n_y", n_y);
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, Eigen::Dynamic> linpred(N, n_y);
             stan::math::initialize(linpred, DUMMY_VAR__);
             stan::math::fill(linpred, DUMMY_VAR__);
-            current_statement_begin__ = 34;
+            current_statement_begin__ = 35;
             validate_non_negative_index("Sigma", "n_y", n_y);
             validate_non_negative_index("Sigma", "n_y", n_y);
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, Eigen::Dynamic> Sigma(n_y, n_y);
             stan::math::initialize(Sigma, DUMMY_VAR__);
             stan::math::fill(Sigma, DUMMY_VAR__);
             stan::math::assign(Sigma,diag_pre_multiply(sigma_grp, L));
-            current_statement_begin__ = 35;
-            stan::math::assign(linpred, add(add((has_int * intercept), multiply(X, beta)), transpose(multiply(Sigma, transpose(stan::model::rvalue(u, stan::model::cons_list(stan::model::index_multi(grp), stan::model::nil_index_list()), "u"))))));
-            current_statement_begin__ = 38;
+            current_statement_begin__ = 36;
+            stan::math::assign(linpred, add(add(multiply(int_col, intercept), multiply(X, beta)), transpose(multiply(Sigma, transpose(stan::model::rvalue(u, stan::model::cons_list(stan::model::index_multi(grp), stan::model::nil_index_list()), "u"))))));
+            current_statement_begin__ = 39;
             stan::math::assign(lsft, subtract(linpred, rep_matrix(stan::math::log(multiply(stan::math::exp(linpred), ones_y)), n_y)));
             }
             // validate transformed parameters
             const char* function__ = "validate transformed params";
             (void) function__;  // dummy to suppress unused var warning
-            current_statement_begin__ = 31;
+            current_statement_begin__ = 32;
             size_t lsft_j_1_max__ = N;
             size_t lsft_j_2_max__ = n_y;
             for (size_t j_1__ = 0; j_1__ < lsft_j_1_max__; ++j_1__) {
@@ -409,17 +420,17 @@ public:
                 }
             }
             // model body
-            current_statement_begin__ = 43;
+            current_statement_begin__ = 44;
             lp_accum__.add(sum(elt_multiply(Y, lsft)));
-            current_statement_begin__ = 45;
-            lp_accum__.add(normal_log<propto__>(intercept, 0, prior_int));
             current_statement_begin__ = 46;
-            lp_accum__.add(normal_log<propto__>(to_vector(beta), 0, prior_beta));
+            lp_accum__.add(normal_log<propto__>(intercept, 0, prior_int));
             current_statement_begin__ = 47;
+            lp_accum__.add(normal_log<propto__>(to_vector(beta), 0, prior_beta));
+            current_statement_begin__ = 48;
             lp_accum__.add(std_normal_log<propto__>(to_vector(u)));
-            current_statement_begin__ = 49;
-            lp_accum__.add(gamma_log<propto__>(sigma_grp, 2.0, (2.0 / prior_sigma)));
             current_statement_begin__ = 50;
+            lp_accum__.add(gamma_log<propto__>(sigma_grp, 2.0, (2.0 / prior_sigma)));
+            current_statement_begin__ = 51;
             lp_accum__.add(lkj_corr_cholesky_log<propto__>(L, 2.0));
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
@@ -452,6 +463,7 @@ public:
         dimss__.resize(0);
         std::vector<size_t> dims__;
         dims__.resize(0);
+        dims__.push_back(n_y);
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back(p);
@@ -487,8 +499,11 @@ public:
         static const char* function__ = "model_multinom_namespace::write_array";
         (void) function__;  // dummy to suppress unused var warning
         // read-transform, write parameters
-        double intercept = in__.scalar_constrain();
-        vars__.push_back(intercept);
+        Eigen::Matrix<double, 1, Eigen::Dynamic> intercept = in__.row_vector_constrain(n_y);
+        size_t intercept_j_1_max__ = n_y;
+        for (size_t j_1__ = 0; j_1__ < intercept_j_1_max__; ++j_1__) {
+            vars__.push_back(intercept(j_1__));
+        }
         Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> beta = in__.matrix_constrain(p, n_y);
         size_t beta_j_2_max__ = n_y;
         size_t beta_j_1_max__ = p;
@@ -526,7 +541,7 @@ public:
         if (!include_tparams__ && !include_gqs__) return;
         try {
             // declare and define transformed parameters
-            current_statement_begin__ = 31;
+            current_statement_begin__ = 32;
             validate_non_negative_index("lsft", "N", N);
             validate_non_negative_index("lsft", "n_y", n_y);
             Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> lsft(N, n_y);
@@ -534,22 +549,22 @@ public:
             stan::math::fill(lsft, DUMMY_VAR__);
             // do transformed parameters statements
             {
-            current_statement_begin__ = 33;
+            current_statement_begin__ = 34;
             validate_non_negative_index("linpred", "N", N);
             validate_non_negative_index("linpred", "n_y", n_y);
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, Eigen::Dynamic> linpred(N, n_y);
             stan::math::initialize(linpred, DUMMY_VAR__);
             stan::math::fill(linpred, DUMMY_VAR__);
-            current_statement_begin__ = 34;
+            current_statement_begin__ = 35;
             validate_non_negative_index("Sigma", "n_y", n_y);
             validate_non_negative_index("Sigma", "n_y", n_y);
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, Eigen::Dynamic> Sigma(n_y, n_y);
             stan::math::initialize(Sigma, DUMMY_VAR__);
             stan::math::fill(Sigma, DUMMY_VAR__);
             stan::math::assign(Sigma,diag_pre_multiply(sigma_grp, L));
-            current_statement_begin__ = 35;
-            stan::math::assign(linpred, add(add((has_int * intercept), multiply(X, beta)), transpose(multiply(Sigma, transpose(stan::model::rvalue(u, stan::model::cons_list(stan::model::index_multi(grp), stan::model::nil_index_list()), "u"))))));
-            current_statement_begin__ = 38;
+            current_statement_begin__ = 36;
+            stan::math::assign(linpred, add(add(multiply(int_col, intercept), multiply(X, beta)), transpose(multiply(Sigma, transpose(stan::model::rvalue(u, stan::model::cons_list(stan::model::index_multi(grp), stan::model::nil_index_list()), "u"))))));
+            current_statement_begin__ = 39;
             stan::math::assign(lsft, subtract(linpred, rep_matrix(stan::math::log(multiply(stan::math::exp(linpred), ones_y)), n_y)));
             }
             if (!include_gqs__ && !include_tparams__) return;
@@ -597,9 +612,12 @@ public:
                                  bool include_tparams__ = true,
                                  bool include_gqs__ = true) const {
         std::stringstream param_name_stream__;
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "intercept";
-        param_names__.push_back(param_name_stream__.str());
+        size_t intercept_j_1_max__ = n_y;
+        for (size_t j_1__ = 0; j_1__ < intercept_j_1_max__; ++j_1__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "intercept" << '.' << j_1__ + 1;
+            param_names__.push_back(param_name_stream__.str());
+        }
         size_t beta_j_2_max__ = n_y;
         size_t beta_j_1_max__ = p;
         for (size_t j_2__ = 0; j_2__ < beta_j_2_max__; ++j_2__) {
@@ -651,9 +669,12 @@ public:
                                    bool include_tparams__ = true,
                                    bool include_gqs__ = true) const {
         std::stringstream param_name_stream__;
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "intercept";
-        param_names__.push_back(param_name_stream__.str());
+        size_t intercept_j_1_max__ = n_y;
+        for (size_t j_1__ = 0; j_1__ < intercept_j_1_max__; ++j_1__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "intercept" << '.' << j_1__ + 1;
+            param_names__.push_back(param_name_stream__.str());
+        }
         size_t beta_j_2_max__ = n_y;
         size_t beta_j_1_max__ = p;
         for (size_t j_2__ = 0; j_2__ < beta_j_2_max__; ++j_2__) {
