@@ -25,7 +25,7 @@ to_unique_ids = function(x) {
 
 
 # check types
-check_vec = function(x) (is.character(x) | is.factor(x)) && !any(is.na(x))
+check_discrete = function(x) (is.character(x) | is.factor(x)) && !any(is.na(x))
 
 # Dev-facing helper for viewing
 to_cond = function(x) {

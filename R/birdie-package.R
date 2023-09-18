@@ -15,7 +15,7 @@
 #' @importFrom stats na.omit na.fail .lm.fit fitted simulate median cov
 #' @importFrom stats terms get_all_vars model.frame model.matrix setNames
 #' @importFrom stats formula update.formula as.formula nobs vcov residuals
-#' @importFrom utils tail unstack relist head
+#' @importFrom utils tail unstack relist head packageVersion
 #' @importFrom graphics barplot
 #' @importFrom grDevices colorRampPalette
 #' @useDynLib birdie, .registration=TRUE

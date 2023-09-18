@@ -1,6 +1,6 @@
 
-# bootstrap `em_dir()`
-boot_dir <- function(mle, R=10, Y, X, p_rxs, prior, n_x, ctrl) {
+# bootstrap `em_cat_dir()`
+boot_cat_dir <- function(mle, R=10, Y, X, p_rxs, prior, n_x, ctrl) {
     N = length(Y)
     n_r = ncol(prior$alpha)
     n_y = nrow(prior$alpha)

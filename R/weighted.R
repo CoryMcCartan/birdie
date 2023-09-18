@@ -64,7 +64,7 @@ est_weighted <- function(r_probs, formula, data=NULL, prefix="pr_", se_boot=0) {
     }
 
     # check types
-    if (!check_vec(Y_vec))
+    if (!check_discrete(Y_vec))
         cli_abort("Response variable must be a character or factor with no missing values.")
     if (!is.null(data) && nrow(data) != nrow(r_probs))
         cli_abort("{.arg data} and {.arg r_probs} must have the same number of rows.")

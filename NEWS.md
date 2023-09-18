@@ -1,3 +1,9 @@
+# birdie 0.4.0
+
+* Support for continuous outcomes
+* New method for specifying outcome model type
+* New default empirical Bayes prior for Categorical-Dirichlet model
+
 # birdie 0.3.0
 
 * New interfaces and implementations for BISG
