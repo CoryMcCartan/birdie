@@ -241,8 +241,8 @@ comma <- function(x) format(x, big.mark=',')
 print.birdie <- function(x, ...) {
     cli::cli_text(switch(
         x$algo$model,
-        dir = "Multinomial-Dirichlet {.pkg BIRDiE} model",
-        mmm = "Multinomial mixed-effects {.pkg BIRDiE} model",
+        cat_dir = "Categorical-Dirichlet {.pkg BIRDiE} model",
+        cat_mixed = "Categorical mixed-effects {.pkg BIRDiE} model",
         "{.pkg BIRDiE} model"
     ))
     cli::cat_line("Formula: ", deparse(x$call$formula))
@@ -269,8 +269,8 @@ entropy <- function(x) {
 summary.birdie <- function(object, ...) {
     cli::cli_text(switch(
         object$algo$model,
-        dir = "Multinomial-Dirichlet {.pkg BIRDiE} model",
-        mmm = "Multinomial mixed-effects {.pkg BIRDiE} model",
+        cat_dir = "Categorical-Dirichlet {.pkg BIRDiE} model",
+        cat_mixed = "Categorical mixed-effects {.pkg BIRDiE} model",
         "{.pkg BIRDiE} model"
     ))
     cli::cat_line("Formula: ", deparse(object$call$formula))

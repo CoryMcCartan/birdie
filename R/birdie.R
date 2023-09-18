@@ -2,15 +2,15 @@
 #'
 #' Fits one of two possible Bayesian Instrumental Regression for Disparity
 #' Estimation (BIRDiE) models to BISG probabilities and covariates. The simplest
-#' Multinomial-Dirichlet model ([cat_dir()]) is appropriate when there are no
+#' Categorical-Dirichlet model ([cat_dir()]) is appropriate when there are no
 #' covariates or when all covariates are discrete and fully interacted with
-#' another. The more general Multinomial mixed-effects model ([cat_mixed()]) is
+#' another. The more general Categorical mixed-effects model ([cat_mixed()]) is
 #' a supports any number of fixed effects and up to one random intercept.
 #'
 #' `birdie()` uses an expectation-maximization (EM) routine to find the maximum
 #' *a posteriori* (MAP) estimate for the specified model. Asymptotic
 #' variance-covariance matrices for the MAP estimate are available for the
-#' Multinomial-Dirichlet model via bootstrapping (`se_boot`).
+#' Categorical-Dirichlet model via bootstrapping (`se_boot`).
 #'
 #' The Categorical-Dirichlet model is specified as follows: \deqn{
 #'     Y_i \mid R_i, X_i, \Theta \sim \text{Categorical}(\theta_{R_iX_i}) \\
@@ -52,14 +52,8 @@
 #'   is supported.
 #'
 #' See the Details section below for more information on the various models.
+#' @param model **Deprecated**.
 #'
-#' @param model A string specifying the type of model to fit: either `"dir"` for
-#'   the Multinomial-Dirichlet model or `"mmm"` for the Multinomial
-#'   mixed-effects model. The default, `"auto"`, will select the most
-#'   computationally efficient model available: `"dir"` if `formula` has no
-#'   covariates or a fully-interacted structure, and `"mmm"` otherwise. More
-#'   details on the model specifications can be found in the "Details" section
-#'   below.
 #' @param prior A list with entries specifying the model prior.
 #'
 #'   - For the `cat_dir` model, the only entry is `alpha`, which should be a matrix
@@ -69,11 +63,12 @@
 #'   1 plus the weighted-mean estimate of the outcome-race table. A fully
 #'   noninformative prior with all entries set to \eqn{1+\epsilon} can be
 #'   obtained by setting `prior=NA`.
-#'   - For the `cat_mixed` model, the `prior` list should contain two scalar entries:
-#'   `scale_beta`, the standard deviation on the Normal prior for the fixed
-#'   effects, and `scale_sigma`, the prior mean of the standard deviation of the
-#'   random intercepts. These can be a single scalar or a vector with an entry
-#'   for each racial group.
+#'   - For the `cat_mixed` model, the `prior` list should contain three scalar entries:
+#'   `scale_int`, the standard deviation on the Normal prior for the intercepts
+#'   (which control the global estimates of `Y|R`), `scale_beta`, the standard
+#'   deviation on the Normal prior for the fixed effects, and `scale_sigma`, the
+#'   prior mean of the standard deviation of the random intercepts. These can be
+#'   a single scalar or a vector with an entry for each racial group.
 #'
 #'   The prior is stored after model fitting in the `$prior` element of the
 #'   fitted model object.
@@ -130,8 +125,9 @@ birdie <- function(r_probs, formula, data=NULL, family=cat_dir(), model=NULL,
     full_int = check_full_int(tt, covars)
     # deprecated model arg
     if (!missing(model)) {
-        cli_abort(c("{.arg model} was deprecated in {.pkg birdie} 0.4.0.",
-                    ">"="Please specify the desired model with the {.arg family} argument instead."))
+        cli_warn(c("{.arg model} was deprecated in {.pkg birdie} 0.4.0.",
+                   ">"="Please specify the desired model with the {.arg family} argument instead."))
+        family = if (model == "mmm") cat_mixed() else cat_dir()
     }
 
     # check formula and predictors against model and r_probs
@@ -157,9 +153,9 @@ birdie <- function(r_probs, formula, data=NULL, family=cat_dir(), model=NULL,
     # run inference
     t1 <- Sys.time()
     if (model == "cat_dir") {
-        res = em_cat_dir(Y_vec, p_rxs, tt, data, prior, boot=se_boot, ctrl=ctrl)
+        res = em_cat_dir(Y_vec, p_rxs, tt, data, prior, races, boot=se_boot, ctrl=ctrl)
     } else if (model == "cat_mixed") {
-        res = em_cat_mixed(Y_vec, p_rxs, tt, data, prior, ctrl=ctrl)
+        res = em_cat_mixed(Y_vec, p_rxs, tt, data, prior, races, ctrl=ctrl)
         # add names
         n_y = nrow(res$map)
         ex_beta = res$betas[[1]]
@@ -228,7 +224,7 @@ birdie <- function(r_probs, formula, data=NULL, family=cat_dir(), model=NULL,
 }
 
 # Fixed-effects model (includes complete pooling and no pooling)
-em_cat_dir <- function(Y, p_rxs, formula, data, prior, boot, ctrl) {
+em_cat_dir <- function(Y, p_rxs, formula, data, prior, races, boot, ctrl) {
     d_model = model.frame(formula, data=data, na.action=na.fail)[-1]
 
     if (!check_discrete(Y))
@@ -284,8 +280,8 @@ em_cat_dir <- function(Y, p_rxs, formula, data, prior, boot, ctrl) {
 }
 
 
-# Multinomial mixed-effects model
-em_cat_mixed <- function(Y, p_rxs, formula, data, prior, ctrl) {
+# Categorical mixed-effects model
+em_cat_mixed <- function(Y, p_rxs, formula, data, prior, races, ctrl) {
     if (!check_discrete(Y))
         cli_abort("Response variable must be a character or factor with no missing values.")
     Y = as.factor(Y)
@@ -342,8 +338,10 @@ em_cat_mixed <- function(Y, p_rxs, formula, data, prior, ctrl) {
         X = X,
         grp = Z,
 
+        has_int = attr(formula, "intercept"),
         prior_sigma = prior$scale_sigma[1],
-        prior_beta = prior$scale_beta[1]
+        prior_beta = prior$scale_beta[1],
+        prior_int = prior$scale_int[1]
     )
 
     sm = get_stanmodel(rstantools_model_multinom, standata)
@@ -376,6 +374,7 @@ em_cat_mixed <- function(Y, p_rxs, formula, data, prior, ctrl) {
             standata$Y = cts[, , r]
             standata$prior_sigma = prior$scale_sigma[r]
             standata$prior_beta = prior$scale_beta[r]
+            standata$prior_int = prior$scale_int[r]
 
             sm_ir = get_stanmodel(rstantools_model_multinom, standata)
             fit = optim_model(sm_ir, init=par_l[[r]], skeleton=skeleton,

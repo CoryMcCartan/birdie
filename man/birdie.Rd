@@ -38,25 +38,23 @@ is supported.
 
 See the Details section below for more information on the various models.}
 
-\item{model}{A string specifying the type of model to fit: either \code{"dir"} for
-the Multinomial-Dirichlet model or \code{"mmm"} for the Multinomial
-mixed-effects model. The default, \code{"auto"}, will select the most
-computationally efficient model available: \code{"dir"} if \code{formula} has no
-covariates or a fully-interacted structure, and \code{"mmm"} otherwise. More
-details on the model specifications can be found in the "Details" section
-below.}
+\item{model}{\strong{Deprecated}.}
 
 \item{prior}{A list with entries specifying the model prior.
 \itemize{
 \item For the \code{cat_dir} model, the only entry is \code{alpha}, which should be a matrix
 of Dirichlet hyperparameters. The matrix should have one row for every
 level of the outcome variable and one column for every racial group. The
-default prior is a matrix with all entries set to \eqn{1+\epsilon}.
-\item For the \code{cat_mixed} model, the \code{prior} list should contain two scalar entries:
-\code{scale_beta}, the standard deviation on the Normal prior for the fixed
-effects, and \code{scale_sigma}, the prior mean of the standard deviation of the
-random intercepts. These can be a single scalar or a vector with an entry
-for each racial group.
+default prior (used when \code{prior=NULL}) is an empirical Bayes prior equal to
+1 plus the weighted-mean estimate of the outcome-race table. A fully
+noninformative prior with all entries set to \eqn{1+\epsilon} can be
+obtained by setting \code{prior=NA}.
+\item For the \code{cat_mixed} model, the \code{prior} list should contain three scalar entries:
+\code{scale_int}, the standard deviation on the Normal prior for the intercepts
+(which control the global estimates of \code{Y|R}), \code{scale_beta}, the standard
+deviation on the Normal prior for the fixed effects, and \code{scale_sigma}, the
+prior mean of the standard deviation of the random intercepts. These can be
+a single scalar or a vector with an entry for each racial group.
 }
 
 The prior is stored after model fitting in the \verb{$prior} element of the
@@ -86,16 +84,16 @@ outcome) may be accessed with \code{\link[=fitted.birdie]{fitted.birdie()}}.
 \description{
 Fits one of two possible Bayesian Instrumental Regression for Disparity
 Estimation (BIRDiE) models to BISG probabilities and covariates. The simplest
-Multinomial-Dirichlet model (\code{\link[=cat_dir]{cat_dir()}}) is appropriate when there are no
+Categorical-Dirichlet model (\code{\link[=cat_dir]{cat_dir()}}) is appropriate when there are no
 covariates or when all covariates are discrete and fully interacted with
-another. The more general Multinomial mixed-effects model (\code{\link[=cat_mixed]{cat_mixed()}}) is
+another. The more general Categorical mixed-effects model (\code{\link[=cat_mixed]{cat_mixed()}}) is
 a supports any number of fixed effects and up to one random intercept.
 }
 \details{
 \code{birdie()} uses an expectation-maximization (EM) routine to find the maximum
 \emph{a posteriori} (MAP) estimate for the specified model. Asymptotic
 variance-covariance matrices for the MAP estimate are available for the
-Multinomial-Dirichlet model via bootstrapping (\code{se_boot}).
+Categorical-Dirichlet model via bootstrapping (\code{se_boot}).
 
 The Categorical-Dirichlet model is specified as follows: \deqn{
     Y_i \mid R_i, X_i, \Theta \sim \text{Categorical}(\theta_{R_iX_i}) \\

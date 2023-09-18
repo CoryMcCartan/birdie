@@ -141,16 +141,13 @@ check_make_prior_cat_dir <- function(prior, Y, p_rxs, races) {
     n_y = nlevels(Y)
     if (is.null(prior)) {
         cli_inform("Using weakly informative empirical Bayes prior for Pr(X | R)",
-                   .frequency="once", .frequency_id="birdie_prior_dir",
+                   .frequency="regularly", .frequency_id="birdie_prior_dir",
                    call=parent.frame())
         ones_mat = matrix(1, nrow=n_y, ncol=n_r)
         est0 = dirichlet_map(Y, rep_along(Y, 1), p_rxs, ones_mat, 1) |>
             matrix(n_y, n_r, byrow=TRUE)
         prior = list(alpha = ones_mat + est0)
-    } else if (is.na(prior)) {
-        cli_inform("Using c(1+\u03B5, 1+\u03B5, ..., 1+\u03B5) prior for Pr(X | R)",
-                   .frequency="once", .frequency_id="birdie_prior_dir",
-                   call=parent.frame())
+    } else if (length(prior) == 1 && is.na(prior)) {
         prior = list(
             alpha = matrix(1 + 100*.Machine$double.eps, nrow=n_y, ncol=n_r)
         )
@@ -196,7 +193,7 @@ check_make_prior_cat_mixed <- function(prior, Y, races) {
         prior = list(
             scale_int = rep(2, n_r),
             scale_beta = rep(0.2, n_r),
-            scale_sigma = rep(0.1, n_r),
+            scale_sigma = rep(0.1, n_r)
         )
 
         cli_inform(c("Using default prior for Pr(X | R):",
@@ -206,7 +203,7 @@ check_make_prior_cat_mixed <- function(prior, Y, races) {
                               {format(prior$scale_beta[1], nsmall=1)}",
                      ">"="Prior mean of random effects standard deviation:
                               {format(prior$scale_sigma[1], nsmall=2)}"),
-                   .frequency="once", .frequency_id="birdie_prior_mmm",
+                   .frequency="regularly", .frequency_id="birdie_prior_mmm",
                    call=parent.frame())
     }
 
@@ -259,8 +256,7 @@ check_covars <- function(r_probs, covars, model) {
             length(unused) > 0) {
             cli_warn(c("Some variables used to create BISG probabilities are
                        not used in BIRDiE model.",
-                       "Missing: {.code {unused}}.",
-                       "x"="Statistically valid inference is not guaranteed."),
+                       "i"="Missing: {.code {unused}}."),
                      .frequency = "regularly", .frequency_id="birdie_covars_all",
                      call=parent.frame())
         }
@@ -271,7 +267,9 @@ check_covars <- function(r_probs, covars, model) {
 #' BIRDiE Complete-Data Model Families
 #'
 #' BIRDiE supports a number of complete-data outcome models, including
-#'
+#' categorical regression models. Models specific to BIRDiE are listed here.
+#' See the Details section of [birdie()] for more information about each
+#' model.
 #'
 #' @param link The link function. Only one option available for categorical
 #'   regression models.
@@ -306,14 +304,14 @@ check_model <- function(family, tt, covars, full_int, se_boot) {
             cli_abort(c("Fixed effects (no-pooling) model is specified without full
                         interaction structure.",
                         "i"="Models without full interaction structure must be fit
-                             using {.arg model = \"mmm\"}.",
+                             using {.arg family = cat_mixed()}.",
                         ">"="For full interaction structure, use
                               `{covars[1]} ~ {paste0(x_vars, collapse=' * ')}`."),
                       call=parent.frame())
         }
         if (count_ranef(tt) > 0) {
             cli_abort("Models with random effects must be fit
-                             using {.arg model = \"mmm\"}.",
+                             using {.arg family = cat_mixed()}.",
                       call=parent.frame())
         }
         "cat_dir" # return model type
@@ -336,11 +334,8 @@ check_model <- function(family, tt, covars, full_int, se_boot) {
         }
 
         if (se_boot > 0) {
-            cli_abort(c("Bootstrapping with {.arg se_boot > 0} is only
-                        computationally feasible for {.arg model = \"dir\"}.",
-                        ">"="If you are using {.arg model = \"auto\"}, you need
-                        to remove any random effects terms and specify a completely
-                        pooled or fully interacted model to use {.arg model = \"dir\"}."),
+            cli_abort("Bootstrapping with {.arg se_boot > 0} is only
+                        computationally feasible for {.arg family = cat_dir()}.",
                       call=parent.frame())
         }
         "cat_mixed" # return model type

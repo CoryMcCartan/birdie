@@ -46,6 +46,6 @@ model {
     to_vector(beta) ~ normal(0, prior_beta);
     to_vector(u) ~ std_normal();
 
-    sigma_grp ~ gamma(2.0, 2.0/prior_sigma);
+    sigma_grp ~ gamma(2.0, 2.0 ./ prior_sigma);
     L ~ lkj_corr_cholesky(2.0);
 }
