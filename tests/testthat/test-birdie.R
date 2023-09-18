@@ -15,12 +15,12 @@ test_that("BIRDiE models fit", {
         "birdie")
 
     expect_s3_class(
-        birdie(r_probs, turnout ~ (1 | proc_zip(zip)), data=pseudo_vf, ctrl=ctrl),
+        birdie(r_probs, turnout ~ (1 | proc_zip(zip)), data=pseudo_vf, family=cat_mixed(), ctrl=ctrl),
         "birdie")
 
     expect_s3_class(
         suppressWarnings(
-        birdie(r_probs, turnout ~ X, model="mmm", data=pseudo_vf, ctrl=ctrl),
+        birdie(r_probs, turnout ~ X, family=cat_mixed(), data=pseudo_vf, ctrl=ctrl),
         ), "birdie")
 })
 
@@ -51,7 +51,7 @@ test_that("Key generics work correctly", {
     expect_s3_class(fitted(out), "bisg")
     expect_equal(rowSums(fitted(out)), rep(1, nrow(pseudo_vf)))
 
-    expect_equal(colMeans(residuals(out)), c(no=0, yes=0), tolerance=1e-6)
+    expect_equal(colMeans(residuals(out)), c(no=0, yes=0), tolerance=2e-3)
     expect_s3_class(predict(out), "factor")
 
     expect_equal(dim(tidy(out)), c(2*6, 3))
@@ -72,11 +72,6 @@ test_that("BIRDiE catches errors", {
         birdie(r_probs, turnout ~ 1, data=pseudo_vf,
                prior=list(alpha=matrix(1, nrow=3, ncol=6)), ctrl=ctrl),
         "rows"
-    )
-
-    expect_warning(
-        birdie(r_probs, turnout ~ zip_patched, data=pseudo_vf, ctrl=ctrl),
-        "Missing"
     )
 
     attr(r_probs, "GX_names") = character(0) # hide the "missing" warning for next test

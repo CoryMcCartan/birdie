@@ -19,6 +19,9 @@ A list of class \code{family} containing the specification.
 }
 \description{
 BIRDiE supports a number of complete-data outcome models, including
+categorical regression models. Models specific to BIRDiE are listed here.
+See the Details section of \code{\link[=birdie]{birdie()}} for more information about each
+model.
 }
 \examples{
 cat_dir()

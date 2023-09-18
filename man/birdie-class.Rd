@@ -12,6 +12,7 @@
 \alias{glance.birdie}
 \alias{augment.birdie}
 \alias{formula.birdie}
+\alias{family.birdie}
 \alias{nobs.birdie}
 \alias{vcov.birdie}
 \alias{print.birdie}
@@ -37,6 +38,8 @@
 \method{augment}{birdie}(x, data, ...)
 
 \method{formula}{birdie}(x, ...)
+
+\method{nobs}{birdie}(object, ...)
 
 \method{nobs}{birdie}(object, ...)
 
@@ -116,6 +119,8 @@ for a BIRDiE model.
 \item \code{augment(birdie)}: Augment data with individual race predictions from a BIRDiE model.
 
 \item \code{formula(birdie)}: Extract the formula used to specify a BIRDiE model.
+
+\item \code{nobs(birdie)}: Return the BIRDiE complete-data model family.
 
 \item \code{nobs(birdie)}: Return the number of observations used to fit a BIRDiE model.
 

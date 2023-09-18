@@ -11,6 +11,7 @@ get_stanmodel <- function(module, data, seed=5118L) {
 get_skeleton <- function(mod) {
     par_nm = mod$param_names()
     p_dims = mod$param_dims()[par_nm != "lp__"]
+    p_dims[lengths(p_dims) == 0] = 1
     lapply(p_dims, function(d) array(0, dim=d))
 }
 
