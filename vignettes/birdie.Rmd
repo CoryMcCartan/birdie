@@ -110,6 +110,7 @@ For example, among White voters in a particular ZIP code, this assumption would 
 
 We're now ready to estimate turnout by race.
 For this we'll use the `birdie()` function, and provide it with a formula describing our BIRDiE model, including our variable of interest `turnout` and our geography variable `zip`.
+We provide `family=cat_mixed()` to indicate that we want to fit a Categorical mixed-effects regression model for turnout.
 Here, we wrap `zip` in the `proc_zip()` function, which, among other things, recodes missing ZIP codes as "Other" so that the model doesn't encounter any missing data.
 The first argument to `birdie()` is `r_probs`, the racial probabilities.
 `birdie` knows how to handle its columns of because they came from this package.
@@ -117,7 +118,7 @@ If you use a different package, the columns may be named differently.
 The `prefix` parameter to `birdie()` lets you specify the naming convention for your probabilities.
 
 ```{r messages=FALSE}
-fit = birdie(r_probs, turnout ~ (1 | proc_zip(zip)), data=pseudo_vf)
+fit = birdie(r_probs, turnout ~ (1 | proc_zip(zip)), data=pseudo_vf, family=cat_mixed())
 print(fit)
 ```
 

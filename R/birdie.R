@@ -11,7 +11,7 @@
 #' `birdie()` uses an expectation-maximization (EM) routine to find the maximum
 #' *a posteriori* (MAP) estimate for the specified model. Asymptotic
 #' variance-covariance matrices for the MAP estimate are available for the
-#' Categorical-Dirichlet model via bootstrapping (`se_boot`).
+#' Categorical-Dirichlet and Normal linear models via bootstrapping (`se_boot`).
 #'
 #' The Categorical-Dirichlet model is specified as follows: \deqn{
 #'     Y_i \mid R_i, X_i, \Theta \sim \text{Categorical}(\theta_{R_iX_i}) \\
@@ -36,8 +36,9 @@
 #'
 #' The Normal linear model is specified as follows: \deqn{
 #'     Y_i \mid R_i, \vec X_i, \Theta \sim \mathcal{N}(\vec X_i^\top\vec\theta, \sigma^2) \\
-#'     \pi(\sigma^2) \propto \sigma^{-2} \\
-#'     \beta \sim \mathcal{N}(0, \Sigma), \\
+#'     \sigma^2 \sim \text{Inv-Gamma}(n_\sigma/2, l_\sigma^2 n_\sigma/2) \\
+#'     \beta_{\text{intercept}} \sim \mathcal{N}(0, s^2_\text{int}) \\
+#'     \beta_k \sim \mathcal{N}(0, s^2_\beta), \\
 #' } where \eqn{\vec\theta} is a vector of linear model coefficients.
 #' Estimates for \eqn{\theta} and \eqn{\sigma} are stored in the
 #' `$beta` and `$sigma` elements of the fitted model object.
@@ -95,10 +96,10 @@
 #'   The default will work with the output of [bisg()].
 #' @param se_boot The number of bootstrap replicates to use to compute
 #'   approximate standard errors for the main model estimates. Only available
-#'   when `model="dir"`. When there are fewer than 1,000 individuals or 100 or
-#'   fewer replicates, a Bayesian bootstrap is used instead (i.e., weights are
-#'   drawn from a \eqn{\text{Dirichlet}(1, 1, ..., 1)} distribution, which produces more
-#'   reliable estimates.
+#'   when `familiy=cat_dir()` or `gaussian()`. When there are fewer than 1,000
+#'   individuals or 100 or fewer replicates, a Bayesian bootstrap is used
+#'   instead (i.e., weights are drawn from a \eqn{\text{Dirichlet}(1, 1, ...,
+#'   1)} distribution, which produces more reliable estimates.
 #' @param ctrl A list containing control parameters for the EM algorithm and
 #'   optimization routines. A list in the proper format can be made using
 #'   [birdie.ctrl()].
@@ -126,7 +127,7 @@
 #' birdie(r_probs, turnout ~ zip, data=pseudo_vf)
 #'
 #' fit = birdie(r_probs, turnout ~ (1 | zip), data=pseudo_vf,
-#'        ctrl=birdie.ctrl(abstol=1e-3))
+#'              family=cat_mixed(), ctrl=birdie.ctrl(abstol=1e-3))
 #'
 #' summary(fit)
 #' coef(fit)
