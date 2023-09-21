@@ -1,6 +1,7 @@
 # birdie 0.4.0
 
 * Support for continuous outcomes
+* Support for observation/likelihood weights
 * New method for specifying outcome model type
 * New default empirical Bayes prior for Categorical-Dirichlet model
 

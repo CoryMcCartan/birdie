@@ -159,3 +159,22 @@ Eigen::VectorXd resid_mult(const Eigen::VectorXd m_coef, const Eigen::VectorXi i
 
     return out;
 }
+
+// [[Rcpp::export(rng=false)]]
+Eigen::MatrixXd safeexpoffset(const Eigen::MatrixXd Y) {
+    int N = Y.rows();
+    int nc = Y.cols();
+    Eigen::MatrixXd out(N, nc);
+
+    for (int i = 0; i < N; i++) {
+        double max = Y(i, 0);
+        for (int j = 1; j < nc; j++) {
+            if (Y(i, j) > max) max = Y(i, j);
+        }
+        for (int j = 0; j < nc; j++) {
+            out(i, j) = Y(i, j) - max;
+        }
+    }
+
+    return out;
+}

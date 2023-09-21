@@ -25,6 +25,10 @@ resid_mult <- function(m_coef, idxs, r_probs, k, n_k) {
     .Call(`_birdie_resid_mult`, m_coef, idxs, r_probs, k, n_k)
 }
 
+safeexpoffset <- function(Y) {
+    .Call(`_birdie_safeexpoffset`, Y)
+}
+
 gibbs_me <- function(iter, warmup, S, GZ, M_sr, N_gzr, alpha_gzr, beta_sr, cores = 0L, verbosity = 3L) {
     .Call(`_birdie_gibbs_me`, iter, warmup, S, GZ, M_sr, N_gzr, alpha_gzr, beta_sr, cores, verbosity)
 }

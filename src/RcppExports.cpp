@@ -102,6 +102,16 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// safeexpoffset
+Eigen::MatrixXd safeexpoffset(const Eigen::MatrixXd Y);
+RcppExport SEXP _birdie_safeexpoffset(SEXP YSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd >::type Y(YSEXP);
+    rcpp_result_gen = Rcpp::wrap(safeexpoffset(Y));
+    return rcpp_result_gen;
+END_RCPP
+}
 // gibbs_me
 Eigen::MatrixXd gibbs_me(int iter, int warmup, const Eigen::VectorXi& S, const Eigen::VectorXi& GZ, const Eigen::MatrixXd& M_sr, const Eigen::MatrixXd& N_gzr, const Eigen::MatrixXd& alpha_gzr, const Eigen::MatrixXd& beta_sr, int cores, int verbosity);
 RcppExport SEXP _birdie_gibbs_me(SEXP iterSEXP, SEXP warmupSEXP, SEXP SSEXP, SEXP GZSEXP, SEXP M_srSEXP, SEXP N_gzrSEXP, SEXP alpha_gzrSEXP, SEXP beta_srSEXP, SEXP coresSEXP, SEXP verbositySEXP) {
@@ -155,6 +165,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_birdie_em_dirichlet", (DL_FUNC) &_birdie_em_dirichlet, 7},
     {"_birdie_em_dirichlet_wt", (DL_FUNC) &_birdie_em_dirichlet_wt, 7},
     {"_birdie_resid_mult", (DL_FUNC) &_birdie_resid_mult, 5},
+    {"_birdie_safeexpoffset", (DL_FUNC) &_birdie_safeexpoffset, 1},
     {"_birdie_gibbs_me", (DL_FUNC) &_birdie_gibbs_me, 10},
     {"_birdie_mat_rcatp", (DL_FUNC) &_birdie_mat_rcatp, 1},
     {"_birdie_rdirichlet", (DL_FUNC) &_birdie_rdirichlet, 2},

@@ -22,6 +22,11 @@ test_that("BIRDiE models fit", {
         suppressWarnings(
         birdie(r_probs, turnout ~ X, family=cat_mixed(), data=pseudo_vf, ctrl=ctrl),
         ), "birdie")
+
+    expect_s3_class(
+        suppressWarnings(
+            birdie(r_probs, turnout == "yes" ~ X, family=gaussian(), data=pseudo_vf, ctrl=ctrl),
+        ), "birdie")
 })
 
 test_that("BIRDiE produces correct and stable output", {

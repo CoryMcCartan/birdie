@@ -8,6 +8,7 @@ birdie(
   r_probs,
   formula,
   data = NULL,
+  weights = NULL,
   family = cat_dir(),
   model = NULL,
   prior = NULL,
@@ -27,6 +28,8 @@ supported on the right-hand side.}
 
 \item{data}{An optional data frame containing the variables named in \code{formula}.}
 
+\item{weights}{An optional numeric vector specifying likelihood weights.}
+
 \item{family}{A description of the complete-data model type to fit. Options
 are:
 \itemize{
@@ -34,6 +37,7 @@ are:
 interacted.
 \item \code{\link[=cat_mixed]{cat_mixed()}}: Categorical mixed-effects model. Up to one random effect
 is supported.
+\item \code{\link[=gaussian]{gaussian()}}: Linear model.
 }
 
 See the Details section below for more information on the various models.}
@@ -55,6 +59,13 @@ obtained by setting \code{prior=NA}.
 deviation on the Normal prior for the fixed effects, and \code{scale_sigma}, the
 prior mean of the standard deviation of the random intercepts. These can be
 a single scalar or a vector with an entry for each racial group.
+\item For the \code{gaussian} model, the \code{prior} list  should contain two entries:
+\code{scale_int}, controlling, the standard deviation on the Normal prior for
+the intercepts (which control the global estimates of \code{Y|R}), and
+\code{scale_beta}, controlling the standard deviation on the Normal prior for
+the fixed effects. These must be a single scalar. Each is expressed in
+terms of the estimated residual standard deviation (i.e., they are
+multiplied together to form the "true" prior).
 }
 
 The prior is stored after model fitting in the \verb{$prior} element of the
@@ -87,7 +98,8 @@ Estimation (BIRDiE) models to BISG probabilities and covariates. The simplest
 Categorical-Dirichlet model (\code{\link[=cat_dir]{cat_dir()}}) is appropriate when there are no
 covariates or when all covariates are discrete and fully interacted with
 another. The more general Categorical mixed-effects model (\code{\link[=cat_mixed]{cat_mixed()}}) is
-a supports any number of fixed effects and up to one random intercept.
+a supports any number of fixed effects and up to one random intercept. For
+continuous outcomes a Normal linear model is available (\code{\link[=gaussian]{gaussian()}}).
 }
 \details{
 \code{birdie()} uses an expectation-maximization (EM) routine to find the maximum
@@ -114,7 +126,15 @@ The Categorical mixed-effects model is specified as follows: \deqn{
 } where \eqn{\beta_{ry}} are the fixed effects, \eqn{u_{ry}} is the random
 intercept, and \eqn{g} is a softmax link function.
 Estimates for \eqn{\beta_{ry}} and \eqn{\sigma_{ry}} are stored in the
-\verb{$betas} and \verb{$sigmas} elements of the fitted model object.
+\verb{$beta} and \verb{$sigma} elements of the fitted model object.
+
+The Normal linear model is specified as follows: \deqn{
+    Y_i \mid R_i, \vec X_i, \Theta \sim \mathcal{N}(\vec X_i^\top\vec\theta, \sigma^2) \\
+    \pi(\sigma^2) \propto \sigma^{-2} \\
+    \beta \sim \mathcal{N}(0, \Sigma), \\
+} where \eqn{\vec\theta} is a vector of linear model coefficients.
+Estimates for \eqn{\theta} and \eqn{\sigma} are stored in the
+\verb{$beta} and \verb{$sigma} elements of the fitted model object.
 
 More details on the models and their properties may be found in the paper
 referenced below.

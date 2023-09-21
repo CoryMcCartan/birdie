@@ -6,6 +6,7 @@ data {
 
     matrix[N, p] X;
     matrix[N, n_y] Y;
+    row_vector[N] w;
     int<lower=1, upper=n_grp> grp[N];
 
     int<lower=0, upper=1> has_int;
@@ -41,7 +42,7 @@ transformed parameters {
 }
 
 model {
-    target += sum(Y .* lsft);
+    target += sum(w * (Y .* lsft));
 
     intercept ~ normal(0, prior_int);
     to_vector(beta) ~ normal(0, prior_beta);
