@@ -24,6 +24,7 @@ data = d |>
     mutate(across(white:other, ~ coalesce(., p_r[cur_column()]))) |>
     select(party, zip, county, race, gender, age, n_voted, lic, white:other)
 
+data$Yc = (data$party == "dem") + rnorm(nrow(data))
 Y =  data$party
 
 xw = est_weighted(r_probs, Y ~ 1, data)
@@ -32,9 +33,12 @@ x1 = birdie(r_probs, Y ~ zip, data)
 x2 = birdie(r_probs, Y ~ white + black + hisp + (1|zip), data,
             prior = list(scale_int=2, scale_sigma=0.05, scale_beta=0.2),
             family = cat_mixed(), ctrl=birdie.ctrl(abstol=5e-6))
-x2 = birdie(r_probs, Y ~ white, data,
-            prior = list(scale_int=2, scale_sigma=0.05, scale_beta=0.2),
-            family = cat_mixed(), ctrl=birdie.ctrl(abstol=5e-6))
+x3 = birdie(r_probs, Yc ~ black + white, data, family = gaussian(), ctrl=birdie.ctrl(abstol=5e-6))
+x3b = birdie(r_probs, Yc ~ black + white, data, family = gaussian(), ctrl=birdie.ctrl(abstol=5e-6))
+x2 = birdie(r_probs, party=='dem' ~ black + white, data, family = gaussian(),
+            ctrl=birdie.ctrl(abstol=5e-6),
+            prior=list(scale_beta=2.5, scale_int=5, n_sigma=20000, loc_sigma=0.5))
+
 
 {
     par(mfrow=c(3,2), mar=c(2, 2, 0.2, 0.2))

@@ -39,7 +39,7 @@
 
 \method{formula}{birdie}(x, ...)
 
-\method{nobs}{birdie}(object, ...)
+\method{family}{birdie}(object, ...)
 
 \method{nobs}{birdie}(object, ...)
 
@@ -96,8 +96,8 @@ directly. The generics listed here should be used instead.
 \item \code{fitted(birdie)}: Return an updated race probability table. \code{\link[=bisg]{bisg()}}
 estimates \code{Pr(R | G, X, S)}; this table estimates \code{Pr(R | Y, G, X, S)}.
 
-\item \code{residuals(birdie)}: Return the residuals for the outcome variable.
-Useful in sensitivity analyses and to get an idea of how well race,
+\item \code{residuals(birdie)}: Return the residuals for the outcome variable as a
+matrix. Useful in sensitivity analyses and to get an idea of how well race,
 location, names, etc. predict the outcome.
 
 \item \code{predict(birdie)}: Create point predictions of individual race. Returns
@@ -120,7 +120,7 @@ for a BIRDiE model.
 
 \item \code{formula(birdie)}: Extract the formula used to specify a BIRDiE model.
 
-\item \code{nobs(birdie)}: Return the BIRDiE complete-data model family.
+\item \code{family(birdie)}: Return the BIRDiE complete-data model family.
 
 \item \code{nobs(birdie)}: Return the number of observations used to fit a BIRDiE model.
 

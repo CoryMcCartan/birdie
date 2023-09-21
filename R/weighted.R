@@ -1,4 +1,4 @@
-#' Calculate Weighted Estimate of Outcomes By Race
+#' Calculate Weighted Estimate of (Discrete) Outcomes By Race
 #'
 #' Calculates the "standard" weighted estimator of conditional distributions of
 #' an outcome variable \eqn{Y} by race \eqn{R}, using BISG probabilities.  This

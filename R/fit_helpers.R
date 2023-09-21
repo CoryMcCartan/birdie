@@ -89,6 +89,7 @@ tbl_gx_names <- function(tbl_gx) {
     }
 }
 
+# helpers for cat_mixed()
 to_array_yrx <- function(ests, est_dim) {
     aperm(array(ests, est_dim), c(2L, 1L, 3L))
 }
@@ -140,7 +141,7 @@ check_make_prior_cat_dir <- function(prior, Y, p_rxs, races) {
     n_r = length(races)
     n_y = nlevels(Y)
     if (is.null(prior)) {
-        cli_inform("Using weakly informative empirical Bayes prior for Pr(X | R)",
+        cli_inform("Using weakly informative empirical Bayes prior for Pr(Y | R)",
                    .frequency="regularly", .frequency_id="birdie_prior_dir",
                    call=parent.frame())
         ones_mat = matrix(1, nrow=n_y, ncol=n_r)
@@ -170,7 +171,7 @@ check_make_prior_cat_dir <- function(prior, Y, p_rxs, races) {
     }
     if (nrow(prior$alpha) != n_y) {
         cli_abort("{.arg prior$alpha} must have the same number of rows
-                      as there are levels of X", call=parent.frame())
+                      as there are levels of Y", call=parent.frame())
     }
     if (ncol(prior$alpha) != n_r) {
         cli_abort("{.arg prior$alpha} must have the same number of columns
@@ -196,7 +197,7 @@ check_make_prior_cat_mixed <- function(prior, Y, races) {
             scale_sigma = rep(0.05, n_r)
         )
 
-        cli_inform(c("Using default prior for Pr(X | R):",
+        cli_inform(c("Using default prior for Pr(Y | R):",
                      ">"="Prior scale on intercepts:
                               {format(prior$scale_int[1], nsmall=1)}",
                      ">"="Prior scale on fixed effects coefficients:
@@ -241,7 +242,35 @@ check_make_prior_cat_mixed <- function(prior, Y, races) {
 
     prior
 }
+check_make_prior_lm <- function(prior, Y, races) {
+    n_r = length(races)
+    if (is.null(prior)) {
+        cli_inform("Using weakly informative empirical Bayes prior for Pr(Y | R)",
+                   .frequency="regularly", .frequency_id="birdie_prior_dir",
+                   call=parent.frame())
+        sd_Y = sd(Y)
+        prior = list(
+            scale_beta = 2.5,
+            scale_int = 5 * mean(Y) / sd_Y,
+            n_sigma = 5,
+            loc_sigma = sd_Y
+        )
+    }
 
+    if (!all(c("scale_int", "scale_beta", "n_sigma", "loc_sigma") %in% names(prior)) ||
+        !is.numeric(prior$scale_beta) || length(prior$scale_beta) != 1 ||
+        !is.numeric(prior$scale_int) || length(prior$scale_int) != 1 ||
+        !is.numeric(prior$n_sigma) || length(prior$n_sigma) != 1 ||
+        !is.numeric(prior$loc_sigma) || length(prior$loc_sigma) != 1) {
+        cli_abort(c("With {.arg family=gaussian()}, {.arg prior} must have four
+                    scalar or vector entries {.code scale_int}, {.code scale_beta},
+                    {.code n_sigma}, and {.code loc_sigma}.",
+                    "i"="See {.fn birdie::birdie} for details."),
+                  call=parent.frame())
+    }
+
+    prior
+}
 
 # Check predictors against theory
 check_covars <- function(r_probs, covars, model) {
@@ -332,7 +361,7 @@ check_model <- function(family, tt, covars, full_int, se_boot) {
                           call=parent.frame())
             }
         }
-        if (length(re) == 0 & length(attr(tt, "factors") == 0)) {
+        if (length(re) == 0 && length(attr(tt, "factors")) == 0) {
             cli_abort("{.fn cat_mixed} requires at least one covariate or random effect.",
                       call=parent.frame())
         }
@@ -343,6 +372,12 @@ check_model <- function(family, tt, covars, full_int, se_boot) {
                       call=parent.frame())
         }
         "cat_mixed" # return model type
+    } else if (family$family == "gaussian") {
+        if (family$link != "identity") {
+            cli_abort("Only the identity link is supported for the {.fn gaussian}
+                      family.", call=parent.frame())
+        }
+        "lm"
     } else {
         cli_abort("{.arg family} must be one of {.fn cat_dir} or
                   {.fn cat_mixed}.",

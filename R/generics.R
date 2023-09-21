@@ -43,8 +43,8 @@ fitted.birdie <- function(object, ...) {
     object$p_ryxs
 }
 
-#' @describeIn birdie-class Return the residuals for the outcome variable.
-#'   Useful in sensitivity analyses and to get an idea of how well race,
+#' @describeIn birdie-class Return the residuals for the outcome variable as a
+#'   matrix. Useful in sensitivity analyses and to get an idea of how well race,
 #'   location, names, etc. predict the outcome.
 #' @param x_only if `TRUE`, calculate fitted values using covariates only (i.e.,
 #'   without using surnames).
@@ -63,14 +63,24 @@ residuals.birdie <- function(object, x_only=FALSE, ...) {
         }
         as.matrix(tmp[attr(object$p_ryxs, "gx"), ])
     }
-    n_y = nlevels(object$y)
-    y = as.integer(object$y)
 
-    out = do.call(cbind, lapply(seq_len(n_y), function(i) {
-        (y == i) - resid_mult(m, object$vec_gx, r_probs, i, n_y)
-    }))
-    colnames(out) = levels(object$y)
-    rownames(out) = NULL
+    if (object$algo$model %in% c("cat_dir", "cat_mixed")) {
+        n_y = nlevels(object$y)
+        y = as.integer(object$y)
+
+        out = do.call(cbind, lapply(seq_len(n_y), function(i) {
+            (y == i) - resid_mult(m, object$vec_gx, r_probs, i, n_y)
+        }))
+        colnames(out) = levels(object$y)
+        rownames(out) = NULL
+    } else if (object$algo$model == "lm") {
+        resid = object$y - as.matrix(object$tbl_gx) %*% object$beta
+        out = matrix(rowSums(resid * r_probs), ncol=1)
+        colnames(out) = object$y_name
+    } else {
+        cli_abort("Model family {.fn {object$algo$family}} does not support the
+                  {.fn residuals} function.")
+    }
     out
 }
 
@@ -117,7 +127,7 @@ plot.birdie <- function(x, log=FALSE, ...) {
     m = coef.birdie(x)
 
     resp = x$y_name
-    ylab = str_c("Pr(", resp, " | Race)")
+    ylab = str_c(if (nrow(m) > 1) "Pr(" else "E(", resp, " | Race)")
     main = paste("Estimates of", resp, "by race")
     n_y = nrow(m)
 
@@ -211,10 +221,10 @@ formula.birdie <- function(x, ...) {
 }
 
 #' @describeIn birdie-class Return the BIRDiE complete-data model family.
-#' @method nobs birdie
+#' @method family birdie
 #' @export
 family.birdie <- function(object, ...) {
-    object$family
+    object$algo$family
 }
 
 #' @describeIn birdie-class Return the number of observations used to fit a BIRDiE model.
@@ -247,8 +257,7 @@ print.birdie <- function(x, ...) {
     ))
     cli::cat_line("Formula: ", deparse(x$call$formula))
     cli::cat_line("   Data: ", deparse(x$call$data))
-    cli::cli_text("Number of obs: {comma(x$N)};
-                  groups: {comma(dim(x$map_sub)[3])}")
+    cli::cli_text("Number of obs: {comma(x$N)}")
 
     cli::cli_text("Estimated distribution:")
     m = round(x$map, 3)
@@ -287,7 +296,9 @@ summary.birdie <- function(object, ...) {
     cat("\n")
 
     cli::cli_text("Number of observations: {comma(object$N)}")
-    cli::cli_text("Number of groups: {comma(dim(object$map_sub)[3])}")
+    if (length(dim(object$map_sub)) > 2) {
+        cli::cli_text("Number of groups: {comma(dim(object$map_sub)[3])}")
+    }
     cat("\n")
 
     p_r = colMeans(object$p_ryxs)

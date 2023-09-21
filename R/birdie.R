@@ -5,7 +5,8 @@
 #' Categorical-Dirichlet model ([cat_dir()]) is appropriate when there are no
 #' covariates or when all covariates are discrete and fully interacted with
 #' another. The more general Categorical mixed-effects model ([cat_mixed()]) is
-#' a supports any number of fixed effects and up to one random intercept.
+#' a supports any number of fixed effects and up to one random intercept. For
+#' continuous outcomes a Normal linear model is available ([gaussian()]).
 #'
 #' `birdie()` uses an expectation-maximization (EM) routine to find the maximum
 #' *a posteriori* (MAP) estimate for the specified model. Asymptotic
@@ -31,7 +32,15 @@
 #' } where \eqn{\beta_{ry}} are the fixed effects, \eqn{u_{ry}} is the random
 #' intercept, and \eqn{g} is a softmax link function.
 #' Estimates for \eqn{\beta_{ry}} and \eqn{\sigma_{ry}} are stored in the
-#' `$betas` and `$sigmas` elements of the fitted model object.
+#' `$beta` and `$sigma` elements of the fitted model object.
+#'
+#' The Normal linear model is specified as follows: \deqn{
+#'     Y_i \mid R_i, \vec X_i, \Theta \sim \mathcal{N}(\vec X_i^\top\vec\theta, \sigma^2) \\
+#'     \pi(\sigma^2) \propto \sigma^{-2} \\
+#'     \beta \sim \mathcal{N}(0, \Sigma), \\
+#' } where \eqn{\vec\theta} is a vector of linear model coefficients.
+#' Estimates for \eqn{\theta} and \eqn{\sigma} are stored in the
+#' `$beta` and `$sigma` elements of the fitted model object.
 #'
 #' More details on the models and their properties may be found in the paper
 #' referenced below.
@@ -43,6 +52,7 @@
 #'   random intercept term, denoted with a vertical bar (`"(1 | <term>)"`), is
 #'   supported on the right-hand side.
 #' @param data An optional data frame containing the variables named in `formula`.
+#' @param weights An optional numeric vector specifying likelihood weights.
 #' @param family A description of the complete-data model type to fit. Options
 #'   are:
 #'
@@ -50,6 +60,7 @@
 #'   interacted.
 #'   - [cat_mixed()]: Categorical mixed-effects model. Up to one random effect
 #'   is supported.
+#'   - [gaussian()]: Linear model.
 #'
 #' See the Details section below for more information on the various models.
 #' @param model **Deprecated**.
@@ -69,6 +80,13 @@
 #'   deviation on the Normal prior for the fixed effects, and `scale_sigma`, the
 #'   prior mean of the standard deviation of the random intercepts. These can be
 #'   a single scalar or a vector with an entry for each racial group.
+#'   - For the `gaussian` model, the `prior` list  should contain two entries:
+#'   `scale_int`, controlling, the standard deviation on the Normal prior for
+#'   the intercepts (which control the global estimates of `Y|R`), and
+#'   `scale_beta`, controlling the standard deviation on the Normal prior for
+#'   the fixed effects. These must be a single scalar. Each is expressed in
+#'   terms of the estimated residual standard deviation (i.e., they are
+#'   multiplied together to form the "true" prior).
 #'
 #'   The prior is stored after model fitting in the `$prior` element of the
 #'   fitted model object.
@@ -116,7 +134,8 @@
 #'
 #' @concept estimators
 #' @export
-birdie <- function(r_probs, formula, data=NULL, family=cat_dir(), model=NULL,
+birdie <- function(r_probs, formula, data=NULL, weights=NULL,
+                   family=cat_dir(), model=NULL,
                    prior=NULL, prefix="pr_", se_boot=0, ctrl=birdie.ctrl()) {
     # figure out type of model and extract response vector
     Y_vec = eval_tidy(f_lhs(formula), data)
@@ -149,26 +168,42 @@ birdie <- function(r_probs, formula, data=NULL, family=cat_dir(), model=NULL,
         cli_abort("{.arg data} and {.arg r_probs} must have the same number of rows.")
 
     n_r = ncol(p_rxs)
+    if (is.null(weights)) {
+        weights = rep_along(Y_vec, 1.0)
+    } else if (!is.numeric(weights) && length(weights) != length(Y_vec)) {
+        cli_abort("{.arg weights} must be a numeric vector with one entry for each observation.")
+    }
 
     # run inference
     t1 <- Sys.time()
     if (model == "cat_dir") {
-        res = em_cat_dir(Y_vec, p_rxs, tt, data, prior, races, boot=se_boot, ctrl=ctrl)
+        res = em_cat_dir(Y_vec, p_rxs, tt, data, weights,
+                         prior, races, boot=se_boot, ctrl=ctrl)
+        # add names
+        dimnames(res$ests) = c(dimnames(res$map), list(tbl_gx_names(res$tbl_gx)))
     } else if (model == "cat_mixed") {
-        res = em_cat_mixed(Y_vec, p_rxs, tt, data, prior, races, ctrl=ctrl)
+        res = em_cat_mixed(Y_vec, p_rxs, tt, data, weights,
+                           prior, races, ctrl=ctrl)
         # add names
         n_y = nrow(res$map)
-        ex_beta = res$betas[[1]]
-        res$betas = array(do.call(cbind, res$betas), dim=c(nrow(ex_beta), n_y, n_r))
-        dimnames(res$betas) = list(rownames(ex_beta), levels(Y_vec), races)
-        res$betas = aperm(res$betas, c(2L, 3L, 1L))
+        ex_beta = res$beta[[1]]
+        res$beta = array(do.call(cbind, res$beta), dim=c(nrow(ex_beta), n_y, n_r))
+        dimnames(res$beta) = list(rownames(ex_beta), levels(Y_vec), races)
+        res$beta = aperm(res$beta, c(2L, 3L, 1L))
 
-        names(res$sigmas) = races
-        res$sigmas = do.call(cbind, res$sigmas)
+        names(res$sigma) = races
+        res$sigma = do.call(cbind, res$sigma)
 
         res$linpred = array(do.call(cbind, res$linpred), dim=c(nrow(res$tbl_gx), n_y, n_r))
         dimnames(res$linpred) = list(tbl_gx_names(res$tbl_gx), levels(Y_vec), races)
         res$linpred = aperm(res$linpred, c(2L, 3L, 1L))
+
+        dimnames(res$ests) = c(dimnames(res$map), list(tbl_gx_names(res$tbl_gx)))
+    } else if (model == "lm") {
+        res = em_lm(Y_vec, p_rxs, tt, data, weights,
+                    prior, races, boot=se_boot, ctrl=ctrl)
+        # add names
+        rownames(res$map) = covars[1]
     }
     t2 <- Sys.time()
 
@@ -178,12 +213,8 @@ birdie <- function(r_probs, formula, data=NULL, family=cat_dir(), model=NULL,
                  call=parent.frame())
     }
 
-    # add names
+    # format outputs, p_ryxs
     colnames(res$map) = races
-    rownames(res$map) = levels(Y_vec)
-    dimnames(res$ests) = c(dimnames(res$map), list(tbl_gx_names(res$tbl_gx)))
-
-    # format p_ryxs
     colnames(res$p_ryxs) = colnames(p_rxs)
     p_ryxs = as_tibble(res$p_ryxs)
     if (inherits(r_probs, "bisg")) {
@@ -200,9 +231,9 @@ birdie <- function(r_probs, formula, data=NULL, family=cat_dir(), model=NULL,
         vcov = if (se_boot > 0) res$vcov else NULL,
         se = if (se_boot > 0) vcov_to_se(res$vcov, res$map) else NULL,
         N = length(Y_vec),
-        betas = if (model == "cat_mixed") res$betas else NULL,
-        sigmas = if (model == "cat_mixed") res$sigmas else NULL,
-        linpred = if (model == "cat_mixed") res$linpred else NULL,
+        beta = if (model %in% c("cat_mixed", "lm")) res$beta else NULL,
+        sigma = if (model %in% c("cat_mixed", "lm")) res$sigma else NULL,
+        linpred = if (model %in% c("cat_mixed", "lm")) res$linpred else NULL,
         prior = res$prior,
         tbl_gx = as_tibble(res$tbl_gx),
         vec_gx = res$vec_gx,
@@ -224,12 +255,15 @@ birdie <- function(r_probs, formula, data=NULL, family=cat_dir(), model=NULL,
 }
 
 # Fixed-effects model (includes complete pooling and no pooling)
-em_cat_dir <- function(Y, p_rxs, formula, data, prior, races, boot, ctrl) {
+em_cat_dir <- function(Y, p_rxs, formula, data, weights, prior, races, boot, ctrl) {
     d_model = model.frame(formula, data=data, na.action=na.fail)[-1]
+    use_w = any(weights != 1.0)
 
     if (!check_discrete(Y))
-        cli_abort("Response variable must be a character or factor with no missing values.")
+        cli_abort("Response variable must be a character or factor with no missing values.",
+                  call=parent.frame())
     Y = as.factor(Y)
+    nms = levels(Y)
     n_y = nlevels(Y)
     n_r = ncol(p_rxs)
     prior = check_make_prior_cat_dir(prior, Y, p_rxs, races)
@@ -242,7 +276,7 @@ em_cat_dir <- function(Y, p_rxs, formula, data, prior, races, boot, ctrl) {
     est_dim = c(n_r, n_y, n_x)
 
     # init
-    ests = dirichlet_map(Y, X, p_rxs, prior$alpha, n_x)
+    ests = dirichlet_map(Y, X, p_rxs * weights, prior$alpha, n_x)
 
     # do EM (accelerated)
     pb_id = cli::cli_progress_bar("EM iterations", total=NA)
@@ -253,14 +287,19 @@ em_cat_dir <- function(Y, p_rxs, formula, data, prior, races, boot, ctrl) {
         curr[curr < 0] = 0 + 1e3*.Machine$double.eps
         curr[curr > 1] = 1 - 1e3*.Machine$double.eps
 
-        .Call(`_birdie_em_dirichlet`, curr, Y, X, p_rxs, prior$alpha, n_x, FALSE)
+        if (use_w) {
+            .Call(`_birdie_em_dirichlet_wt`, curr, Y, X, weights, p_rxs, prior$alpha, n_x)
+        } else {
+            .Call(`_birdie_em_dirichlet`, curr, Y, X, p_rxs, prior$alpha, n_x, FALSE)
+        }
     }, ctrl, n_x=n_x)
     cli::cli_progress_done(id=pb_id)
 
     p_ryxs = calc_bayes(Y, X, res$ests, p_rxs, n_x, n_y)
     ones_mat = matrix(1, nrow=n_y, ncol=n_r)
-    est = dirichlet_map(Y, rep_along(Y, 1), p_ryxs, ones_mat, 1) %>%
+    est = dirichlet_map(Y, rep_along(Y, 1), p_ryxs * weights, ones_mat, 1) %>%
         matrix(n_y, n_r, byrow=TRUE)
+    rownames(est) = nms
 
     out = list(map = est,
                ests = to_array_yrx(res$ests, est_dim),
@@ -272,7 +311,7 @@ em_cat_dir <- function(Y, p_rxs, formula, data, prior, races, boot, ctrl) {
                converge = res$converge)
 
     if (boot > 0) {
-        boot_ests = boot_cat_dir(res$ests, boot, Y, X, p_rxs, prior, n_x, ctrl)
+        boot_ests = boot_cat_dir(res$ests, boot, Y, X, weights, p_rxs, prior, n_x, ctrl)
         out$vcov = cov(t(boot_ests))
     }
 
@@ -281,14 +320,17 @@ em_cat_dir <- function(Y, p_rxs, formula, data, prior, races, boot, ctrl) {
 
 
 # Categorical mixed-effects model
-em_cat_mixed <- function(Y, p_rxs, formula, data, prior, races, ctrl) {
+em_cat_mixed <- function(Y, p_rxs, formula, data, weights, prior, races, ctrl) {
     if (!check_discrete(Y))
-        cli_abort("Response variable must be a character or factor with no missing values.")
+        cli_abort("Response variable must be a character or factor with no missing values.",
+                  call=parent.frame())
     Y = as.factor(Y)
+    nms = levels(Y)
     outcomes = levels(Y)
     n_y = length(outcomes)
     n_r = ncol(p_rxs)
     prior = check_make_prior_cat_mixed(prior, Y, races)
+    use_w = any(weights != 1.0)
 
     Y = as.integer(Y)
     ones_mat = matrix(1, nrow=n_y, ncol=n_r)
@@ -308,7 +350,7 @@ em_cat_mixed <- function(Y, p_rxs, formula, data, prior, races, ctrl) {
     X = model.matrix(fixef_form, data=get_all_vars(fixef_form, data=data))
     N = length(idx_sub)
     if (nrow(X) != length(Y)) {
-        cli_abort("Missing values found in data..", call=parent.frame())
+        cli_abort("Missing values found in data.", call=parent.frame())
     }
     X = X[idx_sub, , drop=FALSE]
 
@@ -328,7 +370,7 @@ em_cat_mixed <- function(Y, p_rxs, formula, data, prior, races, ctrl) {
 
 
     # init
-    ests = dirichlet_map(Y, idx_uniq, p_rxs, ones_mat * 1.0001, n_uniq)
+    ests = dirichlet_map(Y, idx_uniq, p_rxs * weights, ones_mat * 1.0001, n_uniq)
     standata = list(
         n_y = n_y,
         N = N,
@@ -337,6 +379,7 @@ em_cat_mixed <- function(Y, p_rxs, formula, data, prior, races, ctrl) {
 
         Y = matrix(0, nrow=nrow(X), ncol=n_y),
         X = X,
+        w = tapply(weights, idx_uniq, sum),
         grp = Z,
 
         has_int = attr(formula, "intercept"),
@@ -386,7 +429,6 @@ em_cat_mixed <- function(Y, p_rxs, formula, data, prior, races, ctrl) {
         }
         last_iter_converge <<- all_converged
 
-        # cat(max(abs(curr - last)), "\n")
         as.numeric(curr)
     }, ctrl, n_x=n_upar*n_r*(4^2)) # extra factor since upar scale is different
     cli::cli_progress_done(id=pb_id)
@@ -402,13 +444,14 @@ em_cat_mixed <- function(Y, p_rxs, formula, data, prior, races, ctrl) {
 
     # final global mean and R|YXS
     p_ryxs = calc_bayes(Y, idx_uniq, ests, p_rxs, n_uniq, n_y)
-    est = dirichlet_map(Y, ones, p_ryxs, ones_mat, 1) %>%
+    est = dirichlet_map(Y, ones, p_ryxs * weights, ones_mat, 1) %>%
         matrix(n_y, n_r, byrow=TRUE)
+    rownames(est) = nms
 
     out = list(map = est,
                ests = to_array_yrx(ests, est_dim),
                p_ryxs = p_ryxs,
-               betas = lapply(par_l, function(x) {
+               beta = lapply(par_l, function(x) {
                    out = x$beta
                    colnames(out) = outcomes
                    rownames(out) = colnames(X)
@@ -417,14 +460,126 @@ em_cat_mixed <- function(Y, p_rxs, formula, data, prior, races, ctrl) {
                    }
                    out
                }),
-               sigmas = lapply(par_l, function(x) setNames(x$sigma_grp, outcomes)),
+               sigma = lapply(par_l, function(x) setNames(x$sigma_grp, outcomes)),
                linpreds = lapply(par_l, function(x) {
                    m = exp(standata$has_int * x$intercept + X %*% x$beta)
                    m / rowSums(m)
                }),
                tbl_gx = d_model[idx_sub, , drop=FALSE],
-               vec_gx = idx_uniq,
+               vec_gx = NULL,
                prior = prior,
                iters = res$iters,
                converge = res$converge)
+}
+
+
+em_lm <- function(Y, p_rxs, formula, data, weights, prior, races, boot, ctrl) {
+    d_model = model.frame(formula, data=data, na.action=na.fail)[-1]
+    use_w = any(weights != 1.0)
+
+    if (!(is.numeric(Y) || is.logical(Y)) || any(is.na(Y)))
+        cli_abort("Response variable must be numeric with no missing values.",
+                  call=parent.frame())
+    Y = as.numeric(Y)
+    if (vctrs::vec_unique_count(Y) <= max(0.05 * length(Y), 10)) {
+        cli_warn(c("Found many duplicate values of the outcome variable.",
+                   "i"="A Normal linear model may not be appropriate."),
+                 call=parent.frame())
+    }
+    n_r = ncol(p_rxs)
+    prior = check_make_prior_lm(prior, Y, races)
+
+    # model matrix and apply prior
+    X = model.matrix(formula, data=get_all_vars(formula, data=data))
+    if (nrow(X) != length(Y)) {
+        cli_abort("Missing values found in data.", call=parent.frame())
+    }
+    p = ncol(X)
+    Y = c(rep(0, p), Y)
+    weights = c(rep(1, p), weights)
+    # p_rxs = rbind(matrix(1, nrow=p, ncol=ncol(p_rxs)), p_rxs)
+    if (attr(formula, "intercept") == 1) { # has intercept
+        if (p > 1) {
+            Xsc = scale(X[, -1], center=TRUE, scale=FALSE)
+            X[, -1] = Xsc
+            X = rbind(diag(c(1/prior$scale_int, rep(1/prior$scale_beta, p - 1))), X)
+        } else {
+            X = rbind(1/prior$scale_int, X)
+        }
+    } else {
+        Xsc = scale(X, center=TRUE, scale=FALSE)
+        X = rbind(diag(rep(1/prior$scale_beta, p)), Xsc)
+    }
+
+    # initial estimates
+    par0 = lm_mstep(X, Y, p_rxs, weights, use_w, p, prior, ctrl)
+
+    pb_id = cli::cli_progress_bar("EM iterations", total=NA)
+    res = ctrl$accel(par0, function(curr) {
+        cli::cli_progress_update(id=pb_id)
+
+        coefs = matrix(curr[-1], nrow=p, ncol=n_r)
+        p_ryxs = lm_estep(X, Y, coefs, curr[1], p_rxs, p)
+        lm_mstep(X, Y, p_ryxs, weights, use_w, p, prior, ctrl)
+    }, ctrl, n_x=p)
+    cli::cli_progress_done(id=pb_id)
+
+    ests = matrix(res$ests[-1], nrow=p, ncol=n_r)
+    est_sigma = res$ests[1]
+    p_ryxs = lm_estep(X, Y, ests, est_sigma, p_rxs, p)
+    ign = -seq_len(p)
+    est = colSums(p_ryxs * (X[ign, ] %*% ests)) / colSums(p_ryxs)
+
+    out = list(map = matrix(est, nrow=1),
+               ests = matrix(est, nrow=1),
+               p_ryxs = p_ryxs,
+               beta = ests,
+               sigma = est_sigma,
+               linpreds = X[ign, ] %*% ests,
+               tbl_gx = X[ign, ],
+               vec_gx = seq_len(nrow(X) - p),
+               prior = prior,
+               iters = res$iters,
+               converge = res$converge)
+
+    if (boot > 0) {
+        boot_ests = boot_lm(res$ests, boot, Y, X, weights, p_rxs, prior, ctrl)
+        out$vcov = cov(t(boot_ests))
+    }
+
+    out
+}
+
+# helper functions for M and E step for linear model
+lm_mstep <- function(X, Y, p_ryxs, weights, use_w, p, prior, ctrl) {
+    n_r = ncol(p_ryxs)
+    ign = -seq_len(p)
+    pars = matrix(nrow=p, ncol=n_r)
+    alpha_post = prior$n_sigma + nrow(X) - ncol(X) + 1
+    beta_post = prior$loc_sigma^2 * prior$n_sigma
+
+    for (i in seq_len(n_r)) {
+        pr = c(rep(1, p), p_ryxs[, i])
+        if (use_w) {
+            pr = pr * weights
+        }
+        res = lm.wfit(X, Y, pr, tol=ctrl$abstol)
+
+        pars[, i] = res$coefficient
+        beta_post = beta_post + sum(res$residuals[ign]^2 * pr[ign])
+    }
+
+    sigma = sqrt(beta_post / alpha_post)
+    c(sigma, pars)
+}
+lm_estep <- function(X, Y, coefs, sigma, p_rxs, p) {
+    n_r = ncol(coefs)
+    ign = -seq_len(p)
+    resid = Y[ign] - X[ign, ] %*% coefs
+    p_ryxs = log(p_rxs)
+    for (i in seq_len(n_r)) {
+        p_ryxs[, i] = p_ryxs[, i] + dnorm(resid[, i], sd=sigma, log=TRUE)
+    }
+    p_ryxs = exp(safeexpoffset(p_ryxs))
+    p_ryxs / rowSums(p_ryxs)
 }
