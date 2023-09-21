@@ -38,7 +38,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">birdie</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -194,7 +194,7 @@ the probabilities.</p>
 <span><span class="co">#&gt; 0.656372686 0.277807934 0.032031532 0.010139008 0.009564482 0.014084358</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">colMeans</a></span><span class="op">(</span><span class="va">r_probs_me</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  pr_white  pr_black   pr_hisp  pr_asian   pr_aian  pr_other </span></span>
-<span><span class="co">#&gt; 0.7089899 0.2001374 0.0434232 0.0185830 0.0118624 0.0170041</span></span>
+<span><span class="co">#&gt; 0.7089696 0.2001599 0.0432375 0.0185543 0.0118693 0.0172094</span></span>
 <span><span class="co"># actual </span></span>
 <span><span class="va">p_r</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -240,10 +240,12 @@ Jones are both equally likely to vote.</p>
 <p>We’re now ready to estimate turnout by race. For this we’ll use the
 <code><a href="../reference/birdie.html">birdie()</a></code> function, and provide it with a formula describing
 our BIRDiE model, including our variable of interest
-<code>turnout</code> and our geography variable <code>zip</code>. Here,
-we wrap <code>zip</code> in the <code><a href="../reference/preproc.html">proc_zip()</a></code> function, which,
-among other things, recodes missing ZIP codes as “Other” so that the
-model doesn’t encounter any missing data. The first argument to
+<code>turnout</code> and our geography variable <code>zip</code>. We
+provide <code>family=cat_mixed()</code> to indicate that we want to fit
+a Categorical mixed-effects regression model for turnout. Here, we wrap
+<code>zip</code> in the <code><a href="../reference/preproc.html">proc_zip()</a></code> function, which, among
+other things, recodes missing ZIP codes as “Other” so that the model
+doesn’t encounter any missing data. The first argument to
 <code><a href="../reference/birdie.html">birdie()</a></code> is <code>r_probs</code>, the racial probabilities.
 <code>birdie</code> knows how to handle its columns of because they came
 from this package. If you use a different package, the columns may be
@@ -251,20 +253,25 @@ named differently. The <code>prefix</code> parameter to
 <code><a href="../reference/birdie.html">birdie()</a></code> lets you specify the naming convention for your
 probabilities.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">=</span> <span class="fu"><a href="../reference/birdie.html">birdie</a></span><span class="op">(</span><span class="va">r_probs</span>, <span class="va">turnout</span> <span class="op">~</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="fu"><a href="../reference/preproc.html">proc_zip</a></span><span class="op">(</span><span class="va">zip</span><span class="op">)</span><span class="op">)</span>, data<span class="op">=</span><span class="va">pseudo_vf</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Using default prior for Pr(X | R):</span></span>
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">=</span> <span class="fu"><a href="../reference/birdie.html">birdie</a></span><span class="op">(</span><span class="va">r_probs</span>, <span class="va">turnout</span> <span class="op">~</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="fu"><a href="../reference/preproc.html">proc_zip</a></span><span class="op">(</span><span class="va">zip</span><span class="op">)</span><span class="op">)</span>, data<span class="op">=</span><span class="va">pseudo_vf</span>, family<span class="op">=</span><span class="fu"><a href="../reference/birdie-family.html">cat_mixed</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Using default prior for Pr(Y | R):</span></span>
+<span><span class="co">#&gt; → Prior scale on intercepts: 2.0</span></span>
 <span><span class="co">#&gt; → Prior scale on fixed effects coefficients: 0.2</span></span>
-<span><span class="co">#&gt; → Prior mean of random effects standard deviation: 0.10</span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">This message is displayed once per session.</span></span></span>
+<span><span class="co">#&gt; → Prior mean of random effects standard deviation: 0.05</span></span>
+<span><span class="co">#&gt; ⠙ EM iterations 13 done (6.3/s) | 2.1s</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ⠙ EM iterations 72 done (17/s) | 4.3s</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #555555;">This message is displayed once every 8 hours.</span></span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Multinomial mixed-effects <span style="color: #0000BB;">BIRDiE</span> model</span></span>
+<span><span class="co">#&gt; Categorical mixed-effects <span style="color: #0000BB;">BIRDiE</span> model</span></span>
 <span><span class="co">#&gt; Formula: turnout ~ (1 | proc_zip(zip))</span></span>
 <span><span class="co">#&gt;    Data: pseudo_vf</span></span>
-<span><span class="co">#&gt; Number of obs: 5,000; groups: 626</span></span>
+<span><span class="co">#&gt; Number of obs: 5,000</span></span>
 <span><span class="co">#&gt; Estimated distribution:</span></span>
 <span><span class="co">#&gt;     white black  hisp asian  aian other</span></span>
-<span><span class="co">#&gt; no  0.297  0.36 0.432 0.604 0.605 0.468</span></span>
-<span><span class="co">#&gt; yes 0.703  0.64 0.568 0.396 0.395 0.532</span></span></code></pre></div>
+<span><span class="co">#&gt; no  0.293  0.36 0.414 0.594 0.802 0.545</span></span>
+<span><span class="co">#&gt; yes 0.707  0.64 0.586 0.406 0.198 0.455</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="types-of-birdie-models">Types of BIRDiE Models<a class="anchor" aria-label="anchor" href="#types-of-birdie-models"></a>
 </h3>
@@ -296,25 +303,25 @@ plotting or in downstream analyses.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 12 × 3</span></span></span>
 <span><span class="co">#&gt;    turnout race  estimate</span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> no      white    0.297</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> yes     white    0.703</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> no      white    0.293</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> yes     white    0.707</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> no      black    0.360</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> yes     black    0.640</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> no      hisp     0.432</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> yes     hisp     0.568</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> no      asian    0.604</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> yes     asian    0.396</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> no      aian     0.605</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> yes     aian     0.395</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> no      other    0.468</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> yes     other    0.532</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> no      hisp     0.414</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> yes     hisp     0.586</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> no      asian    0.594</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> yes     asian    0.406</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> no      aian     0.802</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> yes     aian     0.198</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> no      other    0.545</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> yes     other    0.455</span></span></code></pre></div>
 <p>These estimates are quite close to the true distribution of turnout
 and race for most racial groups:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
-<span><span class="co">#&gt;         white    black      hisp     asian     aian     other</span></span>
-<span><span class="co">#&gt; no  0.2973933 0.360107 0.4317578 0.6036244 0.604735 0.4684458</span></span>
-<span><span class="co">#&gt; yes 0.7026067 0.639893 0.5682422 0.3963756 0.395265 0.5315542</span></span>
+<span><span class="co">#&gt;         white     black     hisp     asian      aian     other</span></span>
+<span><span class="co">#&gt; no  0.2933979 0.3600989 0.414248 0.5943603 0.8016523 0.5445274</span></span>
+<span><span class="co">#&gt; yes 0.7066021 0.6399011 0.585752 0.4056397 0.1983477 0.4554726</span></span>
 <span><span class="va">p_xr</span> <span class="co"># Actual</span></span>
 <span><span class="co">#&gt;      </span></span>
 <span><span class="co">#&gt;           white     black      hisp     asian      aian     other</span></span>
@@ -328,15 +335,15 @@ they are present in the model formula) by passing
 <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy()</a></code>.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="va">fit</span>, subgroup<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 4</span></span></span>
-<span><span class="co">#&gt;   zip   turnout race  estimate</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 28748 no      white    0.269</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 28748 yes     white    0.731</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 28748 no      black    0.398</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 28748 yes     black    0.602</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 28748 no      hisp     0.448</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 28748 yes     hisp     0.552</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
+<span><span class="co">#&gt;   zip   turnout estimate</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 28748 no         0.264</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 28748 yes        0.736</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 28748 no         0.613</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 28748 yes        0.387</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 28748 no         0.226</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 28748 yes        0.774</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="generating-improved-individual-bisg-probabilities">Generating improved individual BISG probabilities<a class="anchor" aria-label="anchor" href="#generating-improved-individual-bisg-probabilities"></a>
@@ -353,14 +360,14 @@ accurate than the standard BISG probabilities.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 6</span></span></span>
-<span><span class="co">#&gt;   pr_white pr_black pr_hisp  pr_asian  pr_aian pr_other</span></span>
-<span><span class="co">#&gt;      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>   0.980   0.004<span style="text-decoration: underline;">29</span> 0.001<span style="text-decoration: underline;">53</span> 0.000<span style="text-decoration: underline;">088</span>7 0.008<span style="text-decoration: underline;">44</span>   0.005<span style="text-decoration: underline;">85</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>   0.016<span style="text-decoration: underline;">9</span>  0.973   0.001<span style="text-decoration: underline;">48</span> 0.000<span style="text-decoration: underline;">165</span>  0.001<span style="text-decoration: underline;">01</span>   0.007<span style="text-decoration: underline;">85</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>   0.976   0.007<span style="text-decoration: underline;">82</span> 0.004<span style="text-decoration: underline;">70</span> 0.002<span style="text-decoration: underline;">03</span>   0.000<span style="text-decoration: underline;">533</span>  0.008<span style="text-decoration: underline;">47</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>   0.531   0.455   0.004<span style="text-decoration: underline;">32</span> 0.000<span style="text-decoration: underline;">143</span>  0.000<span style="text-decoration: underline;">988</span>  0.009<span style="text-decoration: underline;">40</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>   0.980   0.002<span style="text-decoration: underline;">42</span> 0.004<span style="text-decoration: underline;">24</span> 0.000<span style="text-decoration: underline;">648</span>  0.003<span style="text-decoration: underline;">69</span>   0.008<span style="text-decoration: underline;">99</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>   0.560   0.412   0.011<span style="text-decoration: underline;">0</span>  0.000<span style="text-decoration: underline;">640</span>  0.001<span style="text-decoration: underline;">97</span>   0.014<span style="text-decoration: underline;">4</span></span></span>
+<span><span class="co">#&gt;   pr_white pr_black  pr_hisp  pr_asian  pr_aian pr_other</span></span>
+<span><span class="co">#&gt;      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0.987    0.002<span style="text-decoration: underline;">76</span> 0.002<span style="text-decoration: underline;">15</span>  0.000<span style="text-decoration: underline;">079</span>3 0.002<span style="text-decoration: underline;">38</span>   0.005<span style="text-decoration: underline;">97</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  0.003<span style="text-decoration: underline;">26</span>  0.987   0.000<span style="text-decoration: underline;">996</span> 0.000<span style="text-decoration: underline;">161</span>  0.001<span style="text-decoration: underline;">45</span>   0.006<span style="text-decoration: underline;">75</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  0.978    0.010<span style="text-decoration: underline;">6</span>  0.002<span style="text-decoration: underline;">37</span>  0.000<span style="text-decoration: underline;">227</span>  0.000<span style="text-decoration: underline;">158</span>  0.008<span style="text-decoration: underline;">67</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  0.529    0.460   0.001<span style="text-decoration: underline;">11</span>  0.000<span style="text-decoration: underline;">109</span>  0.000<span style="text-decoration: underline;">275</span>  0.009<span style="text-decoration: underline;">14</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  0.978    0.003<span style="text-decoration: underline;">80</span> 0.002<span style="text-decoration: underline;">18</span>  0.000<span style="text-decoration: underline;">717</span>  0.005<span style="text-decoration: underline;">96</span>   0.008<span style="text-decoration: underline;">96</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>  0.570    0.389   0.018<span style="text-decoration: underline;">9</span>   0.000<span style="text-decoration: underline;">675</span>  0.000<span style="text-decoration: underline;">554</span>  0.020<span style="text-decoration: underline;">1</span></span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">r_probs</span><span class="op">$</span><span class="va">pr_white</span>, <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">$</span><span class="va">pr_white</span>, cex<span class="op">=</span><span class="fl">0.1</span><span class="op">)</span></span></code></pre></div>
 <p><img src="birdie_files/figure-html/unnamed-chunk-12-1.png" width="700"></p>
@@ -382,13 +389,13 @@ replicates. The standard errors are accessible with <code>$se</code> or
 using the <code><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov()</a></code> generic.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_boot</span> <span class="op">=</span> <span class="fu"><a href="../reference/birdie.html">birdie</a></span><span class="op">(</span><span class="va">r_probs</span>, <span class="va">turnout</span> <span class="op">~</span> <span class="fl">1</span>, data<span class="op">=</span><span class="va">pseudo_vf</span>, se_boot<span class="op">=</span><span class="fl">200</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Using c(1+ε, 1+ε, ..., 1+ε) prior for Pr(X | R)</span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">This message is displayed once per session.</span></span></span>
+<span><span class="co">#&gt; Using weakly informative empirical Bayes prior for Pr(Y | R)</span></span>
+<span><span class="co">#&gt; <span style="color: #555555;">This message is displayed once every 8 hours.</span></span></span>
 <span></span>
 <span><span class="va">fit_boot</span><span class="op">$</span><span class="va">se</span></span>
-<span><span class="co">#&gt;          white      black       hisp      asian      aian    other</span></span>
-<span><span class="co">#&gt; no  0.01027238 0.01913801 0.05058564 0.09462022 0.1039725 0.348455</span></span>
-<span><span class="co">#&gt; yes 0.01027238 0.01913801 0.05058564 0.09462022 0.1039725 0.348455</span></span></code></pre></div>
+<span><span class="co">#&gt;           white      black       hisp      asian       aian       other</span></span>
+<span><span class="co">#&gt; no  0.007608065 0.01035972 0.03014532 0.05977654 0.04417924 0.007650362</span></span>
+<span><span class="co">#&gt; yes 0.007608065 0.01035972 0.03014532 0.05977654 0.04417924 0.007650362</span></span></code></pre></div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

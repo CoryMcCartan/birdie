@@ -21,7 +21,7 @@ analogous to the output of bisg() with updated race probabilities."><meta proper
     
     <a class="navbar-brand me-2" href="../index.html">birdie</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -99,6 +99,9 @@ analogous to the output of <code><a href="bisg.html">bisg()</a></code> with upda
 <span><span class="fu"><a href="https://rdrr.io/r/stats/formula.html" class="external-link">formula</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for birdie</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">family</a></span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for birdie</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/nobs.html" class="external-link">nobs</a></span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for birdie</span></span>
@@ -174,8 +177,8 @@ directly. The generics listed here should be used instead.</p>
 <ul><li><p><code>coef(birdie)</code>: Return estimated outcome-given-race distributions.</p></li>
 <li><p><code>fitted(birdie)</code>: Return an updated race probability table. <code><a href="bisg.html">bisg()</a></code>
 estimates <code>Pr(R | G, X, S)</code>; this table estimates <code>Pr(R | Y, G, X, S)</code>.</p></li>
-<li><p><code>residuals(birdie)</code>: Return the residuals for the outcome variable.
-Useful in sensitivity analyses and to get an idea of how well race,
+<li><p><code>residuals(birdie)</code>: Return the residuals for the outcome variable as a
+matrix. Useful in sensitivity analyses and to get an idea of how well race,
 location, names, etc. predict the outcome.</p></li>
 <li><p><code>predict(birdie)</code>: Create point predictions of individual race. Returns
 factor vector of individual race labels. Strongly not recommended for any
@@ -190,6 +193,7 @@ for a BIRDiE model.</p></li>
 <li><p><code>glance(birdie)</code>: Glance at a BIRDiE model.</p></li>
 <li><p><code>augment(birdie)</code>: Augment data with individual race predictions from a BIRDiE model.</p></li>
 <li><p><code>formula(birdie)</code>: Extract the formula used to specify a BIRDiE model.</p></li>
+<li><p><code>family(birdie)</code>: Return the BIRDiE complete-data model family.</p></li>
 <li><p><code>nobs(birdie)</code>: Return the number of observations used to fit a BIRDiE model.</p></li>
 <li><p><code>vcov(birdie)</code>: Return the estimated variance-covariance matrix for
 the BIRDiE model estimates, if available.</p></li>
@@ -200,8 +204,9 @@ the BIRDiE model estimates, if available.</p></li>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/methods.html" class="external-link">methods</a></span><span class="op">(</span>class<span class="op">=</span><span class="st">"birdie"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] augment   coef      fitted    formula   glance    nobs      plot     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [8] predict   print     residuals simulate  summary   tidy      vcov     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] augment   coef      family    fitted    formula   glance    nobs     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8] plot      predict   print     residuals simulate  summary   tidy     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [15] vcov     </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> see '?methods' for accessing help and source code</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
