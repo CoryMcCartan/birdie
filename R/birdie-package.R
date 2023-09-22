@@ -16,7 +16,7 @@
 #' @importFrom stats terms get_all_vars model.frame model.matrix setNames
 #' @importFrom stats formula update.formula as.formula nobs family vcov residuals
 #' @importFrom utils tail unstack relist head packageVersion
-#' @importFrom graphics barplot
+#' @importFrom graphics barplot par arrows
 #' @importFrom grDevices colorRampPalette
 #' @useDynLib birdie, .registration=TRUE
 ## usethis namespace: end
