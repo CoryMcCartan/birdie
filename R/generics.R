@@ -394,7 +394,7 @@ predict.bisg <- function(object, adj=NULL, ...) {
     factor(max.col(m), levels=seq_len(n_r), labels=races)
 }
 
-#' @inheritParams predict.bisg
+#' @inheritParams simulate.birdie
 #' @describeIn bisg Simulate race from the `Pr(R | G, X, S)` distribution.
 #' @export
 simulate.bisg <- function(object, nsim = 1, seed = NULL, ...) {

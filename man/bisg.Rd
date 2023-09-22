@@ -100,6 +100,10 @@ divided by \code{adj}, then the racial category with the highest probability is
 predicted. Can be used to trade off types of prediction error. Must be
 nonnegative but will be normalized to sum to 1. The default is to make no
 adjustment.}
+
+\item{nsim}{The number of vectors to simulate. Defaults to 1.}
+
+\item{seed}{Used to seed the random number generator. See \code{\link[stats:simulate]{stats::simulate()}}.}
 }
 \value{
 An object of class \code{bisg}, which is just a data frame with some
