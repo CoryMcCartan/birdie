@@ -73,23 +73,26 @@ head(r_probs)
 ```
 
 Computing regression estimates requires specifying a model structure.
-Here, we’ll let the relationship between turnout and race vary by ZIP
-code. This is the “no-pooling” model from McCartan et al.
+Here, we’ll use a Categorical-Dirichlet regression model that lets the
+relationship between turnout and race vary by ZIP code. This is the
+“no-pooling” model from McCartan et al. We’ll use bootstrapping to
+approximately measure the uncertainty in our estimates.
 
 ``` r
-fit = birdie(r_probs, turnout ~ proc_zip(zip), data=pseudo_vf)
-#> Using c(1+ε, 1+ε, ..., 1+ε) prior for Pr(X | R)
-#> This message is displayed once per session.
+fit = birdie(r_probs, turnout ~ proc_zip(zip), data=pseudo_vf, 
+             family=cat_dir(), algorithm="em_boot")
+#> Using weakly informative empirical Bayes prior for Pr(Y | R)
+#> This message is displayed once every 8 hours.
 
 print(fit)
-#> Multinomial-Dirichlet BIRDiE model
+#> Categorical-Dirichlet BIRDiE model
 #> Formula: turnout ~ proc_zip(zip)
 #>    Data: pseudo_vf
-#> Number of obs: 5,000; groups: 618
+#> Number of obs: 5,000
 #> Estimated distribution:
 #>     white black  hisp asian  aian other
-#> no  0.286 0.358 0.376  0.55 0.644 0.534
-#> yes 0.714 0.642 0.624  0.45 0.356 0.466
+#> no  0.302 0.347 0.358 0.559 0.666 0.399
+#> yes 0.698 0.653 0.642 0.441 0.334 0.601
 ```
 
 The `proc_zip()` function fills in missing ZIP codes, among other
@@ -101,37 +104,37 @@ estimated distributions (`plot()`).
 
 ``` r
 coef(fit)
-#>         white     black      hisp     asian      aian     other
-#> no  0.2855931 0.3583592 0.3761561 0.5501976 0.6443233 0.5341151
-#> yes 0.7144069 0.6416408 0.6238439 0.4498024 0.3556767 0.4658849
+#>         white     black      hisp    asian      aian     other
+#> no  0.3019191 0.3467984 0.3579254 0.559023 0.6655915 0.3988616
+#> yes 0.6980809 0.6532016 0.6420746 0.440977 0.3344085 0.6011384
 
 head(fitted(fit))
 #> # A tibble: 6 × 6
-#>   pr_white pr_black  pr_hisp pr_asian  pr_aian pr_other
-#>      <dbl>    <dbl>    <dbl>    <dbl>    <dbl>    <dbl>
-#> 1 9.46e- 1 3.68e-15 1.41e- 2 3.81e-14 1.21e- 2 2.77e- 2
-#> 2 2.77e-15 9.99e- 1 5.45e-15 5.35e-15 1.25e- 3 1.99e-14
-#> 3 9.52e- 1 7.52e- 3 7.34e-15 4.13e-16 1.95e-14 4.01e- 2
-#> 4 6.18e- 1 3.81e- 1 3.54e-15 3.26e-13 1.56e- 3 3.02e-13
-#> 5 9.90e- 1 4.33e- 3 3.00e-11 5.48e- 3 1.10e-14 1.83e-13
-#> 6 5.63e- 1 2.65e- 1 9.76e- 2 6.42e- 3 2.74e- 3 6.55e- 2
+#>   pr_white pr_black pr_hisp pr_asian  pr_aian pr_other
+#>      <dbl>    <dbl>   <dbl>    <dbl>    <dbl>    <dbl>
+#> 1   0.962   0.00339 0.00974 0.000499 0.00581    0.0189
+#> 2   0.0439  0.927   0.00821 0.000922 0.000897   0.0186
+#> 3   0.942   0.00490 0.0228  0.00491  0.000331   0.0249
+#> 4   0.579   0.362   0.0240  0.000860 0.000739   0.0329
+#> 5   0.964   0.00145 0.0149  0.00251  0.00224    0.0146
+#> 6   0.547   0.305   0.0886  0.00378  0.00141    0.0541
 
 tidy(fit)
 #> # A tibble: 12 × 3
 #>    turnout race  estimate
 #>    <chr>   <chr>    <dbl>
-#>  1 no      white    0.286
-#>  2 yes     white    0.714
-#>  3 no      black    0.358
-#>  4 yes     black    0.642
-#>  5 no      hisp     0.376
-#>  6 yes     hisp     0.624
-#>  7 no      asian    0.550
-#>  8 yes     asian    0.450
-#>  9 no      aian     0.644
-#> 10 yes     aian     0.356
-#> 11 no      other    0.534
-#> 12 yes     other    0.466
+#>  1 no      white    0.302
+#>  2 yes     white    0.698
+#>  3 no      black    0.347
+#>  4 yes     black    0.653
+#>  5 no      hisp     0.358
+#>  6 yes     hisp     0.642
+#>  7 no      asian    0.559
+#>  8 yes     asian    0.441
+#>  9 no      aian     0.666
+#> 10 yes     aian     0.334
+#> 11 no      other    0.399
+#> 12 yes     other    0.601
 
 plot(fit)
 ```
