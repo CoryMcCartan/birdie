@@ -23,8 +23,8 @@ data = d |>
     left_join(census_race_geo_table("zcta", counts=FALSE), by=c("zip"="GEOID")) |>
     mutate(across(white:other, ~ coalesce(., p_r[cur_column()]))) |>
     select(party, zip, county, race, gender, age, n_voted, lic, white:other)
-
 data$Yc = (data$party == "dem") + rnorm(nrow(data))
+
 Y =  data$party
 
 xw = est_weighted(r_probs, Y ~ 1, data)
@@ -87,6 +87,52 @@ colSums(abs(to_cond(xr$true) - to_cond(xr$mmm)))/2
 colSums(abs(to_cond(xr$true) - to_cond(xr$ols)))/2
 colSums(abs(to_cond(xr$true) - to_cond(xr$weight)))/2
 colSums(abs(to_cond(xr$true) - to_cond(xr$thresh)))/2
+
+# try gibbs --------
+Y = as.integer(data$party)
+X = rep_along(Y, 1)
+R0 = as.integer(simulate(r_probs))
+prior = check_make_prior_cat_dir(NULL, data$party, p_rxs, levels(data$race))
+
+N_sim = 500
+ests = matrix(nrow=4*6, ncol=N_sim)
+
+p_rxs = as.matrix(r_probs)
+ests[, 1] = c(prop.table(1 + table(R0, Y), 1))
+# ests = dirichlet_map(Y, X, p_rxs, prior$alpha, 1)
+
+for (i in 2:N_sim) {
+    p_ryxs = calc_bayes(Y, X, ests[, i-1], p_rxs, 1, 4)
+    R = mat_rcatp(p_ryxs)
+    alpha = 1 + table(R, Y)
+    r_ests = rgamma(length(alpha), alpha, 1) |>
+        matrix(nrow=6, ncol=4)
+    ests[, i] = c(r_ests / c(r_ests %*% rep(1, 4)))
+}
+
+matplot(t(ests[6*0 + 1:6, ]), type='l', lty="solid",
+        col=c("black", gray.colors(6)[1:5]), xlab="Iteration", ylab="Pr(party | white)")
+matrixStats::rowSds(ests) |> matrix(nrow=4, ncol=6, byrow=TRUE)
+ests_final = matrix(rowMeans(ests), nrow=4, ncol=6, byrow=TRUE)
+ests_em = coef(birdie(r_probs, party ~ 1, data))
+round(abs(ests_em - ests_final), 2)
+
+sum(abs(ests_em - p_xr) %*% p_r) / 2
+sum(abs(ests_final - p_xr) %*% p_r) / 2
+
+vcov = chol2inv(qr.R(res$qr)) * sum(res$residuals^2) / (nrow(p_rxs) - ncol(p_rxs))
+sigma_draw = sum(res$residuals^2) / rchisq(1, df=nrow(p_rxs) - ncol(p_rxs))
+beta_draw = res$coefficients + backsolve(qr.R(res$qr), diag(6)) %*% rnorm(6, sd=sigma_draw)
+bench::mark(
+    rowSums(r_ests),
+    as.vector(r_ests %*% rep(1, 4)),
+    c(r_ests %*% rep(1, 4)),
+)
+
+
+library(dbarts)
+Y = 1*(data$party == "dem")
+mb = dbarts(Yc ~ R0 + gender + white + black, data=data)
 
 
 # try out multistage regression -----

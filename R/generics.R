@@ -37,7 +37,7 @@ coef.birdie <- function(object, subgroup=FALSE, ...) {
 }
 
 #' @describeIn birdie-class Return an updated race probability table. [bisg()]
-#'   estimates `Pr(R | G, X, S)`; this table estimates `Pr(R | Y, G, X, S)`.
+#'   estimates `Pr(R | G, X, S)`; this table is `Pr(R | Y, G, X, S, Theta-hat)`.
 #' @export
 fitted.birdie <- function(object, ...) {
     object$p_ryxs
@@ -98,19 +98,21 @@ predict.birdie <- function(object, adj=NULL, ...) {
 #' @param seed Used to seed the random number generator. See [stats::simulate()].
 #'
 #' @describeIn birdie-class Simulate race from the posterior distribution
-#'   `Pr(R | Y, G, X, S, Theta-MAP)`. Does not account for uncertainty in model
+#'   `Pr(R | Y, G, X, S, Theta-hat)`. Does not account for uncertainty in model
 #'   parameters.
 #' @export
 simulate.birdie <- function(object, nsim = 1, seed = NULL, ...) {
-    if (!is.null(seed)) set.seed(seed)
+    simulate_race(as.matrix(object$p_ryxs), nsim, seed, object$prefix)
+}
 
-    m = as.matrix(object$p_ryxs)
+simulate_race <- function(m, nsim = 1, seed = NULL, prefix="pr_") {
+    if (!is.null(seed)) set.seed(seed)
 
     out = do.call(cbind, lapply(seq_len(nsim), function(i) {
         mat_rcatp(m)
     }))
 
-    r_names = substring(colnames(m), nchar(object$prefix)+1L)
+    r_names = substring(colnames(m), nchar(prefix)+1L)
     out = factor(out, levels=seq_len(ncol(m)), labels=r_names)
     dim(out) = c(nrow(m), nsim)
 
@@ -286,12 +288,20 @@ summary.birdie <- function(object, ...) {
     cli::cat_line("   Data: ", deparse(object$call$data))
     cat("\n")
 
-    if (object$algo$converge) {
-        t0 = Sys.time()
-        tm = format(difftime(t0 + object$algo$runtime, t0), digits=2)
-        cli::cli_text("{object$algo$iters} iterations and {tm} to convergence")
+    t0 = Sys.time()
+    tm = format(difftime(t0 + object$algo$runtime, t0), digits=2)
+    if (object$algo$algorithm == "gibbs") {
+        cli::cli_text("{object$algo$iters} post-warmup samples in {tm}")
     } else {
-        cli::cli_alert_danger("Model did not converge")
+        if (object$algo$converge) {
+            if (object$algo$algorithm == "em") {
+                cli::cli_text("{object$algo$iters} iterations and {tm} to convergence")
+            } else { # bootstrapping
+                cli::cli_text("{tm} to convergence and {object$algo$iters} bootstrap iterations")
+            }
+        } else {
+            cli::cli_alert_danger("Model did not converge in {tm}")
+        }
     }
     cat("\n")
 
@@ -372,6 +382,13 @@ predict.bisg <- function(object, adj=NULL, ...) {
     m = as.matrix(object) / rep(adj, each=nrow(object))
 
     factor(max.col(m), levels=seq_len(n_r), labels=races)
+}
+
+#' @inheritParams predict.bisg
+#' @describeIn bisg Simulate race from the `Pr(R | G, X, S)` distribution.
+#' @export
+simulate.bisg <- function(object, nsim = 1, seed = NULL, ...) {
+    simulate_race(as.matrix(object), nsim, seed, "pr_")
 }
 
 

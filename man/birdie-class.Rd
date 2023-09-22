@@ -94,7 +94,7 @@ directly. The generics listed here should be used instead.
 \item \code{coef(birdie)}: Return estimated outcome-given-race distributions.
 
 \item \code{fitted(birdie)}: Return an updated race probability table. \code{\link[=bisg]{bisg()}}
-estimates \code{Pr(R | G, X, S)}; this table estimates \code{Pr(R | Y, G, X, S)}.
+estimates \code{Pr(R | G, X, S)}; this table is \code{Pr(R | Y, G, X, S, Theta-hat)}.
 
 \item \code{residuals(birdie)}: Return the residuals for the outcome variable as a
 matrix. Useful in sensitivity analyses and to get an idea of how well race,
@@ -106,7 +106,7 @@ kind of inferential purpose, as biases may be extreme and in unpredictable
 directions.
 
 \item \code{simulate(birdie)}: Simulate race from the posterior distribution
-\code{Pr(R | Y, G, X, S, Theta-MAP)}. Does not account for uncertainty in model
+\code{Pr(R | Y, G, X, S, Theta-hat)}. Does not account for uncertainty in model
 parameters.
 
 \item \code{plot(birdie)}: Visualize the estimated conditional distributions
