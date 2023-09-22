@@ -168,8 +168,8 @@ birdie <- function(r_probs, formula, data, family=cat_dir(), prior=NULL, weights
     full_int = check_full_int(tt, covars)
 
     # check formula and predictors against model and r_probs
-    model = check_model(family, tt, covars, full_int, algorithm)
     algorithm = match.arg(algorithm)
+    model = check_model(family, tt, covars, full_int, algorithm)
     check_covars(r_probs, covars, model)
 
     # set up race probability matrix
