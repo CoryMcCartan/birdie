@@ -179,12 +179,13 @@ The function does however support bootstrapping for some model types.
 In general, we recommend bootstrapping a simple complete-pooling model to understand the rough amount of sampling variation present.
 For most datasets, non-sampling error in Census data and violations of model assumptions will cause much more bias than sampling variance.
 
-To bootstrap, simply pass a nonzero value of `se_boot` to `birdie()`.
-This parameter controls the number of bootstrap replicates.
-The standard errors are accessible with `$se` or using the `vcov()` generic.
+To bootstrap, simply set `algorithm="em_boot"` in `birdie()`.
+The `iter` parameter controls the number of bootstrap replicates.
+The standard errors are accessible with `$se` or using the `vcov()` generic,
+and will be plotted with `plot()`.
 
 ```{r}
-fit_boot = birdie(r_probs, turnout ~ 1, data=pseudo_vf, se_boot=200)
+fit_boot = birdie(r_probs, turnout ~ 1, data=pseudo_vf, algorithm="em_boot", iter=200)
 
 fit_boot$se
 ```
