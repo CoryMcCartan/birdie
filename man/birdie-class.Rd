@@ -110,7 +110,8 @@ directions.
 parameters.
 
 \item \code{plot(birdie)}: Visualize the estimated conditional distributions
-for a BIRDiE model.
+for a BIRDiE model. If available, marginal standard error estimates (\verb{$se})
+will be visualized with 95\% confidence-level error bars.
 
 \item \code{tidy(birdie)}: Put BIRDiE model coefficients in a tidy format.
 

@@ -121,7 +121,8 @@ simulate_race <- function(m, nsim = 1, seed = NULL, prefix="pr_") {
 
 
 #' @describeIn birdie-class Visualize the estimated conditional distributions
-#'   for a BIRDiE model.
+#'   for a BIRDiE model. If available, marginal standard error estimates (`$se`)
+#'   will be visualized with 95% confidence-level error bars.
 #' @param log If `TRUE`, plot estimated probabilities on a log scale.
 #' @method plot birdie
 #' @export
@@ -130,6 +131,7 @@ plot.birdie <- function(x, log=FALSE, ...) {
 
     resp = x$y_name
     ylab = str_c(if (nrow(m) > 1) "Pr(" else "E(", resp, " | Race)")
+    ylim = if (is.null(x$se)) c(0, max(abs(m))) else c(0, max(abs(m) + 2*x$se))
     main = paste("Estimates of", resp, "by race")
     n_y = nrow(m)
 
@@ -145,12 +147,20 @@ plot.birdie <- function(x, log=FALSE, ...) {
         pal = colorRampPalette(PAL_PUGET)(nrow(m))
     }
 
-    barplot(m, names.arg=toupper(colnames(m)), log=if (log) "y" else "",
-         cex.names=0.85, border=NA, space=c(0.1, 0.9), axis.lty=0,
-         ylab=ylab, xlab="Race", col=pal, beside=TRUE,
-         args.legend=list(x="topright", box.lwd=0, cex=0.9, y.intersp=0.1,
-                          horiz=TRUE, inset=c(0, -0.05)),
-         legend.text=TRUE, ...)
+
+    barloc = barplot(m, names.arg=toupper(colnames(m)), log=if (log) "y" else "",
+                     cex.names=0.85, border=NA, space=c(0.1, 0.9), axis.lty=0,
+                     ylab=ylab, xlab="Race", ylim=sort(ylim), col=pal, beside=TRUE,
+                     args.legend=list(x="topright", box.lwd=0, cex=0.9, y.intersp=0.1,
+                                      horiz=TRUE, inset=c(0, -0.05)),
+                     legend.text=TRUE, ...)
+
+    if (!is.null(x$se)) {
+        adj_to_in = par("pin")[1] / diff(range(barloc))
+        sp_bars = mean(apply(barloc, 2, diff))
+        arrows(x0=barloc, x1=barloc, y0=m - 1.96*x$se, y1=m + 1.96*x$se,
+               code=3, angle=90, length=sp_bars * 0.15 * adj_to_in)
+    }
 
     invisible(m)
 }
