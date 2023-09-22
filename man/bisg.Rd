@@ -5,6 +5,7 @@
 \alias{bisg_me}
 \alias{summary.bisg}
 \alias{predict.bisg}
+\alias{simulate.bisg}
 \title{Bayesian Improved Surname Geocoding (BISG)}
 \usage{
 bisg(
@@ -30,6 +31,8 @@ bisg_me(
 \method{summary}{bisg}(object, p_r = NULL, ...)
 
 \method{predict}{bisg}(object, adj = NULL, ...)
+
+\method{simulate}{bisg}(object, nsim = 1, seed = NULL, ...)
 }
 \arguments{
 \item{formula}{A formula specifying the BISG model. Must include the special
@@ -119,6 +122,8 @@ the model of Imai et al. (2022).
 vector of individual race labels. Strongly not recommended for any kind of
 inferential purpose, as biases may be extreme and in unpredictable
 directions.
+
+\item \code{simulate(bisg)}: Simulate race from the \code{Pr(R | G, X, S)} distribution.
 
 }}
 \section{Functions}{

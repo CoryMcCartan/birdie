@@ -104,6 +104,16 @@ to_ests_vec <- function(par_l, n_y, n_r, n_x) {
     as.numeric(aperm(out, c(1L, 3L, 2L)))
 }
 
+# bootstrap helper
+weight_maker <- function(N, R, weights) {
+    if (N > 1000 && R > 100) {
+        function() tabulate(sample.int(N, sum(weights), replace=TRUE), N) / N
+    } else { # more computationally intensive but smoother
+        function() as.numeric(rdirichlet(1, weights))
+    }
+}
+
+
 
 # Find "|" in formula
 logi_ranef <- function(formula) {
@@ -135,142 +145,6 @@ remove_ranef <- function(formula) {
 
 
 
-# Check (and possibly create default) priors
-
-check_make_prior_cat_dir <- function(prior, Y, p_rxs, races) {
-    n_r = length(races)
-    n_y = nlevels(Y)
-    if (is.null(prior)) {
-        cli_inform("Using weakly informative empirical Bayes prior for Pr(Y | R)",
-                   .frequency="regularly", .frequency_id="birdie_prior_dir",
-                   call=parent.frame())
-        ones_mat = matrix(1, nrow=n_y, ncol=n_r)
-        est0 = dirichlet_map(Y, rep_along(Y, 1), p_rxs, ones_mat, 1) |>
-            matrix(n_y, n_r, byrow=TRUE)
-        prior = list(alpha = ones_mat + est0)
-    } else if (length(prior) == 1 && is.na(prior)) {
-        prior = list(
-            alpha = matrix(1 + 100*.Machine$double.eps, nrow=n_y, ncol=n_r)
-        )
-    }
-
-    if (!is.null(colnames(prior$alpha))) {
-        prior$alpha = prior$alpha[, match(colnames(prior$alpha), races)]
-    }
-    if (!is.null(rownames(prior$alpha))) {
-        prior$alpha = prior$alpha[match(rownames(prior$alpha), levels(Y)), ]
-    }
-
-    if (!"alpha" %in% names(prior) ||
-        !is.numeric(prior$alpha) || !is.matrix(prior$alpha) ||
-        any(is.na(prior$alpha))) {
-        cli_abort(c("With {.arg family=cat_dir()}, {.arg prior} must have an entry
-                        {.code alpha} which is a numeric matrix.",
-                    "i"="See {.fn birdie::birdie} for details."),
-                  call=parent.frame())
-    }
-    if (nrow(prior$alpha) != n_y) {
-        cli_abort("{.arg prior$alpha} must have the same number of rows
-                      as there are levels of Y", call=parent.frame())
-    }
-    if (ncol(prior$alpha) != n_r) {
-        cli_abort("{.arg prior$alpha} must have the same number of columns
-                      as there are racial groups", call=parent.frame())
-    }
-    if (any(prior$alpha < 0)) {
-        cli_abort("{.arg prior$alpha} must have nonnegative entries", call=parent.frame())
-    }
-    if (any(prior$alpha <= 1)) {
-        cli_warn("A {.arg prior$alpha} with entries that are not
-                     strictly greater than 1 may lead to numerical
-                     issues.", call=parent.frame())
-    }
-
-    prior
-}
-check_make_prior_cat_mixed <- function(prior, Y, races) {
-    n_r = length(races)
-    if (is.null(prior)) {
-        prior = list(
-            scale_int = rep(2, n_r),
-            scale_beta = rep(0.2, n_r),
-            scale_sigma = rep(0.05, n_r)
-        )
-
-        cli_inform(c("Using default prior for Pr(Y | R):",
-                     ">"="Prior scale on intercepts:
-                              {format(prior$scale_int[1], nsmall=1)}",
-                     ">"="Prior scale on fixed effects coefficients:
-                              {format(prior$scale_beta[1], nsmall=1)}",
-                     ">"="Prior mean of random effects standard deviation:
-                              {format(prior$scale_sigma[1], nsmall=2)}"),
-                   .frequency="regularly", .frequency_id="birdie_prior_mmm",
-                   call=parent.frame())
-    }
-
-    if (!is.null(names(prior$scale_beta))) {
-        prior$scale_beta = prior$scale_beta[match(names(prior$scale_beta), races)]
-    }
-    if (!is.null(names(prior$scale_int))) {
-        prior$scale_int = prior$scale_int[match(names(prior$scale_int), races)]
-    }
-    if (!is.null(names(prior$scale_sigma))) {
-        prior$scale_sigma = prior$scale_sigma[match(names(prior$scale_sigma), races)]
-    }
-
-
-    if (!all(c("scale_sigma", "scale_int", "scale_beta") %in% names(prior)) ||
-        !is.numeric(prior$scale_beta) || !length(prior$scale_beta) %in% c(1L, n_r) ||
-        !is.numeric(prior$scale_int) || !length(prior$scale_int) %in% c(1L, n_r) ||
-        !is.numeric(prior$scale_sigma) || !length(prior$scale_sigma) %in% c(1L, n_r)) {
-        cli_abort(c("With {.arg family=cat_mixed()}, {.arg prior} must have three
-                        scalar or vector entries {.code scale_int},
-                        {.code scale_beta}, and {.code scale_sigma}.",
-                    "i"="See {.fn birdie::birdie} for details."),
-                  call=parent.frame())
-    }
-
-    if (length(prior$scale_beta) != n_r) {
-        prior$scale_beta = rep(prior$scale_beta, n_r)
-    }
-    if (length(prior$scale_int) != n_r) {
-        prior$scale_int = rep(prior$scale_int, n_r)
-    }
-    if (length(prior$scale_sigma) != n_r) {
-        prior$scale_sigma = rep(prior$scale_sigma, n_r)
-    }
-
-    prior
-}
-check_make_prior_lm <- function(prior, Y, races) {
-    n_r = length(races)
-    if (is.null(prior)) {
-        cli_inform("Using weakly informative empirical Bayes prior for Pr(Y | R)",
-                   .frequency="regularly", .frequency_id="birdie_prior_dir",
-                   call=parent.frame())
-        sd_Y = sd(Y)
-        prior = list(
-            scale_beta = 2.5,
-            scale_int = 5 * mean(Y) / sd_Y,
-            n_sigma = 5,
-            loc_sigma = sd_Y
-        )
-    }
-
-    if (!all(c("scale_int", "scale_beta", "n_sigma", "loc_sigma") %in% names(prior)) ||
-        !is.numeric(prior$scale_beta) || length(prior$scale_beta) != 1 ||
-        !is.numeric(prior$scale_int) || length(prior$scale_int) != 1 ||
-        !is.numeric(prior$n_sigma) || length(prior$n_sigma) != 1 ||
-        !is.numeric(prior$loc_sigma) || length(prior$loc_sigma) != 1) {
-        cli_abort(c("With {.arg family=gaussian()}, {.arg prior} must have four
-                    scalar or vector entries {.code scale_int}, {.code scale_beta},
-                    {.code n_sigma}, and {.code loc_sigma}.",
-                    "i"="See {.fn birdie::birdie} for details."),
-                  call=parent.frame())
-    }
-
-    prior
-}
 
 # Check predictors against theory
 check_covars <- function(r_probs, covars, model) {
@@ -326,7 +200,7 @@ cat_mixed <- function(link="softmax") {
 }
 
 
-check_model <- function(family, tt, covars, full_int, se_boot) {
+check_model <- function(family, tt, covars, full_int, algorithm) {
     if (family$family == "cat_dir") {
         if (!full_int) {
             x_vars = attr(tt, "term.labels")[attr(tt, "order") == 1]
@@ -366,9 +240,13 @@ check_model <- function(family, tt, covars, full_int, se_boot) {
                       call=parent.frame())
         }
 
-        if (se_boot > 0) {
-            cli_abort("Bootstrapping with {.arg se_boot > 0} is only
-                        computationally feasible for {.arg family = cat_dir()}.",
+        if (algorithm == "em_boot") {
+            cli_abort("Bootstrapping is only computationally feasible for
+                      {.arg family = cat_dir()}.",
+                      call=parent.frame())
+        }
+        if (algorithm == "gibbs") {
+            cli_abort("Gibbs sampling is not suppored for {.arg family = cat_dir()}.",
                       call=parent.frame())
         }
         "cat_mixed" # return model type

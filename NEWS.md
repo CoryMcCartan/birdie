@@ -1,3 +1,8 @@
+# birdie 0.5.0
+
+* Gibbs sampler for Categorical-Dirichlet and Normal linear models
+* `simulate.bisg()` to perform multiple imputation from BISG probabilities
+
 # birdie 0.4.0
 
 * Support for continuous outcomes
