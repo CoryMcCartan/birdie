@@ -25,7 +25,7 @@ the model of Imai et al. (2022)."><meta property="og:image" content="http://cory
     
     <a class="navbar-brand me-2" href="../index.html">birdie</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -98,7 +98,10 @@ the model of Imai et al. (2022).</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">object</span>, p_r <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for bisg</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">object</span>, adj <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">object</span>, adj <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for bisg</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/simulate.html" class="external-link">simulate</a></span><span class="op">(</span><span class="va">object</span>, nsim <span class="op">=</span> <span class="fl">1</span>, seed <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -192,6 +195,14 @@ predicted. Can be used to trade off types of prediction error. Must be
 nonnegative but will be normalized to sum to 1. The default is to make no
 adjustment.</p></dd>
 
+
+<dt>nsim</dt>
+<dd><p>The number of vectors to simulate. Defaults to 1.</p></dd>
+
+
+<dt>seed</dt>
+<dd><p>Used to seed the random number generator. See <code><a href="https://rdrr.io/r/stats/simulate.html" class="external-link">stats::simulate()</a></code>.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -209,6 +220,7 @@ columns for the race probabilities.</p>
 vector of individual race labels. Strongly not recommended for any kind of
 inferential purpose, as biases may be extreme and in unpredictable
 directions.</p></li>
+<li><p><code>simulate(bisg)</code>: Simulate race from the <code>Pr(R | G, X, S)</code> distribution.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="functions">Functions<a class="anchor" aria-label="anchor" href="#functions"></a></h2>
@@ -269,16 +281,16 @@ name supplements. <em>Science Advances</em>, 8(49), eadc9824.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 5,000 × 6</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    pr_white pr_black pr_hisp pr_asian pr_aian pr_other</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span>    0.969   0.003   0.002     0       0.016   0.01  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span>    0.196   0.783   0.009     0.003   0       0.009 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span>    0.982   0       0.006     0.009   0       0.003 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span>    0.647   0.317   0.018<span style="text-decoration: underline;">0</span>    0.001   0.003   0.014 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span>    0.985   0.001   0.005     0       0.002   0.007 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span>    0.660   0.247   0.051<span style="text-decoration: underline;">0</span>    0.006   0.008   0.028<span style="text-decoration: underline;">0</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span>    0.181   0.758   0.032<span style="text-decoration: underline;">0</span>    0.003   0.005   0.021<span style="text-decoration: underline;">0</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span>    0.985   0.007   0.008     0       0       0     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span>    0.817   0.166   0.003     0       0.001   0.013 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span>    0.907   0.075<span style="text-decoration: underline;">0</span>  0.006     0.003   0.002   0.007 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span>    0.966   0.004   0.004     0       0.017   0.009 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span>    0.227   0.744   0.009     0.003   0.002   0.015 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span>    0.974   0.002   0.007     0.006   0.002   0.009 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span>    0.700   0.270   0.01      0.002   0.001   0.017 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span>    0.979   0.001   0.006     0       0.004   0.01  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span>    0.629   0.274   0.041<span style="text-decoration: underline;">0</span>    0.006   0.005   0.045<span style="text-decoration: underline;">0</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span>    0.179   0.749   0.027<span style="text-decoration: underline;">0</span>    0.007   0.006   0.032<span style="text-decoration: underline;">0</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span>    0.986   0.001   0.009     0.004   0       0     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span>    0.792   0.193   0.003     0.001   0.001   0.01  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span>    0.904   0.081<span style="text-decoration: underline;">0</span>  0.003     0       0.006   0.006 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 4,990 more rows</span></span>
 </code></pre></div>
     </div>

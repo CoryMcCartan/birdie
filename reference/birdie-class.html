@@ -21,7 +21,7 @@ analogous to the output of bisg() with updated race probabilities."><meta proper
     
     <a class="navbar-brand me-2" href="../index.html">birdie</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -174,9 +174,11 @@ directly. The generics listed here should be used instead.</p>
     <div class="section level2">
     <h2 id="functions">Functions<a class="anchor" aria-label="anchor" href="#functions"></a></h2>
     
-<ul><li><p><code>coef(birdie)</code>: Return estimated outcome-given-race distributions.</p></li>
+<ul><li><p><code>coef(birdie)</code>: Return estimated outcome-given-race distributions.
+When <code>subgroup=FALSE</code> this always returns a finite-population estimate of
+the outcome-given-race distribution for the observed sample.</p></li>
 <li><p><code>fitted(birdie)</code>: Return an updated race probability table. <code><a href="bisg.html">bisg()</a></code>
-estimates <code>Pr(R | G, X, S)</code>; this table estimates <code>Pr(R | Y, G, X, S)</code>.</p></li>
+estimates <code>Pr(R | G, X, S)</code>; this table is <code>Pr(R | Y, G, X, S, Theta-hat)</code>.</p></li>
 <li><p><code>residuals(birdie)</code>: Return the residuals for the outcome variable as a
 matrix. Useful in sensitivity analyses and to get an idea of how well race,
 location, names, etc. predict the outcome.</p></li>
@@ -185,10 +187,11 @@ factor vector of individual race labels. Strongly not recommended for any
 kind of inferential purpose, as biases may be extreme and in unpredictable
 directions.</p></li>
 <li><p><code>simulate(birdie)</code>: Simulate race from the posterior distribution
-<code>Pr(R | Y, G, X, S, Theta-MAP)</code>. Does not account for uncertainty in model
+<code>Pr(R | Y, G, X, S, Theta-hat)</code>. Does not account for uncertainty in model
 parameters.</p></li>
 <li><p><code>plot(birdie)</code>: Visualize the estimated conditional distributions
-for a BIRDiE model.</p></li>
+for a BIRDiE model. If available, marginal standard error estimates (<code>$se</code>)
+will be visualized with 95% confidence-level error bars.</p></li>
 <li><p><code>tidy(birdie)</code>: Put BIRDiE model coefficients in a tidy format.</p></li>
 <li><p><code>glance(birdie)</code>: Glance at a BIRDiE model.</p></li>
 <li><p><code>augment(birdie)</code>: Augment data with individual race predictions from a BIRDiE model.</p></li>

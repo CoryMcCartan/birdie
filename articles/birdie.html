@@ -38,7 +38,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">birdie</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -194,7 +194,7 @@ the probabilities.</p>
 <span><span class="co">#&gt; 0.656372686 0.277807934 0.032031532 0.010139008 0.009564482 0.014084358</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">colMeans</a></span><span class="op">(</span><span class="va">r_probs_me</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  pr_white  pr_black   pr_hisp  pr_asian   pr_aian  pr_other </span></span>
-<span><span class="co">#&gt; 0.7088246 0.2003042 0.0434176 0.0185575 0.0118295 0.0170666</span></span>
+<span><span class="co">#&gt; 0.7089827 0.2001361 0.0433643 0.0185663 0.0118733 0.0170773</span></span>
 <span><span class="co"># actual </span></span>
 <span><span class="va">p_r</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -258,9 +258,9 @@ probabilities.</p>
 <span><span class="co">#&gt; → Prior scale on intercepts: 2.0</span></span>
 <span><span class="co">#&gt; → Prior scale on fixed effects coefficients: 0.2</span></span>
 <span><span class="co">#&gt; → Prior mean of random effects standard deviation: 0.05</span></span>
-<span><span class="co">#&gt; ⠙ EM iterations 14 done (6.7/s) | 2.1s</span></span>
+<span><span class="co">#&gt; ⠙ EM iterations 13 done (6.4/s) | 2s</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; ⠙ EM iterations 74 done (18/s) | 4.1s</span></span>
+<span><span class="co">#&gt; ⠙ EM iterations 74 done (18/s) | 4.2s</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #555555;">This message is displayed once every 8 hours.</span></span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
@@ -383,19 +383,20 @@ complete-pooling model to understand the rough amount of sampling
 variation present. For most datasets, non-sampling error in Census data
 and violations of model assumptions will cause much more bias than
 sampling variance.</p>
-<p>To bootstrap, simply pass a nonzero value of <code>se_boot</code> to
-<code><a href="../reference/birdie.html">birdie()</a></code>. This parameter controls the number of bootstrap
-replicates. The standard errors are accessible with <code>$se</code> or
-using the <code><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov()</a></code> generic.</p>
+<p>To bootstrap, simply set <code>algorithm="em_boot"</code> in
+<code><a href="../reference/birdie.html">birdie()</a></code>. The <code>iter</code> parameter controls the
+number of bootstrap replicates. The standard errors are accessible with
+<code>$se</code> or using the <code><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov()</a></code> generic, and will be
+plotted with <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fit_boot</span> <span class="op">=</span> <span class="fu"><a href="../reference/birdie.html">birdie</a></span><span class="op">(</span><span class="va">r_probs</span>, <span class="va">turnout</span> <span class="op">~</span> <span class="fl">1</span>, data<span class="op">=</span><span class="va">pseudo_vf</span>, se_boot<span class="op">=</span><span class="fl">200</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">fit_boot</span> <span class="op">=</span> <span class="fu"><a href="../reference/birdie.html">birdie</a></span><span class="op">(</span><span class="va">r_probs</span>, <span class="va">turnout</span> <span class="op">~</span> <span class="fl">1</span>, data<span class="op">=</span><span class="va">pseudo_vf</span>, algorithm<span class="op">=</span><span class="st">"em_boot"</span>, iter<span class="op">=</span><span class="fl">200</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Using weakly informative empirical Bayes prior for Pr(Y | R)</span></span>
 <span><span class="co">#&gt; <span style="color: #555555;">This message is displayed once every 8 hours.</span></span></span>
 <span></span>
 <span><span class="va">fit_boot</span><span class="op">$</span><span class="va">se</span></span>
-<span><span class="co">#&gt;           white      black       hisp      asian       aian       other</span></span>
-<span><span class="co">#&gt; no  0.007569618 0.01045631 0.03013438 0.05059397 0.04739559 0.007533608</span></span>
-<span><span class="co">#&gt; yes 0.007569618 0.01045631 0.03013438 0.05059397 0.04739559 0.007533608</span></span></code></pre></div>
+<span><span class="co">#&gt;           white       black       hisp      asian       aian       other</span></span>
+<span><span class="co">#&gt; no  0.007726828 0.009851345 0.02781129 0.04947339 0.04642906 0.007513743</span></span>
+<span><span class="co">#&gt; yes 0.007726828 0.009851345 0.02781129 0.04947339 0.04642906 0.007513743</span></span></code></pre></div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
