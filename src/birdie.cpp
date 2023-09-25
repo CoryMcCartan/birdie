@@ -196,6 +196,7 @@ Eigen::VectorXd gibbs_dir_step(
 }
 
 // multiplication helper
+// [[Rcpp::export(rng=false)]]
 Eigen::VectorXd resid_mult(const Eigen::VectorXd m_coef, const Eigen::VectorXi idxs,
                            const Eigen::MatrixXd r_probs, int k, int n_k) {
     int N = r_probs.rows();

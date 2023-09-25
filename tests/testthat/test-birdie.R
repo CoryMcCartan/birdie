@@ -27,6 +27,18 @@ test_that("BIRDiE models fit", {
         suppressWarnings(
             birdie(r_probs, turnout == "yes" ~ X, family=gaussian(), data=pseudo_vf, ctrl=ctrl),
         ), "birdie")
+
+    expect_s3_class(
+        res <- birdie(r_probs, turnout ~ proc_zip(zip), data=pseudo_vf,
+                      algorithm = "em_boot", iter=50, ctrl=ctrl),
+        "birdie")
+    expect_false(is.null(res$vcov))
+
+    expect_s3_class(
+        res <- birdie(r_probs, turnout ~ proc_zip(zip), data=pseudo_vf,
+                      algorithm = "gibbs", iter=50, ctrl=ctrl),
+        "birdie")
+    expect_false(is.null(res$vcov))
 })
 
 test_that("BIRDiE produces correct and stable output", {
