@@ -136,11 +136,7 @@ boot_wtd <- function(R=10, Y, n_y, p_rxs) {
 
     out = matrix(nrow=n_r*n_y, ncol=R)
 
-    if (N > 1000 && R > 100) {
-        mk_wt = function() tabulate(sample.int(N, N, replace=TRUE), N)
-    } else { # more computationally intensive but smoother
-        mk_wt = function() N * as.numeric(rdirichlet(1, ones))
-    }
+    mk_wt = weight_maker(N, R, ones)
 
     cli::cli_progress_bar("Bootstrapping", total=R)
     for (i in seq_len(R)) {

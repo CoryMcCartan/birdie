@@ -92,6 +92,8 @@ directly. The generics listed here should be used instead.
 \section{Functions}{
 \itemize{
 \item \code{coef(birdie)}: Return estimated outcome-given-race distributions.
+When \code{subgroup=FALSE} this always returns a finite-population estimate of
+the outcome-given-race distribution for the observed sample.
 
 \item \code{fitted(birdie)}: Return an updated race probability table. \code{\link[=bisg]{bisg()}}
 estimates \code{Pr(R | G, X, S)}; this table is \code{Pr(R | Y, G, X, S, Theta-hat)}.

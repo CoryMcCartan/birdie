@@ -1,6 +1,7 @@
 #ifndef RANDOM_H
 #define RANDOM_H
 
+#include <Rmath.h>
 #include "birdie_types.h"
 
 /*
@@ -14,8 +15,8 @@ ArrayXi rcat(int n, const ArrayXd probs);
 int rcatp(const ArrayXd probs, double u);
 
 /*
- * Sample `n` iid vectors from a Dirichlet distribution with parameter `alpha`
+ * Sample iid vector of length `m` from a Dirichlet distribution with parameter `alpha`
  */
-MatrixXd rdirichlet(int n, const VectorXd alpha);
+VectorXd rdirichlet(const VectorXd alpha, const int m);
 
 #endif

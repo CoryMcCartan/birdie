@@ -21,8 +21,8 @@ em_dirichlet_wt <- function(curr, Y, X, wt, p_rxs, prior_yr, n_x) {
     .Call(`_birdie_em_dirichlet_wt`, curr, Y, X, wt, p_rxs, prior_yr, n_x)
 }
 
-resid_mult <- function(m_coef, idxs, r_probs, k, n_k) {
-    .Call(`_birdie_resid_mult`, m_coef, idxs, r_probs, k, n_k)
+gibbs_dir_step <- function(Y, X, wt, p_ryxs, prior_yr, n_x) {
+    .Call(`_birdie_gibbs_dir_step`, Y, X, wt, p_ryxs, prior_yr, n_x)
 }
 
 safeexpoffset <- function(Y) {
@@ -37,7 +37,7 @@ mat_rcatp <- function(probs) {
     .Call(`_birdie_mat_rcatp`, probs)
 }
 
-rdirichlet <- function(n, alpha) {
-    .Call(`_birdie_rdirichlet`, n, alpha)
+rdirichlet <- function(alpha, m) {
+    .Call(`_birdie_rdirichlet`, alpha, m)
 }
 

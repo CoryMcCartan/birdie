@@ -15,6 +15,11 @@
 #' Full Bayesian inference is suppored via Gibbs sampling for the
 #' Categorical-Dirichlet and Normal linear models as well.
 #'
+#' Whatever model or method is used, a finite-population estimate of the
+#' outcome-given-race distribution for the entire observed sample is always
+#' calculated and stored as `$est` in the returned object, which can be accessed
+#' with [coef.birdie()] as well.
+#'
 #' The Categorical-Dirichlet model is specified as follows: \deqn{
 #'     Y_i \mid R_i, X_i, \Theta \sim \text{Categorical}(\theta_{R_iX_i}) \\
 #'     \theta_{rx} \sim \text{Dirichlet}(\alpha_r),
@@ -198,7 +203,8 @@ birdie <- function(r_probs, formula, data, family=cat_dir(), prior=NULL, weights
     t1 <- Sys.time()
     if (model == "cat_dir") {
         if (algorithm == "gibbs") {
-            cli_abort("Gibbs sampling not yet implemented for {.fn {family$family}}.")
+            res = gibbs_cat_dir(Y_vec, p_rxs, tt, data, weights,
+                                prior, races, iter, warmup, ctrl)
         } else {
             se_boot = if (algorithm == "em_boot") iter else 0L
             res = em_cat_dir(Y_vec, p_rxs, tt, data, weights,
@@ -267,6 +273,7 @@ birdie <- function(r_probs, formula, data, family=cat_dir(), prior=NULL, weights
         prior = res$prior,
         tbl_gx = as_tibble(res$tbl_gx),
         vec_gx = res$vec_gx,
+        R_imp = if (algorithm == "gibbs") res$R_imp else NULL,
         y = Y_vec,
         y_name = covars[1],
         prefix = prefix,

@@ -32,20 +32,15 @@ Eigen::VectorXi mat_rcatp(Eigen::MatrixXd probs) {
 }
 
 // [[Rcpp::export]]
-MatrixXd rdirichlet(int n, const VectorXd alpha) {
-    int m = alpha.size();
-    MatrixXd out(n, m);
-    ArrayXd sums(n);
+VectorXd rdirichlet(const VectorXd alpha, const int m) {
+    VectorXd out(m);
+    double sum = 0.0;
     for (int i = 0; i < m; i++) {
-        out.col(i) = as<VectorXd>(rgamma(n, alpha[i]));
-        if (i == 0) {
-            sums = out.col(i).array();
-        } else {
-            sums += out.col(i).array();
-        }
+        out[i] = R::rgamma(alpha[i], 1);
+        sum += out[i];
     }
     for (int i = 0; i < m; i++) {
-        out.col(i) = out.col(i).array() / sums;
+        out[i] = out[i] / sum;
     }
     return out;
 }

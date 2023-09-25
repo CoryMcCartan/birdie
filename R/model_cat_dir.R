@@ -10,7 +10,7 @@ em_cat_dir <- function(Y, p_rxs, formula, data, weights, prior, races, boot, ctr
     nms = levels(Y)
     n_y = nlevels(Y)
     n_r = ncol(p_rxs)
-    prior = check_make_prior_cat_dir(prior, Y, p_rxs, races)
+    prior = check_make_prior_cat_dir(prior, Y, p_rxs, "em", races)
     Y = as.integer(Y)
 
     # create unique group IDs
@@ -101,8 +101,82 @@ boot_cat_dir <- function(mle, R=10, Y, X, weights, p_rxs, prior, n_x, ctrl) {
 }
 
 
+gibbs_cat_dir <- function(Y, p_rxs, formula, data, weights, prior, races, iter, warmup, ctrl) {
+    d_model = model.frame(formula, data=data, na.action=na.fail)[-1]
+    use_w = any(weights != 1.0)
 
-check_make_prior_cat_dir <- function(prior, Y, p_rxs, races) {
+    if (!check_discrete(Y))
+        cli_abort("Response variable must be a character or factor with no missing values.",
+                  call=parent.frame())
+    Y = as.factor(Y)
+    nms = levels(Y)
+    N = length(Y)
+    n_y = nlevels(Y)
+    n_r = ncol(p_rxs)
+    prior = check_make_prior_cat_dir(prior, Y, p_rxs, "gibbs", races)
+    alpha_prior_vec = c(prior$alpha)
+    Y = as.integer(Y)
+
+    # create unique group IDs
+    X = to_unique_ids(d_model)
+    idx_sub = vctrs::vec_unique_loc(X)
+    ones_vec = rep_along(Y, 1)
+    ones_mat = matrix(1, nrow=n_y, ncol=n_r)
+    n_x = max(X)
+    est_dim = c(n_r, n_y, n_x)
+
+    # init
+    if (iter <= 0 || warmup < 0) {
+        cli_abort("{.arg iter} and {.arg warmup} must be positive integers.",
+                  call=parent.frame())
+    }
+    ests = matrix(nrow = prod(est_dim), ncol = as.integer(iter + warmup + 1))
+    ests_glb = matrix(nrow = n_r*n_y, ncol = ncol(ests))
+    p_ryxs = matrix(0, nrow = N, ncol = n_r)
+    ests[, 1] = dirichlet_map(Y, X, p_rxs * weights, prior$alpha, n_x)
+    n_imp_ish = 50
+    imp_ctr = 0
+    R_imp = matrix(nrow = N, ncol = n_imp_ish + 1)
+
+    pb_id = cli::cli_progress_bar("Gibbs iterations", total=ncol(ests)-1)
+    for (i in seq(2, ncol(ests))) {
+        cli::cli_progress_update(id=pb_id)
+        p_ryxs_tmp = calc_bayes(Y, X, ests[, i-1], p_rxs, n_x, n_y)
+        if (i > 1 + warmup) {
+            p_ryxs = p_ryxs + p_ryxs_tmp
+            if (i %% (iter / 50) == 0) { # store
+                imp_ctr = imp_ctr + 1
+                R_imp[, imp_ctr] = mat_rcatp(p_ryxs)
+            }
+        }
+        ests[, i] = gibbs_dir_step(Y, X, weights, p_ryxs_tmp, prior$alpha, n_x)
+        ests_glb[, i] = dirichlet_map(Y, ones_vec, p_ryxs_tmp * weights, ones_mat, 1)
+    }
+    cli::cli_progress_done(id=pb_id)
+
+    p_ryxs = p_ryxs / iter
+    idx_use = -seq_len(warmup + 1)
+    ests = rowMeans(ests[, idx_use])
+    ests_glb = ests_glb[, idx_use]
+    est = rowMeans(ests_glb) |>
+        matrix(nrow=n_y, ncol=n_r, byrow=TRUE)
+    rownames(est) = nms
+
+    list(map = est,
+         ests = to_array_yrx(ests, est_dim),
+         p_ryxs = p_ryxs,
+         vcov = cov(t(ests_glb)),
+         tbl_gx = d_model[idx_sub, , drop=FALSE],
+         vec_gx = X,
+         prior = prior,
+         R_imp = R_imp[, seq_len(imp_ctr)],
+         iters = iter,
+         converge = NA)
+}
+
+
+
+check_make_prior_cat_dir <- function(prior, Y, p_rxs, algorithm, races) {
     n_r = length(races)
     stopifnot(is.factor(Y))
     n_y = nlevels(Y)
@@ -113,7 +187,11 @@ check_make_prior_cat_dir <- function(prior, Y, p_rxs, races) {
         ones_mat = matrix(1, nrow=n_y, ncol=n_r)
         est0 = dirichlet_map(Y, rep_along(Y, 1), p_rxs, ones_mat, 1) |>
             matrix(n_y, n_r, byrow=TRUE)
-        prior = list(alpha = ones_mat + est0)
+        if (algorithm == "em") {
+            prior = list(alpha = ones_mat + est0)
+        } else {
+            prior = list(alpha = est0)
+        }
     } else if (length(prior) == 1 && is.na(prior)) {
         prior = list(
             alpha = matrix(1 + 100*.Machine$double.eps, nrow=n_y, ncol=n_r)
@@ -146,7 +224,7 @@ check_make_prior_cat_dir <- function(prior, Y, p_rxs, races) {
     if (any(prior$alpha < 0)) {
         cli_abort("{.arg prior$alpha} must have nonnegative entries", call=parent.frame())
     }
-    if (any(prior$alpha <= 1)) {
+    if (algorithm != "gibbs" && any(prior$alpha <= 1)) {
         cli_warn("A {.arg prior$alpha} with entries that are not
                      strictly greater than 1 may lead to numerical
                      issues.", call=parent.frame())
