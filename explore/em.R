@@ -29,7 +29,8 @@ Y =  data$party
 
 xw = est_weighted(r_probs, Y ~ 1, data)
 x0 = birdie(r_probs, Y ~ 1, data)
-x1 = birdie(r_probs, Y ~ zip, data)
+x1 = birdie(r_probs, Y ~ zip, data, algorithm="em_boot")
+x1b = birdie(r_probs, Y ~ zip, data, algorithm="gibbs", iter=1e3)
 x2 = birdie(r_probs, Y ~ white + black + hisp + (1|zip), data,
             prior = list(scale_int=2, scale_sigma=0.05, scale_beta=0.2),
             family = cat_mixed(), ctrl=birdie.ctrl(abstol=5e-6))
@@ -53,6 +54,9 @@ x2 = birdie(r_probs, party=='dem' ~ black + white, data, family = gaussian(),
     }
     par(mfrow=c(1,1), mar=c(5, 4, 4, 2) + 0.1)
 }
+
+sum(abs(coef(x1) - p_xr) %*% p_r) / 2
+sum(abs(coef(x1b) - p_xr) %*% p_r) / 2
 
 sum(colSums(abs(coef(x0) - p_xr)) * p_r) / 2
 sum(colSums(abs(coef(x1) - p_xr)) * p_r) / 2

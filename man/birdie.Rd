@@ -132,6 +132,11 @@ Categorical-Dirichlet and Normal linear models via bootstrapping.
 Full Bayesian inference is suppored via Gibbs sampling for the
 Categorical-Dirichlet and Normal linear models as well.
 
+Whatever model or method is used, a finite-population estimate of the
+outcome-given-race distribution for the entire observed sample is always
+calculated and stored as \verb{$est} in the returned object, which can be accessed
+with \code{\link[=coef.birdie]{coef.birdie()}} as well.
+
 The Categorical-Dirichlet model is specified as follows: \deqn{
     Y_i \mid R_i, X_i, \Theta \sim \text{Categorical}(\theta_{R_iX_i}) \\
     \theta_{rx} \sim \text{Dirichlet}(\alpha_r),

@@ -109,7 +109,7 @@ weight_maker <- function(N, R, weights) {
     if (N > 1000 && R > 100) {
         function() tabulate(sample.int(N, sum(weights), replace=TRUE), N) / N
     } else { # more computationally intensive but smoother
-        function() as.numeric(rdirichlet(1, weights))
+        function() rdirichlet(weights, N)
     }
 }
 

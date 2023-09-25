@@ -7,9 +7,9 @@
 Eigen::VectorXd dirichlet_map(
         const Eigen::VectorXi Y, const Eigen::VectorXi X,
         const Eigen::MatrixXd p_rxs, const Eigen::MatrixXd prior_yr, int n_x) {
-    int N = Y.rows();
-    int n_y = prior_yr.rows();
-    int n_r = p_rxs.cols();
+    const int N = Y.rows();
+    const int n_y = prior_yr.rows();
+    const int n_r = p_rxs.cols();
 
     Eigen::VectorXd post(n_x * n_y * n_r);
     Eigen::VectorXd prior_sum = prior_yr.colwise().sum().array() - n_y;
@@ -47,9 +47,9 @@ Eigen::VectorXd em_dirichlet(
         const Eigen::VectorXi Y, const Eigen::VectorXi X,
         const Eigen::MatrixXd p_rxs, const Eigen::MatrixXd prior_yr,
         int n_x, bool sum_only=false) {
-    int N = Y.size();
-    int n_y = prior_yr.rows();
-    int n_r = p_rxs.cols();
+    const int N = Y.size();
+    const int n_y = prior_yr.rows();
+    const int n_r = p_rxs.cols();
 
     // initialize output with prior
     VectorXd post(n_x * n_y * n_r);
@@ -101,9 +101,9 @@ Eigen::VectorXd em_dirichlet_wt(
         const Eigen::VectorXi Y, const Eigen::VectorXi X,
         const Eigen::VectorXd wt,
         const Eigen::MatrixXd p_rxs, const Eigen::MatrixXd prior_yr, int n_x) {
-    int N = Y.size();
-    int n_y = prior_yr.rows();
-    int n_r = p_rxs.cols();
+    const int N = Y.size();
+    const int n_y = prior_yr.rows();
+    const int n_r = p_rxs.cols();
 
     // initialize output with prior
     VectorXd post(n_x * n_y * n_r);
@@ -140,8 +140,62 @@ Eigen::VectorXd em_dirichlet_wt(
     return post;
 }
 
-// multiplication helper
+// Gibbs helper
 // [[Rcpp::export(rng=false)]]
+Eigen::VectorXd gibbs_dir_step(
+        const Eigen::VectorXi Y, const Eigen::VectorXi X,
+        const Eigen::VectorXd wt,
+        const Eigen::MatrixXd p_ryxs, const Eigen::MatrixXd prior_yr, int n_x) {
+    const int N = Y.size();
+    const int n_y = prior_yr.rows();
+    const int n_r = p_ryxs.cols();
+
+    // initialize output with prior
+    VectorXd post(n_x * n_y * n_r);
+    VectorXd prior_sum = prior_yr.colwise().sum().array() - n_y;
+    for (int i = 0; i < n_x; i++) {
+        for (int j = 0; j < n_y; j++) {
+            for (int k = 0; k < n_r; k++) {
+                post[est_idx(k, j, i, n_r, n_y)] = prior_yr(j, k);
+            }
+        }
+    }
+
+    // do Bayes, sample race
+    VectorXd pr_i(n_r);
+    VectorXd u = as<VectorXd>(runif(N));
+    for (int i = 0; i < N; i++) {
+        int R_i = rcatp(p_ryxs.row(i), u[i]) - 1;
+
+        int idx = est_idx(R_i, Y[i] - 1, X[i] - 1, n_r, n_y);
+        post[idx] += wt[i];
+    }
+
+    // sample posterior
+    MatrixXd sums(n_r, n_x);
+    for (int i = 0; i < n_x; i++) {
+        sums.col(i).setZero();
+        for (int j = 0; j < n_y; j++) {
+            for (int k = 0; k < n_r; k++) {
+                double shape = post[est_idx(k, j, i, n_r, n_y)];
+                double draw = R::rgamma(shape, 1);
+                post[est_idx(k, j, i, n_r, n_y)] = draw;
+                sums(k, i) += draw;
+            }
+        }
+    }
+
+    // normalize
+    for (int i = 0; i < n_x; i++) {
+        for (int j = 0; j < n_y; j++) {
+            post.segment(est_col(j, i, n_r, n_y), n_r).array() /= sums.col(i).array();
+        }
+    }
+
+    return post;
+}
+
+// multiplication helper
 Eigen::VectorXd resid_mult(const Eigen::VectorXd m_coef, const Eigen::VectorXi idxs,
                            const Eigen::MatrixXd r_probs, int k, int n_k) {
     int N = r_probs.rows();

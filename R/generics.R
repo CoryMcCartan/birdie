@@ -27,6 +27,8 @@ NULL
 #'   coefficient estimates as a 3D array.
 #'
 #' @describeIn birdie-class Return estimated outcome-given-race distributions.
+#'   When `subgroup=FALSE` this always returns a finite-population estimate of
+#'   the outcome-given-race distribution for the observed sample.
 #' @export
 coef.birdie <- function(object, subgroup=FALSE, ...) {
     if (isFALSE(subgroup)) {
@@ -102,7 +104,21 @@ predict.birdie <- function(object, adj=NULL, ...) {
 #'   parameters.
 #' @export
 simulate.birdie <- function(object, nsim = 1, seed = NULL, ...) {
-    simulate_race(as.matrix(object$p_ryxs), nsim, seed, object$prefix)
+    if (object$algo$algorithm == "gibbs") {
+        n_available = ncol(object$R_imp)
+        if (nsim > n_available) {
+            cli_warn(c("Not enough Gibbs imputations available.",
+                       "i"="Falling back to simulation from Pr(R | Y, G, X, S).",
+                       "x"="Results are only approximate."))
+            return(simulate_race(as.matrix(object$p_ryxs), nsim, seed, object$prefix))
+        }
+        out = object$R_imp[, sample(n_available, nsim), drop=FALSE]
+        levels(out) = colnames(object$map)
+        class(out) = "factor"
+        out
+    } else {
+        simulate_race(as.matrix(object$p_ryxs), nsim, seed, object$prefix)
+    }
 }
 
 simulate_race <- function(m, nsim = 1, seed = NULL, prefix="pr_") {
@@ -112,9 +128,8 @@ simulate_race <- function(m, nsim = 1, seed = NULL, prefix="pr_") {
         mat_rcatp(m)
     }))
 
-    r_names = substring(colnames(m), nchar(prefix)+1L)
-    out = factor(out, levels=seq_len(ncol(m)), labels=r_names)
-    dim(out) = c(nrow(m), nsim)
+    levels(out) = substring(colnames(m), nchar(prefix)+1L)
+    class(out) = "factor"
 
     out
 }
