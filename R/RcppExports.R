@@ -25,6 +25,10 @@ gibbs_dir_step <- function(Y, X, wt, p_ryxs, prior_yr, n_x) {
     .Call(`_birdie_gibbs_dir_step`, Y, X, wt, p_ryxs, prior_yr, n_x)
 }
 
+resid_mult <- function(m_coef, idxs, r_probs, k, n_k) {
+    .Call(`_birdie_resid_mult`, m_coef, idxs, r_probs, k, n_k)
+}
+
 safeexpoffset <- function(Y) {
     .Call(`_birdie_safeexpoffset`, Y)
 }
