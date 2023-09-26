@@ -6,7 +6,14 @@
 \alias{summary.est_weighted}
 \title{Calculate Weighted Estimate of (Discrete) Outcomes By Race}
 \usage{
-est_weighted(r_probs, formula, data = NULL, prefix = "pr_", se_boot = 0)
+est_weighted(
+  r_probs,
+  formula,
+  data = NULL,
+  weights = NULL,
+  prefix = "pr_",
+  se_boot = 0
+)
 
 \method{print}{est_weighted}(x, ...)
 
@@ -29,10 +36,12 @@ probabilities will be selected as those with names starting with \code{prefix}.
 The default will work with the output of \code{\link[=bisg]{bisg()}}.}
 
 \item{se_boot}{The number of bootstrap replicates to use to compute
-approximate standard errors for the estimator. When there are fewer than
-1,000 individuals or 100 or fewer replicates, a Bayesian bootstrap is used
-instead (i.e., weights are drawn from a \eqn{\text{Dirichlet}(1, 1, ...,
-  1)} distribution, which produces more reliable estimates.}
+an approximate covariance matrix for the estimator. If no bootstrapping is
+used, an analytical estimate of standard errors will be returned as \verb{$se}.
+For bootstrapping, when there are fewer than 1,000 individuals or 100 or
+fewer replicates, a Bayesian bootstrap is used instead (i.e., weights are
+drawn from a \eqn{\text{Dirichlet}(1, 1, ..., 1)} distribution, which
+produces more reliable estimates.}
 
 \item{...}{Additional arguments to generic methods (ignored).}
 
@@ -41,7 +50,8 @@ instead (i.e., weights are drawn from a \eqn{\text{Dirichlet}(1, 1, ...,
 \value{
 An object of class \code{est_weighted}, inheriting from
 \code{\link[=birdie-class]{birdie}}, for which many methods are available. The
-model estimates may be accessed with \code{coef()}.
+model estimates may be accessed with \code{coef()}. Uncertainty estimates, if
+available, can be accessed with \verb{$se} and \code{\link[=vcov.birdie]{vcov.birdie()}}.
 }
 \description{
 Calculates the "standard" weighted estimator of conditional distributions of
@@ -51,6 +61,10 @@ where \eqn{S} and \eqn{X} are the last names and covariates (possibly
 including geography) used in making the BISG probabilities. In most cases
 this assumption is not plausible and \code{\link[=birdie]{birdie()}} should be used instead. See
 the references below for more discussion as to selecting the right estimator.
+
+Up to Monte Carlo error, the weighted estimate is equivalent to performing
+multiple imputations of the race vector from the BISG probabilities and then
+using them inside a weighted average or linear regression.
 }
 \section{Methods (by generic)}{
 \itemize{

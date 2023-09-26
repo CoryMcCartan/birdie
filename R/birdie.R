@@ -193,11 +193,7 @@ birdie <- function(r_probs, formula, data, family=cat_dir(), prior=NULL, weights
         cli_abort("{.arg data} and {.arg r_probs} must have the same number of rows.")
 
     n_r = ncol(p_rxs)
-    if (is.null(weights)) {
-        weights = rep_along(Y_vec, 1.0)
-    } else if (!is.numeric(weights) && length(weights) != length(Y_vec)) {
-        cli_abort("{.arg weights} must be a numeric vector with one entry for each observation.")
-    }
+    weights = check_make_weights(weights, Y_vec)
 
     # run inference
     t1 <- Sys.time()
