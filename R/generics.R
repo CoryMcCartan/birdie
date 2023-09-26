@@ -280,6 +280,7 @@ print.birdie <- function(x, ...) {
         x$algo$model,
         cat_dir = "Categorical-Dirichlet {.pkg BIRDiE} model",
         cat_mixed = "Categorical mixed-effects {.pkg BIRDiE} model",
+        lm = "Normal linear {.pkg BIRDiE} model",
         "{.pkg BIRDiE} model"
     ))
     cli::cat_line("Formula: ", deparse(x$call$formula))
@@ -307,6 +308,7 @@ summary.birdie <- function(object, ...) {
         object$algo$model,
         cat_dir = "Categorical-Dirichlet {.pkg BIRDiE} model",
         cat_mixed = "Categorical mixed-effects {.pkg BIRDiE} model",
+        lm = "Normal linear {.pkg BIRDiE} model",
         "{.pkg BIRDiE} model"
     ))
     cli::cat_line("Formula: ", deparse(object$call$formula))

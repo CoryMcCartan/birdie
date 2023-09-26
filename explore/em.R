@@ -39,6 +39,8 @@ x3b = birdie(r_probs, Yc ~ black + white, data, family = gaussian(), ctrl=birdie
 x2 = birdie(r_probs, party=='dem' ~ black + white, data, family = gaussian(),
             ctrl=birdie.ctrl(abstol=5e-6),
             prior=list(scale_beta=2.5, scale_int=5, n_sigma=20000, loc_sigma=0.5))
+x3 = birdie(r_probs, party == "dem" ~ 1, data, family=gaussian(),
+            algorithm="gibbs", ctrl=birdie.ctrl(abstol=1e-4, fix_sigma=TRUE))
 
 
 {

@@ -146,7 +146,7 @@ gibbs_cat_dir <- function(Y, p_rxs, formula, data, weights, prior, races, iter, 
             p_ryxs = p_ryxs + p_ryxs_tmp
             if (i %% (iter / 50) == 0) { # store
                 imp_ctr = imp_ctr + 1
-                R_imp[, imp_ctr] = mat_rcatp(p_ryxs)
+                R_imp[, imp_ctr] = mat_rcatp(p_ryxs_tmp)
             }
         }
         ests[, i] = gibbs_dir_step(Y, X, weights, p_ryxs_tmp, prior$alpha, n_x)
