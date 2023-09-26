@@ -63,19 +63,36 @@ All arguments have defaults.</p>
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">birdie.ctrl</span><span class="op">(</span></span>
+<span>  abstol <span class="op">=</span> <span class="fl">1e-06</span>,</span>
+<span>  reltol <span class="op">=</span> <span class="fl">1e-06</span>,</span>
 <span>  max_iter <span class="op">=</span> <span class="fl">1000</span>,</span>
+<span>  fix_sigma <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  accel <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"squarem"</span>, <span class="st">"anderson"</span>, <span class="st">"daarem"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
 <span>  order <span class="op">=</span> <span class="kw"><a href="https://rdrr.io/r/base/switch.html" class="external-link">switch</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/match.arg.html" class="external-link">match.arg</a></span><span class="op">(</span><span class="va">accel</span><span class="op">)</span>, none <span class="op">=</span> <span class="fl">0L</span>, anderson <span class="op">=</span> <span class="op">-</span><span class="fl">1L</span>, daarem <span class="op">=</span> <span class="op">-</span><span class="fl">1L</span>, squarem <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span>,</span>
-<span>  anderson_restart <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  abstol <span class="op">=</span> <span class="fl">1e-06</span>,</span>
-<span>  reltol <span class="op">=</span> <span class="fl">1e-06</span></span>
+<span>  anderson_restart <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <dl><dt>max_iter</dt>
+    <dl><dt>abstol</dt>
+<dd><p>The absolute tolerance used in checking convergence or in
+estimating linear model coefficients.</p></dd>
+
+
+<dt>reltol</dt>
+<dd><p>The relative tolerance used in checking convergence.
+Ignored if <code>accel = "squarem"</code> or <code>"daarem"</code>.</p></dd>
+
+
+<dt>max_iter</dt>
 <dd><p>The maximum number of EM iterations.</p></dd>
+
+
+<dt>fix_sigma</dt>
+<dd><p>If <code>TRUE</code> when <code>model=gaussian()</code>, fix sigma to an initial
+estimate, in order to avoid estimation collapse when the outcomes are
+discrete.</p></dd>
 
 
 <dt>accel</dt>
@@ -97,15 +114,6 @@ order to be determined by problem size).</p></dd>
 
 <dt>anderson_restart</dt>
 <dd><p>Whether to use restarts in Anderson acceleration.</p></dd>
-
-
-<dt>abstol</dt>
-<dd><p>The absolute tolerance used in checking convergence.</p></dd>
-
-
-<dt>reltol</dt>
-<dd><p>The relative tolerance used in checking convergence.
-Ignored if <code>accel = "squarem"</code> or <code>"daarem"</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -129,13 +137,14 @@ Journal of Computational and Graphical Statistics, 28(4), 834-846.</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="fu">birdie.ctrl</span><span class="op">(</span>max_iter<span class="op">=</span><span class="fl">100</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> List of 6</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  $ max_iter: int 100</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  $ accel   :function (init, em_step, ctrl, n_x = 1, ...)  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  $ order   : num 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  $ restart : logi TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  $ abstol  : num 1e-06</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  $ reltol  : num 1e-06</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> List of 7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ max_iter : int 100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ accel    :function (init, em_step, ctrl, n_x = 1, ...)  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ order    : num 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ restart  : logi TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ fix_sigma: logi FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ abstol   : num 1e-06</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ reltol   : num 1e-06</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
