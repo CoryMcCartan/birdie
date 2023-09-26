@@ -21,6 +21,7 @@
 #'   covariates on the right-hand side. Subgroup estimates are available with
 #'   `coef(..., subgroup=TRUE)` and `tidy(..., subgroup=TRUE)`.
 #' @param data An optional data frame containing the variables named in `formula`.
+#' @param weights An optional numeric vector specifying weights.
 #' @param prefix If `r_probs` is a data frame, the columns containing racial
 #'   probabilities will be selected as those with names starting with `prefix`.
 #'   The default will work with the output of [bisg()].
