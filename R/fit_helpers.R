@@ -104,6 +104,23 @@ to_ests_vec <- function(par_l, n_y, n_r, n_x) {
     as.numeric(aperm(out, c(1L, 3L, 2L)))
 }
 
+# construct obs weights
+check_make_weights <- function(weights, Y_vec) {
+    if (is.null(weights)) {
+        weights = rep_along(Y_vec, 1.0)
+    } else if (!is.numeric(weights) && length(weights) != length(Y_vec)) {
+        cli_abort("{.arg weights} must be a numeric vector with one entry for each observation.",
+                  call=parent.frame())
+    }
+    if (sum(weights) <= 1) {
+        cli_abort(c("{.arg weights} suggest at most one effective observation
+                    ({.code sum(weights) <= 1}).",
+                    ">"="Supply larger weights or more observations."),
+                  call=parent.frame())
+    }
+    weights
+}
+
 # bootstrap helper
 weight_maker <- function(N, R, weights) {
     if (N > 1000 && R > 100) {
