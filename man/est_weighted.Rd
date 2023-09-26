@@ -31,6 +31,8 @@ covariates on the right-hand side. Subgroup estimates are available with
 
 \item{data}{An optional data frame containing the variables named in \code{formula}.}
 
+\item{weights}{An optional numeric vector specifying weights.}
+
 \item{prefix}{If \code{r_probs} is a data frame, the columns containing racial
 probabilities will be selected as those with names starting with \code{prefix}.
 The default will work with the output of \code{\link[=bisg]{bisg()}}.}
