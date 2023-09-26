@@ -282,12 +282,12 @@ Available at <a href="https://arxiv.org/abs/2303.02580" class="external-link">ht
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Number of obs: 5,000</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Estimated distribution:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     white black  hisp asian  aian other</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> no  0.298  0.35 0.376 0.581 0.692 0.383</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> yes 0.702  0.65 0.624 0.419 0.308 0.617</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> no  0.298  0.35 0.374 0.576 0.689 0.383</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> yes 0.702  0.65 0.626 0.424 0.311 0.617</span>
 <span class="r-in"><span><span class="va">fit</span><span class="op">$</span><span class="va">se</span> <span class="co"># uncertainty quantification</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           white      black       hisp      asian       aian      other</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> no  0.007381543 0.01543953 0.01760567 0.03374139 0.03508664 0.09063584</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> yes 0.007381543 0.01543953 0.01760567 0.03374139 0.03508664 0.09063584</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           white      black       hisp     asian       aian     other</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> no  0.006920182 0.01843881 0.01556105 0.0355839 0.03891421 0.1149046</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> yes 0.006920182 0.01843881 0.01556105 0.0355839 0.03891421 0.1149046</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">fit</span> <span class="op">=</span> <span class="fu">birdie</span><span class="op">(</span><span class="va">r_probs</span>, <span class="va">turnout</span> <span class="op">~</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">zip</span><span class="op">)</span>, data<span class="op">=</span><span class="va">pseudo_vf</span>,</span></span>
 <span class="r-in"><span>             family<span class="op">=</span><span class="fu"><a href="birdie-family.html">cat_mixed</a></span><span class="op">(</span><span class="op">)</span>, ctrl<span class="op">=</span><span class="fu"><a href="birdie.ctrl.html">birdie.ctrl</a></span><span class="op">(</span>abstol<span class="op">=</span><span class="fl">1e-3</span><span class="op">)</span><span class="op">)</span></span></span>
