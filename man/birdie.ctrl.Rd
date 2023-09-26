@@ -5,16 +5,27 @@
 \title{Control of BIRDiE Model Fitting}
 \usage{
 birdie.ctrl(
+  abstol = 1e-06,
+  reltol = 1e-06,
   max_iter = 1000,
+  fix_sigma = FALSE,
   accel = c("squarem", "anderson", "daarem", "none"),
   order = switch(match.arg(accel), none = 0L, anderson = -1L, daarem = -1L, squarem = 1L),
-  anderson_restart = TRUE,
-  abstol = 1e-06,
-  reltol = 1e-06
+  anderson_restart = TRUE
 )
 }
 \arguments{
+\item{abstol}{The absolute tolerance used in checking convergence or in
+estimating linear model coefficients.}
+
+\item{reltol}{The relative tolerance used in checking convergence.
+Ignored if \code{accel = "squarem"} or \code{"daarem"}.}
+
 \item{max_iter}{The maximum number of EM iterations.}
+
+\item{fix_sigma}{If \code{TRUE} when \code{model=gaussian()}, fix sigma to an initial
+estimate, in order to avoid estimation collapse when the outcomes are
+discrete.}
 
 \item{accel}{The acceleration algorithm to use in doing EM. The default
 \code{"squarem"} is good for most purposes, though \code{"anderson"} may be faster
@@ -30,11 +41,6 @@ to the number of parameters for Anderson and DAAREM (default -1 allows the
 order to be determined by problem size).}
 
 \item{anderson_restart}{Whether to use restarts in Anderson acceleration.}
-
-\item{abstol}{The absolute tolerance used in checking convergence.}
-
-\item{reltol}{The relative tolerance used in checking convergence.
-Ignored if \code{accel = "squarem"} or \code{"daarem"}.}
 }
 \value{
 A list containing the control parameters.

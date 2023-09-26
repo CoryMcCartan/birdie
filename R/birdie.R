@@ -228,7 +228,8 @@ birdie <- function(r_probs, formula, data, family=cat_dir(), prior=NULL, weights
         dimnames(res$ests) = c(dimnames(res$map), list(tbl_gx_names(res$tbl_gx)))
     } else if (model == "lm") {
         if (algorithm == "gibbs") {
-            cli_abort("Gibbs sampling not yet implemented for {.fn {family$family}}.")
+            res = gibbs_lm(Y_vec, p_rxs, tt, data, weights,
+                        prior, races, iter, warmup, ctrl)
         } else {
             se_boot = if (algorithm == "em_boot") iter else 0L
             res = em_lm(Y_vec, p_rxs, tt, data, weights,

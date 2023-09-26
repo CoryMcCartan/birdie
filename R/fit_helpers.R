@@ -4,7 +4,14 @@
 #' Constructs control parameters for BIRDiE model fitting.
 #' All arguments have defaults.
 #'
+#' @param abstol The absolute tolerance used in checking convergence or in
+#'   estimating linear model coefficients.
+#' @param reltol The relative tolerance used in checking convergence.
+#'   Ignored if `accel = "squarem"` or `"daarem"`.
 #' @param max_iter The maximum number of EM iterations.
+#' @param fix_sigma If `TRUE` when `model=gaussian()`, fix sigma to an initial
+#'   estimate, in order to avoid estimation collapse when the outcomes are
+#'   discrete.
 #' @param accel The acceleration algorithm to use in doing EM. The default
 #'   `"squarem"` is good for most purposes, though `"anderson"` may be faster
 #'   when there are few parameters or very tight tolerances. `"daarem"` is an
@@ -17,9 +24,6 @@
 #'   to the number of parameters for Anderson and DAAREM (default -1 allows the
 #'   order to be determined by problem size).
 #' @param anderson_restart Whether to use restarts in Anderson acceleration.
-#' @param abstol The absolute tolerance used in checking convergence.
-#' @param reltol The relative tolerance used in checking convergence.
-#'   Ignored if `accel = "squarem"` or `"daarem"`.
 #'
 #' @return A list containing the control parameters.
 #'
@@ -40,13 +44,14 @@
 #'
 #' @concept estimators
 #' @export
-birdie.ctrl <- function(max_iter=1000, accel=c("squarem", "anderson", "daarem", "none"),
+birdie.ctrl <- function(abstol=1e-6, reltol=1e-6, max_iter=1000, fix_sigma=FALSE,
+                        accel=c("squarem", "anderson", "daarem", "none"),
                         order=switch(match.arg(accel), none=0L, anderson=-1L, daarem=-1L, squarem=1L),
-                        anderson_restart=TRUE,
-                        abstol=1e-6, reltol=1e-6) {
+                        anderson_restart=TRUE) {
     stopifnot(max_iter >= 1)
     stopifnot(abstol >= 0)
     stopifnot(reltol >= 0)
+    stopifnot(is.logical(fix_sigma))
 
     accel = match.arg(accel)
     fn_accel = switch(accel,
@@ -60,6 +65,7 @@ birdie.ctrl <- function(max_iter=1000, accel=c("squarem", "anderson", "daarem", 
          accel = fn_accel,
          order = order,
          restart = as.logical(anderson_restart),
+         fix_sigma = fix_sigma,
          abstol = abstol,
          reltol = reltol)
 }
