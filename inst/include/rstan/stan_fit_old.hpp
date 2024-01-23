@@ -1,7 +1,7 @@
 /*
  * ORIGINALLY FROM rstan PACKAGE, `inst/include/rstan` DIRECTORY
  * STRIPPED DOWN TO CODE NEEDED FOR OPTIMIZATION ONLY
- * (c) STAN DEVELOPMENT TEAM 2024
+ * (c) STAN DEVELOPMENT TEAM 2022
  */
 
 #ifndef RSTAN__STAN_FIT_HPP
@@ -13,21 +13,12 @@
 #include <memory>
 #include <sstream>
 #include <stdexcept>
-#include <string>
-#include <vector>
 
 #include <stan/version.hpp>
 
 #include <rstan/io/rlist_ref_var_context.hpp>
 #include <rstan/io/r_ostream.hpp>
 #include <rstan/stan_args.hpp>
-#include <rstan/filtered_values.hpp>
-#include <rstan/sum_values.hpp>
-#include <rstan/value.hpp>
-#include <rstan/values.hpp>
-#include <rstan/rstan_writer.hpp>
-#include <rstan/logger.hpp>
-
 #include <Rcpp.h>
 #include <RcppEigen.h>
 
@@ -35,18 +26,13 @@
 #include <R_ext/Utils.h>
 // void R_CheckUserInterrupt(void);
 
+
 // REF: cmdstan: src/cmdstan/command.hpp
 #include <stan/callbacks/interrupt.hpp>
-#include <stan/callbacks/logger.hpp>
 #include <stan/callbacks/stream_logger.hpp>
 #include <stan/callbacks/stream_writer.hpp>
 #include <stan/callbacks/writer.hpp>
-#include <stan/io/dump.hpp>
 #include <stan/io/empty_var_context.hpp>
-#include <stan/io/ends_with.hpp>
-#include <stan/io/stan_csv_reader.hpp>
-#include <stan/math/prim.hpp>
-#include <stan/model/model_base.hpp>
 #include <stan/services/optimize/lbfgs.hpp>
 #include <stan/services/sample/standalone_gqs.hpp>
 
@@ -439,6 +425,7 @@ int command(stan_args& args, Model& model, Rcpp::List& holder,
 
   unsigned int random_seed = args.get_random_seed();
   double init_radius = args.get_init_radius();
+
 
   if (args.get_method() == OPTIM) {
     rstan::value sample_writer;

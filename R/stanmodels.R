@@ -15,7 +15,7 @@ get_skeleton <- function(mod) {
 }
 
 optim_model <- function(mod, init, skeleton,
-                        algorithm = c("LBFGS", "BFGS", "Newton"), ..., seed=5118L) {
+                        algorithm = c("LBFGS"), ..., seed=5118L) {
     if (is.numeric(init))
         init = as.character(init)
 

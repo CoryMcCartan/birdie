@@ -11,9 +11,9 @@
  * RStan to write to cout and cerr of R.
  *
  * See
- * http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt11ch25.html#io.streambuf.derived
- * http://goo.gl/mKmeP
- * and http://www.cplusplus.com/reference/iostream/streambuf/overflow/
+ * https://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt11ch25.html#io.streambuf.derived
+ * https://goo.gl/mKmeP
+ * and https://www.cplusplus.com/reference/iostream/streambuf/overflow/
  *
  *
  */
@@ -44,7 +44,7 @@ namespace rstan {
          return 0;
       }
 
-      virtual std::streamsize xsputn(const char_type* s, std::streamsize n) {
+      virtual std::streamsize xsputn(const char_type* s, const int n) {
         Rprintf("%.*s", n, s);
         return n;
       }
@@ -67,7 +67,7 @@ namespace rstan {
          return 0;
       }
 
-      virtual std::streamsize xsputn(const char_type* s, std::streamsize n) {
+      virtual std::streamsize xsputn(const char_type* s, const int n) {
         REprintf("%.*s", n, s);
         return n;
       }
