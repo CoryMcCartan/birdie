@@ -108,7 +108,7 @@ public:
     // suppress unused var warning
     (void) DUMMY_VAR__;
     try {
-      int pos__ = std::numeric_limits<int>::min();
+      int pos__;
       pos__ = 1;
       current_statement__ = 22;
       context__.validate_dims("data initialization", "n_y", "int",
@@ -324,7 +324,7 @@ public:
   }
   inline std::vector<std::string> model_compile_info() const noexcept {
     return std::vector<std::string>{"stanc_version = stanc3 v2.32.2",
-             "stancflags = --allow-undefined"};
+             "stancflags = --allow-undefined --O1"};
   }
   template <bool propto__, bool jacobian__, typename VecR, typename VecI,
             stan::require_vector_like_t<VecR>* = nullptr,
@@ -346,31 +346,24 @@ public:
     // suppress unused var warning
     (void) function__;
     try {
-      Eigen::Matrix<local_scalar_t__,1,-1> intercept =
-        Eigen::Matrix<local_scalar_t__,1,-1>::Constant(n_y, DUMMY_VAR__);
+      Eigen::Matrix<local_scalar_t__,1,-1> intercept;
       current_statement__ = 1;
       intercept = in__.template read<
                     Eigen::Matrix<local_scalar_t__,1,-1>>(n_y);
-      Eigen::Matrix<local_scalar_t__,-1,-1> beta =
-        Eigen::Matrix<local_scalar_t__,-1,-1>::Constant(p, n_y, DUMMY_VAR__);
+      Eigen::Matrix<local_scalar_t__,-1,-1> beta;
       current_statement__ = 2;
       beta = in__.template read<Eigen::Matrix<local_scalar_t__,-1,-1>>(p,
                n_y);
-      Eigen::Matrix<local_scalar_t__,-1,-1> u =
-        Eigen::Matrix<local_scalar_t__,-1,-1>::Constant(n_grp, n_y,
-          DUMMY_VAR__);
+      Eigen::Matrix<local_scalar_t__,-1,-1> u;
       current_statement__ = 3;
       u = in__.template read<Eigen::Matrix<local_scalar_t__,-1,-1>>(n_grp,
             n_y);
-      Eigen::Matrix<local_scalar_t__,-1,1> sigma_grp =
-        Eigen::Matrix<local_scalar_t__,-1,1>::Constant(n_y, DUMMY_VAR__);
+      Eigen::Matrix<local_scalar_t__,-1,1> sigma_grp;
       current_statement__ = 4;
       sigma_grp = in__.template read_constrain_lb<
                     Eigen::Matrix<local_scalar_t__,-1,1>, jacobian__>(0,
                     lp__, n_y);
-      Eigen::Matrix<local_scalar_t__,-1,-1> L =
-        Eigen::Matrix<local_scalar_t__,-1,-1>::Constant(n_y, n_y,
-          DUMMY_VAR__);
+      Eigen::Matrix<local_scalar_t__,-1,-1> L;
       current_statement__ = 5;
       L = in__.template read_constrain_cholesky_factor_corr<
             Eigen::Matrix<local_scalar_t__,-1,-1>, jacobian__>(lp__, n_y);
@@ -388,9 +381,7 @@ public:
         stan::math::validate_non_negative_index("Sigma", "n_y", n_y);
         current_statement__ = 11;
         stan::math::validate_non_negative_index("Sigma", "n_y", n_y);
-        Eigen::Matrix<local_scalar_t__,-1,-1> Sigma =
-          Eigen::Matrix<local_scalar_t__,-1,-1>::Constant(n_y, n_y,
-            DUMMY_VAR__);
+        Eigen::Matrix<local_scalar_t__,-1,-1> Sigma;
         current_statement__ = 12;
         stan::model::assign(Sigma,
           stan::math::diag_pre_multiply(sigma_grp, L),
@@ -470,34 +461,24 @@ public:
     // suppress unused var warning
     (void) function__;
     try {
-      Eigen::Matrix<double,1,-1> intercept =
-        Eigen::Matrix<double,1,-1>::Constant(n_y,
-          std::numeric_limits<double>::quiet_NaN());
+      Eigen::Matrix<double,1,-1> intercept;
       current_statement__ = 1;
       intercept = in__.template read<
                     Eigen::Matrix<local_scalar_t__,1,-1>>(n_y);
-      Eigen::Matrix<double,-1,-1> beta =
-        Eigen::Matrix<double,-1,-1>::Constant(p, n_y,
-          std::numeric_limits<double>::quiet_NaN());
+      Eigen::Matrix<double,-1,-1> beta;
       current_statement__ = 2;
       beta = in__.template read<Eigen::Matrix<local_scalar_t__,-1,-1>>(p,
                n_y);
-      Eigen::Matrix<double,-1,-1> u =
-        Eigen::Matrix<double,-1,-1>::Constant(n_grp, n_y,
-          std::numeric_limits<double>::quiet_NaN());
+      Eigen::Matrix<double,-1,-1> u;
       current_statement__ = 3;
       u = in__.template read<Eigen::Matrix<local_scalar_t__,-1,-1>>(n_grp,
             n_y);
-      Eigen::Matrix<double,-1,1> sigma_grp =
-        Eigen::Matrix<double,-1,1>::Constant(n_y,
-          std::numeric_limits<double>::quiet_NaN());
+      Eigen::Matrix<double,-1,1> sigma_grp;
       current_statement__ = 4;
       sigma_grp = in__.template read_constrain_lb<
                     Eigen::Matrix<local_scalar_t__,-1,1>, jacobian__>(0,
                     lp__, n_y);
-      Eigen::Matrix<double,-1,-1> L =
-        Eigen::Matrix<double,-1,-1>::Constant(n_y, n_y,
-          std::numeric_limits<double>::quiet_NaN());
+      Eigen::Matrix<double,-1,-1> L;
       current_statement__ = 5;
       L = in__.template read_constrain_cholesky_factor_corr<
             Eigen::Matrix<local_scalar_t__,-1,-1>, jacobian__>(lp__, n_y);
@@ -526,9 +507,7 @@ public:
         stan::math::validate_non_negative_index("Sigma", "n_y", n_y);
         current_statement__ = 11;
         stan::math::validate_non_negative_index("Sigma", "n_y", n_y);
-        Eigen::Matrix<double,-1,-1> Sigma =
-          Eigen::Matrix<double,-1,-1>::Constant(n_y, n_y,
-            std::numeric_limits<double>::quiet_NaN());
+        Eigen::Matrix<double,-1,-1> Sigma;
         current_statement__ = 12;
         stan::model::assign(Sigma,
           stan::math::diag_pre_multiply(sigma_grp, L),
@@ -575,40 +554,33 @@ public:
     // suppress unused var warning
     (void) DUMMY_VAR__;
     try {
-      int pos__ = std::numeric_limits<int>::min();
+      int pos__;
       pos__ = 1;
-      Eigen::Matrix<local_scalar_t__,1,-1> intercept =
-        Eigen::Matrix<local_scalar_t__,1,-1>::Constant(n_y, DUMMY_VAR__);
+      Eigen::Matrix<local_scalar_t__,1,-1> intercept;
       current_statement__ = 1;
       stan::model::assign(intercept,
         in__.read<Eigen::Matrix<local_scalar_t__,1,-1>>(n_y),
         "assigning variable intercept");
       out__.write(intercept);
-      Eigen::Matrix<local_scalar_t__,-1,-1> beta =
-        Eigen::Matrix<local_scalar_t__,-1,-1>::Constant(p, n_y, DUMMY_VAR__);
+      Eigen::Matrix<local_scalar_t__,-1,-1> beta;
       current_statement__ = 2;
       stan::model::assign(beta,
         in__.read<Eigen::Matrix<local_scalar_t__,-1,-1>>(p, n_y),
         "assigning variable beta");
       out__.write(beta);
-      Eigen::Matrix<local_scalar_t__,-1,-1> u =
-        Eigen::Matrix<local_scalar_t__,-1,-1>::Constant(n_grp, n_y,
-          DUMMY_VAR__);
+      Eigen::Matrix<local_scalar_t__,-1,-1> u;
       current_statement__ = 3;
       stan::model::assign(u,
         in__.read<Eigen::Matrix<local_scalar_t__,-1,-1>>(n_grp, n_y),
         "assigning variable u");
       out__.write(u);
-      Eigen::Matrix<local_scalar_t__,-1,1> sigma_grp =
-        Eigen::Matrix<local_scalar_t__,-1,1>::Constant(n_y, DUMMY_VAR__);
+      Eigen::Matrix<local_scalar_t__,-1,1> sigma_grp;
       current_statement__ = 4;
       stan::model::assign(sigma_grp,
         in__.read<Eigen::Matrix<local_scalar_t__,-1,1>>(n_y),
         "assigning variable sigma_grp");
       out__.write_free_lb(0, sigma_grp);
-      Eigen::Matrix<local_scalar_t__,-1,-1> L =
-        Eigen::Matrix<local_scalar_t__,-1,-1>::Constant(n_y, n_y,
-          DUMMY_VAR__);
+      Eigen::Matrix<local_scalar_t__,-1,-1> L;
       current_statement__ = 5;
       stan::model::assign(L,
         in__.read<Eigen::Matrix<local_scalar_t__,-1,-1>>(n_y, n_y),
@@ -646,7 +618,7 @@ public:
       context__.validate_dims("parameter initialization", "L", "double",
         std::vector<size_t>{static_cast<size_t>(n_y),
           static_cast<size_t>(n_y)});
-      int pos__ = std::numeric_limits<int>::min();
+      int pos__;
       pos__ = 1;
       Eigen::Matrix<local_scalar_t__,1,-1> intercept =
         Eigen::Matrix<local_scalar_t__,1,-1>::Constant(n_y, DUMMY_VAR__);
