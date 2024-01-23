@@ -7,7 +7,7 @@ data {
     matrix[N, p] X;
     matrix[N, n_y] Y;
     row_vector[N] w;
-    int<lower=1, upper=n_grp> grp[N];
+    array[N] int<lower=1, upper=n_grp> grp;
 
     int<lower=0, upper=1> has_int;
     real<lower=0> prior_sigma;
