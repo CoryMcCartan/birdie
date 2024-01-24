@@ -72,11 +72,11 @@ Computing regression estimates requires specifying a model structure.
 Here, we'll use a Categorical-Dirichlet regression model that lets the
 relationship between turnout and race vary by ZIP code.
 This is the "no-pooling" model from McCartan et al.
-We'll use bootstrapping to approximately measure the uncertainty in our estimates.
+We'll use Gibbs sampling for inference, which will also let us capture the uncertainty in our estimates.
 
 ```{r}
 fit = birdie(r_probs, turnout ~ proc_zip(zip), data=pseudo_vf, 
-             family=cat_dir(), algorithm="em_boot")
+             family=cat_dir(), algorithm="gibbs")
 
 print(fit)
 ```
