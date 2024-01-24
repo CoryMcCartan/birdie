@@ -22,8 +22,14 @@ Olivella, and Rosenman
 
 ## Installation
 
-You can install the development version of birdie from
-[GitHub](https://github.com/) with:
+BIRDiE is not yet available on CRAN. You can install the latest version of the
+package with:
+
+``` r
+install.packages("birdie", repos = "https://corymccartan.r-universe.dev")
+```
+
+You can also install the development version with:
 
 ``` r
 # install.packages("remotes")
@@ -33,9 +39,9 @@ remotes::install_github("CoryMcCartan/birdie")
 ## Basic Usage
 
 A basic analysis has two steps. First, you compute BISG probability
-estimates with the `bisg()` or `bisg_me()` functions. Then, you estimate
-the distribution of an outcome variable by race using the `birdie()`
-function.
+estimates with the `bisg()` or `bisg_me()` functions (or using any other
+probabilistic race prediction tool). Then, you estimate the distribution
+of an outcome variable by race using the `birdie()` function.
 
 ``` r
 library(birdie)

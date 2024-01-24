@@ -60,14 +60,14 @@ print(r_probs)
 ```
 
 Each row `r_probs` matches a row in `pseudo_vf`.
-It's important to note that here we are assuming that we know the overall racial distribution of our population (registered voters).
+**It's important to note that here we are assuming that we know the overall racial distribution of our population** (registered voters).
 Because of that, we provide the `p_r=p_r` argument, which gives `bisg()` the overall racial distribution.
 If you don't know the overall racial distribution in your context (even a guess is better than nothing), then you could pass in something like the national distribution of race (which is conveniently provided by `p_r_natl()`).
 
 ### Alternative race probabilities
 
-Rather than predicting individual race with the standard BISG methodology, you may want to use the improved fully Bayesian Surname Improved Geocoding (fBISG) of Imai et al. (2022).
-Compared to standard BISG, fBISG accounts for measurement error in the Census counts.
+Rather than predicting individual race with the standard BISG methodology, you may want to use the improved fully Bayesian Surname Improved Geocoding (fBISG) of [Imai et al. (2022)](https://doi.org/10.1126/sciadv.adc9824).
+Compared to standard BISG, fBISG accounts for some of the measurement error in the Census counts.
 This improves the calibration of the probabilities (which is important for accurate disparity estimation), and also improves accuracy among minority populations.
 
 To generate fBISG probabilities, `birdie` provides the `bisg_me()` function, which works just like `bisg()`.
@@ -100,10 +100,10 @@ For example, we could try to estimate turnout rates by race, using the BISG prob
 est_weighted(r_probs, turnout ~ 1, data=pseudo_vf)
 ```
 
-However, as discussed in the methodology paper (McCartan et al. 2023), this approach is generally biased.
-Essentially, it only measures the association between race and turnout which is mediated through names and locations.
+However, as discussed in the methodology paper ([McCartan et al. 2023](https://arxiv.org/abs/2303.02580)), **this approach is generally biased**.
+Essentially, it only measures the part of the association between race and turnout that is mediated through names and locations.
 It doesn't properly account for other ways in which race could be associated with the outcome.
-The BIRDiE methodology addresses this problem by relying on a different assumption: that names are independent of outcomes (here, turnout) conditional on location and race.
+The BIRDiE methodology addresses this problem by relying on **a different assumption: that names are independent of outcomes (here, turnout) conditional on location and race.**
 For example, among White voters in a particular ZIP code, this assumption would mean that voters name Smith and those named Jones are both equally likely to vote.
 
 ## Estimating distributions by race
@@ -126,12 +126,12 @@ print(fit)
 
 The BIRDiE model we just fit is a *mixed-effects* model.
 It estimates a different relationship between turnout and race in every ZIP, but partially pools these estimates towards a common global estimate of the turnout-race relationship.
-BIRDiE supports two other general types of models as well: the complete-pooling and no-pooling models.
-The former uses a formula like `turnout ~ 1` and only estimates a single, global relationship between turnout and race.
+**BIRDiE supports three other general types of models as well**: the complete-pooling and no-pooling categorical regression models, and a Normal linear model which can be used for continuous outcome variables (when the true regression function is assumed to be additive and linear in the covariates).
+The no-pooling uses a formula like `turnout ~ 1` and only estimates a single, global relationship between turnout and race.
 The model therefore assumes that turnout has no association with geography, after controlling for race.
-The latter model uses a formula like `turnout ~ proc_zip(zip)`.
+The complete-pooling model uses a formula like `turnout ~ proc_zip(zip)`.
 While this model can be more computationally efficient to fit than the mixed-effects model, its performance can suffer on smaller datasets like the one used here.
-We recommend the mixed-effects model for general use.
+We recommend the mixed-effects model for general use when the outcome variable is discrete.
 
 ### Extracting population and small-area  estimates
 
@@ -172,14 +172,54 @@ head(fitted(fit))
 plot(r_probs$pr_white, fitted(fit)$pr_white, cex=0.1)
 ```
 
-### Bootstrapping standard errors
+### Multiple Imputation from a BIRDiE Model
+
+By simulating from the improved BISG probabilities, multiple imputations of the missing race assignments can be generated.
+Each imputation can be fed through a downstream analysis, and the results combined by mixing posterior draws or via Rubin's rules.
+
+For example, suppose we want to estimate the overall turnout rate for Black and Hispanic voters combined.
+One way to do that would be as follows.
+```{r}
+race_lbl = levels(pseudo_vf$race)
+calc_bh_turn = function(race_imp) {
+    is_bh = race_lbl[race_imp] %in% c("black", "hisp")
+    mean((pseudo_vf$turnout == "yes")[is_bh])
+}
+
+est_birdie = simulate(fit, 200) |> # 200 imputations stored as an integer matrix
+    apply(2, calc_bh_turn) # calculate turnout for each imputation
+hist(est_birdie)
+```
+
+We can compare the results with doing the same imputation procedure from the raw BISG probabilities.
+The BIRDiE imputations are much closer to the true value.
+
+```{r}
+est_bisg = simulate(r_probs, 200) |> # simulate() works on BISG objects too
+    apply(2, calc_bh_turn) 
+
+tibble(
+    actual = with(pseudo_vf, mean((turnout == "yes")[race %in% c("black", "hisp")])),
+    est_birdie = mean(est_birdie),
+    est_bisg = mean(est_bisg),
+)
+```
+
+### Generating standard errors
 
 One drawback of the computationally efficient EM algorithm that `birdie()` uses for model fitting is the lack of uncertainty quantification.
-The function does however support bootstrapping for some model types.
-In general, we recommend bootstrapping a simple complete-pooling model to understand the rough amount of sampling variation present.
-For most datasets, non-sampling error in Census data and violations of model assumptions will cause much more bias than sampling variance.
+There are two approaches to generating standard errors for BIRDiE models, bootstrapping and Gibbs sampling, which are discussed below.
+However, for most datasets, **non-sampling error in Census data and violations of model assumptions will cause much more bias than sampling variance**.
+
+Gibbs sampling is preferred as it produces posterior draws from the full Bayesian model, but is not available for the mixed-effects model.
+Calling `simulate()` to generate multiple imputations after Gibbs sampling will produce imputations that account for uncertainty in the model parameters, not just the missing data.
+To use the Gibbs sampler for inference, provide `algorithm="gibbs"` to `birdie()`.
+The `iter` parameter controls the number of bootstrap replicates.
+Posterior variance estimates are accessible with `$se` or using the `vcov()` generic, and will be plotted with `plot()`.
+The multiple imputation approach discussed above can also be used to understand uncertainty in other quantities of interest.
 
 To bootstrap, simply set `algorithm="em_boot"` in `birdie()`.
+Bootstrapping is also not yet available for the mixed-effects model.
 The `iter` parameter controls the number of bootstrap replicates.
 The standard errors are accessible with `$se` or using the `vcov()` generic,
 and will be plotted with `plot()`.
