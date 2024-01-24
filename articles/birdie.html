@@ -161,9 +161,9 @@ types of geographies can be used as well—just read the documentation for
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>    0.854  0.133   0.002<span style="text-decoration: underline;">65</span>  0.000<span style="text-decoration: underline;">204</span> 0.002<span style="text-decoration: underline;">41</span>   0.008<span style="text-decoration: underline;">45</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 4,990 more rows</span></span></span></code></pre></div>
 <p>Each row <code>r_probs</code> matches a row in
-<code>pseudo_vf</code>. It’s important to note that here we are assuming
-that we know the overall racial distribution of our population
-(registered voters). Because of that, we provide the
+<code>pseudo_vf</code>. <strong>It’s important to note that here we are
+assuming that we know the overall racial distribution of our
+population</strong> (registered voters). Because of that, we provide the
 <code>p_r=p_r</code> argument, which gives <code><a href="../reference/bisg.html">bisg()</a></code> the
 overall racial distribution. If you don’t know the overall racial
 distribution in your context (even a guess is better than nothing), then
@@ -174,11 +174,11 @@ you could pass in something like the national distribution of race
 </h3>
 <p>Rather than predicting individual race with the standard BISG
 methodology, you may want to use the improved fully Bayesian Surname
-Improved Geocoding (fBISG) of Imai et al. (2022). Compared to standard
-BISG, fBISG accounts for measurement error in the Census counts. This
-improves the calibration of the probabilities (which is important for
-accurate disparity estimation), and also improves accuracy among
-minority populations.</p>
+Improved Geocoding (fBISG) of <a href="https://doi.org/10.1126/sciadv.adc9824" class="external-link">Imai et al. (2022)</a>.
+Compared to standard BISG, fBISG accounts for some of the measurement
+error in the Census counts. This improves the calibration of the
+probabilities (which is important for accurate disparity estimation),
+and also improves accuracy among minority populations.</p>
 <p>To generate fBISG probabilities, <code>birdie</code> provides the
 <code><a href="../reference/bisg.html">bisg_me()</a></code> function, which works just like
 <code><a href="../reference/bisg.html">bisg()</a></code>.</p>
@@ -194,7 +194,7 @@ the probabilities.</p>
 <span><span class="co">#&gt; 0.656372686 0.277807934 0.032031532 0.010139008 0.009564482 0.014084358</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">colMeans</a></span><span class="op">(</span><span class="va">r_probs_me</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  pr_white  pr_black   pr_hisp  pr_asian   pr_aian  pr_other </span></span>
-<span><span class="co">#&gt; 0.7089271 0.2001184 0.0433348 0.0186349 0.0118488 0.0171360</span></span>
+<span><span class="co">#&gt; 0.7089268 0.2001416 0.0433832 0.0186487 0.0118091 0.0170906</span></span>
 <span><span class="co"># actual </span></span>
 <span><span class="va">p_r</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -222,16 +222,17 @@ the BISG probabilities as weights:</p>
 <span><span class="co">#&gt;     white black  hisp asian  aian other</span></span>
 <span><span class="co">#&gt; no  0.316 0.335 0.385 0.531 0.502 0.341</span></span>
 <span><span class="co">#&gt; yes 0.684 0.665 0.615 0.469 0.498 0.659</span></span></code></pre></div>
-<p>However, as discussed in the methodology paper (McCartan et
-al. 2023), this approach is generally biased. Essentially, it only
-measures the association between race and turnout which is mediated
-through names and locations. It doesn’t properly account for other ways
-in which race could be associated with the outcome. The BIRDiE
-methodology addresses this problem by relying on a different assumption:
-that names are independent of outcomes (here, turnout) conditional on
-location and race. For example, among White voters in a particular ZIP
-code, this assumption would mean that voters name Smith and those named
-Jones are both equally likely to vote.</p>
+<p>However, as discussed in the methodology paper (<a href="https://arxiv.org/abs/2303.02580" class="external-link">McCartan et al. 2023</a>),
+<strong>this approach is generally biased</strong>. Essentially, it only
+measures the part of the association between race and turnout that is
+mediated through names and locations. It doesn’t properly account for
+other ways in which race could be associated with the outcome. The
+BIRDiE methodology addresses this problem by relying on <strong>a
+different assumption: that names are independent of outcomes (here,
+turnout) conditional on location and race.</strong> For example, among
+White voters in a particular ZIP code, this assumption would mean that
+voters name Smith and those named Jones are both equally likely to
+vote.</p>
 </div>
 </div>
 <div class="section level2">
@@ -258,9 +259,9 @@ probabilities.</p>
 <span><span class="co">#&gt; → Prior scale on intercepts: 2.0</span></span>
 <span><span class="co">#&gt; → Prior scale on fixed effects coefficients: 0.2</span></span>
 <span><span class="co">#&gt; → Prior mean of random effects standard deviation: 0.05</span></span>
-<span><span class="co">#&gt; ⠙ EM iterations 22 done (11/s) | 2s</span></span>
+<span><span class="co">#&gt; ⠙ EM iterations 39 done (16/s) | 2.4s</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; ⠙ EM iterations 52 done (19/s) | 2.8s</span></span>
+<span><span class="co">#&gt; ⠙ EM iterations 52 done (19/s) | 2.7s</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #555555;">This message is displayed once every 8 hours.</span></span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
@@ -278,16 +279,20 @@ probabilities.</p>
 <p>The BIRDiE model we just fit is a <em>mixed-effects</em> model. It
 estimates a different relationship between turnout and race in every
 ZIP, but partially pools these estimates towards a common global
-estimate of the turnout-race relationship. BIRDiE supports two other
-general types of models as well: the complete-pooling and no-pooling
-models. The former uses a formula like <code>turnout ~ 1</code> and only
-estimates a single, global relationship between turnout and race. The
-model therefore assumes that turnout has no association with geography,
-after controlling for race. The latter model uses a formula like
-<code>turnout ~ proc_zip(zip)</code>. While this model can be more
-computationally efficient to fit than the mixed-effects model, its
-performance can suffer on smaller datasets like the one used here. We
-recommend the mixed-effects model for general use.</p>
+estimate of the turnout-race relationship. <strong>BIRDiE supports three
+other general types of models as well</strong>: the complete-pooling and
+no-pooling categorical regression models, and a Normal linear model
+which can be used for continuous outcome variables (when the true
+regression function is assumed to be additive and linear in the
+covariates). The no-pooling uses a formula like <code>turnout ~ 1</code>
+and only estimates a single, global relationship between turnout and
+race. The model therefore assumes that turnout has no association with
+geography, after controlling for race. The complete-pooling model uses a
+formula like <code>turnout ~ proc_zip(zip)</code>. While this model can
+be more computationally efficient to fit than the mixed-effects model,
+its performance can suffer on smaller datasets like the one used here.
+We recommend the mixed-effects model for general use when the outcome
+variable is discrete.</p>
 </div>
 <div class="section level3">
 <h3 id="extracting-population-and-small-area-estimates">Extracting population and small-area estimates<a class="anchor" aria-label="anchor" href="#extracting-population-and-small-area-estimates"></a>
@@ -373,30 +378,80 @@ accurate than the standard BISG probabilities.</p>
 <p><img src="birdie_files/figure-html/unnamed-chunk-12-1.png" width="700"></p>
 </div>
 <div class="section level3">
-<h3 id="bootstrapping-standard-errors">Bootstrapping standard errors<a class="anchor" aria-label="anchor" href="#bootstrapping-standard-errors"></a>
+<h3 id="multiple-imputation-from-a-birdie-model">Multiple Imputation from a BIRDiE Model<a class="anchor" aria-label="anchor" href="#multiple-imputation-from-a-birdie-model"></a>
+</h3>
+<p>By simulating from the improved BISG probabilities, multiple
+imputations of the missing race assignments can be generated. Each
+imputation can be fed through a downstream analysis, and the results
+combined by mixing posterior draws or via Rubin’s rules.</p>
+<p>For example, suppose we want to estimate the overall turnout rate for
+Black and Hispanic voters combined. One way to do that would be as
+follows.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">race_lbl</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">pseudo_vf</span><span class="op">$</span><span class="va">race</span><span class="op">)</span></span>
+<span><span class="va">calc_bh_turn</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">race_imp</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">is_bh</span> <span class="op">=</span> <span class="va">race_lbl</span><span class="op">[</span><span class="va">race_imp</span><span class="op">]</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"black"</span>, <span class="st">"hisp"</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="op">(</span><span class="va">pseudo_vf</span><span class="op">$</span><span class="va">turnout</span> <span class="op">==</span> <span class="st">"yes"</span><span class="op">)</span><span class="op">[</span><span class="va">is_bh</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">est_birdie</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/simulate.html" class="external-link">simulate</a></span><span class="op">(</span><span class="va">fit</span>, <span class="fl">200</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="co"># 200 imputations stored as an integer matrix</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="fl">2</span>, <span class="va">calc_bh_turn</span><span class="op">)</span> <span class="co"># calculate turnout for each imputation</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">est_birdie</span><span class="op">)</span></span></code></pre></div>
+<p><img src="birdie_files/figure-html/unnamed-chunk-13-1.png" width="700"></p>
+<p>We can compare the results with doing the same imputation procedure
+from the raw BISG probabilities. The BIRDiE imputations are much closer
+to the true value.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">est_bisg</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/simulate.html" class="external-link">simulate</a></span><span class="op">(</span><span class="va">r_probs</span>, <span class="fl">200</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="co"># simulate() works on BISG objects too</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="fl">2</span>, <span class="va">calc_bh_turn</span><span class="op">)</span> </span>
+<span></span>
+<span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
+<span>    actual <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/with.html" class="external-link">with</a></span><span class="op">(</span><span class="va">pseudo_vf</span>, <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="op">(</span><span class="va">turnout</span> <span class="op">==</span> <span class="st">"yes"</span><span class="op">)</span><span class="op">[</span><span class="va">race</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"black"</span>, <span class="st">"hisp"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    est_birdie <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">est_birdie</span><span class="op">)</span>,</span>
+<span>    est_bisg <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">est_bisg</span><span class="op">)</span>,</span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 3</span></span></span>
+<span><span class="co">#&gt;   actual est_birdie est_bisg</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0.635      0.634    0.660</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="generating-standard-errors">Generating standard errors<a class="anchor" aria-label="anchor" href="#generating-standard-errors"></a>
 </h3>
 <p>One drawback of the computationally efficient EM algorithm that
 <code><a href="../reference/birdie.html">birdie()</a></code> uses for model fitting is the lack of uncertainty
-quantification. The function does however support bootstrapping for some
-model types. In general, we recommend bootstrapping a simple
-complete-pooling model to understand the rough amount of sampling
-variation present. For most datasets, non-sampling error in Census data
-and violations of model assumptions will cause much more bias than
-sampling variance.</p>
-<p>To bootstrap, simply set <code>algorithm="em_boot"</code> in
+quantification. There are two approaches to generating standard errors
+for BIRDiE models, bootstrapping and Gibbs sampling, which are discussed
+below. However, for most datasets, <strong>non-sampling error in Census
+data and violations of model assumptions will cause much more bias than
+sampling variance</strong>.</p>
+<p>Gibbs sampling is preferred as it produces posterior draws from the
+full Bayesian model, but is not available for the mixed-effects model.
+Calling <code><a href="https://rdrr.io/r/stats/simulate.html" class="external-link">simulate()</a></code> to generate multiple imputations after
+Gibbs sampling will produce imputations that account for uncertainty in
+the model parameters, not just the missing data. To use the Gibbs
+sampler for inference, provide <code>algorithm="gibbs"</code> to
 <code><a href="../reference/birdie.html">birdie()</a></code>. The <code>iter</code> parameter controls the
-number of bootstrap replicates. The standard errors are accessible with
+number of bootstrap replicates. Posterior variance estimates are
+accessible with <code>$se</code> or using the <code><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov()</a></code>
+generic, and will be plotted with <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>. The multiple
+imputation approach discussed above can also be used to understand
+uncertainty in other quantities of interest.</p>
+<p>To bootstrap, simply set <code>algorithm="em_boot"</code> in
+<code><a href="../reference/birdie.html">birdie()</a></code>. Bootstrapping is also not yet available for the
+mixed-effects model. The <code>iter</code> parameter controls the number
+of bootstrap replicates. The standard errors are accessible with
 <code>$se</code> or using the <code><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov()</a></code> generic, and will be
 plotted with <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_boot</span> <span class="op">=</span> <span class="fu"><a href="../reference/birdie.html">birdie</a></span><span class="op">(</span><span class="va">r_probs</span>, <span class="va">turnout</span> <span class="op">~</span> <span class="fl">1</span>, data<span class="op">=</span><span class="va">pseudo_vf</span>, algorithm<span class="op">=</span><span class="st">"em_boot"</span>, iter<span class="op">=</span><span class="fl">200</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Using weakly informative empirical Bayes prior for Pr(Y | R)</span></span>
 <span><span class="co">#&gt; <span style="color: #555555;">This message is displayed once every 8 hours.</span></span></span>
 <span></span>
 <span><span class="va">fit_boot</span><span class="op">$</span><span class="va">se</span></span>
 <span><span class="co">#&gt;           white      black       hisp      asian       aian       other</span></span>
-<span><span class="co">#&gt; no  0.007646755 0.01070792 0.03421429 0.04935179 0.04202103 0.007963217</span></span>
-<span><span class="co">#&gt; yes 0.007646755 0.01070792 0.03421429 0.04935179 0.04202103 0.007963217</span></span></code></pre></div>
+<span><span class="co">#&gt; no  0.007732752 0.00968341 0.02993716 0.05349676 0.04363565 0.007804593</span></span>
+<span><span class="co">#&gt; yes 0.007732752 0.00968341 0.02993716 0.05349676 0.04363565 0.007804593</span></span></code></pre></div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
