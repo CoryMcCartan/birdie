@@ -47,9 +47,11 @@ See the Details section below for more information on the various models.}
 of Dirichlet hyperparameters. The matrix should have one row for every
 level of the outcome variable and one column for every racial group. The
 default prior (used when \code{prior=NULL}) is an empirical Bayes prior equal to
-1 plus the weighted-mean estimate of the outcome-race table. A fully
-noninformative prior with all entries set to \eqn{1+\epsilon} can be
-obtained by setting \code{prior=NA}.
+the weighted-mean estimate of the outcome-race table. A fully
+noninformative prior with all entries set to \eqn{\epsilon} can be obtained
+by setting \code{prior=NA}. When \code{prior=NULL} and \code{algorithm="em"} or
+\code{"em_boot"}, 1 is added to the prior so that the posterior mode, rather
+than the mean, is shrunk toward these values.
 \item For the \code{cat_mixed} model, the \code{prior} list should contain three scalar entries:
 \code{scale_int}, the standard deviation on the Normal prior for the intercepts
 (which control the global estimates of \code{Y|R}), \code{scale_beta}, the standard
