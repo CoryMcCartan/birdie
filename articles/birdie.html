@@ -194,7 +194,7 @@ the probabilities.</p>
 <span><span class="co">#&gt; 0.656372686 0.277807934 0.032031532 0.010139008 0.009564482 0.014084358</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">colMeans</a></span><span class="op">(</span><span class="va">r_probs_me</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  pr_white  pr_black   pr_hisp  pr_asian   pr_aian  pr_other </span></span>
-<span><span class="co">#&gt; 0.7088087 0.2002473 0.0433730 0.0185934 0.0119078 0.0170698</span></span>
+<span><span class="co">#&gt; 0.7090338 0.2001999 0.0432930 0.0185635 0.0118667 0.0170431</span></span>
 <span><span class="co"># actual </span></span>
 <span><span class="va">p_r</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -259,9 +259,9 @@ probabilities.</p>
 <span><span class="co">#&gt; → Prior scale on intercepts: 2.0</span></span>
 <span><span class="co">#&gt; → Prior scale on fixed effects coefficients: 0.2</span></span>
 <span><span class="co">#&gt; → Prior mean of random effects standard deviation: 0.05</span></span>
-<span><span class="co">#&gt; ⠙ EM iterations 35 done (14/s) | 2.5s</span></span>
+<span><span class="co">#&gt; ⠙ EM iterations 31 done (14/s) | 2.3s</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; ⠙ EM iterations 52 done (18/s) | 2.9s</span></span>
+<span><span class="co">#&gt; ⠙ EM iterations 52 done (19/s) | 2.7s</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #555555;">This message is displayed once every 8 hours.</span></span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
@@ -413,7 +413,7 @@ to the true value.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 3</span></span></span>
 <span><span class="co">#&gt;   actual est_birdie est_bisg</span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0.635      0.633    0.660</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0.635      0.634    0.660</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="generating-standard-errors">Generating standard errors<a class="anchor" aria-label="anchor" href="#generating-standard-errors"></a>
@@ -449,9 +449,9 @@ plotted with <code><a href="https://rdrr.io/r/graphics/plot.default.html" class=
 <span><span class="co">#&gt; <span style="color: #555555;">This message is displayed once every 8 hours.</span></span></span>
 <span></span>
 <span><span class="va">fit_boot</span><span class="op">$</span><span class="va">se</span></span>
-<span><span class="co">#&gt;           white       black       hisp     asian      aian       other</span></span>
-<span><span class="co">#&gt; no  0.007505957 0.009749238 0.03150685 0.0516024 0.0447388 0.007812539</span></span>
-<span><span class="co">#&gt; yes 0.007505957 0.009749238 0.03150685 0.0516024 0.0447388 0.007812539</span></span></code></pre></div>
+<span><span class="co">#&gt;           white    black       hisp      asian       aian       other</span></span>
+<span><span class="co">#&gt; no  0.007539209 0.010555 0.03128419 0.05620707 0.04411482 0.008390007</span></span>
+<span><span class="co">#&gt; yes 0.007539209 0.010555 0.03128419 0.05620707 0.04411482 0.008390007</span></span></code></pre></div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
