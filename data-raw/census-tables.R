@@ -110,18 +110,3 @@ d = d |>
     select(-count)
 
 write_rds(d, here("inst/extdata/names_2010_counts.rds"), compress="xz")
-
-
-# national tract table
-d_raw = purrr::map_dfr(state.abb, ~ censable::build_dec("tract", ., geometry=FALSE, year=2010))
-
-d_raw |>
-    mutate(pop_asian = pop_asian + pop_nhpi,
-           pop_other = pop_other + pop_two,
-           vap_asian = vap_asian + vap_nhpi,
-           vap_other = vap_other + vap_two) |>
-    select(tract=GEOID, white=vap_white, black=vap_black, hisp=vap_hisp,
-           asian=vap_asian, aian=vap_aian, other=vap_other) |>
-    mutate(across(white:other, as.integer)) |>
-    readr::write_csv("~/Desktop/tract_race_2010.csv")
-
