@@ -3,7 +3,7 @@ pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
   birdie: birdie.html
-last_built: 2024-02-06T00:11Z
+last_built: 2024-02-09T20:14Z
 urls:
   reference: http://corymccartan.com/birdie/reference
   article: http://corymccartan.com/birdie/articles
