@@ -1,3 +1,10 @@
+# birdie 0.5.0.9999
+
+* Switch to an inverse-gamma prior for the random effects scale parameter in 
+  the mixed model.
+* Add Jacobian adjustment to mixed model M step to improve accuracy and reduce
+  prior sensitivity.
+
 # birdie 0.5.0
 
 * Gibbs sampler for Categorical-Dirichlet and Normal linear models

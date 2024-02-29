@@ -11,6 +11,7 @@ data {
 
     int<lower=0, upper=1> has_int;
     real<lower=0> prior_sigma;
+    real<lower=1> prior_sigma_shape;
     real<lower=0> prior_beta;
     real<lower=0> prior_int;
 }
@@ -48,6 +49,6 @@ model {
     to_vector(beta) ~ normal(0, prior_beta);
     to_vector(u) ~ std_normal();
 
-    sigma_grp ~ gamma(2.0, 2.0 ./ prior_sigma);
+    sigma_grp ~ inv_gamma(prior_sigma_shape, prior_sigma * (prior_sigma_shape - 1));
     L ~ lkj_corr_cholesky(2.0);
 }

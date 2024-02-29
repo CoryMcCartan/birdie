@@ -1,12 +1,12 @@
 # Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
 # Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 on:
-  push:
-    branches: [main]
-    paths: ['man/**', '_pkgdown.yml', 'README.md', 'NEWS.md', 'DESCRIPTION']
-  pull_request:
-    branches: [main]
-    paths: ['man/**', '_pkgdown.yml', 'README.md', 'NEWS.md', 'DESCRIPTION']
+  #push:
+  #  branches: [main]
+  #  paths: ['man/**', '_pkgdown.yml', 'README.md', 'NEWS.md', 'DESCRIPTION']
+  #pull_request:
+  #  branches: [main]
+  #  paths: ['man/**', '_pkgdown.yml', 'README.md', 'NEWS.md', 'DESCRIPTION']
   release:
     types: [published]
   workflow_dispatch:

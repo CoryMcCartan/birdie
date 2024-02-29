@@ -63,6 +63,7 @@ em_cat_mixed <- function(Y, p_rxs, formula, data, weights, prior, races, ctrl) {
 
         has_int = attr(formula, "intercept"),
         prior_sigma = prior$scale_sigma[1],
+        prior_sigma_shape = 4,
         prior_beta = prior$scale_beta[1],
         prior_int = prior$scale_int[1]
     )
@@ -100,9 +101,10 @@ em_cat_mixed <- function(Y, p_rxs, formula, data, weights, prior, races, ctrl) {
             standata$prior_int = prior$scale_int[r]
 
             sm_ir = get_stanmodel(rstantools_model_multinom, standata)
-            fit = optim_model(sm_ir, init=par_l[[r]], skeleton=skeleton,
-                              tol_rel_obj=10/ctrl$abstol,
-                              tol_obj=10*ctrl$abstol, tol_param=ctrl$abstol)
+            fit = optim_model(sm_ir, init=curr[, r], tol_rel_obj=ctrl$reltol)
+            # fit = optim_model_stan(sm_ir, init=par_l[[r]], skeleton=skeleton,
+            #                   tol_rel_obj=10/ctrl$abstol,
+            #                   tol_obj=10*ctrl$abstol, tol_param=ctrl$abstol)
             all_converged = all_converged && fit$converged
             curr[, r] = fit$par
         }
@@ -157,7 +159,7 @@ check_make_prior_cat_mixed <- function(prior, Y, races) {
         prior = list(
             scale_int = rep(2, n_r),
             scale_beta = rep(0.2, n_r),
-            scale_sigma = rep(0.05, n_r)
+            scale_sigma = rep(0.1, n_r)
         )
 
         cli_inform(c("Using default prior for Pr(Y | R):",

@@ -14,8 +14,8 @@ get_skeleton <- function(mod) {
     lapply(p_dims, function(d) array(0, dim=d))
 }
 
-optim_model <- function(mod, init, skeleton,
-                        algorithm = c("LBFGS"), ..., seed=5118L) {
+optim_model_stan <- function(mod, init, skeleton,
+                             algorithm = c("LBFGS"), ..., seed=5118L) {
     if (is.numeric(init))
         init = as.character(init)
 
@@ -33,6 +33,22 @@ optim_model <- function(mod, init, skeleton,
     list(
         par = mod$unconstrain_pars(theta),
         converged = (attr(res, "return_code") == 0)
+    )
+}
+
+optim_model <- function(mod, init, tol_rel_obj, ...) {
+    if (is.numeric(init))
+        init = as.character(init)
+
+    res = optim(init,
+                fn = \(x) -mod$log_prob(x, TRUE, FALSE),
+                gr = \(x) -mod$grad_log_prob(x, FALSE),
+                method = "L-BFGS-B",
+                control = list(factr=0.1/tol_rel_obj, maxit=500))
+
+    list(
+        par = res$par,
+        converged = (res$convergence == 0)
     )
 }
 

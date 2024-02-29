@@ -15,12 +15,13 @@ test_that("BIRDiE models fit", {
         "birdie")
 
     expect_s3_class(
-        birdie(r_probs, turnout ~ (1 | proc_zip(zip)), data=pseudo_vf, family=cat_mixed(), ctrl=ctrl),
-        "birdie")
+        suppressWarnings(
+            birdie(r_probs, turnout ~ (1 | proc_zip(zip)), data=pseudo_vf, family=cat_mixed(), ctrl=ctrl)
+        ), "birdie")
 
     expect_s3_class(
         suppressWarnings(
-        birdie(r_probs, turnout ~ X, family=cat_mixed(), data=pseudo_vf, ctrl=ctrl),
+            birdie(r_probs, turnout ~ X, family=cat_mixed(), data=pseudo_vf, ctrl=ctrl),
         ), "birdie")
 
     expect_s3_class(

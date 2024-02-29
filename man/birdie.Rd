@@ -152,9 +152,11 @@ fully interacted structure.
 The Categorical mixed-effects model is specified as follows: \deqn{
     Y_i \mid R_i, X_i, \Theta \sim \text{Categorical}(g^{-1}(\mu_{R_iX_i})) \\
     \mu_{rxy} = W\beta_{ry} + Zu_{ry} \\
-    u_{ry} \mid \sigma^2_{ry} \sim \mathcal{N}(0, \sigma^2_{ry}) \\
+    u_{r} \mid \vec\sigma_{r}, L_r \sim \mathcal{N}(0,
+     \text{diag}(\vec\sigma_{r})C_r\text{diag}(\vec\sigma_{r})) \\
     \beta_{ry} \sim \mathcal{N}(0, s^2_{r\beta}) \\
-    \sigma_{ry} \sim \text{Gamma}(2, 2/s_{r\sigma}),
+    \sigma_{ry} \sim \text{Inv-Gamma}(4, 3s_{r\sigma}) \\
+    C_r \sim \text{LKJ}(2),
 } where \eqn{\beta_{ry}} are the fixed effects, \eqn{u_{ry}} is the random
 intercept, and \eqn{g} is a softmax link function.
 Estimates for \eqn{\beta_{ry}} and \eqn{\sigma_{ry}} are stored in the

@@ -33,9 +33,11 @@
 #' The Categorical mixed-effects model is specified as follows: \deqn{
 #'     Y_i \mid R_i, X_i, \Theta \sim \text{Categorical}(g^{-1}(\mu_{R_iX_i})) \\
 #'     \mu_{rxy} = W\beta_{ry} + Zu_{ry} \\
-#'     u_{ry} \mid \sigma^2_{ry} \sim \mathcal{N}(0, \sigma^2_{ry}) \\
+#'     u_{r} \mid \vec\sigma_{r}, L_r \sim \mathcal{N}(0,
+#'      \text{diag}(\vec\sigma_{r})C_r\text{diag}(\vec\sigma_{r})) \\
 #'     \beta_{ry} \sim \mathcal{N}(0, s^2_{r\beta}) \\
-#'     \sigma_{ry} \sim \text{Gamma}(2, 2/s_{r\sigma}),
+#'     \sigma_{ry} \sim \text{Inv-Gamma}(4, 3s_{r\sigma}) \\
+#'     C_r \sim \text{LKJ}(2),
 #' } where \eqn{\beta_{ry}} are the fixed effects, \eqn{u_{ry}} is the random
 #' intercept, and \eqn{g} is a softmax link function.
 #' Estimates for \eqn{\beta_{ry}} and \eqn{\sigma_{ry}} are stored in the
@@ -250,6 +252,7 @@ birdie <- function(r_probs, formula, data, family=cat_dir(), prior=NULL, weights
 
     # format outputs, p_ryxs
     colnames(res$map) = races
+    dimnames(res$ests)[[2]] = races
     colnames(res$p_ryxs) = colnames(p_rxs)
     p_ryxs = as_tibble(res$p_ryxs)
     if (inherits(r_probs, "bisg")) {
@@ -273,7 +276,7 @@ birdie <- function(r_probs, formula, data, family=cat_dir(), prior=NULL, weights
         tbl_gx = as_tibble(res$tbl_gx),
         vec_gx = res$vec_gx,
         R_imp = if (algorithm == "gibbs") res$R_imp else NULL,
-        y = Y_vec,
+        y = if (model == "lm") Y_vec else as.factor(Y_vec),
         y_name = covars[1],
         prefix = prefix,
         entropy = list(pre = entropy(p_rxs),

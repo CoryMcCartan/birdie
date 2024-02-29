@@ -13,29 +13,29 @@ namespace model_multinom_namespace {
 using stan::model::model_base_crtp;
 using namespace stan::math;
 stan::math::profile_map profiles__;
-static constexpr std::array<const char*, 53> locations_array__ =
+static constexpr std::array<const char*, 54> locations_array__ =
   {" (found before start of program)",
-  " (in 'multinom', line 20, column 4 to column 30)",
-  " (in 'multinom', line 21, column 4 to column 24)",
-  " (in 'multinom', line 22, column 4 to column 25)",
-  " (in 'multinom', line 23, column 4 to column 35)",
-  " (in 'multinom', line 24, column 4 to column 32)",
-  " (in 'multinom', line 27, column 4 to column 24)",
-  " (in 'multinom', line 29, column 15 to column 16)",
-  " (in 'multinom', line 29, column 18 to column 21)",
-  " (in 'multinom', line 29, column 8 to column 31)",
-  " (in 'multinom', line 30, column 15 to column 18)",
-  " (in 'multinom', line 30, column 20 to column 23)",
-  " (in 'multinom', line 30, column 8 to column 65)",
-  " (in 'multinom', line 31, column 8 to column 70)",
-  " (in 'multinom', line 33, column 8 to column 69)",
-  " (in 'multinom', line 28, column 4 to line 34, column 5)",
-  " (in 'multinom', line 37, column 4 to column 35)",
-  " (in 'multinom', line 38, column 4 to column 37)",
-  " (in 'multinom', line 39, column 4 to column 44)",
-  " (in 'multinom', line 40, column 4 to column 32)",
-  " (in 'multinom', line 41, column 4 to column 47)",
-  " (in 'multinom', line 42, column 4 to column 31)",
+  " (in 'multinom', line 21, column 4 to column 30)",
+  " (in 'multinom', line 22, column 4 to column 24)",
+  " (in 'multinom', line 23, column 4 to column 25)",
+  " (in 'multinom', line 24, column 4 to column 35)",
+  " (in 'multinom', line 25, column 4 to column 32)",
+  " (in 'multinom', line 28, column 4 to column 24)",
+  " (in 'multinom', line 30, column 15 to column 16)",
+  " (in 'multinom', line 30, column 18 to column 21)",
+  " (in 'multinom', line 30, column 8 to column 31)",
+  " (in 'multinom', line 31, column 15 to column 18)",
+  " (in 'multinom', line 31, column 20 to column 23)",
+  " (in 'multinom', line 31, column 8 to column 65)",
+  " (in 'multinom', line 32, column 8 to column 70)",
+  " (in 'multinom', line 34, column 8 to column 69)",
+  " (in 'multinom', line 29, column 4 to line 35, column 5)",
+  " (in 'multinom', line 38, column 4 to column 35)",
+  " (in 'multinom', line 39, column 4 to column 37)",
+  " (in 'multinom', line 40, column 4 to column 44)",
+  " (in 'multinom', line 41, column 4 to column 32)",
+  " (in 'multinom', line 43, column 4 to column 84)",
+  " (in 'multinom', line 44, column 4 to column 31)",
   " (in 'multinom', line 2, column 4 to column 21)",
   " (in 'multinom', line 3, column 4 to column 19)",
   " (in 'multinom', line 4, column 4 to column 19)",
@@ -48,25 +48,26 @@ static constexpr std::array<const char*, 53> locations_array__ =
   " (in 'multinom', line 7, column 4 to column 21)",
   " (in 'multinom', line 8, column 15 to column 16)",
   " (in 'multinom', line 8, column 4 to column 20)",
-  " (in 'multinom', line 9, column 34 to column 35)",
-  " (in 'multinom', line 9, column 4 to column 37)",
+  " (in 'multinom', line 9, column 10 to column 11)",
+  " (in 'multinom', line 9, column 4 to column 43)",
   " (in 'multinom', line 10, column 4 to column 34)",
   " (in 'multinom', line 11, column 4 to column 30)",
-  " (in 'multinom', line 12, column 4 to column 29)",
-  " (in 'multinom', line 13, column 4 to column 28)",
-  " (in 'multinom', line 16, column 11 to column 14)",
-  " (in 'multinom', line 16, column 4 to column 44)",
-  " (in 'multinom', line 17, column 11 to column 12)",
-  " (in 'multinom', line 17, column 4 to column 47)",
-  " (in 'multinom', line 20, column 15 to column 18)",
-  " (in 'multinom', line 21, column 11 to column 12)",
-  " (in 'multinom', line 21, column 14 to column 17)",
-  " (in 'multinom', line 22, column 11 to column 16)",
-  " (in 'multinom', line 22, column 18 to column 21)",
-  " (in 'multinom', line 23, column 20 to column 23)",
-  " (in 'multinom', line 24, column 25 to column 28)",
-  " (in 'multinom', line 27, column 11 to column 12)",
-  " (in 'multinom', line 27, column 14 to column 17)"};
+  " (in 'multinom', line 12, column 4 to column 36)",
+  " (in 'multinom', line 13, column 4 to column 29)",
+  " (in 'multinom', line 14, column 4 to column 28)",
+  " (in 'multinom', line 17, column 11 to column 14)",
+  " (in 'multinom', line 17, column 4 to column 44)",
+  " (in 'multinom', line 18, column 11 to column 12)",
+  " (in 'multinom', line 18, column 4 to column 47)",
+  " (in 'multinom', line 21, column 15 to column 18)",
+  " (in 'multinom', line 22, column 11 to column 12)",
+  " (in 'multinom', line 22, column 14 to column 17)",
+  " (in 'multinom', line 23, column 11 to column 16)",
+  " (in 'multinom', line 23, column 18 to column 21)",
+  " (in 'multinom', line 24, column 20 to column 23)",
+  " (in 'multinom', line 25, column 25 to column 28)",
+  " (in 'multinom', line 28, column 11 to column 12)",
+  " (in 'multinom', line 28, column 14 to column 17)"};
 #include <stan_meta_header.hpp>
 class model_multinom final : public model_base_crtp<model_multinom> {
 private:
@@ -80,6 +81,7 @@ private:
   std::vector<int> grp;
   int has_int;
   double prior_sigma;
+  double prior_sigma_shape;
   double prior_beta;
   double prior_int;
   Eigen::Matrix<double,-1,1> ones_y_data__;
@@ -108,7 +110,7 @@ public:
     // suppress unused var warning
     (void) DUMMY_VAR__;
     try {
-      int pos__;
+      int pos__ = std::numeric_limits<int>::min();
       pos__ = 1;
       current_statement__ = 22;
       context__.validate_dims("data initialization", "n_y", "int",
@@ -256,62 +258,71 @@ public:
       stan::math::check_greater_or_equal(function__, "prior_sigma",
         prior_sigma, 0);
       current_statement__ = 38;
+      context__.validate_dims("data initialization", "prior_sigma_shape",
+        "double", std::vector<size_t>{});
+      prior_sigma_shape = std::numeric_limits<double>::quiet_NaN();
+      current_statement__ = 38;
+      prior_sigma_shape = context__.vals_r("prior_sigma_shape")[(1 - 1)];
+      current_statement__ = 38;
+      stan::math::check_greater_or_equal(function__, "prior_sigma_shape",
+        prior_sigma_shape, 1);
+      current_statement__ = 39;
       context__.validate_dims("data initialization", "prior_beta", "double",
         std::vector<size_t>{});
       prior_beta = std::numeric_limits<double>::quiet_NaN();
-      current_statement__ = 38;
+      current_statement__ = 39;
       prior_beta = context__.vals_r("prior_beta")[(1 - 1)];
-      current_statement__ = 38;
+      current_statement__ = 39;
       stan::math::check_greater_or_equal(function__, "prior_beta",
         prior_beta, 0);
-      current_statement__ = 39;
+      current_statement__ = 40;
       context__.validate_dims("data initialization", "prior_int", "double",
         std::vector<size_t>{});
       prior_int = std::numeric_limits<double>::quiet_NaN();
-      current_statement__ = 39;
+      current_statement__ = 40;
       prior_int = context__.vals_r("prior_int")[(1 - 1)];
-      current_statement__ = 39;
+      current_statement__ = 40;
       stan::math::check_greater_or_equal(function__, "prior_int", prior_int,
         0);
-      current_statement__ = 40;
-      stan::math::validate_non_negative_index("ones_y", "n_y", n_y);
       current_statement__ = 41;
+      stan::math::validate_non_negative_index("ones_y", "n_y", n_y);
+      current_statement__ = 42;
       ones_y_data__ = Eigen::Matrix<double,-1,1>::Constant(n_y,
                         std::numeric_limits<double>::quiet_NaN());
       new (&ones_y)
         Eigen::Map<Eigen::Matrix<double,-1,1>>(ones_y_data__.data(), n_y);
-      current_statement__ = 41;
+      current_statement__ = 42;
       stan::model::assign(ones_y, stan::math::rep_vector(1, n_y),
         "assigning variable ones_y");
-      current_statement__ = 42;
-      stan::math::validate_non_negative_index("int_col", "N", N);
       current_statement__ = 43;
+      stan::math::validate_non_negative_index("int_col", "N", N);
+      current_statement__ = 44;
       int_col_data__ = Eigen::Matrix<double,-1,1>::Constant(N,
                          std::numeric_limits<double>::quiet_NaN());
       new (&int_col)
         Eigen::Map<Eigen::Matrix<double,-1,1>>(int_col_data__.data(), N);
-      current_statement__ = 43;
+      current_statement__ = 44;
       stan::model::assign(int_col, stan::math::rep_vector(has_int, N),
         "assigning variable int_col");
-      current_statement__ = 44;
-      stan::math::validate_non_negative_index("intercept", "n_y", n_y);
       current_statement__ = 45;
-      stan::math::validate_non_negative_index("beta", "p", p);
+      stan::math::validate_non_negative_index("intercept", "n_y", n_y);
       current_statement__ = 46;
-      stan::math::validate_non_negative_index("beta", "n_y", n_y);
+      stan::math::validate_non_negative_index("beta", "p", p);
       current_statement__ = 47;
-      stan::math::validate_non_negative_index("u", "n_grp", n_grp);
+      stan::math::validate_non_negative_index("beta", "n_y", n_y);
       current_statement__ = 48;
-      stan::math::validate_non_negative_index("u", "n_y", n_y);
+      stan::math::validate_non_negative_index("u", "n_grp", n_grp);
       current_statement__ = 49;
+      stan::math::validate_non_negative_index("u", "n_y", n_y);
+      current_statement__ = 50;
       stan::math::validate_non_negative_index("sigma_grp", "n_y", n_y);
-      current_statement__ = 50;
-      stan::math::validate_non_negative_index("L", "n_y", n_y);
-      current_statement__ = 50;
+      current_statement__ = 51;
       stan::math::validate_non_negative_index("L", "n_y", n_y);
       current_statement__ = 51;
-      stan::math::validate_non_negative_index("lsft", "N", N);
+      stan::math::validate_non_negative_index("L", "n_y", n_y);
       current_statement__ = 52;
+      stan::math::validate_non_negative_index("lsft", "N", N);
+      current_statement__ = 53;
       stan::math::validate_non_negative_index("lsft", "n_y", n_y);
     } catch (const std::exception& e) {
       stan::lang::rethrow_located(e, locations_array__[current_statement__]);
@@ -324,7 +335,7 @@ public:
   }
   inline std::vector<std::string> model_compile_info() const noexcept {
     return std::vector<std::string>{"stanc_version = stanc3 v2.32.2",
-             "stancflags = --allow-undefined --O1"};
+             "stancflags = --allow-undefined"};
   }
   template <bool propto__, bool jacobian__, typename VecR, typename VecI,
             stan::require_vector_like_t<VecR>* = nullptr,
@@ -346,24 +357,31 @@ public:
     // suppress unused var warning
     (void) function__;
     try {
-      Eigen::Matrix<local_scalar_t__,1,-1> intercept;
+      Eigen::Matrix<local_scalar_t__,1,-1> intercept =
+        Eigen::Matrix<local_scalar_t__,1,-1>::Constant(n_y, DUMMY_VAR__);
       current_statement__ = 1;
       intercept = in__.template read<
                     Eigen::Matrix<local_scalar_t__,1,-1>>(n_y);
-      Eigen::Matrix<local_scalar_t__,-1,-1> beta;
+      Eigen::Matrix<local_scalar_t__,-1,-1> beta =
+        Eigen::Matrix<local_scalar_t__,-1,-1>::Constant(p, n_y, DUMMY_VAR__);
       current_statement__ = 2;
       beta = in__.template read<Eigen::Matrix<local_scalar_t__,-1,-1>>(p,
                n_y);
-      Eigen::Matrix<local_scalar_t__,-1,-1> u;
+      Eigen::Matrix<local_scalar_t__,-1,-1> u =
+        Eigen::Matrix<local_scalar_t__,-1,-1>::Constant(n_grp, n_y,
+          DUMMY_VAR__);
       current_statement__ = 3;
       u = in__.template read<Eigen::Matrix<local_scalar_t__,-1,-1>>(n_grp,
             n_y);
-      Eigen::Matrix<local_scalar_t__,-1,1> sigma_grp;
+      Eigen::Matrix<local_scalar_t__,-1,1> sigma_grp =
+        Eigen::Matrix<local_scalar_t__,-1,1>::Constant(n_y, DUMMY_VAR__);
       current_statement__ = 4;
       sigma_grp = in__.template read_constrain_lb<
                     Eigen::Matrix<local_scalar_t__,-1,1>, jacobian__>(0,
                     lp__, n_y);
-      Eigen::Matrix<local_scalar_t__,-1,-1> L;
+      Eigen::Matrix<local_scalar_t__,-1,-1> L =
+        Eigen::Matrix<local_scalar_t__,-1,-1>::Constant(n_y, n_y,
+          DUMMY_VAR__);
       current_statement__ = 5;
       L = in__.template read_constrain_cholesky_factor_corr<
             Eigen::Matrix<local_scalar_t__,-1,-1>, jacobian__>(lp__, n_y);
@@ -381,7 +399,9 @@ public:
         stan::math::validate_non_negative_index("Sigma", "n_y", n_y);
         current_statement__ = 11;
         stan::math::validate_non_negative_index("Sigma", "n_y", n_y);
-        Eigen::Matrix<local_scalar_t__,-1,-1> Sigma;
+        Eigen::Matrix<local_scalar_t__,-1,-1> Sigma =
+          Eigen::Matrix<local_scalar_t__,-1,-1>::Constant(n_y, n_y,
+            DUMMY_VAR__);
         current_statement__ = 12;
         stan::model::assign(Sigma,
           stan::math::diag_pre_multiply(sigma_grp, L),
@@ -419,8 +439,9 @@ public:
         lp_accum__.add(stan::math::std_normal_lpdf<propto__>(
                          stan::math::to_vector(u)));
         current_statement__ = 20;
-        lp_accum__.add(stan::math::gamma_lpdf<propto__>(sigma_grp, 2.0, (2.0
-                         / prior_sigma)));
+        lp_accum__.add(stan::math::inv_gamma_lpdf<propto__>(sigma_grp,
+                         prior_sigma_shape, (prior_sigma * (prior_sigma_shape
+                         - 1))));
         current_statement__ = 21;
         lp_accum__.add(stan::math::lkj_corr_cholesky_lpdf<propto__>(L, 2.0));
       }
@@ -461,24 +482,34 @@ public:
     // suppress unused var warning
     (void) function__;
     try {
-      Eigen::Matrix<double,1,-1> intercept;
+      Eigen::Matrix<double,1,-1> intercept =
+        Eigen::Matrix<double,1,-1>::Constant(n_y,
+          std::numeric_limits<double>::quiet_NaN());
       current_statement__ = 1;
       intercept = in__.template read<
                     Eigen::Matrix<local_scalar_t__,1,-1>>(n_y);
-      Eigen::Matrix<double,-1,-1> beta;
+      Eigen::Matrix<double,-1,-1> beta =
+        Eigen::Matrix<double,-1,-1>::Constant(p, n_y,
+          std::numeric_limits<double>::quiet_NaN());
       current_statement__ = 2;
       beta = in__.template read<Eigen::Matrix<local_scalar_t__,-1,-1>>(p,
                n_y);
-      Eigen::Matrix<double,-1,-1> u;
+      Eigen::Matrix<double,-1,-1> u =
+        Eigen::Matrix<double,-1,-1>::Constant(n_grp, n_y,
+          std::numeric_limits<double>::quiet_NaN());
       current_statement__ = 3;
       u = in__.template read<Eigen::Matrix<local_scalar_t__,-1,-1>>(n_grp,
             n_y);
-      Eigen::Matrix<double,-1,1> sigma_grp;
+      Eigen::Matrix<double,-1,1> sigma_grp =
+        Eigen::Matrix<double,-1,1>::Constant(n_y,
+          std::numeric_limits<double>::quiet_NaN());
       current_statement__ = 4;
       sigma_grp = in__.template read_constrain_lb<
                     Eigen::Matrix<local_scalar_t__,-1,1>, jacobian__>(0,
                     lp__, n_y);
-      Eigen::Matrix<double,-1,-1> L;
+      Eigen::Matrix<double,-1,-1> L =
+        Eigen::Matrix<double,-1,-1>::Constant(n_y, n_y,
+          std::numeric_limits<double>::quiet_NaN());
       current_statement__ = 5;
       L = in__.template read_constrain_cholesky_factor_corr<
             Eigen::Matrix<local_scalar_t__,-1,-1>, jacobian__>(lp__, n_y);
@@ -507,7 +538,9 @@ public:
         stan::math::validate_non_negative_index("Sigma", "n_y", n_y);
         current_statement__ = 11;
         stan::math::validate_non_negative_index("Sigma", "n_y", n_y);
-        Eigen::Matrix<double,-1,-1> Sigma;
+        Eigen::Matrix<double,-1,-1> Sigma =
+          Eigen::Matrix<double,-1,-1>::Constant(n_y, n_y,
+            std::numeric_limits<double>::quiet_NaN());
         current_statement__ = 12;
         stan::model::assign(Sigma,
           stan::math::diag_pre_multiply(sigma_grp, L),
@@ -554,33 +587,40 @@ public:
     // suppress unused var warning
     (void) DUMMY_VAR__;
     try {
-      int pos__;
+      int pos__ = std::numeric_limits<int>::min();
       pos__ = 1;
-      Eigen::Matrix<local_scalar_t__,1,-1> intercept;
+      Eigen::Matrix<local_scalar_t__,1,-1> intercept =
+        Eigen::Matrix<local_scalar_t__,1,-1>::Constant(n_y, DUMMY_VAR__);
       current_statement__ = 1;
       stan::model::assign(intercept,
         in__.read<Eigen::Matrix<local_scalar_t__,1,-1>>(n_y),
         "assigning variable intercept");
       out__.write(intercept);
-      Eigen::Matrix<local_scalar_t__,-1,-1> beta;
+      Eigen::Matrix<local_scalar_t__,-1,-1> beta =
+        Eigen::Matrix<local_scalar_t__,-1,-1>::Constant(p, n_y, DUMMY_VAR__);
       current_statement__ = 2;
       stan::model::assign(beta,
         in__.read<Eigen::Matrix<local_scalar_t__,-1,-1>>(p, n_y),
         "assigning variable beta");
       out__.write(beta);
-      Eigen::Matrix<local_scalar_t__,-1,-1> u;
+      Eigen::Matrix<local_scalar_t__,-1,-1> u =
+        Eigen::Matrix<local_scalar_t__,-1,-1>::Constant(n_grp, n_y,
+          DUMMY_VAR__);
       current_statement__ = 3;
       stan::model::assign(u,
         in__.read<Eigen::Matrix<local_scalar_t__,-1,-1>>(n_grp, n_y),
         "assigning variable u");
       out__.write(u);
-      Eigen::Matrix<local_scalar_t__,-1,1> sigma_grp;
+      Eigen::Matrix<local_scalar_t__,-1,1> sigma_grp =
+        Eigen::Matrix<local_scalar_t__,-1,1>::Constant(n_y, DUMMY_VAR__);
       current_statement__ = 4;
       stan::model::assign(sigma_grp,
         in__.read<Eigen::Matrix<local_scalar_t__,-1,1>>(n_y),
         "assigning variable sigma_grp");
       out__.write_free_lb(0, sigma_grp);
-      Eigen::Matrix<local_scalar_t__,-1,-1> L;
+      Eigen::Matrix<local_scalar_t__,-1,-1> L =
+        Eigen::Matrix<local_scalar_t__,-1,-1>::Constant(n_y, n_y,
+          DUMMY_VAR__);
       current_statement__ = 5;
       stan::model::assign(L,
         in__.read<Eigen::Matrix<local_scalar_t__,-1,-1>>(n_y, n_y),
@@ -618,7 +658,7 @@ public:
       context__.validate_dims("parameter initialization", "L", "double",
         std::vector<size_t>{static_cast<size_t>(n_y),
           static_cast<size_t>(n_y)});
-      int pos__;
+      int pos__ = std::numeric_limits<int>::min();
       pos__ = 1;
       Eigen::Matrix<local_scalar_t__,1,-1> intercept =
         Eigen::Matrix<local_scalar_t__,1,-1>::Constant(n_y, DUMMY_VAR__);
