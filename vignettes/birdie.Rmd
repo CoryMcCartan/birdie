@@ -127,9 +127,9 @@ print(fit)
 The BIRDiE model we just fit is a *mixed-effects* model.
 It estimates a different relationship between turnout and race in every ZIP, but partially pools these estimates towards a common global estimate of the turnout-race relationship.
 **BIRDiE supports three other general types of models as well**: the complete-pooling and no-pooling categorical regression models, and a Normal linear model which can be used for continuous outcome variables (when the true regression function is assumed to be additive and linear in the covariates).
-The no-pooling uses a formula like `turnout ~ 1` and only estimates a single, global relationship between turnout and race.
+The complete-pooling model uses a formula like `turnout ~ 1` and only estimates a single, global relationship between turnout and race.
 The model therefore assumes that turnout has no association with geography, after controlling for race.
-The complete-pooling model uses a formula like `turnout ~ proc_zip(zip)`.
+The no-pooling model uses a formula like `turnout ~ proc_zip(zip)`.
 While this model can be more computationally efficient to fit than the mixed-effects model, its performance can suffer on smaller datasets like the one used here.
 We recommend the mixed-effects model for general use when the outcome variable is discrete.
 
