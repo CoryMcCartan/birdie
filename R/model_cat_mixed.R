@@ -101,10 +101,19 @@ em_cat_mixed <- function(Y, p_rxs, formula, data, weights, prior, races, ctrl) {
             standata$prior_int = prior$scale_int[r]
 
             sm_ir = get_stanmodel(rstantools_model_multinom, standata)
-            fit = optim_model(sm_ir, init=curr[, r], tol_rel_obj=ctrl$reltol)
-            # fit = optim_model_stan(sm_ir, init=par_l[[r]], skeleton=skeleton,
-            #                   tol_rel_obj=10/ctrl$abstol,
-            #                   tol_obj=10*ctrl$abstol, tol_param=ctrl$abstol)
+            fit = tryCatch(
+                optim_model(sm_ir, init=curr[, r], tol_rel_obj=ctrl$reltol),
+                error = function(e) {
+                    # fit non-Jacobian-adjusted as backup
+                    res = optim_model_stan(
+                        sm_ir, init=par_l[[r]], skeleton=skeleton,
+                        tol_rel_obj=10/ctrl$abstol,
+                        tol_obj=10*ctrl$abstol, tol_param=ctrl$abstol
+                    )
+                    res$converged = FALSE
+                    res
+                }
+            )
             all_converged = all_converged && fit$converged
             curr[, r] = fit$par
         }

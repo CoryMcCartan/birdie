@@ -140,9 +140,9 @@
 #'   available, can be accessed with `$se` and [vcov.birdie()].
 #'
 #' @references
-#' McCartan, C., Goldin, J., Ho, D.E., & Imai, K. (2022).
+#' McCartan, C., Fisher, R., Goldin, J., Ho, D.E., & Imai, K. (2024).
 #' Estimating Racial Disparities when Race is Not Observed.
-#' Available at \url{https://arxiv.org/abs/2303.02580}.
+#' Available at \url{https://www.nber.org/papers/w32373}.
 #'
 #' @examples
 #' data(pseudo_vf)
@@ -256,7 +256,7 @@ birdie <- function(r_probs, formula, data, family=cat_dir(), prior=NULL, weights
     colnames(res$p_ryxs) = colnames(p_rxs)
     p_ryxs = as_tibble(res$p_ryxs)
     if (inherits(r_probs, "bisg")) {
-        p_ryxs = reconstruct.bisg(p_ryxs, r_probs, cat_nms=covars[1])
+        p_ryxs = reconstruct_bisg(p_ryxs, r_probs, cat_nms=covars[1])
     }
 
     # output

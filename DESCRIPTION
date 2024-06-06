@@ -1,8 +1,8 @@
 Package: birdie
 Title: Bayesian Instrumental Regression for Disparity Estimation
-Version: 0.5.0.9999
+Version: 0.6.0
 Authors@R: c(
-    person("Cory", "McCartan", role=c("aut", "cre"), email="cmccartan@g.harvard.edu"),
+    person("Cory", "McCartan", role=c("aut", "cre"), email="mccartan@psu.edu"),
     person("Kosuke", "Imai", role="ctb", email="imai@harvard.edu"),
     person("Daniel", "Ho", role="ctb", email="dho@law.stanford.edu"),
     person("Jacob", "Goldin", role="ctb", email="jsgoldin@uchicago.edu"),
@@ -12,7 +12,7 @@ Authors@R: c(
 Description: Bayesian models for accurately estimating conditional 
     distributions by race, using Bayesian Improved Surname Geocoding (BISG) 
     probability estimates of individual race. Implements the methods described
-    in McCartan, Goldin, Ho and Imai (2023) <arXiv:2303.02580>.
+    in McCartan, Fisher, Goldin, Ho and Imai (2024) <doi:10.3386/w32373>.
 Depends: 
     R (>= 3.5.0)
 Imports: 
@@ -45,12 +45,11 @@ LinkingTo:
     StanHeaders (>= 2.18.0)
 License: GPL (>= 3)
 Encoding: UTF-8
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
 VignetteBuilder: knitr
 Config/testthat/edition: 3
-SystemRequirements: GNU make
+SystemRequirements: GNU make, C++17
 Biarch: true
 LazyData: true
 URL: https://github.com/CoryMcCartan/birdie, https://corymccartan.com/birdie/
 BugReports: https://github.com/CoryMcCartan/birdie/issues
+RoxygenNote: 7.3.1

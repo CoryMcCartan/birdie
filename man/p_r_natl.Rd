@@ -9,7 +9,7 @@ p_r_natl(year = 2021, vap = FALSE)
 \arguments{
 \item{year}{The year to return demographics for.}
 
-\item{vap}{If \code{TRUE}, return statistics for the voting-age population (18+)
+\item{vap}{If `TRUE`, return statistics for the voting-age population (18+)
 rather than the full U.S. population.}
 }
 \value{
@@ -19,14 +19,12 @@ A named numeric vector of length 6.
 Returns the proportion of the U.S. population in six racial groups in a given
 year. Group definitions necessarily follow those used by the Census Bureau in
 its surname tables:
-\itemize{
-\item \code{white}: Non-Hispanic White alone
-\item \code{black}: Non-Hispanic Black alone
-\item \code{hisp}: Hispanic, any race
-\item \code{asian}: Non-Hispanic Asian, Native Hawaiian, or Pacific Islander alone
-\item \code{aian}: Non-Hispanic American Indian/Alaska Native
-\item \code{other}: Non-Hispanic, two or more races, or other race
-}
+* `white`: Non-Hispanic White alone
+* `black`: Non-Hispanic Black alone
+* `hisp`: Hispanic, any race
+* `asian`: Non-Hispanic Asian, Native Hawaiian, or Pacific Islander alone
+* `aian`: Non-Hispanic American Indian/Alaska Native
+* `other`: Non-Hispanic, two or more races, or other race
 }
 \examples{
 p_r_natl(year=2010)

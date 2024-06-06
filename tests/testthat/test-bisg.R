@@ -62,7 +62,9 @@ test_that("Measurement error BISG model works", {
 })
 
 test_that("BISG results match `wru`", {
+    skip_on_cran()
     skip_if_offline("github.com")
+    skip_if_not_installed("wru")
 
     data("pseudo_vf")
     pseudo_vf$dummy = factor(1)

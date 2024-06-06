@@ -1,7 +1,5 @@
 ## Test environments
-* local R installation (macOS 13.1, arm64), R 4.2.0
-* Debian (gcc) (on r-hub), (devel)
-* Windows Server 2022 (on r-hub), (release)
+* local R installation (macOS 14.5, arm64), R 4.4.0
 * macOS 12.6.1 (on GitHub Actions), (release)
 * Windows Server 2022 (on GitHub Actions), (release)
 * ubuntu 22.04 (on GitHub Actions), (devel)
@@ -14,11 +12,7 @@
 
 * This is a new release.
 
-* Automated checks may flag a broken URL to science.org. The URL actually works 
-fine in a browser, but not at the command line with `curl -I -L`, 
-where it returns a 403 error.
-
-* C++14 is a requirement in order to compile Stan models.
+* C++17 is a requirement in order to compile Stan models.
 
 * GNU make is a SystemRequirement in order to compile Stan models as well.
 

@@ -419,15 +419,16 @@ simulate.bisg <- function(object, nsim = 1, seed = NULL, ...) {
 }
 
 
-reconstruct <- function(new, old, ...) {
-    UseMethod("reconstruct")
-}
+# reconstruct <- function(new, old, ...) {
+#     UseMethod("reconstruct")
+# }
+#
+#
+# reconstruct.default <- function(new, old, ...) {
+#     new
+# }
 
-reconstruct.default <- function(new, old, ...) {
-    new
-}
-
-reconstruct.bisg <- function(new, old, cat_nms=NULL, ...) {
+reconstruct_bisg <- function(new, old, cat_nms=NULL, ...) {
     attr(new, "S_name") = attr(old, "S_name")
     attr(new, "GX_names") = c(cat_nms, attr(old, "GX_names"))
     attr(new, "p_r") = attr(old, "p_r")

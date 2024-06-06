@@ -50,53 +50,53 @@
 \method{summary}{birdie}(object, ...)
 }
 \arguments{
-\item{object, x}{A \code{birdie} model object}
+\item{object, x}{A `birdie` model object}
 
-\item{subgroup}{If \code{TRUE}, return subgroup-level (rather than marginal)
+\item{subgroup}{If `TRUE`, return subgroup-level (rather than marginal)
 coefficient estimates as a 3D array.}
 
 \item{...}{Potentially further arguments passed from other methods}
 
-\item{x_only}{if \code{TRUE}, calculate fitted values using covariates only (i.e.,
+\item{x_only}{if `TRUE`, calculate fitted values using covariates only (i.e.,
 without using surnames).}
 
 \item{adj}{A point in the simplex that describes how BISG probabilities
 will be thresholded to produce point predictions. The probabilities are
-divided by \code{adj}, then the racial category with the highest probability is
+divided by `adj`, then the racial category with the highest probability is
 predicted. Can be used to trade off types of prediction error. Must be
 nonnegative but will be normalized to sum to 1. The default is to make no
 adjustment.}
 
 \item{nsim}{The number of vectors to simulate. Defaults to 1.}
 
-\item{seed}{Used to seed the random number generator. See \code{\link[stats:simulate]{stats::simulate()}}.}
+\item{seed}{Used to seed the random number generator. See [stats::simulate()].}
 
-\item{log}{If \code{TRUE}, plot estimated probabilities on a log scale.}
+\item{log}{If `TRUE`, plot estimated probabilities on a log scale.}
 
-\item{data}{A data frame to augment with \code{Pr(R | Y, X, S)} probabilities}
+\item{data}{A data frame to augment with `Pr(R | Y, X, S)` probabilities}
 }
 \value{
 Varies, depending on the method. See generic functions' documentation
-for details.
+  for details.
 }
 \description{
-The output of \code{\link[=birdie]{birdie()}} is an object of class \code{birdie}, which supports
-many generic functions. Notably \code{coef.birdie()} returns the main model
-estimates of outcome given race, and \code{fitted.birdie()} returns a table
-analogous to the output of \code{\link[=bisg]{bisg()}} with updated race probabilities.
+The output of [birdie()] is an object of class `birdie`, which supports
+many generic functions. Notably `coef.birdie()` returns the main model
+estimates of outcome given race, and `fitted.birdie()` returns a table
+analogous to the output of [bisg()] with updated race probabilities.
 }
 \details{
-The internal structure of \code{birdie} objects is not designed to be accessed
+The internal structure of `birdie` objects is not designed to be accessed
 directly. The generics listed here should be used instead.
 }
 \section{Functions}{
 \itemize{
 \item \code{coef(birdie)}: Return estimated outcome-given-race distributions.
-When \code{subgroup=FALSE} this always returns a finite-population estimate of
+When `subgroup=FALSE` this always returns a finite-population estimate of
 the outcome-given-race distribution for the observed sample.
 
-\item \code{fitted(birdie)}: Return an updated race probability table. \code{\link[=bisg]{bisg()}}
-estimates \code{Pr(R | G, X, S)}; this table is \code{Pr(R | Y, G, X, S, Theta-hat)}.
+\item \code{fitted(birdie)}: Return an updated race probability table. [bisg()]
+estimates `Pr(R | G, X, S)`; this table is `Pr(R | Y, G, X, S, Theta-hat)`.
 
 \item \code{residuals(birdie)}: Return the residuals for the outcome variable as a
 matrix. Useful in sensitivity analyses and to get an idea of how well race,
@@ -108,12 +108,12 @@ kind of inferential purpose, as biases may be extreme and in unpredictable
 directions.
 
 \item \code{simulate(birdie)}: Simulate race from the posterior distribution
-\code{Pr(R | Y, G, X, S, Theta-hat)}. Does not account for uncertainty in model
+`Pr(R | Y, G, X, S, Theta-hat)`. Does not account for uncertainty in model
 parameters.
 
 \item \code{plot(birdie)}: Visualize the estimated conditional distributions
-for a BIRDiE model. If available, marginal standard error estimates (\verb{$se})
-will be visualized with 95\% confidence-level error bars.
+for a BIRDiE model. If available, marginal standard error estimates (`$se`)
+will be visualized with 95% confidence-level error bars.
 
 \item \code{tidy(birdie)}: Put BIRDiE model coefficients in a tidy format.
 

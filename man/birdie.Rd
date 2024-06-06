@@ -20,115 +20,112 @@ birdie(
 }
 \arguments{
 \item{r_probs}{A data frame or matrix of BISG probabilities, with one row per
-individual. The output of \code{\link[=bisg]{bisg()}} can be used directly here.}
+individual. The output of [bisg()] can be used directly here.}
 
 \item{formula}{A two-sided formula object describing the model structure. The
 left-hand side is the outcome variable, which must be discrete. A single
-random intercept term, denoted with a vertical bar (\code{"(1 | <term>)"}), is
+random intercept term, denoted with a vertical bar (`"(1 | <term>)"`), is
 supported on the right-hand side.}
 
-\item{data}{An optional data frame containing the variables named in \code{formula}.}
+\item{data}{An optional data frame containing the variables named in `formula`.}
 
 \item{family}{A description of the complete-data model type to fit. Options
-are:
-\itemize{
-\item \code{\link[=cat_dir]{cat_dir()}}: Categorical-Dirichlet model. All covariates must be fully
-interacted.
-\item \code{\link[=cat_mixed]{cat_mixed()}}: Categorical mixed-effects model. Up to one random effect
-is supported.
-\item \code{\link[=gaussian]{gaussian()}}: Linear model.
-}
+  are:
+
+  - [cat_dir()]: Categorical-Dirichlet model. All covariates must be fully
+  interacted.
+  - [cat_mixed()]: Categorical mixed-effects model. Up to one random effect
+  is supported.
+  - [gaussian()]: Linear model.
 
 See the Details section below for more information on the various models.}
 
 \item{prior}{A list with entries specifying the model prior.
-\itemize{
-\item For the \code{cat_dir} model, the only entry is \code{alpha}, which should be a matrix
-of Dirichlet hyperparameters. The matrix should have one row for every
-level of the outcome variable and one column for every racial group. The
-default prior (used when \code{prior=NULL}) is an empirical Bayes prior equal to
-the weighted-mean estimate of the outcome-race table. A fully
-noninformative prior with all entries set to \eqn{\epsilon} can be obtained
-by setting \code{prior=NA}. When \code{prior=NULL} and \code{algorithm="em"} or
-\code{"em_boot"}, 1 is added to the prior so that the posterior mode, rather
-than the mean, is shrunk toward these values.
-\item For the \code{cat_mixed} model, the \code{prior} list should contain three scalar entries:
-\code{scale_int}, the standard deviation on the Normal prior for the intercepts
-(which control the global estimates of \code{Y|R}), \code{scale_beta}, the standard
-deviation on the Normal prior for the fixed effects, and \code{scale_sigma}, the
-prior mean of the standard deviation of the random intercepts. These can be
-a single scalar or a vector with an entry for each racial group.
-\item For the \code{gaussian} model, the \code{prior} list  should contain two entries:
-\code{scale_int}, controlling, the standard deviation on the Normal prior for
-the intercepts (which control the global estimates of \code{Y|R}), and
-\code{scale_beta}, controlling the standard deviation on the Normal prior for
-the fixed effects. These must be a single scalar. Each is expressed in
-terms of the estimated residual standard deviation (i.e., they are
-multiplied together to form the "true" prior).
-}
 
-The prior is stored after model fitting in the \verb{$prior} element of the
-fitted model object.}
+  - For the `cat_dir` model, the only entry is `alpha`, which should be a matrix
+  of Dirichlet hyperparameters. The matrix should have one row for every
+  level of the outcome variable and one column for every racial group. The
+  default prior (used when `prior=NULL`) is an empirical Bayes prior equal to
+  the weighted-mean estimate of the outcome-race table. A fully
+  noninformative prior with all entries set to \eqn{\epsilon} can be obtained
+  by setting `prior=NA`. When `prior=NULL` and `algorithm="em"` or
+  `"em_boot"`, 1 is added to the prior so that the posterior mode, rather
+  than the mean, is shrunk toward these values.
+  - For the `cat_mixed` model, the `prior` list should contain three scalar entries:
+  `scale_int`, the standard deviation on the Normal prior for the intercepts
+  (which control the global estimates of `Y|R`), `scale_beta`, the standard
+  deviation on the Normal prior for the fixed effects, and `scale_sigma`, the
+  prior mean of the standard deviation of the random intercepts. These can be
+  a single scalar or a vector with an entry for each racial group.
+  - For the `gaussian` model, the `prior` list  should contain two entries:
+  `scale_int`, controlling, the standard deviation on the Normal prior for
+  the intercepts (which control the global estimates of `Y|R`), and
+  `scale_beta`, controlling the standard deviation on the Normal prior for
+  the fixed effects. These must be a single scalar. Each is expressed in
+  terms of the estimated residual standard deviation (i.e., they are
+  multiplied together to form the "true" prior).
+
+  The prior is stored after model fitting in the `$prior` element of the
+  fitted model object.}
 
 \item{weights}{An optional numeric vector specifying likelihood weights.}
 
 \item{algorithm}{The inference algorithm to use. One of 3 options:
-\itemize{
-\item \code{"em"}: An expectation-maximization algorithm which will perform inference
-for the maximum a posteriori (MAP) parameter values. Computationally
-efficient and supported by all the model families. No uncertainty
-quantification.
-\item \code{"gibbs"}: A Gibbs sampler for performing full Bayesian inference.
-Generally more computationally demanding than the EM algorithm, but
-provides uncertainty quantification. Currently supported for \code{cat_dir()} and
-\code{gaussian()} model families. Computation-reliability tradeoff can
-be controlled with \code{iter} argument.
-\item \code{"em_boot"}: Bootstrapped version of EM algorithm. Number of bootstrap
-replicates controlled by \code{iter} parameter. Provides approximate uncertainty
-quantification. Currently supported for \code{cat_dir()} and
-\code{gaussian()} model families.
-}}
+
+  - `"em"`: An expectation-maximization algorithm which will perform inference
+  for the maximum a posteriori (MAP) parameter values. Computationally
+  efficient and supported by all the model families. No uncertainty
+  quantification.
+  - `"gibbs"`: A Gibbs sampler for performing full Bayesian inference.
+  Generally more computationally demanding than the EM algorithm, but
+  provides uncertainty quantification. Currently supported for `cat_dir()` and
+  `gaussian()` model families. Computation-reliability tradeoff can
+  be controlled with `iter` argument.
+  - `"em_boot"`: Bootstrapped version of EM algorithm. Number of bootstrap
+  replicates controlled by `iter` parameter. Provides approximate uncertainty
+  quantification. Currently supported for `cat_dir()` and
+  `gaussian()` model families.}
 
 \item{iter}{The number of post-warmup Gibbs samples, or the number of
-bootstrap replicates to use to compute approximate standard errors for the
-main model estimates. Only available when \code{family=cat_dir()} or
-\code{gaussian()}. Ignored if \code{algorithm="em"}.
+  bootstrap replicates to use to compute approximate standard errors for the
+  main model estimates. Only available when `family=cat_dir()` or
+  `gaussian()`. Ignored if `algorithm="em"`.
 
-For bootstrapping, when there are fewer than 1,000 individuals or 100 or
-fewer replicates, a Bayesian bootstrap is used instead (i.e., weights are
-drawn from a \eqn{\text{Dirichlet}(1, 1, ..., 1)} distribution, which
-produces more reliable estimates.}
+  For bootstrapping, when there are fewer than 1,000 individuals or 100 or
+  fewer replicates, a Bayesian bootstrap is used instead (i.e., weights are
+  drawn from a \eqn{\text{Dirichlet}(1, 1, ..., 1)} distribution, which
+  produces more reliable estimates.}
 
 \item{warmup}{Number of warmup iterations for Gibbs sampling.
-Ignored unless \code{algorithm="gibbs"}.}
+Ignored unless `algorithm="gibbs"`.}
 
-\item{prefix}{If \code{r_probs} is a data frame, the columns containing racial
-probabilities will be selected as those with names starting with \code{prefix}.
-The default will work with the output of \code{\link[=bisg]{bisg()}}.}
+\item{prefix}{If `r_probs` is a data frame, the columns containing racial
+probabilities will be selected as those with names starting with `prefix`.
+The default will work with the output of [bisg()].}
 
 \item{ctrl}{A list containing control parameters for the EM algorithm and
 optimization routines. A list in the proper format can be made using
-\code{\link[=birdie.ctrl]{birdie.ctrl()}}.}
+[birdie.ctrl()].}
 }
 \value{
-An object of class \code{\link[=birdie-class]{birdie}}, for which many
-methods are available. The model estimates may be accessed with
-\code{\link[=coef.birdie]{coef.birdie()}}, and updated BISG probabilities (conditioning on the
-outcome) may be accessed with \code{\link[=fitted.birdie]{fitted.birdie()}}. Uncertainty estimates, if
-available, can be accessed with \verb{$se} and \code{\link[=vcov.birdie]{vcov.birdie()}}.
+An object of class [`birdie`][birdie::birdie-class], for which many
+  methods are available. The model estimates may be accessed with
+  [coef.birdie()], and updated BISG probabilities (conditioning on the
+  outcome) may be accessed with [fitted.birdie()]. Uncertainty estimates, if
+  available, can be accessed with `$se` and [vcov.birdie()].
 }
 \description{
 Fits one of three possible Bayesian Instrumental Regression for Disparity
 Estimation (BIRDiE) models to BISG probabilities and covariates. The simplest
-Categorical-Dirichlet model (\code{\link[=cat_dir]{cat_dir()}}) is appropriate when there are no
+Categorical-Dirichlet model ([cat_dir()]) is appropriate when there are no
 covariates or when all covariates are discrete and fully interacted with
-another. The more general Categorical mixed-effects model (\code{\link[=cat_mixed]{cat_mixed()}}) is
+another. The more general Categorical mixed-effects model ([cat_mixed()]) is
 a supports any number of fixed effects and up to one random intercept. For
-continuous outcomes a Normal linear model is available (\code{\link[=gaussian]{gaussian()}}).
+continuous outcomes a Normal linear model is available ([gaussian()]).
 }
 \details{
-By default, \code{birdie()} uses an expectation-maximization (EM) routine to find
-the maximum \emph{a posteriori} (MAP) estimate for the specified model. Asymptotic
+By default, `birdie()` uses an expectation-maximization (EM) routine to find
+the maximum *a posteriori* (MAP) estimate for the specified model. Asymptotic
 variance-covariance matrices for the MAP estimate are available for the
 Categorical-Dirichlet and Normal linear models via bootstrapping.
 Full Bayesian inference is suppored via Gibbs sampling for the
@@ -136,8 +133,8 @@ Categorical-Dirichlet and Normal linear models as well.
 
 Whatever model or method is used, a finite-population estimate of the
 outcome-given-race distribution for the entire observed sample is always
-calculated and stored as \verb{$est} in the returned object, which can be accessed
-with \code{\link[=coef.birdie]{coef.birdie()}} as well.
+calculated and stored as `$est` in the returned object, which can be accessed
+with [coef.birdie()] as well.
 
 The Categorical-Dirichlet model is specified as follows: \deqn{
     Y_i \mid R_i, X_i, \Theta \sim \text{Categorical}(\theta_{R_iX_i}) \\
@@ -146,7 +143,7 @@ The Categorical-Dirichlet model is specified as follows: \deqn{
 covariates (fixed effects), and \eqn{\theta_{rx}} and \eqn{\alpha_r} are
 vectors with length matching the number of levels of the outcome variable.
 There is one vector \eqn{\theta_{rx}} for every combination of race and
-covariates, hence the need for \code{formula} to either have no covariates or a
+covariates, hence the need for `formula` to either have no covariates or a
 fully interacted structure.
 
 The Categorical mixed-effects model is specified as follows: \deqn{
@@ -160,7 +157,7 @@ The Categorical mixed-effects model is specified as follows: \deqn{
 } where \eqn{\beta_{ry}} are the fixed effects, \eqn{u_{ry}} is the random
 intercept, and \eqn{g} is a softmax link function.
 Estimates for \eqn{\beta_{ry}} and \eqn{\sigma_{ry}} are stored in the
-\verb{$beta} and \verb{$sigma} elements of the fitted model object.
+`$beta` and `$sigma` elements of the fitted model object.
 
 The Normal linear model is specified as follows: \deqn{
     Y_i \mid R_i, \vec X_i, \Theta \sim \mathcal{N}(\vec X_i^\top\vec\theta, \sigma^2) \\
@@ -169,7 +166,7 @@ The Normal linear model is specified as follows: \deqn{
     \beta_k \sim \mathcal{N}(0, s^2_\beta), \\
 } where \eqn{\vec\theta} is a vector of linear model coefficients.
 Estimates for \eqn{\theta} and \eqn{\sigma} are stored in the
-\verb{$beta} and \verb{$sigma} elements of the fitted model object.
+`$beta` and `$sigma` elements of the fitted model object.
 
 More details on the models and their properties may be found in the paper
 referenced below.
@@ -197,8 +194,8 @@ fitted(fit)
 
 }
 \references{
-McCartan, C., Goldin, J., Ho, D.E., & Imai, K. (2022).
+McCartan, C., Fisher, R., Goldin, J., Ho, D.E., & Imai, K. (2024).
 Estimating Racial Disparities when Race is Not Observed.
-Available at \url{https://arxiv.org/abs/2303.02580}.
+Available at \url{https://www.nber.org/papers/w32373}.
 }
 \concept{estimators}

@@ -1,4 +1,9 @@
 #' @aliases birdie-package
+#' @references
+#' McCartan, C., Fisher, R., Goldin, J., Ho, D.E., & Imai, K. (2024).
+#' Estimating Racial Disparities when Race is Not Observed.
+#' Available at \url{https://www.nber.org/papers/w32373}.
+#'
 #' @keywords internal
 "_PACKAGE"
 
@@ -13,7 +18,7 @@
 #' @importFrom Rcpp sourceCpp
 #' @importFrom RcppParallel CxxFlags
 #' @importFrom stats na.omit na.fail .lm.fit lm.wfit fitted simulate
-#' @importFrom stats weighted.mean rnorm rgamma median sd cov dnorm
+#' @importFrom stats weighted.mean rnorm rgamma median sd cov dnorm optim
 #' @importFrom stats terms get_all_vars model.frame model.matrix setNames
 #' @importFrom stats formula update.formula as.formula nobs family vcov residuals
 #' @importFrom utils tail unstack relist head packageVersion

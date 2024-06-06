@@ -16,7 +16,7 @@ proc_name(x, to_latin = TRUE)
 \arguments{
 \item{x}{A character vector of names or geographic identifiers to process}
 
-\item{to_latin}{If \code{TRUE}, convert names to Latin characters only. Strongly
+\item{to_latin}{If `TRUE`, convert names to Latin characters only. Strongly
 recommended if non-Latin characters are present, since these will not match
 Census tables. However, the conversion is slightly time-consuming and so
 can be disabled with this flag.}
@@ -25,14 +25,14 @@ can be disabled with this flag.}
 A processed character vector
 }
 \description{
-These functions are called automatically by \code{\link[=bisg]{bisg()}} but may be useful,
-especially when geographic variables are included in a \code{\link[=birdie]{birdie()}} model.
-\code{proc_zip()} and \code{proc_state()} preprocess their corresponding geographic
+These functions are called automatically by [bisg()] but may be useful,
+especially when geographic variables are included in a [birdie()] model.
+`proc_zip()` and `proc_state()` preprocess their corresponding geographic
 identifiers. States are partially matched to state names and abbreviations
 and are returned as FIPS codes. ZIP codes are crosswalked to Census ZCTAs.
-Missing identifiers are replaced with \code{"<none>"}.
-\code{proc_name()} processes last names in accordance with Census processing rules
-(\url{https://www2.census.gov/topics/genealogy/2010surnames/surnames.pdf}).
+Missing identifiers are replaced with `"<none>"`.
+`proc_name()` processes last names in accordance with Census processing rules
+(<https://www2.census.gov/topics/genealogy/2010surnames/surnames.pdf>).
 Names are converted to Latin characters, capitalized, stripped of prefixes
 and suffixes, and otherwise standardized.
 }

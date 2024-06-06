@@ -36,51 +36,51 @@ bisg_me(
 }
 \arguments{
 \item{formula}{A formula specifying the BISG model. Must include the special
-term \code{nm()} to identify the surname variable. Certain geographic variables
-can be identified similarly: \code{zip()} for ZIP codes, and \code{state()} for
-states. If no other predictor variables are provided, then \code{bisg()} will
+term `nm()` to identify the surname variable. Certain geographic variables
+can be identified similarly: `zip()` for ZIP codes, and `state()` for
+states. If no other predictor variables are provided, then `bisg()` will
 automatically be able to build a table of census data to use in inference.
 If other predictor variables are included, or if other geographic
-identifiers are used, then the user must specify the \code{p_rgx} argument below.
+identifiers are used, then the user must specify the `p_rgx` argument below.
 The left-hand side of the formula is ignored.
 See the examples section below for sample formulas.}
 
-\item{data}{The data frame containing the variables in \code{formula}.}
+\item{data}{The data frame containing the variables in `formula`.}
 
 \item{p_r}{The prior distribution of race in the sample, as a numeric vector.
-Defaults to U.S. demographics as provided by \code{\link[=p_r_natl]{p_r_natl()}}.
-Can also set \code{p_r="est"} or \code{"estimate"} to estimate this from the
+Defaults to U.S. demographics as provided by [p_r_natl()].
+Can also set `p_r="est"` or `"estimate"` to estimate this from the
 geographic distribution.  Since the prior distribution on race strongly
 affects the calibration of the BISG probabilities and thus the accuracy of
 downstream estimates, users are encouraged to think carefully about an
-appropriate value for \code{p_r}.  If no prior information on the racial makeup
+appropriate value for `p_r`.  If no prior information on the racial makeup
 of the sample is available, and yet the sample is very different from the
-overall U.S. population, then \code{p_r="estimate"} will likely produce superior
+overall U.S. population, then `p_r="estimate"` will likely produce superior
 results.}
 
 \item{p_rgx}{The distribution of race given location (G) and other covariates
-(X) specified in \code{formula}. Should be provided as a data frame, with columns
-matching the predictors in \code{formula}, and additional columns for each
+(X) specified in `formula`. Should be provided as a data frame, with columns
+matching the predictors in `formula`, and additional columns for each
 racial group containing the conditional probability for that racial group
 given the predictors. For example, if Census tracts are the only predictors,
-\code{p_rgx} should be a data frame with a tract column and columns \code{white},
-\code{black}, etc. containing the racial distribution of each tract.
-If \code{formula} contains only labeled terms (like \code{zip()}), then by default
-\code{p_rgx} will be constructed automatically from the most recent Census data.
+`p_rgx` should be a data frame with a tract column and columns `white`,
+`black`, etc. containing the racial distribution of each tract.
+If `formula` contains only labeled terms (like `zip()`), then by default
+`p_rgx` will be constructed automatically from the most recent Census data.
 This table will be normalized by row, so it can be provided as population
-counts as well. Counts are required for \code{bisg_me()}.
-The \code{\link[=census_race_geo_table]{census_race_geo_table()}} function can be helpful to prepare tables,
-as can be the \code{build_dec()} and \code{build_acs()} functions in the \code{censable}
+counts as well. Counts are required for `bisg_me()`.
+The [census_race_geo_table()] function can be helpful to prepare tables,
+as can be the `build_dec()` and `build_acs()` functions in the `censable`
 package.}
 
-\item{p_rs}{The distribution of race given last name. As with \code{p_rgx}, should
+\item{p_rs}{The distribution of race given last name. As with `p_rgx`, should
 be provided as a data frame, with a column of names and additional columns
 for each racial group. Users should not have to specify this argument in
 most cases, as the table will be built from published Census surname tables
-automatically. Counts are required for \code{bisg_me()}.}
+automatically. Counts are required for `bisg_me()`.}
 
-\item{save_rgx}{If \code{TRUE}, save the \code{p_rgx} table (matched to each
-individual) as the \code{"p_rgx"} and \code{"gx"} attributes of the output.
+\item{save_rgx}{If `TRUE`, save the `p_rgx` table (matched to each
+individual) as the `"p_rgx"` and `"gx"` attributes of the output.
 Necessary for some sensitivity analyses.}
 
 \item{iter}{How many sampling iterations in the Gibbs sampler}
@@ -90,31 +90,31 @@ Necessary for some sensitivity analyses.}
 \item{cores}{How many parallel cores to use in computation. Around 4 seems to
 be optimal, even if more are available.}
 
-\item{object}{An object of class \code{bisg}, the result of running \code{\link[=bisg]{bisg()}}.}
+\item{object}{An object of class `bisg`, the result of running [bisg()].}
 
 \item{...}{Additional arguments to generic methods (ignored).}
 
 \item{adj}{A point in the simplex that describes how BISG probabilities
 will be thresholded to produce point predictions. The probabilities are
-divided by \code{adj}, then the racial category with the highest probability is
+divided by `adj`, then the racial category with the highest probability is
 predicted. Can be used to trade off types of prediction error. Must be
 nonnegative but will be normalized to sum to 1. The default is to make no
 adjustment.}
 
 \item{nsim}{The number of vectors to simulate. Defaults to 1.}
 
-\item{seed}{Used to seed the random number generator. See \code{\link[stats:simulate]{stats::simulate()}}.}
+\item{seed}{Used to seed the random number generator. See [stats::simulate()].}
 }
 \value{
-An object of class \code{bisg}, which is just a data frame with some
-additional attributes. The data frame has rows matching the input data and
-columns for the race probabilities.
+An object of class `bisg`, which is just a data frame with some
+  additional attributes. The data frame has rows matching the input data and
+  columns for the race probabilities.
 }
 \description{
 Calculates individual probabilities of belonging to racial groups given last
 name, location, and other covariates (optional). The standard function
-\code{bisg()} treats the input tables as fixed. An alternative function
-\code{bisg_me()}, assumes that the input tables are subject to measurement error,
+`bisg()` treats the input tables as fixed. An alternative function
+`bisg_me()`, assumes that the input tables are subject to measurement error,
 and uses a Gibbs sampler to impute the individual race probabilities, using
 the model of Imai et al. (2022).
 }
@@ -127,7 +127,7 @@ vector of individual race labels. Strongly not recommended for any kind of
 inferential purpose, as biases may be extreme and in unpredictable
 directions.
 
-\item \code{simulate(bisg)}: Simulate race from the \code{Pr(R | G, X, S)} distribution.
+\item \code{simulate(bisg)}: Simulate race from the `Pr(R | G, X, S)` distribution.
 
 }}
 \section{Functions}{
@@ -151,15 +151,15 @@ bisg_me(~ nm(last_name) + zip(zip), data=pseudo_vf)
 \references{
 Elliott, M. N., Fremont, A., Morrison, P. A., Pantoja, P., and Lurie, N.
 (2008). A new method for estimating race/ethnicity and associated disparities
-where administrative records lack self-reported race/ethnicity. \emph{Health
-Services Research}, 43(5p1):1722–1736.
+where administrative records lack self-reported race/ethnicity. *Health
+Services Research*, 43(5p1):1722–1736.
 
 Fiscella, K. and Fremont, A. M. (2006). Use of geocoding and surname analysis
-to estimate race and ethnicity. \emph{Health Services Research},
+to estimate race and ethnicity. *Health Services Research*,
 41(4p1):1482–1500.
 
 Imai, K., Olivella, S., & Rosenman, E. T. (2022). Addressing census data
 problems in race imputation via fully Bayesian Improved Surname Geocoding and
-name supplements. \emph{Science Advances}, 8(49), eadc9824.
+name supplements. *Science Advances*, 8(49), eadc9824.
 }
 \concept{bisg}
