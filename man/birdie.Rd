@@ -128,7 +128,7 @@ By default, `birdie()` uses an expectation-maximization (EM) routine to find
 the maximum *a posteriori* (MAP) estimate for the specified model. Asymptotic
 variance-covariance matrices for the MAP estimate are available for the
 Categorical-Dirichlet and Normal linear models via bootstrapping.
-Full Bayesian inference is suppored via Gibbs sampling for the
+Full Bayesian inference is supported via Gibbs sampling for the
 Categorical-Dirichlet and Normal linear models as well.
 
 Whatever model or method is used, a finite-population estimate of the
