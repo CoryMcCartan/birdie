@@ -152,14 +152,16 @@
 #' # Process zip codes to remove missing values
 #' pseudo_vf$zip = proc_zip(pseudo_vf$zip)
 #'
-#' birdie(r_probs, turnout ~ 1, data=pseudo_vf)
-#'
-#' fit = birdie(r_probs, turnout ~ zip, data=pseudo_vf, algorithm="gibbs")
+#' fit = birdie(r_probs, turnout ~ 1, data=pseudo_vf)
 #' print(fit)
 #' fit$se # uncertainty quantification
 #'
+#' \donttest{
+#' fit = birdie(r_probs, turnout ~ zip, data=pseudo_vf, algorithm="gibbs")
+#'
 #' fit = birdie(r_probs, turnout ~ (1 | zip), data=pseudo_vf,
 #'              family=cat_mixed(), ctrl=birdie.ctrl(abstol=1e-3))
+#' }
 #'
 #' summary(fit)
 #' coef(fit)
