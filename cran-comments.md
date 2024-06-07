@@ -20,5 +20,5 @@
 * Examples are \dontrun{} in census_race_geo_table() since they require an API
   key and may take some time to run. This function is tested locally in 
   tests/testthat/test-census.R.
-* Two examples are \donttest{} in birdie() since they generally take more than 5
-  seconds to run. Other examples in that function take less than 5 seconds.
+* Examples are \donttest{} in birdie() since they generally take more than 5
+  seconds to run. 

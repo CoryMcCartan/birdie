@@ -172,6 +172,7 @@ More details on the models and their properties may be found in the paper
 referenced below.
 }
 \examples{
+\donttest{
 data(pseudo_vf)
 
 r_probs = bisg(~ nm(last_name) + zip(zip), data=pseudo_vf)
@@ -183,16 +184,15 @@ fit = birdie(r_probs, turnout ~ 1, data=pseudo_vf)
 print(fit)
 fit$se # uncertainty quantification
 
-\donttest{
 fit = birdie(r_probs, turnout ~ zip, data=pseudo_vf, algorithm="gibbs")
 
 fit = birdie(r_probs, turnout ~ (1 | zip), data=pseudo_vf,
              family=cat_mixed(), ctrl=birdie.ctrl(abstol=1e-3))
-}
 
 summary(fit)
 coef(fit)
 fitted(fit)
+}
 
 }
 \references{
