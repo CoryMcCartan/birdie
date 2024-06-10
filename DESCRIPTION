@@ -1,6 +1,6 @@
 Package: birdie
 Title: Bayesian Instrumental Regression for Disparity Estimation
-Version: 0.6.0
+Version: 0.6.1
 Authors@R: c(
     person("Cory", "McCartan", role=c("aut", "cre"), email="mccartan@psu.edu"),
     person("Kosuke", "Imai", role="ctb", email="imai@harvard.edu"),

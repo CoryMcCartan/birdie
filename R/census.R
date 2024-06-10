@@ -3,10 +3,11 @@
 #'
 #' Downloads and prepares race-by-geography tables from U.S. census data, using
 #' the [`easycensus`][easycensus::easycensus] package. Requires that an api key
-#' be set up through [easycensus::cens_auth()] in that package. Supports data
-#' from the decennial census and the American Community Survey at a variety of
-#' levels of geographic detail. The output of this function can be used directly
-#' in [bisg()].
+#' be set up through [easycensus::cens_auth()] in that package, usually by
+#' storing it in the `CENSUS_API_KEY` environment variable. Supports data from
+#' the decennial census and the American Community Survey at a variety of levels
+#' of geographic detail. The output of this function can be used directly in
+#' [bisg()].
 #'
 #' @param geo The geographic level to return. Common options are listed in the
 #'   function signature, but any of the geographies listed at
@@ -26,11 +27,13 @@
 #'   `white`, `black`, etc. containing the counts or proportion of
 #'   residents in each racial group.
 #'
-#' @examples \dontrun{
+#' @examples
+#' census_race_geo_table("zcta", year=2010)
+#' \dontrun{
+#' # Census API key required
 #' census_race_geo_table("us", year=2010)
 #' census_race_geo_table("state", year=2021, survey="acs1")
-#' census_race_geo_table("state", year=2021, survey="acs1", GEOIDs=FALSE)
-#' }
+#' census_race_geo_table("state", year=2021, survey="acs1", GEOIDs=FALSE) }
 #' @concept preproc
 #' @export
 census_race_geo_table <- function(geo=c("us", "state", "county", "zcta", "tract"),

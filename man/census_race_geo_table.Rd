@@ -41,16 +41,18 @@ A data frame with geographic identifier column(s) and six columns
 \description{
 Downloads and prepares race-by-geography tables from U.S. census data, using
 the [`easycensus`][easycensus::easycensus] package. Requires that an api key
-be set up through [easycensus::cens_auth()] in that package. Supports data
-from the decennial census and the American Community Survey at a variety of
-levels of geographic detail. The output of this function can be used directly
-in [bisg()].
+be set up through [easycensus::cens_auth()] in that package, usually by
+storing it in the `CENSUS_API_KEY` environment variable. Supports data from
+the decennial census and the American Community Survey at a variety of levels
+of geographic detail. The output of this function can be used directly in
+[bisg()].
 }
 \examples{
+census_race_geo_table("zcta", year=2010)
 \dontrun{
+# Census API key required
 census_race_geo_table("us", year=2010)
 census_race_geo_table("state", year=2021, survey="acs1")
-census_race_geo_table("state", year=2021, survey="acs1", GEOIDs=FALSE)
-}
+census_race_geo_table("state", year=2021, survey="acs1", GEOIDs=FALSE) }
 }
 \concept{preproc}

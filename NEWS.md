@@ -1,4 +1,4 @@
-# birdie 0.6.0
+# birdie 0.6.1
 
 * Switch to an inverse-gamma prior for the random effects scale parameter in 
   the mixed model.

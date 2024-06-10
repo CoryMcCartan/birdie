@@ -10,15 +10,20 @@
 
 0 errors | 0 warnings | 2 notes
 
-* This is a new release.
+* This is a resubmission of a new release.
 
 * GNU make is a SystemRequirement in order to compile Stan models.
 
 * C++17 is a requirement in order to compile Stan models as well.
   This is noted in src/Makevars and in SystemRequirements.
 
-* Examples are \dontrun{} in census_race_geo_table() since they require an API
-  key and may take some time to run. This function is tested locally in 
-  tests/testthat/test-census.R.
+* Three examples are \dontrun{} in census_race_geo_table() since they require an 
+  API key. Since last submission, the API key requirement is now documented in 
+  the examples, not just in the function documentation. This function is tested
+  locally in tests/testthat/test-census.R.
+  
 * Examples are \donttest{} in birdie() since they generally take more than 5
   seconds to run. 
+  
+* I have removed the use of cat() to print additional error information in 
+  bisg.R that was flagged on previous submission.
