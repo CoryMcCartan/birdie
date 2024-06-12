@@ -6,6 +6,8 @@
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/CoryMcCartan/birdie/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/CoryMcCartan/birdie/actions/workflows/R-CMD-check.yaml)
+[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version-last-release/birdie)](https://cran.r-project.org/package=redist)
+![CRAN downloads](http://cranlogs.r-pkg.org/badges/grand-total/birdie)
 <!-- badges: end -->
 
 Bayesian Instrumental Regression for Disparity Estimation (BIRDiE) is a
