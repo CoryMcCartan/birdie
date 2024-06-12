@@ -4,16 +4,16 @@ an outcome variable \(Y\) by race \(R\), using BISG probabilities.  This
 estimator, while commonly used, is only appropriate if \(Y \perp R \mid X, S\),
 where \(S\) and \(X\) are the last names and covariates (possibly
 including geography) used in making the BISG probabilities. In most cases
-this assumption is not plausible and birdie() should be used instead. See
+this assumption is not plausible and [birdie()] should be used instead. See
 the references below for more discussion as to selecting the right estimator.
 Up to Monte Carlo error, the weighted estimate is equivalent to performing
 multiple imputations of the race vector from the BISG probabilities and then
-using them inside a weighted average or linear regression.'><title>Calculate Weighted Estimate of (Discrete) Outcomes By Race — est_weighted • birdie</title><!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png"><link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png"><link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png"><link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png"><link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png"><link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png"><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous"><!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Calculate Weighted Estimate of (Discrete) Outcomes By Race — est_weighted"><meta property="og:description" content='Calculates the "standard" weighted estimator of conditional distributions of
+using them inside a weighted average or linear regression.'><title>Calculate Weighted Estimate of (Discrete) Outcomes By Race — est_weighted • birdie</title><!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png"><link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png"><link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png"><link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png"><link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png"><link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png"><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous"><!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js" integrity="sha512-7O5pXpc0oCRrxk8RUfDYFgn0nO1t+jLuIOQdOMRp4APB7uZ4vSjspzp5y6YDtDs4VzUSTbWzBFZ/LKJhnyFOKw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Calculate Weighted Estimate of (Discrete) Outcomes By Race — est_weighted"><meta property="og:description" content='Calculates the "standard" weighted estimator of conditional distributions of
 an outcome variable \(Y\) by race \(R\), using BISG probabilities.  This
 estimator, while commonly used, is only appropriate if \(Y \perp R \mid X, S\),
 where \(S\) and \(X\) are the last names and covariates (possibly
 including geography) used in making the BISG probabilities. In most cases
-this assumption is not plausible and birdie() should be used instead. See
+this assumption is not plausible and [birdie()] should be used instead. See
 the references below for more discussion as to selecting the right estimator.
 Up to Monte Carlo error, the weighted estimate is equivalent to performing
 multiple imputations of the race vector from the BISG probabilities and then
@@ -29,11 +29,11 @@ using them inside a weighted average or linear regression.'><meta property="og:i
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
     
 
-    <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light"><div class="container">
+    <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light" data-bs-theme="light"><div class="container">
     
     <a class="navbar-brand me-2" href="../index.html">birdie</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -77,7 +77,7 @@ an outcome variable \(Y\) by race \(R\), using BISG probabilities.  This
 estimator, while commonly used, is only appropriate if \(Y \perp R \mid X, S\),
 where \(S\) and \(X\) are the last names and covariates (possibly
 including geography) used in making the BISG probabilities. In most cases
-this assumption is not plausible and <code><a href="birdie.html">birdie()</a></code> should be used instead. See
+this assumption is not plausible and [birdie()] should be used instead. See
 the references below for more discussion as to selecting the right estimator.</p>
 <p>Up to Monte Carlo error, the weighted estimate is equivalent to performing
 multiple imputations of the race vector from the BISG probabilities and then
@@ -106,7 +106,7 @@ using them inside a weighted average or linear regression.</p>
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>r_probs</dt>
 <dd><p>A data frame or matrix of BISG probabilities, with one row per
-individual. The output of <code><a href="bisg.html">bisg()</a></code> can be used directly here.</p></dd>
+individual. The output of [bisg()] can be used directly here.</p></dd>
 
 
 <dt>formula</dt>
@@ -114,11 +114,11 @@ individual. The output of <code><a href="bisg.html">bisg()</a></code> can be use
 The left-hand side is the outcome variable, which must be discrete.
 Subgroups for which to calculate estimates may be specified by adding
 covariates on the right-hand side. Subgroup estimates are available with
-<code>coef(..., subgroup=TRUE)</code> and <code>tidy(..., subgroup=TRUE)</code>.</p></dd>
+`coef(..., subgroup=TRUE)` and `tidy(..., subgroup=TRUE)`.</p></dd>
 
 
 <dt>data</dt>
-<dd><p>An optional data frame containing the variables named in <code>formula</code>.</p></dd>
+<dd><p>An optional data frame containing the variables named in `formula`.</p></dd>
 
 
 <dt>weights</dt>
@@ -126,15 +126,15 @@ covariates on the right-hand side. Subgroup estimates are available with
 
 
 <dt>prefix</dt>
-<dd><p>If <code>r_probs</code> is a data frame, the columns containing racial
-probabilities will be selected as those with names starting with <code>prefix</code>.
-The default will work with the output of <code><a href="bisg.html">bisg()</a></code>.</p></dd>
+<dd><p>If `r_probs` is a data frame, the columns containing racial
+probabilities will be selected as those with names starting with `prefix`.
+The default will work with the output of [bisg()].</p></dd>
 
 
 <dt>se_boot</dt>
 <dd><p>The number of bootstrap replicates to use to compute
 an approximate covariance matrix for the estimator. If no bootstrapping is
-used, an analytical estimate of standard errors will be returned as <code>$se</code>.
+used, an analytical estimate of standard errors will be returned as `$se`.
 For bootstrapping, when there are fewer than 1,000 individuals or 100 or
 fewer replicates, a Bayesian bootstrap is used instead (i.e., weights are
 drawn from a \(\text{Dirichlet}(1, 1, ..., 1)\) distribution, which
@@ -146,17 +146,17 @@ produces more reliable estimates.</p></dd>
 
 
 <dt>object, x</dt>
-<dd><p>An object of class <code>est_weighted</code>.</p></dd>
+<dd><p>An object of class `est_weighted`.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     
 
-<p>An object of class <code>est_weighted</code>, inheriting from
-<code><a href="birdie-class.html">birdie</a></code>, for which many methods are available. The
-model estimates may be accessed with <code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code>. Uncertainty estimates, if
-available, can be accessed with <code>$se</code> and <code><a href="birdie-class.html">vcov.birdie()</a></code>.</p>
+<p>An object of class `est_weighted`, inheriting from
+  [`birdie`][birdie::birdie-class], for which many methods are available. The
+  model estimates may be accessed with `coef()`. Uncertainty estimates, if
+  available, can be accessed with `$se` and [vcov.birdie()].</p>
     </div>
     <div class="section level2">
     <h2 id="methods-by-generic-">Methods (by generic)<a class="anchor" aria-label="anchor" href="#methods-by-generic-"></a></h2>
@@ -166,9 +166,9 @@ available, can be accessed with <code>$se</code> and <code><a href="birdie-class
 </ul></div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
-    <p>McCartan, C., Fisher, R., Goldin, J., Ho, D., &amp; Imai, K. (2022).
+    <p>McCartan, C., Fisher, R., Goldin, J., Ho, D.E., &amp; Imai, K. (2024).
 Estimating Racial Disparities when Race is Not Observed.
-Available at <a href="https://arxiv.org/abs/2303.02580" class="external-link">https://arxiv.org/abs/2303.02580</a>.</p>
+Available at <a href="https://www.nber.org/papers/w32373" class="external-link">https://www.nber.org/papers/w32373</a>.</p>
     </div>
 
     <div class="section level2">
@@ -214,11 +214,11 @@ Available at <a href="https://arxiv.org/abs/2303.02580" class="external-link">ht
 
 
     <footer><div class="pkgdown-footer-left">
-  <p></p><p>Developed by Cory McCartan.</p>
+  <p>Developed by Cory McCartan.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
 </div>
 
     </footer></div>
