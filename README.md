@@ -24,11 +24,10 @@ Olivella, and Rosenman
 
 ## Installation
 
-BIRDiE is not yet available on CRAN. You can install the latest version
-of the package with:
+You can install the latest version of the package from CRAN with:
 
 ``` r
-install.packages("birdie", repos = "https://corymccartan.r-universe.dev")
+install.packages("birdie")
 ```
 
 You can also install the development version with:
