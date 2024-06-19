@@ -82,7 +82,7 @@ estimating linear model coefficients.</p></dd>
 
 <dt>reltol</dt>
 <dd><p>The relative tolerance used in checking convergence.
-Ignored if `accel = "squarem"` or `"daarem"`.</p></dd>
+Ignored if <code>accel = "squarem"</code> or <code>"daarem"</code>.</p></dd>
 
 
 <dt>max_iter</dt>
@@ -90,17 +90,17 @@ Ignored if `accel = "squarem"` or `"daarem"`.</p></dd>
 
 
 <dt>fix_sigma</dt>
-<dd><p>If `TRUE` when `model=gaussian()`, fix sigma to an initial
+<dd><p>If <code>TRUE</code> when <code>model=gaussian()</code>, fix sigma to an initial
 estimate, in order to avoid estimation collapse when the outcomes are
 discrete.</p></dd>
 
 
 <dt>accel</dt>
 <dd><p>The acceleration algorithm to use in doing EM. The default
-`"squarem"` is good for most purposes, though `"anderson"` may be faster
-when there are few parameters or very tight tolerances. `"daarem"` is an
+<code>"squarem"</code> is good for most purposes, though <code>"anderson"</code> may be faster
+when there are few parameters or very tight tolerances. <code>"daarem"</code> is an
 excellent choice as well that works across a range of problems, though it
-requires installing the small `daarem` package. `"none"` is not
+requires installing the small <code>daarem</code> package. <code>"none"</code> is not
 recommended unless other algorithms are running into numerical issues.
 See the references below for details on these schemes.</p></dd>
 
