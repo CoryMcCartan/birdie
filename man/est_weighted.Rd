@@ -21,25 +21,25 @@ est_weighted(
 }
 \arguments{
 \item{r_probs}{A data frame or matrix of BISG probabilities, with one row per
-individual. The output of [bisg()] can be used directly here.}
+individual. The output of \code{\link[=bisg]{bisg()}} can be used directly here.}
 
 \item{formula}{A two-sided formula object describing the estimator structure.
 The left-hand side is the outcome variable, which must be discrete.
 Subgroups for which to calculate estimates may be specified by adding
 covariates on the right-hand side. Subgroup estimates are available with
-`coef(..., subgroup=TRUE)` and `tidy(..., subgroup=TRUE)`.}
+\code{coef(..., subgroup=TRUE)} and \code{tidy(..., subgroup=TRUE)}.}
 
-\item{data}{An optional data frame containing the variables named in `formula`.}
+\item{data}{An optional data frame containing the variables named in \code{formula}.}
 
 \item{weights}{An optional numeric vector specifying weights.}
 
-\item{prefix}{If `r_probs` is a data frame, the columns containing racial
-probabilities will be selected as those with names starting with `prefix`.
-The default will work with the output of [bisg()].}
+\item{prefix}{If \code{r_probs} is a data frame, the columns containing racial
+probabilities will be selected as those with names starting with \code{prefix}.
+The default will work with the output of \code{\link[=bisg]{bisg()}}.}
 
 \item{se_boot}{The number of bootstrap replicates to use to compute
 an approximate covariance matrix for the estimator. If no bootstrapping is
-used, an analytical estimate of standard errors will be returned as `$se`.
+used, an analytical estimate of standard errors will be returned as \verb{$se}.
 For bootstrapping, when there are fewer than 1,000 individuals or 100 or
 fewer replicates, a Bayesian bootstrap is used instead (i.e., weights are
 drawn from a \eqn{\text{Dirichlet}(1, 1, ..., 1)} distribution, which
@@ -47,13 +47,13 @@ produces more reliable estimates.}
 
 \item{...}{Additional arguments to generic methods (ignored).}
 
-\item{object, x}{An object of class `est_weighted`.}
+\item{object, x}{An object of class \code{est_weighted}.}
 }
 \value{
-An object of class `est_weighted`, inheriting from
-  [`birdie`][birdie::birdie-class], for which many methods are available. The
-  model estimates may be accessed with `coef()`. Uncertainty estimates, if
-  available, can be accessed with `$se` and [vcov.birdie()].
+An object of class \code{est_weighted}, inheriting from
+\code{\link[=birdie-class]{birdie}}, for which many methods are available. The
+model estimates may be accessed with \code{coef()}. Uncertainty estimates, if
+available, can be accessed with \verb{$se} and \code{\link[=vcov.birdie]{vcov.birdie()}}.
 }
 \description{
 Calculates the "standard" weighted estimator of conditional distributions of
@@ -61,7 +61,7 @@ an outcome variable \eqn{Y} by race \eqn{R}, using BISG probabilities.  This
 estimator, while commonly used, is only appropriate if \eqn{Y \perp R \mid X, S},
 where \eqn{S} and \eqn{X} are the last names and covariates (possibly
 including geography) used in making the BISG probabilities. In most cases
-this assumption is not plausible and [birdie()] should be used instead. See
+this assumption is not plausible and \code{\link[=birdie]{birdie()}} should be used instead. See
 the references below for more discussion as to selecting the right estimator.
 
 Up to Monte Carlo error, the weighted estimate is equivalent to performing

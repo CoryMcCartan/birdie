@@ -16,36 +16,36 @@ census_race_geo_table(
 \arguments{
 \item{geo}{The geographic level to return. Common options are listed in the
 function signature, but any of the geographies listed at
-[easycensus::cens_geo()] may be used.}
+\code{\link[easycensus:cens_geo]{easycensus::cens_geo()}} may be used.}
 
-\item{...}{Further subgeographies to return, as in [easycensus::cens_geo()].}
+\item{...}{Further subgeographies to return, as in \code{\link[easycensus:cens_geo]{easycensus::cens_geo()}}.}
 
 \item{year}{The year for the data}
 
-\item{survey}{The data product to use: either the decennial census (`"dec"`),
+\item{survey}{The data product to use: either the decennial census (\code{"dec"}),
 or the the 1-year or 5-year ACS.}
 
-\item{GEOIDs}{If `TRUE`, return the `GEOID` column as the unique geographic
-identifier; if `FALSE`, return a human-readable name. For example, with
-`geo="state"`, setting `GEOIDs=FALSE` will return a column named `state`
-with entries like `"Massachusetts"`.}
+\item{GEOIDs}{If \code{TRUE}, return the \code{GEOID} column as the unique geographic
+identifier; if \code{FALSE}, return a human-readable name. For example, with
+\code{geo="state"}, setting \code{GEOIDs=FALSE} will return a column named \code{state}
+with entries like \code{"Massachusetts"}.}
 
-\item{counts}{If `TRUE`, return the table as actual population counts; if
-`FALSE`, return table as percentages within each geography.}
+\item{counts}{If \code{TRUE}, return the table as actual population counts; if
+\code{FALSE}, return table as percentages within each geography.}
 }
 \value{
 A data frame with geographic identifier column(s) and six columns
-  `white`, `black`, etc. containing the counts or proportion of
-  residents in each racial group.
+\code{white}, \code{black}, etc. containing the counts or proportion of
+residents in each racial group.
 }
 \description{
 Downloads and prepares race-by-geography tables from U.S. census data, using
-the [`easycensus`][easycensus::easycensus] package. Requires that an api key
-be set up through [easycensus::cens_auth()] in that package, usually by
-storing it in the `CENSUS_API_KEY` environment variable. Supports data from
+the \code{\link[easycensus:easycensus-package]{easycensus}} package. Requires that an api key
+be set up through \code{\link[easycensus:cens_auth]{easycensus::cens_auth()}} in that package, usually by
+storing it in the \code{CENSUS_API_KEY} environment variable. Supports data from
 the decennial census and the American Community Survey at a variety of levels
 of geographic detail. The output of this function can be used directly in
-[bisg()].
+\code{\link[=bisg]{bisg()}}.
 }
 \examples{
 census_race_geo_table("zcta", year=2010)

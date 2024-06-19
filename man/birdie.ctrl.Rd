@@ -19,19 +19,19 @@ birdie.ctrl(
 estimating linear model coefficients.}
 
 \item{reltol}{The relative tolerance used in checking convergence.
-Ignored if `accel = "squarem"` or `"daarem"`.}
+Ignored if \code{accel = "squarem"} or \code{"daarem"}.}
 
 \item{max_iter}{The maximum number of EM iterations.}
 
-\item{fix_sigma}{If `TRUE` when `model=gaussian()`, fix sigma to an initial
+\item{fix_sigma}{If \code{TRUE} when \code{model=gaussian()}, fix sigma to an initial
 estimate, in order to avoid estimation collapse when the outcomes are
 discrete.}
 
 \item{accel}{The acceleration algorithm to use in doing EM. The default
-`"squarem"` is good for most purposes, though `"anderson"` may be faster
-when there are few parameters or very tight tolerances. `"daarem"` is an
+\code{"squarem"} is good for most purposes, though \code{"anderson"} may be faster
+when there are few parameters or very tight tolerances. \code{"daarem"} is an
 excellent choice as well that works across a range of problems, though it
-requires installing the small `daarem` package. `"none"` is not
+requires installing the small \code{daarem} package. \code{"none"} is not
 recommended unless other algorithms are running into numerical issues.
 See the references below for details on these schemes.}
 

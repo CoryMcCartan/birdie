@@ -52,4 +52,5 @@ Biarch: true
 LazyData: true
 URL: https://github.com/CoryMcCartan/birdie, https://corymccartan.com/birdie/
 BugReports: https://github.com/CoryMcCartan/birdie/issues
+Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1

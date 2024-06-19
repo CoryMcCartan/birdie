@@ -7,19 +7,19 @@
 disparities(x, subgroup = FALSE, races = TRUE)
 }
 \arguments{
-\item{x}{A `birdie` model object.}
+\item{x}{A \code{birdie} model object.}
 
-\item{subgroup}{If `TRUE`, return subgroup-level (rather than marginal)
+\item{subgroup}{If \code{TRUE}, return subgroup-level (rather than marginal)
 disparity estimates.}
 
 \item{races}{A character vector of racial groups to compute disparities for.
-The special value `TRUE`, the default, computes disparities for all racial
+The special value \code{TRUE}, the default, computes disparities for all racial
 groups.}
 }
 \value{
 A data frame containing a row with every possible disparity for the
-  specified `races`, which are identified by columns `race_1` and `race_2`.
-  The reported disparity is `estimate_1 - estimate_2`.
+specified \code{races}, which are identified by columns \code{race_1} and \code{race_2}.
+The reported disparity is \code{estimate_1 - estimate_2}.
 }
 \description{
 This function lets you easily compute differences in conditional expectations
