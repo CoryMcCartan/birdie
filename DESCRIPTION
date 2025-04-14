@@ -34,6 +34,7 @@ Suggests:
     knitr,
     roxygen2,
     rmarkdown,
+    rstan,
     testthat (>= 3.0.0)
 LinkingTo: 
     Rcpp (>= 0.12.0),
