@@ -158,8 +158,7 @@ gibbs_cat_dir <- function(Y, p_rxs, formula, data, weights, prior, races, iter, 
     idx_use = -seq_len(warmup + 1)
     ests = rowMeans(ests[, idx_use])
     ests_glb = ests_glb[, idx_use]
-    est = rowMeans(ests_glb) |>
-        matrix(nrow=n_y, ncol=n_r, byrow=TRUE)
+    est = matrix(rowMeans(ests_glb), nrow=n_y, ncol=n_r, byrow=TRUE)
     rownames(est) = nms
 
     list(map = est,
@@ -185,8 +184,8 @@ check_make_prior_cat_dir <- function(prior, Y, p_rxs, algorithm, races) {
                    .frequency="regularly", .frequency_id="birdie_prior_dir",
                    call=parent.frame())
         ones_mat = matrix(1, nrow=n_y, ncol=n_r)
-        est0 = dirichlet_map(Y, rep_along(Y, 1), p_rxs, ones_mat, 1) |>
-            matrix(n_y, n_r, byrow=TRUE)
+        est0 = dirichlet_map(Y, rep_along(Y, 1), p_rxs, ones_mat, 1)
+        est0 = matrix(est0, n_y, n_r, byrow=TRUE)
         if (algorithm == "em") {
             prior = list(alpha = ones_mat + est0)
         } else {

@@ -259,8 +259,7 @@ gibbs_lm <- function(Y, p_rxs, formula, data, weights, prior, races, iter, warmu
     est_sigma = ests[1]
     ests = matrix(ests[-1], nrow=p, ncol=n_r)
     ests_glb = ests_glb[, idx_use]
-    est_glb = rowMeans(ests_glb) |>
-        matrix(nrow=1, ncol=n_r)
+    est_glb = matrix(rowMeans(ests_glb), nrow=1, ncol=n_r)
 
     list(map = est_glb,
          ests = est_glb,

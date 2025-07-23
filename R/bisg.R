@@ -359,8 +359,8 @@ make_gx_tbl_vec <- function(vars, p_r, p_rgx) {
             if (nrow(d_miss) > 0) {
                 str_miss = capture.output(head(d_miss, 10))
                 if (nrow(d_miss) > 10) str_miss = c(str_miss, "  ...")
-                msg = c("Some predictor combinations are missing from {.arg p_rgx}:", str_miss) |>
-                    str_replace_all(" ", "\ua0")
+                msg = c("Some predictor combinations are missing from {.arg p_rgx}:", str_miss)
+                mgs = str_replace_all(msg, " ", "\ua0")
                 rlang::abort(msg, use_cli_format=TRUE, call=parent.frame())
             }
         }

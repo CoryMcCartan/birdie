@@ -1,3 +1,7 @@
+# birdie 0.7.0
+
+* Add `rstan` to `Suggests` due to its use in `Makefile` (#21)
+
 # birdie 0.6.1
 
 * Switch to an inverse-gamma prior for the random effects scale parameter in 

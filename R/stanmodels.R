@@ -37,12 +37,9 @@ optim_model_stan <- function(mod, init, skeleton,
 }
 
 optim_model <- function(mod, init, tol_rel_obj, maxit=1000, ...) {
-    # if (is.numeric(init))
-    #     init = as.character(init)
-
     res = optim(init,
-                fn = \(x) -mod$log_prob(x, TRUE, FALSE),
-                gr = \(x) -mod$grad_log_prob(x, FALSE),
+                fn = function(x) -mod$log_prob(x, TRUE, FALSE),
+                gr = function(x) -mod$grad_log_prob(x, FALSE),
                 method = "L-BFGS-B",
                 control = list(factr=0.1/tol_rel_obj, maxit=maxit))
 
