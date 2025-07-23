@@ -7,12 +7,13 @@
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-Bayesian models for accurately estimating conditional distributions by race, using Bayesian Improved Surname Geocoding (BISG) probability estimates of individual race. Implements the methods described in McCartan, Fisher, Goldin, Ho and Imai (2024) \doi{10.3386/w32373}.
+Bayesian models for accurately estimating conditional distributions by race, using Bayesian Improved Surname Geocoding (BISG) probability estimates of individual race. Implements the methods described in McCartan, Fisher, Goldin, Ho and Imai (2025) \doi{10.1080/01621459.2025.2526695}.
 }
 \references{
-McCartan, C., Fisher, R., Goldin, J., Ho, D.E., & Imai, K. (2024).
-Estimating Racial Disparities when Race is Not Observed.
-Available at \url{https://www.nber.org/papers/w32373}.
+McCartan, C., Fisher, R., Goldin, J., Ho, D.E., & Imai, K. (2025).
+Estimating Racial Disparities when Race is Not Observed. \emph{Journal of the
+American Statistical Association}. Available at
+\url{https://doi.org/10.1080/01621459.2025.2526695}.
 }
 \seealso{
 Useful links:

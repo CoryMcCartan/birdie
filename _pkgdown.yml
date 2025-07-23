@@ -11,6 +11,12 @@ template:
         gtag('js', new Date());
         gtag('config', 'G-2KH5JZ6JS1');
       </script>
+home:
+  title: "BIRDiE: Estimating disparities when race is not observed"
+  description: |
+    The 'birdie' R package allows researchers to impute individual race from
+    last names and addresses, and then estimate racial disparities in a
+    statistically sound way from these predicitons.
 reference:
 - title: Estimating Racial Disparities
   desc: Functions to estimate the distribution of an outcome by race.

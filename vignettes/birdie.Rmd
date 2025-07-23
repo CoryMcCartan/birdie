@@ -100,7 +100,7 @@ For example, we could try to estimate turnout rates by race, using the BISG prob
 est_weighted(r_probs, turnout ~ 1, data=pseudo_vf)
 ```
 
-However, as discussed in the methodology paper ([McCartan et al. 2024](https://www.nber.org/papers/w32373)), **this approach is generally biased**.
+However, as discussed in the methodology paper ([McCartan et al. 2025](https://doi.org/10.1080/01621459.2025.2526695)), **this approach is generally biased**.
 Essentially, it only measures the part of the association between race and turnout that is mediated through names and locations.
 It doesn't properly account for other ways in which race could be associated with the outcome.
 The BIRDiE methodology addresses this problem by relying on **a different assumption: that names are independent of outcomes (here, turnout) conditional on location and race.**

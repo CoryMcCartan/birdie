@@ -1,6 +1,6 @@
 Package: birdie
 Title: Bayesian Instrumental Regression for Disparity Estimation
-Version: 0.6.1
+Version: 0.7.0
 Authors@R: c(
     person("Cory", "McCartan", role=c("aut", "cre"), email="mccartan@psu.edu"),
     person("Kosuke", "Imai", role="ctb", email="imai@harvard.edu"),
@@ -12,7 +12,7 @@ Authors@R: c(
 Description: Bayesian models for accurately estimating conditional 
     distributions by race, using Bayesian Improved Surname Geocoding (BISG) 
     probability estimates of individual race. Implements the methods described
-    in McCartan, Fisher, Goldin, Ho and Imai (2024) <doi:10.3386/w32373>.
+    in McCartan, Fisher, Goldin, Ho and Imai (2025) <doi:10.1080/01621459.2025.2526695>.
 Depends: 
     R (>= 3.5.0)
 Imports: 

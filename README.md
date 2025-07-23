@@ -19,9 +19,9 @@ Bayesian Instrumental Regression for Disparity Estimation (BIRDiE) is a
 class of Bayesian models for accurately estimating conditional
 distributions by race, using BISG probabilities as inputs. This package
 implements BIRDiE as described in [McCartan, Fisher, Goldin, Ho, and
-Imai (2024)](https://www.nber.org/papers/w32373). It also implements
-standard BISG and an improved measurement-error BISG model as described
-in [Imai, Olivella, and Rosenman
+Imai (2025)](https://doi.org/10.1080/01621459.2025.2526695). It also
+implements standard BISG and an improved measurement-error BISG model as
+described in [Imai, Olivella, and Rosenman
 (2022)](https://www.science.org/doi/full/10.1126/sciadv.adc9824).
 
 <img src="man/figures/poster.svg" style="width: 100%" alt="BIRDiE Overview Poster" />

@@ -90,8 +90,9 @@ tidy(est, subgroup=TRUE)
 
 }
 \references{
-McCartan, C., Fisher, R., Goldin, J., Ho, D.E., & Imai, K. (2024).
-Estimating Racial Disparities when Race is Not Observed.
-Available at \url{https://www.nber.org/papers/w32373}.
+McCartan, C., Fisher, R., Goldin, J., Ho, D.E., & Imai, K. (2025).
+Estimating Racial Disparities when Race is Not Observed. \emph{Journal of the
+American Statistical Association}. Available at
+\url{https://doi.org/10.1080/01621459.2025.2526695}.
 }
 \concept{estimators}
