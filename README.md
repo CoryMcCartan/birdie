@@ -151,7 +151,7 @@ tidy(fit)
 plot(fit)
 ```
 
-<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
+![](man/figures/README-unnamed-chunk-5-1.png)<!-- -->
 
 A more detailed introduction to the method and software package can be
 found on the [Get

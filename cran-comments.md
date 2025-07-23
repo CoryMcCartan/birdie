@@ -1,5 +1,5 @@
 ## Test environments
-* local R installation (macOS 14.5, arm64), R 4.4.0
+* local R installation (macOS 14.5, arm64), R 4.5.0
 * macOS 14.5 (on GitHub Actions), (release)
 * Windows Server 2022 10.0.20348 (on GitHub Actions), (release)
 * ubuntu 22.04.4 (on GitHub Actions), (devel)
@@ -8,9 +8,7 @@
 
 ## R CMD check results
 
-0 errors | 0 warnings | 2 notes
-
-* This is a resubmission of a new release.
+0 errors | 0 warnings | 1 notes
 
 * GNU make is a SystemRequirement in order to compile Stan models.
 
@@ -24,6 +22,3 @@
   
 * Examples are \donttest{} in birdie() since they generally take more than 5
   seconds to run. 
-  
-* I have removed the use of cat() to print additional error information in 
-  bisg.R that was flagged on previous submission.
