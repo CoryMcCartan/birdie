@@ -1,5 +1,6 @@
 ## Test environments
 * local R installation (macOS 14.5, arm64), R 4.5.0
+* Windows __ (on winbuilder) (devel)
 * macOS 14.5 (on GitHub Actions), (release)
 * Windows Server 2022 10.0.20348 (on GitHub Actions), (release)
 * ubuntu 22.04.4 (on GitHub Actions), (devel)
@@ -8,7 +9,7 @@
 
 ## R CMD check results
 
-0 errors | 0 warnings | 1 notes
+0 errors | 0 warnings | 1 note
 
 * GNU make is a SystemRequirement in order to compile Stan models.
 

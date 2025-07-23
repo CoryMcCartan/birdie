@@ -1,5 +1,6 @@
 # birdie 0.7.0
 
+* Support for 2020 decennial census data
 * Add `rstan` to `Suggests` due to its use in `Makefile` (#21)
 
 # birdie 0.6.1

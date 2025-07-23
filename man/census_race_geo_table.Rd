@@ -53,6 +53,7 @@ census_race_geo_table("zcta", year=2010)
 # Census API key required
 census_race_geo_table("us", year=2010)
 census_race_geo_table("state", year=2021, survey="acs1")
-census_race_geo_table("state", year=2021, survey="acs1", GEOIDs=FALSE) }
+census_race_geo_table("county", state="NH", year=2020, GEOIDs=FALSE)
+}
 }
 \concept{preproc}
