@@ -59,6 +59,12 @@ test_that("Measurement error BISG model works", {
 
     # ME within 2% or better
     expect_gt(log_score(pr_me, pseudo_vf$race), log_score(pr_0, pseudo_vf$race) - 0.02)
+
+    # should work with estimate
+    expect_no_error(
+        bisg_me(~ nm(last_name) + zip(zip), data=pseudo_vf, p_r="estimate",
+                warmup=10, iter=100)
+    )
 })
 
 test_that("BISG results match `wru`", {

@@ -138,7 +138,7 @@ bisg_me <- function(formula, data=NULL, p_r=p_r_natl(), p_rgx=NULL, p_rs=NULL,
                       l_name$p_sr, l_gx$p_rgx,
                       alpha_gzr, beta_sr, cores=cores, verbosity=3L)
     cli::cli_process_done()
-    colnames(m_bisg) = paste0("pr_", names(p_r))
+    colnames(m_bisg) = paste0("pr_", names(l_gx$p_r))
 
     out = as_tibble(m_bisg)
     class(out) = c("bisg_me", "bisg", class(out))
