@@ -33,7 +33,8 @@
 #' # Census API key required
 #' census_race_geo_table("us", year=2010)
 #' census_race_geo_table("state", year=2021, survey="acs1")
-#' census_race_geo_table("state", year=2021, survey="acs1", GEOIDs=FALSE) }
+#' census_race_geo_table("county", state="NH", year=2020, GEOIDs=FALSE)
+#' }
 #' @concept preproc
 #' @export
 census_race_geo_table <- function(geo=c("us", "state", "county", "zcta", "tract"),
@@ -51,11 +52,36 @@ census_race_geo_table <- function(geo=c("us", "state", "county", "zcta", "tract"
     }
 
     if (survey == "dec") {
-        if (!year %in% c(2010)) {
-            cli_abort("Decennial census data only available for
-                      {.arg year} = 2010 or 2020")
+        if (year == 2010) {
+            d_raw = easycensus::cens_get_dec("P5", geo, ..., check_geo=TRUE)
+        } else if (year == 2020) {
+            tbl_dhc = structure(list(
+                tables = "P5", surveys = "dec/dhc",
+                dims = c("hispanic_or_latino_origin", "race"),
+                vars = dplyr::tibble(
+                    variable =c("P5_002N", "P5_003N", "P5_004N", "P5_005N",
+                                "P5_006N", "P5_007N", "P5_008N", "P5_009N",
+                                "P5_010N", "P5_011N", "P5_012N", "P5_013N",
+                                "P5_014N", "P5_015N", "P5_016N", "P5_017N"),
+                    hispanic_or_latino_origin = structure(
+                        c(2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L),
+                        levels = c("hispanic or latino", "not hispanic or latino"),
+                        class = "factor"),
+                    race = structure(
+                        c(6L, 8L, 3L, 1L, 2L, 4L, 5L, 7L, 6L, 8L, 3L, 1L, 2L, 4L, 5L, 7L),
+                        levels = c("american indian and alaska native alone",
+                                   "asian alone", "black or african american alone",
+                                   "native hawaiian and other pacific islander alone",
+                                   "some other race alone", "total",
+                                   "two or more races", "white alone"),
+                        class = "factor")
+                )
+            ),  class = "cens_table")
+            d_raw = easycensus::cens_get_raw(tbl_dhc, geo, ..., year=2020, api="dec/dhc",
+                                             check_geo=TRUE, show_call=FALSE)
+        } else {
+            cli_abort("Decennial census data only available for {.arg year} = 2010 or 2020")
         }
-        d_raw = easycensus::cens_get_dec("P5", geo, ..., check_geo=TRUE)
     } else {
         if (year == 2020 && survey == "acs1") {
             cli_abort("No 1-year ACS data for 2020 due to the COVID-19 pandemic.")
