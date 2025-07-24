@@ -10,7 +10,7 @@ bibentry(
   title = "Estimating Racial Disparities When Race is Not Observed",
   author = "Cory McCartan, Jacob Goldin, Daniel E. Ho, Kosuke Imai",
   journal = "Journal of the American Statistical Association",
-  url = "10.1080/01621459.2025.2526695",
+  doi = "10.1080/01621459.2025.2526695",
   year = "2025",
   key = "mccartan2025race"
 )

@@ -1,15 +1,18 @@
 ## Test environments
 * local R installation (macOS 14.5, arm64), R 4.5.0
-* Windows __ (on winbuilder) (devel)
+* Windows Server 2022 x64 (build 20348) (on winbuilder) (devel)
 * macOS 14.5 (on GitHub Actions), (release)
 * Windows Server 2022 10.0.20348 (on GitHub Actions), (release)
 * ubuntu 22.04.4 (on GitHub Actions), (devel)
 * ubuntu 22.04.4 (on GitHub Actions), (release)
-* ubuntu 22.04.4 (on GitHub Actions), (old release R 4.3.3)
+* ubuntu 22.04.4 (on GitHub Actions), (old release R 4.4)
 
 ## R CMD check results
 
 0 errors | 0 warnings | 1 note
+
+* This resubmission fixes the format of DOI in the CITATION and in three .Rd
+  files.
 
 * GNU make is a SystemRequirement in order to compile Stan models.
 

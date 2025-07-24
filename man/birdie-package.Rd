@@ -13,7 +13,7 @@ Bayesian models for accurately estimating conditional distributions by race, usi
 McCartan, C., Fisher, R., Goldin, J., Ho, D.E., & Imai, K. (2025).
 Estimating Racial Disparities when Race is Not Observed. \emph{Journal of the
 American Statistical Association}. Available at
-\url{https://doi.org/10.1080/01621459.2025.2526695}.
+\doi{10.1080/01621459.2025.2526695}.
 }
 \seealso{
 Useful links:

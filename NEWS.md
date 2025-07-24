@@ -1,4 +1,4 @@
-# birdie 0.7.0
+# birdie 0.7.1
 
 * Support for 2020 decennial census data (#19)
 * Fix bug preventing `p_r="estimate"` in `bisg_me()` (#18)
