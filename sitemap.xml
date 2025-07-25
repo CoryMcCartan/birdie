@@ -1,66 +1,24 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>http://corymccartan.com/birdie/404.html</loc>
-  </url>
-  <url>
-    <loc>http://corymccartan.com/birdie/LICENSE.html</loc>
-  </url>
-  <url>
-    <loc>http://corymccartan.com/birdie/articles/birdie.html</loc>
-  </url>
-  <url>
-    <loc>http://corymccartan.com/birdie/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>http://corymccartan.com/birdie/authors.html</loc>
-  </url>
-  <url>
-    <loc>http://corymccartan.com/birdie/index.html</loc>
-  </url>
-  <url>
-    <loc>http://corymccartan.com/birdie/news/index.html</loc>
-  </url>
-  <url>
-    <loc>http://corymccartan.com/birdie/reference/birdie-class.html</loc>
-  </url>
-  <url>
-    <loc>http://corymccartan.com/birdie/reference/birdie-family.html</loc>
-  </url>
-  <url>
-    <loc>http://corymccartan.com/birdie/reference/birdie-package.html</loc>
-  </url>
-  <url>
-    <loc>http://corymccartan.com/birdie/reference/birdie.ctrl.html</loc>
-  </url>
-  <url>
-    <loc>http://corymccartan.com/birdie/reference/birdie.html</loc>
-  </url>
-  <url>
-    <loc>http://corymccartan.com/birdie/reference/bisg.html</loc>
-  </url>
-  <url>
-    <loc>http://corymccartan.com/birdie/reference/census_race_geo_table.html</loc>
-  </url>
-  <url>
-    <loc>http://corymccartan.com/birdie/reference/disparities.html</loc>
-  </url>
-  <url>
-    <loc>http://corymccartan.com/birdie/reference/est_weighted.html</loc>
-  </url>
-  <url>
-    <loc>http://corymccartan.com/birdie/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>http://corymccartan.com/birdie/reference/p_r_natl.html</loc>
-  </url>
-  <url>
-    <loc>http://corymccartan.com/birdie/reference/preproc.html</loc>
-  </url>
-  <url>
-    <loc>http://corymccartan.com/birdie/reference/pseudo_vf.html</loc>
-  </url>
-  <url>
-    <loc>http://corymccartan.com/birdie/reference/reexports.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>http://corymccartan.com/birdie/404.html</loc></url>
+<url><loc>http://corymccartan.com/birdie/LICENSE.html</loc></url>
+<url><loc>http://corymccartan.com/birdie/articles/birdie.html</loc></url>
+<url><loc>http://corymccartan.com/birdie/articles/index.html</loc></url>
+<url><loc>http://corymccartan.com/birdie/authors.html</loc></url>
+<url><loc>http://corymccartan.com/birdie/index.html</loc></url>
+<url><loc>http://corymccartan.com/birdie/news/index.html</loc></url>
+<url><loc>http://corymccartan.com/birdie/reference/birdie-class.html</loc></url>
+<url><loc>http://corymccartan.com/birdie/reference/birdie-family.html</loc></url>
+<url><loc>http://corymccartan.com/birdie/reference/birdie-package.html</loc></url>
+<url><loc>http://corymccartan.com/birdie/reference/birdie.ctrl.html</loc></url>
+<url><loc>http://corymccartan.com/birdie/reference/birdie.html</loc></url>
+<url><loc>http://corymccartan.com/birdie/reference/bisg.html</loc></url>
+<url><loc>http://corymccartan.com/birdie/reference/census_race_geo_table.html</loc></url>
+<url><loc>http://corymccartan.com/birdie/reference/disparities.html</loc></url>
+<url><loc>http://corymccartan.com/birdie/reference/est_weighted.html</loc></url>
+<url><loc>http://corymccartan.com/birdie/reference/index.html</loc></url>
+<url><loc>http://corymccartan.com/birdie/reference/p_r_natl.html</loc></url>
+<url><loc>http://corymccartan.com/birdie/reference/preproc.html</loc></url>
+<url><loc>http://corymccartan.com/birdie/reference/pseudo_vf.html</loc></url>
+<url><loc>http://corymccartan.com/birdie/reference/reexports.html</loc></url>
 </urlset>
+
