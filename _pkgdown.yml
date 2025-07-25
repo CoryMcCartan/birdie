@@ -1,6 +1,7 @@
 url: http://corymccartan.com/birdie/
 template:
   bootstrap: 5
+  math-rendering: mathjax
   includes:
     in_header: |
       <!-- Google tag (gtag.js) -->
