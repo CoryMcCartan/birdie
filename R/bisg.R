@@ -268,7 +268,7 @@ make_name_tbl_vec <- function(vars, p_r, p_rs, for_me=FALSE) {
             cli_abort("{.arg p_rs} contains missing, negative,
                       or otherwise invalid values.", call=parent.frame())
         }
-        if (!identical(p_r, "estimate") && length(p_r) != ncol(p_rs) - 1) {
+        if (!identical(p_r, "estimate") && length(p_r) != ncol(p_rs)) {
             cli_abort("Number of racial categories in {.arg p_rs}
                       and {.arg p_r} must match.", call=parent.frame())
         }
