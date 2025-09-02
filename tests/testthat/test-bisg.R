@@ -46,6 +46,19 @@ test_that("BISG results are directionally correct", {
     expect_gt(bisg(~ nm(S) + zip(G), data=tibble(S="XU", G="98118"), p_r=p_r)$pr_asian, 0.95)
 })
 
+test_that("BISG works with custom p_rs", {
+    data(pseudo_vf)
+
+    p_rs = census_surname_table(proc_name(pseudo_vf$last_name), "last_name", count=TRUE)
+
+    b0 = bisg(~ nm(last_name) + zip(zip), data=pseudo_vf)
+    b1 = bisg(~ nm(last_name) + zip(zip), data=pseudo_vf, p_rs=p_rs)
+
+    expect_lt(mean(abs(colMeans(b1) - colMeans(b0))), 0.05)
+    expect_s3_class(b0, "bisg")
+    expect_s3_class(b1, "bisg")
+})
+
 test_that("Measurement error BISG model works", {
     data("pseudo_vf")
 

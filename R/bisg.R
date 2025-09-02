@@ -45,7 +45,9 @@
 #'   be provided as a data frame, with a column of names and additional columns
 #'   for each racial group. Users should not have to specify this argument in
 #'   most cases, as the table will be built from published Census surname tables
-#'   automatically. Counts are required for `bisg_me()`.
+#'   automatically. Counts are required for `bisg_me()`. One of the last names
+#'   can be `"<generic>"`, which, if included, will be used for any names not
+#'   found in the table.
 #' @param save_rgx If `TRUE`, save the `p_rgx` table (matched to each
 #'   individual) as the `"p_rgx"` and `"gx"` attributes of the output.
 #'   Necessary for some sensitivity analyses.
@@ -84,6 +86,7 @@ bisg <- function(formula, data=NULL, p_r=p_r_natl(), p_rgx=NULL, p_rs=NULL,
     vars = parse_bisg_form(formula, data)
 
     l_name = make_name_tbl_vec(vars, p_r, p_rs, FALSE)
+    l_name_gl <<- l_name
     l_gx = make_gx_tbl_vec(vars, p_r, p_rgx)
 
     m_bisg = est_bisg(l_name$S, l_gx$GX, l_name$p_sr, l_gx$p_gxr, l_gx$p_r)
@@ -241,31 +244,37 @@ make_name_tbl_vec <- function(vars, p_r, p_rs, for_me=FALSE) {
         if (!is.data.frame(p_rs)) {
             cli_abort("{.arg p_rs} must be a data frame.", call=parent.frame())
         }
-        if (anyDuplicated(p_rs) > 0) {
-            cli_abort("{.arg p_rs} must have unique rows.", call=parent.frame())
-        }
-
         name_col = match(vars$S_name, colnames(p_rs))
+        name_vals = p_rs[[name_col]]
+
+        if (anyDuplicated(name_vals) > 0) {
+            cli_abort("{.arg p_rs} must have unique names", call=parent.frame())
+        }
         if (is.na(name_col)) {
             cli_abort("Name column {.var {vars$S_name}} not found in {.arg p_rs}.",
                       call=parent.frame())
         }
-        if (!all(S %in% p_rs[[name_col]])) {
+        if ("<generic>" %in% name_vals) {
+            S[!S %in% name_vals] = "<generic>"
+        } else if (!all(S %in% name_vals)) {
             cli_abort("Some names are missing from {.arg p_rs}.", call=parent.frame())
         }
-        if (any(is.nan(p_rs) | is.na(p_rs) | p_rs < 0 | is.infinite(p_rs))) {
+        p_rs = p_rs[-name_col]
+        if (!all(vapply(p_rs, is.numeric, logical(1)))) {
+            cli_abort("Entries in {.arg p_rs} must be numeric.", call=parent.frame())
+        }
+        p_rs = as.matrix(p_rs)
+        if (any(is.na(p_rs) | p_rs < 0 | is.infinite(p_rs))) {
             cli_abort("{.arg p_rs} contains missing, negative,
                       or otherwise invalid values.", call=parent.frame())
         }
-        if (p_r != "estimate" && length(p_r) != ncol(p_rs) + 1) {
+        if (!identical(p_r, "estimate") && length(p_r) != ncol(p_rs) - 1) {
             cli_abort("Number of racial categories in {.arg p_rs}
                       and {.arg p_r} must match.", call=parent.frame())
         }
 
-        S = factor(S, levels=p_rs[[name_col]])
-
+        S = factor(S, levels=name_vals)
         p_s = prop.table(table(S))
-        p_rs = as.matrix(p_rs[, -name_col])
         p_sr = p_rs / rowSums(p_rs)
         for (i in seq_len(ncol(p_sr))) {
             p_sr[, i] = p_sr[, i] * p_s
@@ -291,7 +300,7 @@ make_name_tbl_vec <- function(vars, p_r, p_rs, for_me=FALSE) {
     }
 
     list(S = S,
-         p_sr = p_sr) # p_sr is actualy p_rs, unormalized, if `for_me=TRUE`
+         p_sr = p_sr) # p_sr is actualy p_rs, unnormalized, if `for_me=TRUE`
 }
 
 # Prepare geo/covariate vector and P(G, X | R) table

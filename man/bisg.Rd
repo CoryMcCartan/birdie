@@ -77,7 +77,9 @@ package.}
 be provided as a data frame, with a column of names and additional columns
 for each racial group. Users should not have to specify this argument in
 most cases, as the table will be built from published Census surname tables
-automatically. Counts are required for \code{bisg_me()}.}
+automatically. Counts are required for \code{bisg_me()}. One of the last names
+can be \code{"<generic>"}, which, if included, will be used for any names not
+found in the table.}
 
 \item{save_rgx}{If \code{TRUE}, save the \code{p_rgx} table (matched to each
 individual) as the \code{"p_rgx"} and \code{"gx"} attributes of the output.
