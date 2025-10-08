@@ -366,6 +366,13 @@ summary.bisg <- function(object, p_r=NULL, ...) {
     }
     cat("\n")
 
+    unm = attr(object, "unmatched")
+    cli::cli_text("Unmatched surnames: {unm['s']} ({format(unm['s']/nrow(object)*100, digits=3)}%)")
+    if ("gx" %in% names(unm)) {
+        cli::cli_text("Unmatched geographies/covariates: {unm['gx']} ({format(unm['gx']/nrow(object)*100, digits=3)}%)")
+    }
+
+    cat("\n")
     if (is.null(p_r)) {
         cli::cat_line("Implied marginal race distribution:")
         p_r = colMeans(object)

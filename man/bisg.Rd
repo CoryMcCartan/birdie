@@ -14,7 +14,8 @@ bisg(
   p_r = p_r_natl(),
   p_rgx = NULL,
   p_rs = NULL,
-  save_rgx = TRUE
+  save_rgx = TRUE,
+  save_sr = FALSE
 )
 
 bisg_me(
@@ -85,6 +86,9 @@ found in the table.}
 individual) as the \code{"p_rgx"} and \code{"gx"} attributes of the output.
 Necessary for some sensitivity analyses.}
 
+\item{save_sr}{If \code{TRUE}, save the \code{p_sr} table (surname given race; matched
+to each individual as the \code{"p_sr"} and \code{"s"} attributes of the output.}
+
 \item{iter}{How many sampling iterations in the Gibbs sampler}
 
 \item{warmup}{How many burn-in iterations in the Gibbs sampler}
@@ -139,6 +143,20 @@ directions.
 \item \code{bisg_me()}: The measurement error BISG model.
 
 }}
+\section{Surname Matching}{
+The Census surname table can be inspected with the following code:
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{readRDS(system.file("extdata", "names_2010_counts.rds", package="birdie"))
+}\if{html}{\out{</div>}}
+
+Surnames are processed with \code{\link[=proc_name]{proc_name()}} before being matched to the table.
+The code also recognizes double-barrelled (hyphenated) surnames and attempts
+to match each part if the overall name is not found in the surname table.
+Specifying \code{save_rs=TRUE} will save the matched surname table and a lookup
+vector that matches each individual to their surname table row. The overall
+match rate is reported as part of the \code{summary()} output.
+}
+
 \examples{
 data(pseudo_vf)
 bisg(~ nm(last_name), data=pseudo_vf)

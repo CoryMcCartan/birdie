@@ -7,6 +7,18 @@
 #' and uses a Gibbs sampler to impute the individual race probabilities, using
 #' the model of Imai et al. (2022).
 #'
+#' # Surname Matching
+#' The Census surname table can be inspected with the following code:
+#' ```r
+#' readRDS(system.file("extdata", "names_2010_counts.rds", package="birdie"))
+#' ```
+#' Surnames are processed with [proc_name()] before being matched to the table.
+#' The code also recognizes double-barrelled (hyphenated) surnames and attempts
+#' to match each part if the overall name is not found in the surname table.
+#' Specifying `save_rs=TRUE` will save the matched surname table and a lookup
+#' vector that matches each individual to their surname table row. The overall
+#' match rate is reported as part of the `summary()` output.
+#'
 #' @param formula A formula specifying the BISG model. Must include the special
 #'   term `nm()` to identify the surname variable. Certain geographic variables
 #'   can be identified similarly: `zip()` for ZIP codes, and `state()` for
@@ -51,6 +63,8 @@
 #' @param save_rgx If `TRUE`, save the `p_rgx` table (matched to each
 #'   individual) as the `"p_rgx"` and `"gx"` attributes of the output.
 #'   Necessary for some sensitivity analyses.
+#' @param save_sr If `TRUE`, save the `p_sr` table (surname given race; matched
+#'    to each individual as the `"p_sr"` and `"s"` attributes of the output.
 #'
 #' @return An object of class `bisg`, which is just a data frame with some
 #'   additional attributes. The data frame has rows matching the input data and
@@ -82,7 +96,7 @@
 #' @concept bisg
 #' @export
 bisg <- function(formula, data=NULL, p_r=p_r_natl(), p_rgx=NULL, p_rs=NULL,
-                 save_rgx=TRUE) {
+                 save_rgx=TRUE, save_sr=FALSE) {
     vars = parse_bisg_form(formula, data)
 
     l_name = make_name_tbl_vec(vars, p_r, p_rs, FALSE)
@@ -100,6 +114,11 @@ bisg <- function(formula, data=NULL, p_r=p_r_natl(), p_rgx=NULL, p_rs=NULL,
         attr(out, "p_rgx") = l_gx$p_rgx
         attr(out, "gx") = l_gx$GX
     }
+    if (isTRUE(save_sr)) {
+        attr(out, "p_rs") = l_name$p_sr
+        attr(out, "s") = l_name$S
+    }
+    attr(out, "unmatched") = c(s=l_name$unmatched, gx=l_gx$unmatched)
     attr(out, "method") = "std"
 
     out
@@ -148,6 +167,7 @@ bisg_me <- function(formula, data=NULL, p_r=p_r_natl(), p_rgx=NULL, p_rs=NULL,
     attr(out, "S_name") = vars$S_name
     attr(out, "GX_names") = colnames(vars$GX)
     attr(out, "p_r") = l_gx$p_r
+    attr(out, "unmatched") = c(s=l_name$unmatched, gx=l_gx$unmatched)
     attr(out, "method") = "me"
 
     out
@@ -299,8 +319,11 @@ make_name_tbl_vec <- function(vars, p_r, p_rs, for_me=FALSE) {
         p_sr = p_sr[, idx_names]
     }
 
-    list(S = S,
-         p_sr = p_sr) # p_sr is actualy p_rs, unnormalized, if `for_me=TRUE`
+    list(
+        S = S,
+        p_sr = p_sr, # p_sr is actualy p_rs, unnormalized, if `for_me=TRUE`
+        unmatched = sum(S == "<generic>")
+    )
 }
 
 # Prepare geo/covariate vector and P(G, X | R) table
@@ -433,10 +456,13 @@ make_gx_tbl_vec <- function(vars, p_r, p_rgx) {
         p_r = p_r / sum(p_r)
     }
 
-    list(GX = GX_vec,
-         p_r = p_r,
-         p_rgx = p_rgx,
-         p_gxr = p_gxr)
+    list(
+        p_r = p_r,
+        GX = GX_vec,
+        p_rgx = p_rgx,
+        p_gxr = p_gxr,
+        unmatched = sum(vars$GX[[1]] == "<none>")
+    )
 }
 
 # Call Bayes' rule C++
