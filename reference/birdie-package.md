@@ -19,9 +19,9 @@ American Statistical Association*. Available at
 
 Useful links:
 
-- <https://github.com/CoryMcCartan/birdie>
-
 - <https://corymccartan.com/birdie/>
+
+- <https://github.com/CoryMcCartan/birdie>
 
 - Report bugs at <https://github.com/CoryMcCartan/birdie/issues>
 

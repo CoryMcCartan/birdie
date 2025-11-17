@@ -191,7 +191,7 @@ accessed with
 as well.
 
 The Categorical-Dirichlet model is specified as follows: \$\$ Y_i \mid
-R_i, X_i, \Theta \sim \text{Categorical}(\theta\_{R_iX_i}) \\
+R_i, X_i, \Theta \sim \text{Categorical}(\theta\_{R_iX_i}) \$\$ \$\$
 \theta\_{rx} \sim \text{Dirichlet}(\alpha_r), \$\$ where \\Y\\ is the
 outcome variable, \\R\\ is race, \\X\\ are covariates (fixed effects),
 and \\\theta\_{rx}\\ and \\\alpha_r\\ are vectors with length matching
@@ -201,25 +201,25 @@ need for `formula` to either have no covariates or a fully interacted
 structure.
 
 The Categorical mixed-effects model is specified as follows: \$\$ Y_i
-\mid R_i, X_i, \Theta \sim \text{Categorical}(g^{-1}(\mu\_{R_iX_i})) \\
-\mu\_{rxy} = W\beta\_{ry} + Zu\_{ry} \\ u\_{r} \mid \vec\sigma\_{r}, L_r
-\sim \mathcal{N}(0,
-\text{diag}(\vec\sigma\_{r})C_r\text{diag}(\vec\sigma\_{r})) \\
-\beta\_{ry} \sim \mathcal{N}(0, s^2\_{r\beta}) \\ \sigma\_{ry} \sim
-\text{Inv-Gamma}(4, 3s\_{r\sigma}) \\ C_r \sim \text{LKJ}(2), \$\$ where
-\\\beta\_{ry}\\ are the fixed effects, \\u\_{ry}\\ is the random
+\mid R_i, X_i, \Theta \sim \text{Categorical}(g^{-1}(\mu\_{R_iX_i}))
+\$\$ \$\$ \mu\_{rxy} = W\beta\_{ry} + Zu\_{ry} \$\$ \$\$ u\_{r} \mid
+\vec\sigma\_{r}, L_r \sim \mathcal{N}(0,
+\text{diag}(\vec\sigma\_{r})C_r\text{diag}(\vec\sigma\_{r})) \$\$ \$\$
+\beta\_{ry} \sim \mathcal{N}(0, s^2\_{r\beta}) \$\$ \$\$ \sigma\_{ry}
+\sim \text{Inv-Gamma}(4, 3s\_{r\sigma}) \\ C_r \sim \text{LKJ}(2), \$\$
+where \\\beta\_{ry}\\ are the fixed effects, \\u\_{ry}\\ is the random
 intercept, and \\g\\ is a softmax link function. Estimates for
 \\\beta\_{ry}\\ and \\\sigma\_{ry}\\ are stored in the `$beta` and
 `$sigma` elements of the fitted model object.
 
 The Normal linear model is specified as follows: \$\$ Y_i \mid R_i, \vec
-X_i, \Theta \sim \mathcal{N}(\vec X_i^\top\vec\theta, \sigma^2) \\
-\sigma^2 \sim \text{Inv-Gamma}(n\_\sigma/2, l\_\sigma^2 n\_\sigma/2) \\
-\beta\_{\text{intercept}} \sim \mathcal{N}(0, s^2\_\text{int}) \\
-\beta_k \sim \mathcal{N}(0, s^2\_\beta), \\ \$\$ where \\\vec\theta\\ is
-a vector of linear model coefficients. Estimates for \\\theta\\ and
-\\\sigma\\ are stored in the `$beta` and `$sigma` elements of the fitted
-model object.
+X_i, \Theta \sim \mathcal{N}(\vec X_i^\top\vec\theta, \sigma^2) \$\$
+\$\$ \sigma^2 \sim \text{Inv-Gamma}(n\_\sigma/2, l\_\sigma^2
+n\_\sigma/2) \$\$ \$\$ \beta\_{\text{intercept}} \sim \mathcal{N}(0,
+s^2\_\text{int}) \$\$ \$\$ \beta_k \sim \mathcal{N}(0, s^2\_\beta), \$\$
+where \\\vec\theta\\ is a vector of linear model coefficients. Estimates
+for \\\theta\\ and \\\sigma\\ are stored in the `$beta` and `$sigma`
+elements of the fitted model object.
 
 More details on the models and their properties may be found in the
 paper referenced below.
@@ -269,8 +269,7 @@ fit = birdie(r_probs, turnout ~ (1 | zip), data=pseudo_vf,
 #> This message is displayed once every 8 hours.
 #> ⠙ EM iterations 3 done (1.2/s) | 2.6s
 #> ⠹ EM iterations 5 done (0.9/s) | 5.5s
-#> ⠸ EM iterations 8 done (1/s) | 7.7s
-#> ⠸ EM iterations 9 done (0.96/s) | 9.4s
+#> ⠸ EM iterations 9 done (1/s) | 8.8s
 
 summary(fit)
 #> Categorical mixed-effects BIRDiE model

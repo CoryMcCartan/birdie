@@ -30,7 +30,7 @@ continuous outcomes a Normal linear model is available (gaussian())."><meta prop
 
     <a class="navbar-brand me-2" href="../index.html">birdie</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.1.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -210,7 +210,8 @@ outcome-given-race distribution for the entire observed sample is always
 calculated and stored as <code>$est</code> in the returned object, which can be accessed
 with <code><a href="birdie-class.html">coef.birdie()</a></code> as well.</p>
 <p>The Categorical-Dirichlet model is specified as follows: $$
-    Y_i \mid R_i, X_i, \Theta \sim \text{Categorical}(\theta_{R_iX_i}) \\
+    Y_i \mid R_i, X_i, \Theta \sim \text{Categorical}(\theta_{R_iX_i})
+$$ $$
     \theta_{rx} \sim \text{Dirichlet}(\alpha_r),
 $$ where \(Y\) is the outcome variable, \(R\) is race, \(X\) are
 covariates (fixed effects), and \(\theta_{rx}\) and \(\alpha_r\) are
@@ -219,11 +220,15 @@ There is one vector \(\theta_{rx}\) for every combination of race and
 covariates, hence the need for <code>formula</code> to either have no covariates or a
 fully interacted structure.</p>
 <p>The Categorical mixed-effects model is specified as follows: $$
-    Y_i \mid R_i, X_i, \Theta \sim \text{Categorical}(g^{-1}(\mu_{R_iX_i})) \\
-    \mu_{rxy} = W\beta_{ry} + Zu_{ry} \\
+    Y_i \mid R_i, X_i, \Theta \sim \text{Categorical}(g^{-1}(\mu_{R_iX_i}))
+$$ $$
+    \mu_{rxy} = W\beta_{ry} + Zu_{ry}
+$$ $$
     u_{r} \mid \vec\sigma_{r}, L_r \sim \mathcal{N}(0,
-     \text{diag}(\vec\sigma_{r})C_r\text{diag}(\vec\sigma_{r})) \\
-    \beta_{ry} \sim \mathcal{N}(0, s^2_{r\beta}) \\
+     \text{diag}(\vec\sigma_{r})C_r\text{diag}(\vec\sigma_{r}))
+$$ $$
+    \beta_{ry} \sim \mathcal{N}(0, s^2_{r\beta})
+$$ $$
     \sigma_{ry} \sim \text{Inv-Gamma}(4, 3s_{r\sigma}) \\
     C_r \sim \text{LKJ}(2),
 $$ where \(\beta_{ry}\) are the fixed effects, \(u_{ry}\) is the random
@@ -231,10 +236,13 @@ intercept, and \(g\) is a softmax link function.
 Estimates for \(\beta_{ry}\) and \(\sigma_{ry}\) are stored in the
 <code>$beta</code> and <code>$sigma</code> elements of the fitted model object.</p>
 <p>The Normal linear model is specified as follows: $$
-    Y_i \mid R_i, \vec X_i, \Theta \sim \mathcal{N}(\vec X_i^\top\vec\theta, \sigma^2) \\
-    \sigma^2 \sim \text{Inv-Gamma}(n_\sigma/2, l_\sigma^2 n_\sigma/2) \\
-    \beta_{\text{intercept}} \sim \mathcal{N}(0, s^2_\text{int}) \\
-    \beta_k \sim \mathcal{N}(0, s^2_\beta), \\
+    Y_i \mid R_i, \vec X_i, \Theta \sim \mathcal{N}(\vec X_i^\top\vec\theta, \sigma^2)
+$$ $$
+    \sigma^2 \sim \text{Inv-Gamma}(n_\sigma/2, l_\sigma^2 n_\sigma/2)
+$$ $$
+    \beta_{\text{intercept}} \sim \mathcal{N}(0, s^2_\text{int})
+$$ $$
+    \beta_k \sim \mathcal{N}(0, s^2_\beta),
 $$ where \(\vec\theta\) is a vector of linear model coefficients.
 Estimates for \(\theta\) and \(\sigma\) are stored in the
 <code>$beta</code> and <code>$sigma</code> elements of the fitted model object.</p>
@@ -286,8 +294,7 @@ American Statistical Association</em>. Available at
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #555555;">This message is displayed once every 8 hours.</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> ⠙ EM iterations 3 done (1.2/s) | 2.6s</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> ⠹ EM iterations 5 done (0.9/s) | 5.5s</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> ⠸ EM iterations 8 done (1/s) | 7.7s</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> ⠸ EM iterations 9 done (0.96/s) | 9.4s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> ⠸ EM iterations 9 done (1/s) | 8.8s</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Categorical mixed-effects <span style="color: #0000BB;">BIRDiE</span> model</span>

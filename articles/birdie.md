@@ -201,21 +201,21 @@ fit = birdie(r_probs, turnout ~ (1 | proc_zip(zip)), data=pseudo_vf, family=cat_
 #> → Prior mean of random effects standard deviation: 0.10
 #> ⠙ EM iterations 3 done (1/s) | 2.9s
 #> 
-#> ⠹ EM iterations 7 done (1.1/s) | 6.5s
+#> ⠹ EM iterations 6 done (1/s) | 5.7s
 #> 
-#> ⠸ EM iterations 11 done (1.2/s) | 9s
+#> ⠸ EM iterations 11 done (1.2/s) | 9.1s
 #> 
-#> ⠼ EM iterations 17 done (1.4/s) | 11.8s
+#> ⠼ EM iterations 17 done (1.4/s) | 11.9s
 #> 
 #> ⠴ EM iterations 25 done (1.7/s) | 14.8s
 #> 
 #> ⠦ EM iterations 41 done (2.3/s) | 17.8s
 #> 
-#> ⠧ EM iterations 62 done (3/s) | 20.8s
+#> ⠧ EM iterations 62 done (3/s) | 20.7s
 #> 
 #> ⠇ EM iterations 99 done (4.2/s) | 23.8s
 #> 
-#> ⠏ EM iterations 147 done (5.5/s) | 26.8s
+#> ⠏ EM iterations 146 done (5.5/s) | 26.8s
 #> 
 #> ⠏ EM iterations 148 done (5.5/s) | 26.9s
 #> 
