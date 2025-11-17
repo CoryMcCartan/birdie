@@ -41,7 +41,7 @@ statistically sound way from these predicitons.
 
     <a class="navbar-brand me-2" href="index.html">birdie</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.1.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -76,8 +76,34 @@ statistically sound way from these predicitons.
 
 <p>Bayesian Improved Surname Geocoding (BISG) is a simple model that predicts individual race based off last names and addresses. While predictive, it is not perfect, and measurement error in these predictions can cause problems in downstream analyses.</p>
 <p>Bayesian Instrumental Regression for Disparity Estimation (BIRDiE) is a class of Bayesian models for accurately estimating conditional distributions by race, using BISG probabilities as inputs. This package implements BIRDiE as described in <a href="https://doi.org/10.1080/01621459.2025.2526695" class="external-link">McCartan, Fisher, Goldin, Ho, and Imai (2025)</a>. It also implements standard BISG and an improved measurement-error BISG model as described in <a href="https://www.science.org/doi/full/10.1126/sciadv.adc9824" class="external-link">Imai, Olivella, and Rosenman (2022)</a>.</p>
-<p><img src="reference/figures/poster.svg" style="width: 100%" alt="BIRDiE Overview Poster"></p>
-<div class="section level2">
+<details><summary><b>Do I need BIRDiE?</b>
+</summary><p>
+BIRDiE is a statistical model to let you estimate the average value of a variable in different racial groups. To take an example from our research paper, if your data are tax records and you want to estimate the rate at which different racial groups take a certain tax credit, BIRDiE can help you do that.
+</p>
+<p>
+BIRDiE is applied on top of individual-level imputations/predictions of race from methods like BISG. If your only goal is to estimate individual race probabilities, then BIRDiE is not helpful—BISG alone suffices. The graphic below gives an overview of the problem BIRDiE solves and how it fits together with existing methods.
+</p>
+<p>
+<img src="reference/figures/poster.svg" style="width: 100%" alt="BIRDiE Overview Poster"></p>
+</details><details><summary><b>What is the difference between BIRDiE and BISG?</b>
+</summary><p>
+BISG is a simple model that estimates the probability of each individual belonging to diferent racial groups, based on their last name and/or residence location.
+</p>
+<p>
+BIRDiE is a statistical model that takes race probabilities (like BISG) as <i>inputs</i> to estimate the average value of an outcome variable in different racial groups. If your research question involves both race and another (outcome) variable, then you likely need to apply BIRDiE on top of BISG to avoid biases caused by measurement error in BISG predictions.
+</p>
+</details><details><summary><b>Is BIRDiE better than BISG, fBISG, etc?</b>
+</summary><p>
+There are many methods for imputing or predicting individual race, including BISG, fBISG, and others. Mainly, these methods use different data sources or slightly different models.
+</p>
+<p>
+BIRDiE is <i>not</i> a replacement for these methods, but rather a complementary tool that uses the outputs of these methods to properly estimate disparities in other variables. When BIRDiE is applied on top of these methods, it generally produces far more accurate estimates than directly thresholding or weighting by the outputs of the prediction methods alone.
+</p>
+</details><details><summary><b>Do I have to use the <code>birdie</code> software to do BISG?</b>
+</summary><p>
+The <code>birdie</code> software includes, for convenience, an implementation of basic BISG. More complicated BISG models that use more data are possible using <code>birdie</code>, but may be easier with other software packages, such as <code>wru</code>. The BIRDiE method, found in the <code><a href="reference/birdie.html">birdie()</a></code> function here, can take race predictions from <i>any</i> software package as inputs.
+</p>
+</details><div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
 <p>You can install the latest version of the package from CRAN with:</p>
@@ -93,7 +119,7 @@ statistically sound way from these predicitons.
 </h2>
 <p>A basic analysis has two steps. First, you compute BISG probability estimates with the <code><a href="reference/bisg.html">bisg()</a></code> or <code><a href="reference/bisg.html">bisg_me()</a></code> functions (or using any other probabilistic race prediction tool). Then, you estimate the distribution of an outcome variable by race using the <code><a href="reference/birdie.html">birdie()</a></code> function.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/CoryMcCartan/birdie" class="external-link">birdie</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://corymccartan.com/birdie/" class="external-link">birdie</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">pseudo_vf</span><span class="op">)</span></span>
 <span></span>
@@ -123,7 +149,7 @@ statistically sound way from these predicitons.
 <span><span class="co">#&gt; 6    0.524  0.315    0.0909 0.00598  0.00255    0.0610</span></span></code></pre></div>
 <p>Computing regression estimates requires specifying a model structure. Here, we’ll use a Categorical-Dirichlet regression model that lets the relationship between turnout and race vary by ZIP code. This is the “no-pooling” model from McCartan et al. We’ll use Gibbs sampling for inference, which will also let us capture the uncertainty in our estimates.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">=</span> <span class="fu"><a href="reference/birdie.html">birdie</a></span><span class="op">(</span><span class="va">r_probs</span>, <span class="va">turnout</span> <span class="op">~</span> <span class="fu"><a href="reference/preproc.html">proc_zip</a></span><span class="op">(</span><span class="va">zip</span><span class="op">)</span>, data<span class="op">=</span><span class="va">pseudo_vf</span>, </span>
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">=</span> <span class="fu"><a href="reference/birdie.html">birdie</a></span><span class="op">(</span><span class="va">r_probs</span>, <span class="va">turnout</span> <span class="op">~</span> <span class="fu"><a href="reference/preproc.html">proc_zip</a></span><span class="op">(</span><span class="va">zip</span><span class="op">)</span>, data<span class="op">=</span><span class="va">pseudo_vf</span>,</span>
 <span>             family<span class="op">=</span><span class="fu"><a href="reference/birdie-family.html">cat_dir</a></span><span class="op">(</span><span class="op">)</span>, algorithm<span class="op">=</span><span class="st">"gibbs"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Using weakly informative empirical Bayes prior for Pr(Y | R)</span></span>
 <span><span class="co">#&gt; This message is displayed once every 8 hours.</span></span>
@@ -214,7 +240,7 @@ statistically sound way from these predicitons.
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
 <li><a href="https://github.com/CoryMcCartan/birdie/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/CoryMcCartan/birdie/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a></li>
-<li><a href="https://cran.r-project.org/package=redist" class="external-link"><img src="https://www.r-pkg.org/badges/version-last-release/birdie" alt="CRAN_Status_Badge"></a></li>
+<li><a href="https://cran.r-project.org/package=birdie" class="external-link"><img src="https://www.r-pkg.org/badges/version-last-release/birdie" alt="CRAN_Status_Badge"></a></li>
 </ul>
 </div>
 
@@ -227,7 +253,7 @@ statistically sound way from these predicitons.
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>

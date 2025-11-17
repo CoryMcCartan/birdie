@@ -1,0 +1,92 @@
+# Control of BIRDiE Model Fitting
+
+Constructs control parameters for BIRDiE model fitting. All arguments
+have defaults.
+
+## Usage
+
+``` r
+birdie.ctrl(
+  abstol = 1e-06,
+  reltol = 1e-06,
+  max_iter = 1000,
+  fix_sigma = FALSE,
+  accel = c("squarem", "anderson", "daarem", "none"),
+  order = switch(match.arg(accel), none = 0L, anderson = -1L, daarem = -1L, squarem = 1L),
+  anderson_restart = TRUE
+)
+```
+
+## Arguments
+
+- abstol:
+
+  The absolute tolerance used in checking convergence or in estimating
+  linear model coefficients.
+
+- reltol:
+
+  The relative tolerance used in checking convergence. Ignored if
+  `accel = "squarem"` or `"daarem"`.
+
+- max_iter:
+
+  The maximum number of EM iterations.
+
+- fix_sigma:
+
+  If `TRUE` when `model=gaussian()`, fix sigma to an initial estimate,
+  in order to avoid estimation collapse when the outcomes are discrete.
+
+- accel:
+
+  The acceleration algorithm to use in doing EM. The default `"squarem"`
+  is good for most purposes, though `"anderson"` may be faster when
+  there are few parameters or very tight tolerances. `"daarem"` is an
+  excellent choice as well that works across a range of problems, though
+  it requires installing the small `daarem` package. `"none"` is not
+  recommended unless other algorithms are running into numerical issues.
+  See the references below for details on these schemes.
+
+- order:
+
+  The order to use in the acceleration algorithm. Interpretation varies
+  by algorithm. Can range from 1 (default) to 3 for SQUAREM and from 1
+  to the number of parameters for Anderson and DAAREM (default -1 allows
+  the order to be determined by problem size).
+
+- anderson_restart:
+
+  Whether to use restarts in Anderson acceleration.
+
+## Value
+
+A list containing the control parameters.
+
+## References
+
+Varadhan, R., & Roland, C. (2004). Squared extrapolation methods
+(SQUAREM): A new class of simple and efficient numerical schemes for
+accelerating the convergence of the EM algorithm.
+
+Walker, H. F., & Ni, P. (2011). Anderson acceleration for fixed-point
+iterations. SIAM Journal on Numerical Analysis, 49(4), 1715-1735.
+
+Henderson, N. C., & Varadhan, R. (2019). Damped Anderson acceleration
+with restarts and monotonicity control for accelerating EM and EM-like
+algorithms. Journal of Computational and Graphical Statistics, 28(4),
+834-846.
+
+## Examples
+
+``` r
+str(birdie.ctrl(max_iter=100))
+#> List of 7
+#>  $ max_iter : int 100
+#>  $ accel    :function (init, em_step, ctrl, n_x = 1, ...)  
+#>  $ order    : num 1
+#>  $ restart  : logi TRUE
+#>  $ fix_sigma: logi FALSE
+#>  $ abstol   : num 1e-06
+#>  $ reltol   : num 1e-06
+```

@@ -1,0 +1,282 @@
+# **BIRDiE**: Estimating disparities when race is not observed
+
+Bayesian Improved Surname Geocoding (BISG) is a simple model that
+predicts individual race based off last names and addresses. While
+predictive, it is not perfect, and measurement error in these
+predictions can cause problems in downstream analyses.
+
+Bayesian Instrumental Regression for Disparity Estimation (BIRDiE) is a
+class of Bayesian models for accurately estimating conditional
+distributions by race, using BISG probabilities as inputs. This package
+implements BIRDiE as described in [McCartan, Fisher, Goldin, Ho, and
+Imai (2025)](https://doi.org/10.1080/01621459.2025.2526695). It also
+implements standard BISG and an improved measurement-error BISG model as
+described in [Imai, Olivella, and Rosenman
+(2022)](https://www.science.org/doi/full/10.1126/sciadv.adc9824).
+
+**Do I need BIRDiE?**
+
+BIRDiE is a statistical model to let you estimate the average value of a
+variable in different racial groups. To take an example from our
+research paper, if your data are tax records and you want to estimate
+the rate at which different racial groups take a certain tax credit,
+BIRDiE can help you do that.
+
+BIRDiE is applied on top of individual-level imputations/predictions of
+race from methods like BISG. If your only goal is to estimate individual
+race probabilities, then BIRDiE is not helpful—BISG alone suffices. The
+graphic below gives an overview of the problem BIRDiE solves and how it
+fits together with existing methods.
+
+![BIRDiE Overview Poster](reference/figures/poster.svg)
+
+**What is the difference between BIRDiE and BISG?**
+
+BISG is a simple model that estimates the probability of each individual
+belonging to diferent racial groups, based on their last name and/or
+residence location.
+
+BIRDiE is a statistical model that takes race probabilities (like BISG)
+as *inputs* to estimate the average value of an outcome variable in
+different racial groups. If your research question involves both race
+and another (outcome) variable, then you likely need to apply BIRDiE on
+top of BISG to avoid biases caused by measurement error in BISG
+predictions.
+
+**Is BIRDiE better than BISG, fBISG, etc?**
+
+There are many methods for imputing or predicting individual race,
+including BISG, fBISG, and others. Mainly, these methods use different
+data sources or slightly different models.
+
+BIRDiE is *not* a replacement for these methods, but rather a
+complementary tool that uses the outputs of these methods to properly
+estimate disparities in other variables. When BIRDiE is applied on top
+of these methods, it generally produces far more accurate estimates than
+directly thresholding or weighting by the outputs of the prediction
+methods alone.
+
+**Do I have to use the `birdie` software to do BISG?**
+
+The `birdie` software includes, for convenience, an implementation of
+basic BISG. More complicated BISG models that use more data are possible
+using `birdie`, but may be easier with other software packages, such as
+`wru`. The BIRDiE method, found in the
+[`birdie()`](http://corymccartan.com/birdie/reference/birdie.md)
+function here, can take race predictions from *any* software package as
+inputs.
+
+## Installation
+
+You can install the latest version of the package from CRAN with:
+
+``` r
+install.packages("birdie")
+```
+
+You can also install the development version with:
+
+``` r
+# install.packages("remotes")
+remotes::install_github("CoryMcCartan/birdie")
+```
+
+## Basic Usage
+
+A basic analysis has two steps. First, you compute BISG probability
+estimates with the
+[`bisg()`](http://corymccartan.com/birdie/reference/bisg.md) or
+[`bisg_me()`](http://corymccartan.com/birdie/reference/bisg.md)
+functions (or using any other probabilistic race prediction tool). Then,
+you estimate the distribution of an outcome variable by race using the
+[`birdie()`](http://corymccartan.com/birdie/reference/birdie.md)
+function.
+
+``` r
+library(birdie)
+
+data(pseudo_vf)
+
+head(pseudo_vf)
+#> # A tibble: 6 × 4
+#>   last_name zip   race  turnout
+#>   <fct>     <fct> <fct> <fct>  
+#> 1 BEAVER    28748 white yes    
+#> 2 WILLIAMS  28144 black no     
+#> 3 ROSEN     28270 white yes    
+#> 4 SMITH     28677 black yes    
+#> 5 FAY       28748 white no     
+#> 6 CHURCH    28215 white yes
+```
+
+To compute BISG probabilities, you provide the last name and
+(optionally) geography variables as part of a formula.
+
+``` r
+r_probs = bisg(~ nm(last_name) + zip(zip), data=pseudo_vf)
+
+head(r_probs)
+#> # A tibble: 6 × 6
+#>   pr_white pr_black pr_hisp pr_asian  pr_aian pr_other
+#>      <dbl>    <dbl>   <dbl>    <dbl>    <dbl>    <dbl>
+#> 1    0.956  0.00371  0.0103 0.000674 0.00886    0.0202
+#> 2    0.162  0.795    0.0122 0.00102  0.000873   0.0292
+#> 3    0.943  0.00378  0.0218 0.0107   0.000386   0.0202
+#> 4    0.569  0.365    0.0302 0.00114  0.00108    0.0339
+#> 5    0.971  0.00118  0.0131 0.00149  0.00118    0.0125
+#> 6    0.524  0.315    0.0909 0.00598  0.00255    0.0610
+```
+
+Computing regression estimates requires specifying a model structure.
+Here, we’ll use a Categorical-Dirichlet regression model that lets the
+relationship between turnout and race vary by ZIP code. This is the
+“no-pooling” model from McCartan et al. We’ll use Gibbs sampling for
+inference, which will also let us capture the uncertainty in our
+estimates.
+
+``` r
+fit = birdie(r_probs, turnout ~ proc_zip(zip), data=pseudo_vf,
+             family=cat_dir(), algorithm="gibbs")
+#> Using weakly informative empirical Bayes prior for Pr(Y | R)
+#> This message is displayed once every 8 hours.
+
+print(fit)
+#> Categorical-Dirichlet BIRDiE model
+#> Formula: turnout ~ proc_zip(zip)
+#>    Data: pseudo_vf
+#> Number of obs: 5,000
+#> Estimated distribution:
+#>     white black  hisp asian  aian other
+#> no  0.293  0.34 0.372 0.569 0.685 0.499
+#> yes 0.707  0.66 0.628 0.431 0.315 0.501
+```
+
+The [`proc_zip()`](http://corymccartan.com/birdie/reference/preproc.md)
+function fills in missing ZIP codes, among other things. We can extract
+the estimated conditional distributions with
+[`coef()`](https://rdrr.io/r/stats/coef.html). We can also get updated
+BISG probabilities that additionally condition on turnout using
+[`fitted()`](https://rdrr.io/r/stats/fitted.values.html). Additional
+functions allow us to extract a tidy version of our estimates
+([`tidy()`](https://generics.r-lib.org/reference/tidy.html)) and
+visualize the estimated distributions
+([`plot()`](https://rdrr.io/r/graphics/plot.default.html)).
+
+``` r
+coef(fit)
+#>         white     black      hisp     asian      aian     other
+#> no  0.2934753 0.3403649 0.3720582 0.5687325 0.6847874 0.4994076
+#> yes 0.7065247 0.6596351 0.6279418 0.4312675 0.3152126 0.5005924
+
+head(fitted(fit))
+#> # A tibble: 6 × 6
+#>   pr_white pr_black pr_hisp pr_asian  pr_aian pr_other
+#>      <dbl>    <dbl>   <dbl>    <dbl>    <dbl>    <dbl>
+#> 1   0.961   0.00349 0.0101  0.000523 0.00577    0.0195
+#> 2   0.0765  0.893   0.00814 0.00102  0.00106    0.0207
+#> 3   0.932   0.00542 0.0287  0.00538  0.000384   0.0286
+#> 4   0.587   0.352   0.0260  0.000833 0.000783   0.0335
+#> 5   0.945   0.00224 0.0219  0.00368  0.00334    0.0238
+#> 6   0.528   0.324   0.0895  0.00379  0.00143    0.0538
+
+tidy(fit)
+#> # A tibble: 12 × 3
+#>    turnout race  estimate
+#>    <chr>   <chr>    <dbl>
+#>  1 no      white    0.293
+#>  2 yes     white    0.707
+#>  3 no      black    0.340
+#>  4 yes     black    0.660
+#>  5 no      hisp     0.372
+#>  6 yes     hisp     0.628
+#>  7 no      asian    0.569
+#>  8 yes     asian    0.431
+#>  9 no      aian     0.685
+#> 10 yes     aian     0.315
+#> 11 no      other    0.499
+#> 12 yes     other    0.501
+
+plot(fit)
+```
+
+![](reference/figures/README-unnamed-chunk-5-1.png)
+
+A more detailed introduction to the method and software package can be
+found on the [Get
+Started](https://corymccartan.com/birdie/articles/birdie.html) page.
+
+# Package index
+
+## Estimating Racial Disparities
+
+Functions to estimate the distribution of an outcome by race.
+
+- [`birdie()`](http://corymccartan.com/birdie/reference/birdie.md) : Fit
+  BIRDiE Models
+- [`coef(`*`<birdie>`*`)`](http://corymccartan.com/birdie/reference/birdie-class.md)
+  [`fitted(`*`<birdie>`*`)`](http://corymccartan.com/birdie/reference/birdie-class.md)
+  [`residuals(`*`<birdie>`*`)`](http://corymccartan.com/birdie/reference/birdie-class.md)
+  [`predict(`*`<birdie>`*`)`](http://corymccartan.com/birdie/reference/birdie-class.md)
+  [`simulate(`*`<birdie>`*`)`](http://corymccartan.com/birdie/reference/birdie-class.md)
+  [`plot(`*`<birdie>`*`)`](http://corymccartan.com/birdie/reference/birdie-class.md)
+  [`tidy(`*`<birdie>`*`)`](http://corymccartan.com/birdie/reference/birdie-class.md)
+  [`glance(`*`<birdie>`*`)`](http://corymccartan.com/birdie/reference/birdie-class.md)
+  [`augment(`*`<birdie>`*`)`](http://corymccartan.com/birdie/reference/birdie-class.md)
+  [`formula(`*`<birdie>`*`)`](http://corymccartan.com/birdie/reference/birdie-class.md)
+  [`family(`*`<birdie>`*`)`](http://corymccartan.com/birdie/reference/birdie-class.md)
+  [`nobs(`*`<birdie>`*`)`](http://corymccartan.com/birdie/reference/birdie-class.md)
+  [`vcov(`*`<birdie>`*`)`](http://corymccartan.com/birdie/reference/birdie-class.md)
+  [`print(`*`<birdie>`*`)`](http://corymccartan.com/birdie/reference/birdie-class.md)
+  [`summary(`*`<birdie>`*`)`](http://corymccartan.com/birdie/reference/birdie-class.md)
+  : Class "birdie" of BIRDiE Models
+- [`birdie.ctrl()`](http://corymccartan.com/birdie/reference/birdie.ctrl.md)
+  : Control of BIRDiE Model Fitting
+- [`disparities()`](http://corymccartan.com/birdie/reference/disparities.md)
+  : Compute Racial Disparities from Model Estimates
+- [`est_weighted()`](http://corymccartan.com/birdie/reference/est_weighted.md)
+  [`print(`*`<est_weighted>`*`)`](http://corymccartan.com/birdie/reference/est_weighted.md)
+  [`summary(`*`<est_weighted>`*`)`](http://corymccartan.com/birdie/reference/est_weighted.md)
+  : Calculate Weighted Estimate of (Discrete) Outcomes By Race
+
+## Impute Individual Race
+
+Functions to perform Bayesian Improved Surname Geocoding, to estimate
+the probability of an individual belonging to different racial groups.
+
+- [`bisg()`](http://corymccartan.com/birdie/reference/bisg.md)
+  [`bisg_me()`](http://corymccartan.com/birdie/reference/bisg.md)
+  [`summary(`*`<bisg>`*`)`](http://corymccartan.com/birdie/reference/bisg.md)
+  [`predict(`*`<bisg>`*`)`](http://corymccartan.com/birdie/reference/bisg.md)
+  [`simulate(`*`<bisg>`*`)`](http://corymccartan.com/birdie/reference/bisg.md)
+  : Bayesian Improved Surname Geocoding (BISG)
+
+## Prepare and Preprocess Data
+
+Functions to download Census data and process names and geographic
+identifiers.
+
+- [`census_race_geo_table()`](http://corymccartan.com/birdie/reference/census_race_geo_table.md)
+  : Download Census Race Data
+- [`proc_zip()`](http://corymccartan.com/birdie/reference/preproc.md)
+  [`proc_state()`](http://corymccartan.com/birdie/reference/preproc.md)
+  [`proc_name()`](http://corymccartan.com/birdie/reference/preproc.md) :
+  Preprocess Last Names and Geographic Identifiers
+
+## Data and Miscellaneous
+
+Example data and miscellaneous helper functions.
+
+- [`pseudo_vf`](http://corymccartan.com/birdie/reference/pseudo_vf.md) :
+  A pseudo-voterfile
+- [`cat_dir()`](http://corymccartan.com/birdie/reference/birdie-family.md)
+  [`cat_mixed()`](http://corymccartan.com/birdie/reference/birdie-family.md)
+  : BIRDiE Complete-Data Model Families
+- [`p_r_natl()`](http://corymccartan.com/birdie/reference/p_r_natl.md) :
+  National Racial Demographics
+
+# Articles
+
+### All vignettes
+
+- [Estimation of Racial Disparities When Race is Not
+  Observed](http://corymccartan.com/birdie/articles/birdie.md):
