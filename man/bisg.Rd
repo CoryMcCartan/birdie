@@ -43,6 +43,8 @@ states. If no other predictor variables are provided, then \code{bisg()} will
 automatically be able to build a table of census data to use in inference.
 If other predictor variables are included, or if other geographic
 identifiers are used, then the user must specify the \code{p_rgx} argument below.
+In this case, do \emph{not} label the geographic variables with \code{zip()} or
+\code{state()}, just include them as normal variables in the formula.
 The left-hand side of the formula is ignored.
 See the examples section below for sample formulas.}
 
@@ -68,11 +70,19 @@ given the predictors. For example, if Census tracts are the only predictors,
 \code{black}, etc. containing the racial distribution of each tract.
 If \code{formula} contains only labeled terms (like \code{zip()}), then by default
 \code{p_rgx} will be constructed automatically from the most recent Census data.
-This table will be normalized by row, so it can be provided as population
-counts as well. Counts are required for \code{bisg_me()}.
+Thus, if a custom \code{p_rgx} is desired, do \emph{not} use geographic labellers
+like \code{zip()} in the formula.
+
+The \code{p_grx} table will be normalized by row, so it can be provided as
+population counts as well. Counts are required for \code{bisg_me()}.
 The \code{\link[=census_race_geo_table]{census_race_geo_table()}} function can be helpful to prepare tables,
 as can be the \code{build_dec()} and \code{build_acs()} functions in the \code{censable}
-package.}
+package.
+
+Note that no missing values are allowed in the predictors used in \code{p_rgx}.
+One can include a level \code{"<none>"} in the predictor columns of \code{p_rgx},
+which will be imputed with the overall \code{p_r}. Thus it is important to
+preprocess \code{p_rgx} and/or the input data to ensure a 100\% match rate.}
 
 \item{p_rs}{The distribution of race given last name. As with \code{p_rgx}, should
 be provided as a data frame, with a column of names and additional columns
@@ -164,6 +174,16 @@ bisg(~ nm(last_name), data=pseudo_vf)
 r_probs = bisg(~ nm(last_name) + zip(zip), data=pseudo_vf)
 summary(r_probs)
 head(predict(r_probs))
+
+# Using a custom p_rgx
+# Requires a Census API key
+\dontrun{
+d_census = census_race_geo_table(geo = "zcta", year = 2023, survey = "acs5")
+# Manually process ZIPs & convert invalid to <none>; 'GEOID' matches d_census
+pseudo_vf$GEOID = proc_zip(pseudo_vf$zip)
+r_probs_acs = bisg(~ nm(last_name) + GEOID, data=pseudo_vf, p_rgx=d_census)
+plot(r_probs$pr_black, r_probs_acs$pr_black)
+}
 
 data(pseudo_vf)
 bisg_me(~ nm(last_name) + zip(zip), data=pseudo_vf)

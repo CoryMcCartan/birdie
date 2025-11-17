@@ -26,6 +26,8 @@
 #'   automatically be able to build a table of census data to use in inference.
 #'   If other predictor variables are included, or if other geographic
 #'   identifiers are used, then the user must specify the `p_rgx` argument below.
+#'   In this case, do _not_ label the geographic variables with `zip()` or
+#'   `state()`, just include them as normal variables in the formula.
 #'   The left-hand side of the formula is ignored.
 #'   See the examples section below for sample formulas.
 #' @param data The data frame containing the variables in `formula`.
@@ -48,11 +50,19 @@
 #'   `black`, etc. containing the racial distribution of each tract.
 #'   If `formula` contains only labeled terms (like `zip()`), then by default
 #'   `p_rgx` will be constructed automatically from the most recent Census data.
-#'   This table will be normalized by row, so it can be provided as population
-#'   counts as well. Counts are required for `bisg_me()`.
+#'   Thus, if a custom `p_rgx` is desired, do _not_ use geographic labellers
+#'   like `zip()` in the formula.
+#'
+#'   The `p_grx` table will be normalized by row, so it can be provided as
+#'   population counts as well. Counts are required for `bisg_me()`.
 #'   The [census_race_geo_table()] function can be helpful to prepare tables,
 #'   as can be the `build_dec()` and `build_acs()` functions in the `censable`
 #'   package.
+#'
+#'   Note that no missing values are allowed in the predictors used in `p_rgx`.
+#'   One can include a level `"<none>"` in the predictor columns of `p_rgx`,
+#'   which will be imputed with the overall `p_r`. Thus it is important to
+#'   preprocess `p_rgx` and/or the input data to ensure a 100% match rate.
 #' @param p_rs The distribution of race given last name. As with `p_rgx`, should
 #'   be provided as a data frame, with a column of names and additional columns
 #'   for each racial group. Users should not have to specify this argument in
@@ -77,6 +87,16 @@
 #' r_probs = bisg(~ nm(last_name) + zip(zip), data=pseudo_vf)
 #' summary(r_probs)
 #' head(predict(r_probs))
+#'
+#' # Using a custom p_rgx
+#' # Requires a Census API key
+#' \dontrun{
+#' d_census = census_race_geo_table(geo = "zcta", year = 2023, survey = "acs5")
+#' # Manually process ZIPs & convert invalid to <none>; 'GEOID' matches d_census
+#' pseudo_vf$GEOID = proc_zip(pseudo_vf$zip)
+#' r_probs_acs = bisg(~ nm(last_name) + GEOID, data=pseudo_vf, p_rgx=d_census)
+#' plot(r_probs$pr_black, r_probs_acs$pr_black)
+#' }
 #'
 #' @references
 #' Elliott, M. N., Fremont, A., Morrison, P. A., Pantoja, P., and Lurie, N.
@@ -347,6 +367,16 @@ make_gx_tbl_vec <- function(vars, p_r, p_rgx) {
     if (est_p_r) p_r_tmp = p_r_natl()
     GX_names = colnames(vars$GX)
     if (vars$geo_type != "none") {
+        if (!missing(p_rxs)) { # warn: they are probably trying to use p_rgx
+            cli_warn(
+                c(
+                    "Not using provided {.arg p_rxs}",
+                    "i" = "Do not use helpers like {.fn zip} or {.fn state} when providing a custom {.arg p_rgx}."
+                ),
+                call = parent.frame()
+            )
+        }
+
         if (length(p_r_tmp) != 6) {
             cli_abort(c("Number of racial categories doesn't match the Census table.",
                         "i"="Categories should be White, Black, Hispanic, Asian,
