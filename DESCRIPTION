@@ -51,7 +51,7 @@ Config/testthat/edition: 3
 SystemRequirements: GNU make, C++17
 Biarch: true
 LazyData: true
-URL: https://github.com/CoryMcCartan/birdie, https://corymccartan.com/birdie/
+URL: https://corymccartan.com/birdie/, https://github.com/CoryMcCartan/birdie
 BugReports: https://github.com/CoryMcCartan/birdie/issues
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
