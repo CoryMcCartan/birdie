@@ -1,3 +1,6 @@
+# birdie 0.7.2
+* Improved README and documentation
+
 # birdie 0.7.1
 
 * Support for 2020 decennial census data (#19)
@@ -7,7 +10,7 @@
 
 # birdie 0.6.1
 
-* Switch to an inverse-gamma prior for the random effects scale parameter in 
+* Switch to an inverse-gamma prior for the random effects scale parameter in
   the mixed model.
 * Add Jacobian adjustment to mixed model M step to improve accuracy and reduce
   prior sensitivity.
