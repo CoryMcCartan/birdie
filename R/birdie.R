@@ -21,7 +21,8 @@
 #' with [coef.birdie()] as well.
 #'
 #' The Categorical-Dirichlet model is specified as follows: \deqn{
-#'     Y_i \mid R_i, X_i, \Theta \sim \text{Categorical}(\theta_{R_iX_i}) \\
+#'     Y_i \mid R_i, X_i, \Theta \sim \text{Categorical}(\theta_{R_iX_i})
+#' } \deqn{
 #'     \theta_{rx} \sim \text{Dirichlet}(\alpha_r),
 #' } where \eqn{Y} is the outcome variable, \eqn{R} is race, \eqn{X} are
 #' covariates (fixed effects), and \eqn{\theta_{rx}} and \eqn{\alpha_r} are
@@ -31,11 +32,15 @@
 #' fully interacted structure.
 #'
 #' The Categorical mixed-effects model is specified as follows: \deqn{
-#'     Y_i \mid R_i, X_i, \Theta \sim \text{Categorical}(g^{-1}(\mu_{R_iX_i})) \\
-#'     \mu_{rxy} = W\beta_{ry} + Zu_{ry} \\
+#'     Y_i \mid R_i, X_i, \Theta \sim \text{Categorical}(g^{-1}(\mu_{R_iX_i}))
+#' } \deqn{
+#'     \mu_{rxy} = W\beta_{ry} + Zu_{ry}
+#' } \deqn{
 #'     u_{r} \mid \vec\sigma_{r}, L_r \sim \mathcal{N}(0,
-#'      \text{diag}(\vec\sigma_{r})C_r\text{diag}(\vec\sigma_{r})) \\
-#'     \beta_{ry} \sim \mathcal{N}(0, s^2_{r\beta}) \\
+#'      \text{diag}(\vec\sigma_{r})C_r\text{diag}(\vec\sigma_{r}))
+#' } \deqn{
+#'     \beta_{ry} \sim \mathcal{N}(0, s^2_{r\beta})
+#' } \deqn{
 #'     \sigma_{ry} \sim \text{Inv-Gamma}(4, 3s_{r\sigma}) \\
 #'     C_r \sim \text{LKJ}(2),
 #' } where \eqn{\beta_{ry}} are the fixed effects, \eqn{u_{ry}} is the random
@@ -44,10 +49,13 @@
 #' `$beta` and `$sigma` elements of the fitted model object.
 #'
 #' The Normal linear model is specified as follows: \deqn{
-#'     Y_i \mid R_i, \vec X_i, \Theta \sim \mathcal{N}(\vec X_i^\top\vec\theta, \sigma^2) \\
-#'     \sigma^2 \sim \text{Inv-Gamma}(n_\sigma/2, l_\sigma^2 n_\sigma/2) \\
-#'     \beta_{\text{intercept}} \sim \mathcal{N}(0, s^2_\text{int}) \\
-#'     \beta_k \sim \mathcal{N}(0, s^2_\beta), \\
+#'     Y_i \mid R_i, \vec X_i, \Theta \sim \mathcal{N}(\vec X_i^\top\vec\theta, \sigma^2)
+#' } \deqn{
+#'     \sigma^2 \sim \text{Inv-Gamma}(n_\sigma/2, l_\sigma^2 n_\sigma/2)
+#' } \deqn{
+#'     \beta_{\text{intercept}} \sim \mathcal{N}(0, s^2_\text{int})
+#' } \deqn{
+#'     \beta_k \sim \mathcal{N}(0, s^2_\beta),
 #' } where \eqn{\vec\theta} is a vector of linear model coefficients.
 #' Estimates for \eqn{\theta} and \eqn{\sigma} are stored in the
 #' `$beta` and `$sigma` elements of the fitted model object.

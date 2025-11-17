@@ -18,8 +18,8 @@ American Statistical Association}. Available at
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/CoryMcCartan/birdie}
   \item \url{https://corymccartan.com/birdie/}
+  \item \url{https://github.com/CoryMcCartan/birdie}
   \item Report bugs at \url{https://github.com/CoryMcCartan/birdie/issues}
 }
 
