@@ -367,10 +367,10 @@ make_gx_tbl_vec <- function(vars, p_r, p_rgx) {
     if (est_p_r) p_r_tmp = p_r_natl()
     GX_names = colnames(vars$GX)
     if (vars$geo_type != "none") {
-        if (!missing(p_rxs)) { # warn: they are probably trying to use p_rgx
+        if (!missing(p_rgx)) { # warn: they are probably trying to use p_rgx
             cli_warn(
                 c(
-                    "Not using provided {.arg p_rxs}",
+                    "Not using provided {.arg p_rgx}",
                     "i" = "Do not use helpers like {.fn zip} or {.fn state} when providing a custom {.arg p_rgx}."
                 ),
                 call = parent.frame()
