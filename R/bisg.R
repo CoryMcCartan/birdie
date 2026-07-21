@@ -367,7 +367,7 @@ make_gx_tbl_vec <- function(vars, p_r, p_rgx) {
     if (est_p_r) p_r_tmp = p_r_natl()
     GX_names = colnames(vars$GX)
     if (vars$geo_type != "none") {
-        if (!missing(p_rgx)) { # warn: they are probably trying to use p_rgx
+        if (!is.null(p_rgx)) { # warn: they are probably trying to use p_rgx
             cli_warn(
                 c(
                     "Not using provided {.arg p_rgx}",
