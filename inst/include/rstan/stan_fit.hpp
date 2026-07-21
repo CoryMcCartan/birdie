@@ -18,6 +18,8 @@
 
 #include <stan/version.hpp>
 
+#include <boost/random/mixmax.hpp>
+
 #include <rstan/io/rlist_ref_var_context.hpp>
 #include <rstan/io/r_ostream.hpp>
 #include <rstan/stan_args.hpp>
@@ -367,7 +369,7 @@ std::vector<double> unconstrained_to_constrained(Model& model,
                                                  const std::vector<double>& params) {
   std::vector<int> params_i;
   std::vector<double> constrained_params;
-  boost::ecuyer1988 rng = stan::services::util::create_rng(random_seed, id);
+  boost::random::mixmax rng = stan::services::util::create_rng(random_seed, id);
   model.write_array(rng, const_cast<std::vector<double>&>(params), params_i,
                     constrained_params);
   return constrained_params;
@@ -472,8 +474,11 @@ int command(stan_args& args, Model& model, Rcpp::List& holder,
     std::vector<double> params = sample_writer.x();
     double lp = params.front();
     params.erase(params.begin());
+    double converged = params.front();
+    params.erase(params.begin());
     holder = Rcpp::List::create(Rcpp::_["par"] = params,
-                                Rcpp::_["value"] = lp);
+                                Rcpp::_["value"] = lp,
+                                Rcpp::_["converged"] = converged);
 
   }
 
