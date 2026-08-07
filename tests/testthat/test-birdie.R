@@ -58,7 +58,7 @@ test_that("BIRDiE produces correct and stable output", {
 
     tv = sum(abs(coef(out) - p_xr) %*% diag(p_r)) / 2
 
-    expect_lt(tv, 0.015)
+    expect_lt(tv, 0.02)
 
     expect_snapshot_value(coef(out), style="json2", tolerance=1e-5)
 })

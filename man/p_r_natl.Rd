@@ -4,7 +4,7 @@
 \alias{p_r_natl}
 \title{National Racial Demographics}
 \usage{
-p_r_natl(year = 2021, vap = FALSE)
+p_r_natl(year = 2024, vap = FALSE)
 }
 \arguments{
 \item{year}{The year to return demographics for.}
@@ -27,6 +27,12 @@ its surname tables:
 \item \code{aian}: Non-Hispanic American Indian/Alaska Native
 \item \code{other}: Non-Hispanic, two or more races, or other race
 }
+}
+\details{
+Except for 2010, values come from the one-year American Community Survey
+(ACS). The 2010 value comes from the decennial census. Because the standard
+2020 ACS one-year estimates were not released, the 2020 value is interpolated
+from 2019 and 2021.
 }
 \examples{
 p_r_natl(year=2010)

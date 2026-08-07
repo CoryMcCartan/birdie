@@ -10,7 +10,8 @@ census_race_geo_table(
   year = 2010,
   survey = c("dec", "acs1", "acs5"),
   GEOIDs = TRUE,
-  counts = TRUE
+  counts = TRUE,
+  .use_premade = TRUE
 )
 }
 \arguments{
@@ -32,6 +33,9 @@ with entries like \code{"Massachusetts"}.}
 
 \item{counts}{If \code{TRUE}, return the table as actual population counts; if
 \code{FALSE}, return table as percentages within each geography.}
+
+\item{.use_premade}{Whether to use a bundled table when one is available.
+This is intended for internal data-generation use.}
 }
 \value{
 A data frame with geographic identifier column(s) and six columns
@@ -40,7 +44,7 @@ residents in each racial group.
 }
 \description{
 Downloads and prepares race-by-geography tables from U.S. census data, using
-the \code{\link[easycensus:easycensus-package]{easycensus}} package. Requires that an api key
+the \code{\link[easycensus:easycensus]{easycensus}} package. Requires that an api key
 be set up through \code{\link[easycensus:cens_auth]{easycensus::cens_auth()}} in that package, usually by
 storing it in the \code{CENSUS_API_KEY} environment variable. Supports data from
 the decennial census and the American Community Survey at a variety of levels

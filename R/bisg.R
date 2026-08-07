@@ -120,13 +120,20 @@
 #' @describeIn bisg The standard BISG model.
 #' @concept bisg
 #' @export
-bisg <- function(formula, data=NULL, p_r=p_r_natl(), p_rgx=NULL, p_rs=NULL,
-                 save_rgx=TRUE, save_sr=FALSE) {
+bisg <- function(
+    formula,
+    data = NULL,
+    p_r = p_r_natl(),
+    p_rgx = NULL,
+    p_rs = NULL,
+    save_rgx = TRUE,
+    save_sr = FALSE
+) {
     vars = parse_bisg_form(formula, data)
 
     l_name = make_name_tbl_vec(vars, p_r, p_rs, FALSE)
     l_gx = make_gx_tbl_vec(vars, p_r, p_rgx)
-    l_name$p_sr = l_name$p_sr[, names(l_gx$q_r), drop=FALSE]
+    l_name$p_sr = l_name$p_sr[, names(l_gx$q_r), drop = FALSE]
 
     if (is.character(p_r)) {
         p_r = l_gx$q_r
@@ -154,7 +161,7 @@ bisg <- function(formula, data=NULL, p_r=p_r_natl(), p_rgx=NULL, p_rs=NULL,
         attr(out, "p_rs") = l_name$p_sr
         attr(out, "s") = l_name$S
     }
-    attr(out, "unmatched") = c(s=l_name$unmatched, gx=l_gx$unmatched)
+    attr(out, "unmatched") = c(s = l_name$unmatched, gx = l_gx$unmatched)
     attr(out, "method") = "std"
 
     out
@@ -172,8 +179,16 @@ bisg <- function(formula, data=NULL, p_r=p_r_natl(), p_rgx=NULL, p_rs=NULL,
 #' @describeIn bisg The measurement error BISG model.
 #' @concept bisg
 #' @export
-bisg_me <- function(formula, data=NULL, p_r=p_r_natl(), p_rgx=NULL, p_rs=NULL,
-                    iter=1000, warmup=100, cores=1L) {
+bisg_me <- function(
+    formula,
+    data = NULL,
+    p_r = p_r_natl(),
+    p_rgx = NULL,
+    p_rs = NULL,
+    iter = 1000,
+    warmup = 100,
+    cores = 1L
+) {
     vars = parse_bisg_form(formula, data)
 
     l_name = make_name_tbl_vec(vars, p_r, p_rs, TRUE)
@@ -182,8 +197,8 @@ bisg_me <- function(formula, data=NULL, p_r=p_r_natl(), p_rgx=NULL, p_rs=NULL,
     # set up sampler vectors
     n_gx = nrow(l_gx$p_rgx)
     n_s = nrow(l_name$p_sr)
-    alpha_gzr = matrix(rep(l_gx$p_r, n_gx), nrow=n_gx, ncol=6, byrow=T)
-    beta_sr = matrix(rep(l_gx$p_r, n_s), nrow=n_s, ncol=6, byrow=T)
+    alpha_gzr = matrix(rep(l_gx$p_r, n_gx), nrow = n_gx, ncol = 6, byrow = T)
+    beta_sr = matrix(rep(l_gx$p_r, n_s), nrow = n_s, ncol = 6, byrow = T)
 
     # computation params
     iter = as.integer(max(iter, 1))
@@ -192,9 +207,18 @@ bisg_me <- function(formula, data=NULL, p_r=p_r_natl(), p_rgx=NULL, p_rs=NULL,
 
     # extra process_done to try to handle cases with interruptions
     cli::cli_process_done()
-    m_bisg = gibbs_me(iter+warmup, warmup, l_name$S, l_gx$GX,
-                      l_name$p_sr, l_gx$p_rgx,
-                      alpha_gzr, beta_sr, cores=cores, verbosity=3L)
+    m_bisg = gibbs_me(
+        iter + warmup,
+        warmup,
+        l_name$S,
+        l_gx$GX,
+        l_name$p_sr,
+        l_gx$p_rgx,
+        alpha_gzr,
+        beta_sr,
+        cores = cores,
+        verbosity = 3L
+    )
     cli::cli_process_done()
     colnames(m_bisg) = paste0("pr_", names(l_gx$p_r))
 
@@ -203,133 +227,158 @@ bisg_me <- function(formula, data=NULL, p_r=p_r_natl(), p_rgx=NULL, p_rs=NULL,
     attr(out, "S_name") = vars$S_name
     attr(out, "GX_names") = colnames(vars$GX)
     attr(out, "p_r") = l_gx$p_r
-    attr(out, "unmatched") = c(s=l_name$unmatched, gx=l_gx$unmatched)
+    attr(out, "unmatched") = c(s = l_name$unmatched, gx = l_gx$unmatched)
     attr(out, "method") = "me"
 
     out
 }
 
 
-
 # Parse formula and return a list with name vector, name vector name,
 # type of geography used (or "none"), and data frame of other covariates
-parse_bisg_form <- function(formula, data=NULL) {
+parse_bisg_form <- function(formula, data = NULL) {
     formula = update.formula(formula, NULL ~ .)
-    f_terms = terms(formula, specials=c("nm", "zip", "state"), data=data)
-    d_model = get_all_vars(f_terms, data=data)
+    f_terms = terms(formula, specials = c("nm", "zip", "state"), data = data)
+    d_model = get_all_vars(f_terms, data = data)
     if (ncol(d_model) != length(attr(f_terms, "term.labels"))) {
-        cli_abort("Duplicated variables found in {.arg formula}.", call=parent.frame())
+        cli_abort("Duplicated variables found in {.arg formula}.", call = parent.frame())
     }
 
     # check name
     nm_loc = attr(f_terms, "specials")$nm
     if (is.null(nm_loc)) {
-        cli_abort("{.arg formula} must have a {.fn nm} term
-                  specifying the surname variable.", call=parent.frame())
+        cli_abort(
+            "{.arg formula} must have a {.fn nm} term
+                  specifying the surname variable.",
+            call = parent.frame()
+        )
     }
     S = d_model[[nm_loc]]
     if (!check_discrete(S)) {
-        cli_abort("The names vector provided in {.fn nm} must be
+        cli_abort(
+            "The names vector provided in {.fn nm} must be
                    a character or factor with no missing values.",
-                  call=parent.frame())
+            call = parent.frame()
+        )
     }
 
     # check ZIP, state, etc.
-    geo_locs = vapply(attr(f_terms, "specials")[-1], function(x) {
-        if (is.null(x)) NA_integer_ else x
-    }, 1L)
+    geo_locs = vapply(
+        attr(f_terms, "specials")[-1],
+        function(x) {
+            if (is.null(x)) NA_integer_ else x
+        },
+        1L
+    )
     n_loc = sum(!is.na(geo_locs))
     geo_type = "none"
     if (n_loc > 1) {
-        cli_abort("{.arg formula} can only have one labeled location vector.
+        cli_abort(
+            "{.arg formula} can only have one labeled location vector.
                   {.fn {names(which(!is.na(geo_locs)))}} were found.",
-                  call=parent.frame())
+            call = parent.frame()
+        )
     } else if (n_loc == 1 && ncol(d_model) > 2) {
-        cli_warn("Labeled location vectors in {.arg formula} are only used if
-                 there are no other predictors.", call=parent.frame())
+        cli_warn(
+            "Labeled location vectors in {.arg formula} are only used if
+                 there are no other predictors.",
+            call = parent.frame()
+        )
     } else if (n_loc == 1) {
         geo_type = names(which(!is.na(geo_locs)))
         geo_loc = geo_locs[geo_type]
 
-        d_model[[geo_loc]] =  as.factor(coalesce(d_model[[geo_loc]], "<none>"))
+        d_model[[geo_loc]] = as.factor(coalesce(d_model[[geo_loc]], "<none>"))
     }
 
     GX = d_model[-nm_loc]
     if (!all(vapply(GX, class, character(1)) %in% c("character", "factor"))) {
-        cli_abort("Predictors in {.arg formula} must be character or factor vectors.",
-                  call=parent.frame())
+        cli_abort(
+            "Predictors in {.arg formula} must be character or factor vectors.",
+            call = parent.frame()
+        )
     }
     if (ncol(GX) > n_loc && any(is.na(GX))) {
-        cli_abort("Missing values found in {.arg formula} predictors",
-                  call=parent.frame())
+        cli_abort("Missing values found in {.arg formula} predictors", call = parent.frame())
     }
 
-    list(S = S,
-         S_name = colnames(d_model)[nm_loc],
-         geo_type = geo_type,
-         GX = GX)
+    list(S = S, S_name = colnames(d_model)[nm_loc], geo_type = geo_type, GX = GX)
 }
 
 # Prepare name vector and P(S | R) table
-make_name_tbl_vec <- function(vars, p_r, p_rs, for_me=FALSE) {
+make_name_tbl_vec <- function(vars, p_r, p_rs, for_me = FALSE) {
     S = as.character(vars$S)
     if (is.null(p_rs)) {
         # process names (by unique level)
         idx_uniq = vctrs::vec_unique_loc(S)
         idx_dup = to_unique_ids(S)
-        S = proc_name(S[idx_uniq], to_latin=TRUE)[idx_dup]
+        S = proc_name(S[idx_uniq], to_latin = TRUE)[idx_dup]
 
-        if (is.character(p_r)) p_r = p_r_natl()
+        if (is.character(p_r)) {
+            p_r = p_r_natl()
+        }
         if (length(p_r) != 6) {
-            cli_abort(c("Number of racial categories doesn't match the Census table.",
-                        "i"="Categories should be `white`, `black`, `hisp`, `asian`,
-                        `aian` (American Indian/Alaska Native), and `other`."),
-                      call=parent.frame())
+            cli_abort(
+                c(
+                    "Number of racial categories doesn't match the Census table.",
+                    "i" = "Categories should be `white`, `black`, `hisp`, `asian`,
+                        `aian` (American Indian/Alaska Native), and `other`."
+                ),
+                call = parent.frame()
+            )
         }
 
         if (isTRUE(for_me)) {
-            p_rs = census_surname_table(S, vars$S_name, counts=TRUE, flip=FALSE)
+            p_rs = census_surname_table(S, vars$S_name, counts = TRUE, flip = FALSE)
         } else {
-            p_rs = census_surname_table(S, vars$S_name, counts=FALSE, flip=TRUE)
+            p_rs = census_surname_table(S, vars$S_name, counts = FALSE, flip = TRUE)
         }
 
         S[!S %in% p_rs[[1]]] = "<generic>" # p_rs[[1]] is the name column
-        S = factor(S, levels=p_rs[[1]])
+        S = factor(S, levels = p_rs[[1]])
         p_sr = as.matrix(p_rs[, -1])
     } else {
         if (!is.data.frame(p_rs)) {
-            cli_abort("{.arg p_rs} must be a data frame.", call=parent.frame())
+            cli_abort("{.arg p_rs} must be a data frame.", call = parent.frame())
         }
         name_col = match(vars$S_name, colnames(p_rs))
         name_vals = p_rs[[name_col]]
 
         if (anyDuplicated(name_vals) > 0) {
-            cli_abort("{.arg p_rs} must have unique names", call=parent.frame())
+            cli_abort("{.arg p_rs} must have unique names", call = parent.frame())
         }
         if (is.na(name_col)) {
-            cli_abort("Name column {.var {vars$S_name}} not found in {.arg p_rs}.",
-                      call=parent.frame())
+            cli_abort(
+                "Name column {.var {vars$S_name}} not found in {.arg p_rs}.",
+                call = parent.frame()
+            )
         }
         if ("<generic>" %in% name_vals) {
             S[!S %in% name_vals] = "<generic>"
         } else if (!all(S %in% name_vals)) {
-            cli_abort("Some names are missing from {.arg p_rs}.", call=parent.frame())
+            cli_abort("Some names are missing from {.arg p_rs}.", call = parent.frame())
         }
         p_rs = p_rs[-name_col]
         if (!all(vapply(p_rs, is.numeric, logical(1)))) {
-            cli_abort("Entries in {.arg p_rs} must be numeric.", call=parent.frame())
+            cli_abort("Entries in {.arg p_rs} must be numeric.", call = parent.frame())
         }
         p_rs = as.matrix(p_rs)
         if (any(is.na(p_rs) | p_rs < 0 | is.infinite(p_rs))) {
-            cli_abort("{.arg p_rs} contains missing, negative,
-                      or otherwise invalid values.", call=parent.frame())
+            cli_abort(
+                "{.arg p_rs} contains missing, negative,
+                      or otherwise invalid values.",
+                call = parent.frame()
+            )
         }
         if (!identical(p_r, "estimate") && length(p_r) != ncol(p_rs)) {
-            cli_abort("Number of racial categories in {.arg p_rs}
-                      and {.arg p_r} must match.", call=parent.frame())
+            cli_abort(
+                "Number of racial categories in {.arg p_rs}
+                      and {.arg p_r} must match.",
+                call = parent.frame()
+            )
         }
 
-        S = factor(S, levels=name_vals)
+        S = factor(S, levels = name_vals)
         if (isTRUE(for_me)) {
             p_sr = p_rs
         } else {
@@ -339,19 +388,27 @@ make_name_tbl_vec <- function(vars, p_r, p_rs, for_me=FALSE) {
 
     # reorder columns to match `p_r`
     if (!is.character(p_r)) {
-        if (is.null(names(p_r))) cli_abort("{.arg p_r} must have names.", call=parent.frame())
-        if (is.null(colnames(p_sr))) cli_abort("{.arg p_rs} must have column names.", call=parent.frame())
+        if (is.null(names(p_r))) {
+            cli_abort("{.arg p_r} must have names.", call = parent.frame())
+        }
+        if (is.null(colnames(p_sr))) {
+            cli_abort("{.arg p_rs} must have column names.", call = parent.frame())
+        }
         idx_names = match(names(p_r), colnames(p_sr))
         if (any(is.na(idx_names))) {
-            cli_abort(c("Names of {.arg p_r} and column names of {.arg p_rs} must match.",
-                        "i"="Names for {.arg p_r}: {.val {names(p_r)}}",
-                        "i"="Names for {.arg p_rs}: {.val {names(p_rs)}}",
-                        ">"="If you provided {.arg p_r} but not {.arg p_rs}, make sure
+            cli_abort(
+                c(
+                    "Names of {.arg p_r} and column names of {.arg p_rs} must match.",
+                    "i" = "Names for {.arg p_r}: {.val {names(p_r)}}",
+                    "i" = "Names for {.arg p_rs}: {.val {names(p_rs)}}",
+                    ">" = "If you provided {.arg p_r} but not {.arg p_rs}, make sure
                     {.arg p_r} has {.fn names} matching `white`, `black`,
-                    `hisp`, `asian`, `aian`, and `other`."),
-                    call=parent.frame())
+                    `hisp`, `asian`, `aian`, and `other`."
+                ),
+                call = parent.frame()
+            )
         }
-        p_sr = p_sr[, idx_names, drop=FALSE]
+        p_sr = p_sr[, idx_names, drop = FALSE]
     }
 
     list(
@@ -363,27 +420,36 @@ make_name_tbl_vec <- function(vars, p_r, p_rs, for_me=FALSE) {
 
 # Prepare geo/covariate vector and P(G, X | R) table
 make_gx_tbl_vec <- function(vars, p_r, p_rgx) {
-    if (ncol(vars$GX) == 0) { # no covariates
+    if (ncol(vars$GX) == 0) {
+        # no covariates
         if (is.character(p_r)) {
-            cli_abort("{.arg p_r} must be a numeric vector if no
-                      other predictors are used.", call=parent.frame())
+            cli_abort(
+                "{.arg p_r} must be a numeric vector if no
+                      other predictors are used.",
+                call = parent.frame()
+            )
         }
 
         N = length(vars$S)
-        return(list(GX = rep(1L, N),
-                    p_r = p_r,
-                    q_r = p_r,
-                    p_rgx = matrix(1e5 * p_r, nrow=1),
-                    p_gxr = matrix(rep(1, length(p_r)), nrow=1)))
+        return(list(
+            GX = rep(1L, N),
+            p_r = p_r,
+            q_r = p_r,
+            p_rgx = matrix(1e5 * p_r, nrow = 1),
+            p_gxr = matrix(rep(1, length(p_r)), nrow = 1)
+        ))
     }
 
     est_p_r = is.character(p_r) && (p_r == "est" || p_r == "estimate")
 
     p_r_tmp = p_r
-    if (est_p_r) p_r_tmp = p_r_natl()
+    if (est_p_r) {
+        p_r_tmp = p_r_natl()
+    }
     GX_names = colnames(vars$GX)
     if (vars$geo_type != "none") {
-        if (!is.null(p_rgx)) { # warn: they are probably trying to use p_rgx
+        if (!is.null(p_rgx)) {
+            # warn: they are probably trying to use p_rgx
             cli_warn(
                 c(
                     "Not using provided {.arg p_rgx}",
@@ -394,52 +460,66 @@ make_gx_tbl_vec <- function(vars, p_r, p_rgx) {
         }
 
         if (length(p_r_tmp) != 6) {
-            cli_abort(c("Number of racial categories doesn't match the Census table.",
-                        "i"="Categories should be White, Black, Hispanic, Asian,
-                    American Indian/Alaska Native, and other."), call=parent.frame())
+            cli_abort(
+                c(
+                    "Number of racial categories doesn't match the Census table.",
+                    "i" = "Categories should be White, Black, Hispanic, Asian,
+                    American Indian/Alaska Native, and other."
+                ),
+                call = parent.frame()
+            )
         }
 
         if (vars$geo_type == "zip") {
-            p_rgx = census_premade_table(GX_names, "zip_race_2010.rds", counts=TRUE)
+            p_rgx = census_premade_table(GX_names, "zip_race_2020.rds", counts = TRUE)
 
             # match ZIPs to ZCTAs
             vars$GX[[1]] = proc_zip(vars$GX[[1]])
         } else if (vars$geo_type == "state") {
-            p_rgx = census_premade_table(GX_names, "state_race_2010.rds", counts=TRUE)
+            p_rgx = census_premade_table(GX_names, "state_race_2020.rds", counts = TRUE)
 
             # match states
             vars$GX[[1]] = proc_state(vars$GX[[1]])
         } else {
-            cli_abort(c("{.fn {vars$geo_type}} is not yet supported.",
-                        ">"="Please file an issue at
-                        {.url https://github.com/CoryMcCartan/birdie/issues/new}"),
-                        call=parent.frame())
+            cli_abort(
+                c(
+                    "{.fn {vars$geo_type}} is not yet supported.",
+                    ">" = "Please file an issue at
+                        {.url https://github.com/CoryMcCartan/birdie/issues/new}"
+                ),
+                call = parent.frame()
+            )
         }
-
-    } else { # "none" -> use `p_rgx`
+    } else {
+        # "none" -> use `p_rgx`
         if (!is.data.frame(p_rgx)) {
-            cli_abort("{.arg p_rgx} must be a data frame.", call=parent.frame())
+            cli_abort("{.arg p_rgx} must be a data frame.", call = parent.frame())
         }
         if (!all(colnames(vars$GX) %in% colnames(p_rgx))) {
-            cli_abort("All predictor columns must be in {.arg p_rgx}.", call=parent.frame())
+            cli_abort("All predictor columns must be in {.arg p_rgx}.", call = parent.frame())
         }
         if (!is.character(p_r) && ncol(p_rgx) != length(p_r) + ncol(vars$GX)) {
-            cli_abort("Number of racial categories in {.arg p_rgx}
-                      and {.arg p_r} must match.", call=parent.frame())
+            cli_abort(
+                "Number of racial categories in {.arg p_rgx}
+                      and {.arg p_r} must match.",
+                call = parent.frame()
+            )
         }
         if (anyDuplicated(p_rgx) > 0) {
-            cli_abort("{.arg p_rgx} must have unique rows.", call=parent.frame())
+            cli_abort("{.arg p_rgx} must have unique rows.", call = parent.frame())
         }
 
         # if there is just one ID column we can easily fill in "<none>"
         if (length(GX_names) > 1) {
-            d_miss <- distinct(anti_join(vars$GX, p_rgx, by=names(vars$GX)))
+            d_miss <- distinct(anti_join(vars$GX, p_rgx, by = names(vars$GX)))
             if (nrow(d_miss) > 0) {
                 str_miss = capture.output(head(d_miss, 10))
-                if (nrow(d_miss) > 10) str_miss = c(str_miss, "  ...")
+                if (nrow(d_miss) > 10) {
+                    str_miss = c(str_miss, "  ...")
+                }
                 msg = c("Some predictor combinations are missing from {.arg p_rgx}:", str_miss)
                 mgs = str_replace_all(msg, " ", "\ua0")
-                rlang::abort(msg, use_cli_format=TRUE, call=parent.frame())
+                rlang::abort(msg, use_cli_format = TRUE, call = parent.frame())
             }
         }
     }
@@ -480,19 +560,25 @@ make_gx_tbl_vec <- function(vars, p_r, p_rgx) {
     if (!est_p_r) {
         idx_names = match(names(p_r), colnames(p_rgx))
         if (any(is.na(idx_names))) {
-            cli_abort(c("Names of {.arg p_r} and column names of {.arg p_rgx} must match.",
-                        "i"="Names for {.arg p_r}: {.val {names(p_r)}}",
-                        "i"="Names for {.arg p_rgx}: {.val {names(p_rgx)}}",
-                        ">"="If you provided {.arg p_r} but not {.arg p_rgx}, make sure
+            cli_abort(
+                c(
+                    "Names of {.arg p_r} and column names of {.arg p_rgx} must match.",
+                    "i" = "Names for {.arg p_r}: {.val {names(p_r)}}",
+                    "i" = "Names for {.arg p_rgx}: {.val {names(p_rgx)}}",
+                    ">" = "If you provided {.arg p_r} but not {.arg p_rgx}, make sure
                         {.arg p_r} has {.fn names} matching `white`, `black`,
-                        `hisp`, `asian`, `aian`, and `other`."),
-                      call=parent.frame())
+                        `hisp`, `asian`, `aian`, and `other`."
+                ),
+                call = parent.frame()
+            )
         }
     }
 
     # calculate P(R | G, X) / P(R) using the full reference table
     idx_ref = rep(TRUE, nrow(p_rgx))
-    if (length(GX_names) == 1) idx_ref = p_rgx[[GX_names]] != "<none>"
+    if (length(GX_names) == 1) {
+        idx_ref = p_rgx[[GX_names]] != "<none>"
+    }
     race_nms = colnames(p_rgx)[idx_names]
     p_rgx_ref = as.matrix(p_rgx[idx_ref, race_nms])
     q_r = colSums(p_rgx_ref)
@@ -500,14 +586,16 @@ make_gx_tbl_vec <- function(vars, p_r, p_rgx) {
     p_rgx_cond = as.matrix(p_rgx[, race_nms])
     p_rgx_cond = p_rgx_cond / rowSums(p_rgx_cond)
     p_gxr = scale_cols(p_rgx_cond, 1 / q_r)
-    if (length(GX_names) == 1) p_gxr[p_rgx[[GX_names]] == "<none>", ] = 1
+    if (length(GX_names) == 1) {
+        p_gxr[p_rgx[[GX_names]] == "<none>", ] = 1
+    }
     d_gxr = bind_cols(p_rgx[GX_names], as.data.frame(p_gxr))
 
     # subset to needed rows
-    d_match = left_join(vars$GX, p_rgx, by=GX_names)
+    d_match = left_join(vars$GX, p_rgx, by = GX_names)
     GX_vec = as.factor(vctrs::vec_duplicate_id(d_match))
     p_rgx = as.matrix(d_match[vctrs::vec_unique_loc(GX_vec), race_nms])
-    d_match_gxr = left_join(vars$GX, d_gxr, by=GX_names)
+    d_match_gxr = left_join(vars$GX, d_gxr, by = GX_names)
     p_gxr = as.matrix(d_match_gxr[vctrs::vec_unique_loc(GX_vec), race_nms])
 
     if (est_p_r) {
@@ -525,10 +613,12 @@ make_gx_tbl_vec <- function(vars, p_r, p_rgx) {
 }
 
 # Call Bayes' rule C++
-est_bisg = function(S, GX, p_sr, p_gxr, p_r, geo=TRUE) {
-    if (!geo) p_gxr = p_gxr*0 + 1
+est_bisg = function(S, GX, p_sr, p_gxr, p_r, geo = TRUE) {
+    if (!geo) {
+        p_gxr = p_gxr * 0 + 1
+    }
 
-    m_bisg = calc_bayes_bisg(S, GX, p_sr, p_gxr, p_r);
+    m_bisg = calc_bayes_bisg(S, GX, p_sr, p_gxr, p_r)
     colnames(m_bisg) = paste0("pr_", names(p_r))
     m_bisg
 }
@@ -546,6 +636,11 @@ est_bisg = function(S, GX, p_sr, p_gxr, p_r, geo=TRUE) {
 #' * `aian`: Non-Hispanic American Indian/Alaska Native
 #' * `other`: Non-Hispanic, two or more races, or other race
 #'
+#' Except for 2010, values come from the one-year American Community Survey
+#' (ACS). The 2010 value comes from the decennial census. Because the standard
+#' 2020 ACS one-year estimates were not released, the 2020 value is interpolated
+#' from 2019 and 2021.
+#'
 #' @param year The year to return demographics for.
 #' @param vap If `TRUE`, return statistics for the voting-age population (18+)
 #'   rather than the full U.S. population.
@@ -556,12 +651,14 @@ est_bisg = function(S, GX, p_sr, p_gxr, p_r, geo=TRUE) {
 #' p_r_natl(year=2010)
 #'
 #' @export
-p_r_natl <- function(year=2021, vap=FALSE) {
-    if (isTRUE(vap)) cli_abort("Only {.arg vap = FALSE} is supported for now.")
+p_r_natl <- function(year = 2024, vap = FALSE) {
+    if (isTRUE(vap)) {
+        cli_abort("Only {.arg vap = FALSE} is supported for now.")
+    }
 
     year = as.integer(year)
-    if (year < 2005L || year > 2021L) {
-        cli_abort("{.arg year} must be between 2005 and 2021 (inclusive).")
+    if (year < 2005L || year > 2024L) {
+        cli_abort("{.arg year} must be between 2005 and 2024 (inclusive).")
     }
 
     l_race_year[[as.character(year)]]

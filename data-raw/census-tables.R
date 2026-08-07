@@ -7,7 +7,7 @@ devtools::load_all(".")
 
 
 # National race over time -------
-years = 2005:2021
+years = 2005:2024
 get_natl_race <- function(year) {
     if (year == 2010) {
         x = census_race_geo_table("us", year=2010, survey="dec", counts=FALSE)
@@ -17,7 +17,8 @@ get_natl_race <- function(year) {
         x = census_race_geo_table("us", year=year, survey="acs1", counts=FALSE)
     }
 
-    out = as.numeric(x[, -1:-2])
+    out = unlist(x[c("white", "black", "hisp", "asian", "aian", "other")],
+                 use.names=FALSE)
     names(out) = c("white", "black", "hisp", "asian", "aian", "other")
     out
 }
@@ -25,19 +26,31 @@ get_natl_race <- function(year) {
 l_race_year = map(years, get_natl_race)
 names(l_race_year) = years
 
+# The standard 2020 ACS 1-year estimates were not released. Interpolate rather
+# than splice a decennial estimate into this ACS series. Changes to the ACS race
+# question and response coding also create a real series break between the 2019
+# and 2021 estimates, most visibly in the residual/multiracial category.
 l_race_year[["2020"]] = l_race_year[["2019"]]*0.5 + l_race_year[["2021"]]*0.5
 # run sysdata.R to save!
 
 
 
 # State by race ------
-d = census_race_geo_table("state", year=2010, survey="dec", counts=TRUE, GEOIDs=TRUE)
-write_rds(d, here("inst/extdata/state_race_2010.rds"), compress="xz")
+d = census_race_geo_table("state", year=2020, survey="dec", counts=TRUE,
+                          GEOIDs=TRUE, .use_premade=FALSE) |>
+    mutate(pop = rowSums(across(white:other)), .after=GEOID) |>
+    rename_with(~ paste0("pop_", .), white:other)
+write_rds(d, here("inst/extdata/state_race_2020.rds"), compress="xz")
 
 
-# ZIP code by race ------
-d = census_race_geo_table("zcta", year=2010, survey="dec", counts=TRUE, GEOIDs=TRUE)
-write_rds(d, here("inst/extdata/zip_race_2010.rds"), compress="xz")
+# ZCTA by race ------
+# The Census does not tabulate population by USPS ZIP code. Use 2020 ZCTAs as
+# the Census geography matched to ZIP codes by proc_zip().
+d = census_race_geo_table("zcta", year=2020, survey="dec", counts=TRUE,
+                          GEOIDs=TRUE, .use_premade=FALSE) |>
+    mutate(pop = rowSums(across(white:other)), .after=GEOID) |>
+    rename_with(~ paste0("pop_", .), white:other)
+write_rds(d, here("inst/extdata/zip_race_2020.rds"), compress="xz")
 
 
 # ZIP code by race (2020) ------

@@ -22,6 +22,8 @@
 #'   with entries like `"Massachusetts"`.
 #' @param counts If `TRUE`, return the table as actual population counts; if
 #'   `FALSE`, return table as percentages within each geography.
+#' @param .use_premade Whether to use a bundled table when one is available.
+#'   This is intended for internal data-generation use.
 #'
 #' @return A data frame with geographic identifier column(s) and six columns
 #'   `white`, `black`, etc. containing the counts or proportion of
@@ -40,15 +42,21 @@
 census_race_geo_table <- function(geo=c("us", "state", "county", "zcta", "tract"),
                                   ...,
                                   year=2010, survey=c("dec", "acs1", "acs5"),
-                                  GEOIDs=TRUE, counts=TRUE) {
+                                  GEOIDs=TRUE, counts=TRUE, .use_premade=TRUE) {
     rlang::check_installed("easycensus", "for downloading Census data.")
     survey = match.arg(survey)
 
-    if (year == 2010 && survey == "dec" && geo == "zcta" && GEOIDs) {
+    if (.use_premade && year == 2010 && survey == "dec" && geo == "zcta" && GEOIDs) {
         return(census_premade_table("GEOID", "zip_race_2010.rds", counts=counts))
     }
-    if (year == 2010 && survey == "dec" && geo == "state" && GEOIDs) {
+    if (.use_premade && year == 2010 && survey == "dec" && geo == "state" && GEOIDs) {
         return(census_premade_table("GEOID", "state_race_2010.rds", counts=counts))
+    }
+    if (.use_premade && year == 2020 && survey == "dec" && geo == "zcta" && GEOIDs) {
+        return(census_premade_table("GEOID", "zip_race_2020.rds", counts=counts))
+    }
+    if (.use_premade && year == 2020 && survey == "dec" && geo == "state" && GEOIDs) {
+        return(census_premade_table("GEOID", "state_race_2020.rds", counts=counts))
     }
 
     if (survey == "dec") {
@@ -149,7 +157,7 @@ census_premade_table = function(G_name, path, counts=FALSE) {
 
 # Helper function to make an R|G table
 census_state_table = function(G_name, counts=FALSE) {
-    d_cens = readRDS(system.file("extdata", "state_race_2010.rds",
+    d_cens = readRDS(system.file("extdata", "state_race_2020.rds",
                                  package="birdie", mustWork=TRUE))
     if (!counts) { # normalize by population
         for (i in 1:6) {

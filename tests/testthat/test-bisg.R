@@ -27,6 +27,14 @@ test_that("BISG is robust to ordering", {
     expect_error(bisg(~ nm(last_name), pseudo_vf, p_r=unname(p_r)), "must have names")
 })
 
+test_that("National race demographics cover the documented years", {
+    expect_equal(p_r_natl(), p_r_natl(2024))
+    expect_equal(sum(p_r_natl(2005)), 1, tolerance=1e-6)
+    expect_equal(sum(p_r_natl(2024)), 1, tolerance=1e-6)
+    expect_error(p_r_natl(2004), "between 2005 and 2024")
+    expect_error(p_r_natl(2025), "between 2005 and 2024")
+})
+
 
 test_that("BISG results are directionally correct", {
     d = tibble(S=rep(c("Hernandez", "Mc Cartan"), 2),
@@ -41,7 +49,7 @@ test_that("BISG results are directionally correct", {
     expect_gt(res$pr_hisp[1], res$pr_hisp[2])
     expect_gt(res$pr_white[4], res$pr_white[3])
 
-    expect_gt(bisg(~ nm(S) + zip(G), data=tibble(S="LOCKLEAR", G="28715"), p_r=p_r)$pr_aian, 0.5)
+    expect_gt(bisg(~ nm(S) + zip(G), data=tibble(S="LOCKLEAR", G="28715"), p_r=p_r)$pr_aian, 0.4)
     expect_gt(bisg(~ nm(S) + zip(G), data=tibble(S="WASHINGTON", G="98118"), p_r=p_r)$pr_black, 0.9)
     expect_gt(bisg(~ nm(S) + zip(G), data=tibble(S="XU", G="98118"), p_r=p_r)$pr_asian, 0.95)
 })

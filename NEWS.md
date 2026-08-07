@@ -1,5 +1,9 @@
 # birdie 0.8.0
 
+* Update the built-in surname and geography (state and ZIP code) race tables
+  used by `bisg()` to the 2020 decennial census.
+* Update the default national race distribution used by `p_r_natl()` to the
+  2024 American Community Survey and extend its time series through 2024.
 * Improved and stabilized BISG estimation in small datasets (#22)
 * Improved README and documentation
 
