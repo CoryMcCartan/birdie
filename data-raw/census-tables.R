@@ -11,8 +11,8 @@ devtools::load_all(".")
 
 
 # State by race ------
-d = census_race_geo_table("state", year=2020, survey="dec", counts=TRUE,
-                          GEOIDs=TRUE, .use_premade=FALSE) |>
+d = census_race_geo_download("state", year=2020, survey="dec", counts=TRUE,
+                             GEOIDs=TRUE) |>
     mutate(pop = rowSums(across(white:other)), .after=GEOID) |>
     rename_with(~ paste0("pop_", .), white:other)
 write_rds(d, here("inst/extdata/state_race_2020.rds"), compress="xz")
@@ -21,8 +21,8 @@ write_rds(d, here("inst/extdata/state_race_2020.rds"), compress="xz")
 # ZCTA by race ------
 # The Census does not tabulate population by USPS ZIP code. Use 2020 ZCTAs as
 # the Census geography matched to ZIP codes by proc_zip().
-d = census_race_geo_table("zcta", year=2020, survey="dec", counts=TRUE,
-                          GEOIDs=TRUE, .use_premade=FALSE) |>
+d = census_race_geo_download("zcta", year=2020, survey="dec", counts=TRUE,
+                             GEOIDs=TRUE) |>
     mutate(pop = rowSums(across(white:other)), .after=GEOID) |>
     rename_with(~ paste0("pop_", .), white:other)
 write_rds(d, here("inst/extdata/zip_race_2020.rds"), compress="xz")

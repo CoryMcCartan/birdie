@@ -22,8 +22,6 @@
 #'   with entries like `"Massachusetts"`.
 #' @param counts If `TRUE`, return the table as actual population counts; if
 #'   `FALSE`, return table as percentages within each geography.
-#' @param .use_premade Whether to use a bundled table when one is available.
-#'   This is intended for internal data-generation use.
 #'
 #' @return A data frame with geographic identifier column(s) and six columns
 #'   `white`, `black`, etc. containing the counts or proportion of
@@ -42,20 +40,21 @@
 census_race_geo_table <- function(geo=c("us", "state", "county", "zcta", "tract"),
                                   ...,
                                   year=2010, survey=c("dec", "acs1", "acs5"),
-                                  GEOIDs=TRUE, counts=TRUE, .use_premade=TRUE) {
+                                  GEOIDs=TRUE, counts=TRUE) {
     rlang::check_installed("easycensus", "for downloading Census data.")
     survey = match.arg(survey)
+    use_premade = getOption("birdie.census.use_premade", TRUE)
 
-    if (.use_premade && year == 2010 && survey == "dec" && geo == "zcta" && GEOIDs) {
+    if (use_premade && year == 2010 && survey == "dec" && geo == "zcta" && GEOIDs) {
         return(census_premade_table("GEOID", "zip_race_2010.rds", counts=counts))
     }
-    if (.use_premade && year == 2010 && survey == "dec" && geo == "state" && GEOIDs) {
+    if (use_premade && year == 2010 && survey == "dec" && geo == "state" && GEOIDs) {
         return(census_premade_table("GEOID", "state_race_2010.rds", counts=counts))
     }
-    if (.use_premade && year == 2020 && survey == "dec" && geo == "zcta" && GEOIDs) {
+    if (use_premade && year == 2020 && survey == "dec" && geo == "zcta" && GEOIDs) {
         return(census_premade_table("GEOID", "zip_race_2020.rds", counts=counts))
     }
-    if (.use_premade && year == 2020 && survey == "dec" && geo == "state" && GEOIDs) {
+    if (use_premade && year == 2020 && survey == "dec" && geo == "state" && GEOIDs) {
         return(census_premade_table("GEOID", "state_race_2020.rds", counts=counts))
     }
 
@@ -139,6 +138,13 @@ census_race_geo_table <- function(geo=c("us", "state", "county", "zcta", "tract"
         colnames(d)[1] = geo
         d
     }
+}
+
+# Bypass bundled tables when regenerating them from the Census API.
+census_race_geo_download = function(...) {
+    old = options(birdie.census.use_premade=FALSE)
+    on.exit(options(old))
+    census_race_geo_table(...)
 }
 
 # Helper function to make an R|G table

@@ -10,8 +10,7 @@ census_race_geo_table(
   year = 2010,
   survey = c("dec", "acs1", "acs5"),
   GEOIDs = TRUE,
-  counts = TRUE,
-  .use_premade = TRUE
+  counts = TRUE
 )
 }
 \arguments{
@@ -34,8 +33,6 @@ with entries like \code{"Massachusetts"}.}
 \item{counts}{If \code{TRUE}, return the table as actual population counts; if
 \code{FALSE}, return table as percentages within each geography.}
 
-\item{.use_premade}{Whether to use a bundled table when one is available.
-This is intended for internal data-generation use.}
 }
 \value{
 A data frame with geographic identifier column(s) and six columns
