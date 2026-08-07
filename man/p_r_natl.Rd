@@ -10,7 +10,8 @@ p_r_natl(year = 2024, vap = FALSE)
 \item{year}{The year to return demographics for.}
 
 \item{vap}{If \code{TRUE}, return statistics for the voting-age population (18+)
-rather than the full U.S. population.}
+rather than the full U.S. population. Voting-age statistics are available
+from 2009 onward.}
 }
 \value{
 A named numeric vector of length 6.
@@ -33,6 +34,9 @@ Except for 2010, values come from the one-year American Community Survey
 (ACS). The 2010 value comes from the decennial census. Because the standard
 2020 ACS one-year estimates were not released, the 2020 value is interpolated
 from 2019 and 2021.
+Voting-age values come from ACS Selected Population Profiles. To maintain a
+consistent ACS series, the 2010 and 2020 voting-age values are interpolated
+from the adjacent years.
 }
 \examples{
 p_r_natl(year=2010)

@@ -640,10 +640,14 @@ est_bisg = function(S, GX, p_sr, p_gxr, p_r, geo = TRUE) {
 #' (ACS). The 2010 value comes from the decennial census. Because the standard
 #' 2020 ACS one-year estimates were not released, the 2020 value is interpolated
 #' from 2019 and 2021.
+#' Voting-age values come from ACS Selected Population Profiles. To maintain a
+#' consistent ACS series, the 2010 and 2020 voting-age values are interpolated
+#' from the adjacent years.
 #'
 #' @param year The year to return demographics for.
 #' @param vap If `TRUE`, return statistics for the voting-age population (18+)
-#'   rather than the full U.S. population.
+#'   rather than the full U.S. population. Voting-age statistics are available
+#'   from 2009 onward.
 #'
 #' @returns A named numeric vector of length 6.
 #'
@@ -652,14 +656,14 @@ est_bisg = function(S, GX, p_sr, p_gxr, p_r, geo = TRUE) {
 #'
 #' @export
 p_r_natl <- function(year = 2024, vap = FALSE) {
-    if (isTRUE(vap)) {
-        cli_abort("Only {.arg vap = FALSE} is supported for now.")
-    }
-
     year = as.integer(year)
     if (year < 2005L || year > 2024L) {
         cli_abort("{.arg year} must be between 2005 and 2024 (inclusive).")
     }
+    if (isTRUE(vap) && year < 2009L) {
+        cli_abort("Voting-age statistics are only available from 2009 onward.")
+    }
 
-    l_race_year[[as.character(year)]]
+    population = if (isTRUE(vap)) "vap" else "pop"
+    l_race_year[[as.character(year)]][[population]]
 }

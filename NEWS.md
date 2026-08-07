@@ -3,7 +3,8 @@
 * Update the built-in surname and geography (state and ZIP code) race tables
   used by `bisg()` to the 2020 decennial census.
 * Update the default national race distribution used by `p_r_natl()` to the
-  2024 American Community Survey and extend its time series through 2024.
+  2024 American Community Survey, extend its time series through 2024, and add
+  voting-age population statistics for 2009 onward.
 * Improved and stabilized BISG estimation in small datasets (#22)
 * Improved README and documentation
 

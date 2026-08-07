@@ -6,32 +6,7 @@ library(here)
 devtools::load_all(".")
 
 
-# National race over time -------
-years = 2005:2024
-get_natl_race <- function(year) {
-    if (year == 2010) {
-        x = census_race_geo_table("us", year=2010, survey="dec", counts=FALSE)
-    } else if (year == 2020) {
-        return(NULL)
-    } else {
-        x = census_race_geo_table("us", year=year, survey="acs1", counts=FALSE)
-    }
-
-    out = unlist(x[c("white", "black", "hisp", "asian", "aian", "other")],
-                 use.names=FALSE)
-    names(out) = c("white", "black", "hisp", "asian", "aian", "other")
-    out
-}
-
-l_race_year = map(years, get_natl_race)
-names(l_race_year) = years
-
-# The standard 2020 ACS 1-year estimates were not released. Interpolate rather
-# than splice a decennial estimate into this ACS series. Changes to the ACS race
-# question and response coding also create a real series break between the 2019
-# and 2021 estimates, most visibly in the residual/multiracial category.
-l_race_year[["2020"]] = l_race_year[["2019"]]*0.5 + l_race_year[["2021"]]*0.5
-# run sysdata.R to save!
+# National race time series are prepared separately in `national-race.R`.
 
 
 
