@@ -46,6 +46,63 @@ test_that("BISG results are directionally correct", {
     expect_gt(bisg(~ nm(S) + zip(G), data=tibble(S="XU", G="98118"), p_r=p_r)$pr_asian, 0.95)
 })
 
+test_that("BISG results do not depend on the prediction batch", {
+    p_r = p_r_natl(2010)
+    d_one = tibble(S="HERNANDEZ", G="78501")
+    d_many = tibble(S=c("HERNANDEZ", rep("SMITH", 20)),
+                    G=c("78501", rep("50112", 20)))
+
+    b_one = bisg(~ nm(S) + zip(G), data=d_one, p_r=p_r)
+    b_many = bisg(~ nm(S) + zip(G), data=d_many, p_r=p_r)
+
+    expect_equal(as.numeric(b_one[1, ]), as.numeric(b_many[1, ]))
+})
+
+test_that("BISG uses fixed reference likelihoods with custom tables", {
+    d = tibble(S=c("A", "B"), G=c("x", "y"))
+    p_rs = tibble(S=c("A", "B"), r1=c(60, 40), r2=c(20, 80))
+    p_rgx = tibble(G=c("x", "y"), r1=c(30, 70), r2=c(80, 20))
+    p_r = c(r1=0.4, r2=0.6)
+
+    out = bisg(~ nm(S) + G, d, p_r=p_r, p_rs=p_rs, p_rgx=p_rgx)
+    p_sr = as.matrix(p_rs[, -1]) / colSums(as.matrix(p_rs[, -1]))
+    p_rg = as.matrix(p_rgx[, -1]) / rowSums(as.matrix(p_rgx[, -1]))
+    q_r = colSums(as.matrix(p_rgx[, -1])) / sum(as.matrix(p_rgx[, -1]))
+    expected = p_sr * sweep(p_rg, 2, q_r, "/") * rep(p_r, each=2)
+    expected = expected / rowSums(expected)
+    colnames(expected) = paste0("pr_", colnames(expected))
+
+    expect_equal(as.matrix(out), expected)
+    expect_equal(attr(out, "q_r"), q_r)
+
+    vars = parse_bisg_form(~ nm(S) + G, d)
+    expect_equal(make_name_tbl_vec(vars, p_r, p_rs, for_me=TRUE)$p_sr,
+                 as.matrix(p_rs[, -1]))
+    expect_equal(unname(make_gx_tbl_vec(vars, p_r, p_rgx)$p_rgx),
+                 unname(as.matrix(p_rgx[, -1])))
+})
+
+test_that("BISG estimates the target race prior by EM", {
+    d = tibble(S=rep(c("A", "B"), c(3, 7)), G=rep(c("x", "y"), c(3, 7)))
+    p_rs = tibble(S=c("A", "B"), r1=c(90, 10), r2=c(10, 90))
+    p_rgx = tibble(G=c("x", "y"), r1=c(80, 20), r2=c(20, 80))
+
+    out = bisg(~ nm(S) + G, d, p_r="estimate", p_rs=p_rs, p_rgx=p_rgx)
+
+    expect_equal(unname(attr(out, "p_r")), unname(colMeans(out)), tolerance=1e-8)
+})
+
+test_that("Unmatched geography does not update the target prior", {
+    d = tibble(S="A", G="missing")
+    p_rs = tibble(S="A", r1=1, r2=1)
+    p_rgx = tibble(G=c("x", "y"), r1=c(40, 10), r2=c(10, 40))
+    p_r = c(r1=0.8, r2=0.2)
+
+    out = bisg(~ nm(S) + G, d, p_r=p_r, p_rs=p_rs, p_rgx=p_rgx)
+
+    expect_equal(as.numeric(out[1, ]), unname(p_r))
+})
+
 test_that("BISG works with custom p_rs", {
     data(pseudo_vf)
 

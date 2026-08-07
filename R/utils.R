@@ -27,6 +27,10 @@ to_unique_ids = function(x) {
 # check types
 check_discrete = function(x) (is.character(x) | is.factor(x)) && !any(is.na(x))
 
+scale_cols = function(x, scale) {
+    x * rep(scale, each=nrow(x))
+}
+
 # Dev-facing helper for viewing
 to_cond = function(x) {
     p_r = parent.frame()$p_r

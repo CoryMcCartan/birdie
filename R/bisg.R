@@ -34,7 +34,8 @@
 #' @param p_r The prior distribution of race in the sample, as a numeric vector.
 #'   Defaults to U.S. demographics as provided by [p_r_natl()].
 #'   Can also set `p_r="est"` or `"estimate"` to estimate this from the
-#'   geographic distribution.  Since the prior distribution on race strongly
+#'   observed surname and geographic distribution using an EM algorithm.
+#'   Since the prior distribution on race strongly
 #'   affects the calibration of the BISG probabilities and thus the accuracy of
 #'   downstream estimates, users are encouraged to think carefully about an
 #'   appropriate value for `p_r`.  If no prior information on the racial makeup
@@ -53,8 +54,10 @@
 #'   Thus, if a custom `p_rgx` is desired, do _not_ use geographic labellers
 #'   like `zip()` in the formula.
 #'
-#'   The `p_grx` table will be normalized by row, so it can be provided as
-#'   population counts as well. Counts are required for `bisg_me()`.
+#'   The `p_rgx` table will be normalized by row, so it can be provided as
+#'   population counts as well. Column totals are used to calculate the
+#'   reference race distribution, so counts are preferred and are required for
+#'   `bisg_me()`.
 #'   The [census_race_geo_table()] function can be helpful to prepare tables,
 #'   as can be the `build_dec()` and `build_acs()` functions in the `censable`
 #'   package.
@@ -78,7 +81,9 @@
 #'
 #' @return An object of class `bisg`, which is just a data frame with some
 #'   additional attributes. The data frame has rows matching the input data and
-#'   columns for the race probabilities.
+#'   columns for the race probabilities. The target and reference race
+#'   distributions are saved as the `"p_r"` and `"q_r"` attributes,
+#'   respectively.
 #'
 #' @examples
 #' data(pseudo_vf)
@@ -120,16 +125,27 @@ bisg <- function(formula, data=NULL, p_r=p_r_natl(), p_rgx=NULL, p_rs=NULL,
     vars = parse_bisg_form(formula, data)
 
     l_name = make_name_tbl_vec(vars, p_r, p_rs, FALSE)
-    l_name_gl <<- l_name
     l_gx = make_gx_tbl_vec(vars, p_r, p_rgx)
+    l_name$p_sr = l_name$p_sr[, names(l_gx$q_r), drop=FALSE]
 
-    m_bisg = est_bisg(l_name$S, l_gx$GX, l_name$p_sr, l_gx$p_gxr, l_gx$p_r)
+    if (is.character(p_r)) {
+        p_r = l_gx$q_r
+        for (i in seq_len(1000)) {
+            m_bisg = est_bisg(l_name$S, l_gx$GX, l_name$p_sr, l_gx$p_gxr, p_r)
+            p_r_new = colMeans(m_bisg)
+            converged = max(abs(p_r_new - p_r)) < 1e-8
+            p_r = p_r_new
+            if (converged) break
+        }
+    }
+    m_bisg = est_bisg(l_name$S, l_gx$GX, l_name$p_sr, l_gx$p_gxr, p_r)
 
     out = as_tibble(m_bisg)
     class(out) = c("bisg", class(out))
     attr(out, "S_name") = vars$S_name
     attr(out, "GX_names") = colnames(vars$GX)
-    attr(out, "p_r") = l_gx$p_r
+    attr(out, "p_r") = p_r
+    attr(out, "q_r") = l_gx$q_r
     if (isTRUE(save_rgx)) {
         attr(out, "p_rgx") = l_gx$p_rgx
         attr(out, "gx") = l_gx$GX
@@ -314,16 +330,15 @@ make_name_tbl_vec <- function(vars, p_r, p_rs, for_me=FALSE) {
         }
 
         S = factor(S, levels=name_vals)
-        p_s = prop.table(table(S))
-        p_sr = p_rs / rowSums(p_rs)
-        for (i in seq_len(ncol(p_sr))) {
-            p_sr[, i] = p_sr[, i] * p_s
-            p_sr[, i] = p_sr[, i] / sum(p_sr[, i])
+        if (isTRUE(for_me)) {
+            p_sr = p_rs
+        } else {
+            p_sr = scale_cols(p_rs, 1 / colSums(p_rs))
         }
     }
 
     # reorder columns to match `p_r`
-    if (p_r[1] != "estimate") {
+    if (!is.character(p_r)) {
         if (is.null(names(p_r))) cli_abort("{.arg p_r} must have names.", call=parent.frame())
         if (is.null(colnames(p_sr))) cli_abort("{.arg p_rs} must have column names.", call=parent.frame())
         idx_names = match(names(p_r), colnames(p_sr))
@@ -336,7 +351,7 @@ make_name_tbl_vec <- function(vars, p_r, p_rs, for_me=FALSE) {
                     `hisp`, `asian`, `aian`, and `other`."),
                     call=parent.frame())
         }
-        p_sr = p_sr[, idx_names]
+        p_sr = p_sr[, idx_names, drop=FALSE]
     }
 
     list(
@@ -357,6 +372,7 @@ make_gx_tbl_vec <- function(vars, p_r, p_rgx) {
         N = length(vars$S)
         return(list(GX = rep(1L, N),
                     p_r = p_r,
+                    q_r = p_r,
                     p_rgx = matrix(1e5 * p_r, nrow=1),
                     p_gxr = matrix(rep(1, length(p_r)), nrow=1)))
     }
@@ -432,16 +448,22 @@ make_gx_tbl_vec <- function(vars, p_r, p_rgx) {
     if (length(GX_names) == 1) {
         p_rgx[[GX_names]] = as.character(p_rgx[[GX_names]])
         vars$GX[[1]] = as.character(vars$GX[[1]])
+        p_fill = p_r_tmp
+        if (est_p_r) {
+            race_nms = setdiff(colnames(p_rgx), GX_names)
+            p_fill = colSums(p_rgx[race_nms])
+            p_fill = p_fill / sum(p_fill)
+        }
 
         if (!"<none>" %in% p_rgx[[GX_names]]) {
-            new_row = as.data.frame(as.list(1e5 * p_r_tmp))
+            new_row = as.data.frame(as.list(1e5 * p_fill))
             new_row[[GX_names]] = "<none>"
             p_rgx = rbind(p_rgx, new_row)
         }
 
         rowtot = rep_len(0, nrow(p_rgx))
-        for (nm in names(p_r_tmp)) {
-            p_rgx[[nm]] = coalesce(p_rgx[[nm]], p_r_tmp[nm])
+        for (nm in names(p_fill)) {
+            p_rgx[[nm]] = coalesce(p_rgx[[nm]], p_fill[nm])
             rowtot = rowtot + p_rgx[[nm]]
         }
         p_rgx = p_rgx[rowtot > 0, ] # drop rows with no people
@@ -468,26 +490,33 @@ make_gx_tbl_vec <- function(vars, p_r, p_rgx) {
         }
     }
 
+    # calculate P(R | G, X) / P(R) using the full reference table
+    idx_ref = rep(TRUE, nrow(p_rgx))
+    if (length(GX_names) == 1) idx_ref = p_rgx[[GX_names]] != "<none>"
+    race_nms = colnames(p_rgx)[idx_names]
+    p_rgx_ref = as.matrix(p_rgx[idx_ref, race_nms])
+    q_r = colSums(p_rgx_ref)
+    q_r = q_r / sum(q_r)
+    p_rgx_cond = as.matrix(p_rgx[, race_nms])
+    p_rgx_cond = p_rgx_cond / rowSums(p_rgx_cond)
+    p_gxr = scale_cols(p_rgx_cond, 1 / q_r)
+    if (length(GX_names) == 1) p_gxr[p_rgx[[GX_names]] == "<none>", ] = 1
+    d_gxr = bind_cols(p_rgx[GX_names], as.data.frame(p_gxr))
+
     # subset to needed rows
     d_match = left_join(vars$GX, p_rgx, by=GX_names)
     GX_vec = as.factor(vctrs::vec_duplicate_id(d_match))
-    p_rgx = as.matrix(d_match[vctrs::vec_unique_loc(GX_vec), idx_names])
-
-    # flip which margin sums to 1
-    p_gx = prop.table(table(GX_vec))
-    p_gxr = p_rgx / rowSums(p_rgx)
-    for (i in seq_len(ncol(p_gxr))) {
-        p_gxr[, i] = p_gxr[, i] * p_gx
-        p_gxr[, i] = p_gxr[, i] / sum(p_gxr[, i])
-    }
+    p_rgx = as.matrix(d_match[vctrs::vec_unique_loc(GX_vec), race_nms])
+    d_match_gxr = left_join(vars$GX, d_gxr, by=GX_names)
+    p_gxr = as.matrix(d_match_gxr[vctrs::vec_unique_loc(GX_vec), race_nms])
 
     if (est_p_r) {
-        p_r = colSums(p_rgx)
-        p_r = p_r / sum(p_r)
+        p_r = q_r
     }
 
     list(
         p_r = p_r,
+        q_r = q_r,
         GX = GX_vec,
         p_rgx = p_rgx,
         p_gxr = p_gxr,

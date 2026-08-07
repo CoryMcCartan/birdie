@@ -53,7 +53,8 @@ See the examples section below for sample formulas.}
 \item{p_r}{The prior distribution of race in the sample, as a numeric vector.
 Defaults to U.S. demographics as provided by \code{\link[=p_r_natl]{p_r_natl()}}.
 Can also set \code{p_r="est"} or \code{"estimate"} to estimate this from the
-geographic distribution.  Since the prior distribution on race strongly
+observed surname and geographic distribution using an EM algorithm.
+Since the prior distribution on race strongly
 affects the calibration of the BISG probabilities and thus the accuracy of
 downstream estimates, users are encouraged to think carefully about an
 appropriate value for \code{p_r}.  If no prior information on the racial makeup
@@ -73,8 +74,10 @@ If \code{formula} contains only labeled terms (like \code{zip()}), then by defau
 Thus, if a custom \code{p_rgx} is desired, do \emph{not} use geographic labellers
 like \code{zip()} in the formula.
 
-The \code{p_grx} table will be normalized by row, so it can be provided as
-population counts as well. Counts are required for \code{bisg_me()}.
+The \code{p_rgx} table will be normalized by row, so it can be provided as
+population counts as well. Column totals are used to calculate the
+reference race distribution, so counts are preferred and are required for
+\code{bisg_me()}.
 The \code{\link[=census_race_geo_table]{census_race_geo_table()}} function can be helpful to prepare tables,
 as can be the \code{build_dec()} and \code{build_acs()} functions in the \code{censable}
 package.
@@ -124,7 +127,9 @@ adjustment.}
 \value{
 An object of class \code{bisg}, which is just a data frame with some
 additional attributes. The data frame has rows matching the input data and
-columns for the race probabilities.
+columns for the race probabilities. The target and reference race
+distributions are saved as the \code{"p_r"} and \code{"q_r"} attributes,
+respectively.
 }
 \description{
 Calculates individual probabilities of belonging to racial groups given last

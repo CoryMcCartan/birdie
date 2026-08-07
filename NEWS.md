@@ -1,4 +1,6 @@
-# birdie 0.7.2
+# birdie 0.8.0
+
+* Improved and stabilized BISG estimation in small datasets (#22)
 * Improved README and documentation
 
 # birdie 0.7.1
