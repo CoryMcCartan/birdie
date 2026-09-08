@@ -369,7 +369,7 @@ std::vector<double> unconstrained_to_constrained(Model& model,
                                                  const std::vector<double>& params) {
   std::vector<int> params_i;
   std::vector<double> constrained_params;
-  boost::random::mixmax rng = stan::services::util::create_rng(random_seed, id);
+  stan::rng_t rng = stan::services::util::create_rng(random_seed, id);
   model.write_array(rng, const_cast<std::vector<double>&>(params), params_i,
                     constrained_params);
   return constrained_params;
