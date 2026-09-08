@@ -11,18 +11,15 @@
 
 0 errors | 0 warnings | 1 note
 
-* This resubmission fixes the format of DOI in the CITATION and in three .Rd
-  files.
+* This submission fixes installation errors on CRAN due to a recent update of
+  StanHeaders.
 
 * GNU make is a SystemRequirement in order to compile Stan models.
 
-* C++17 is a requirement in order to compile Stan models as well.
-  This is noted in src/Makevars and in SystemRequirements.
-
 * Three examples are \dontrun{} in census_race_geo_table() since they require an 
-  API key. Since last submission, the API key requirement is now documented in 
-  the examples, not just in the function documentation. This function is tested
-  locally in tests/testthat/test-census.R.
+  API key. The API key requirement is now documented in the examples, not just
+  in the function documentation. This function is tested locally in
+  tests/testthat/test-census.R.
   
 * Examples are \donttest{} in birdie() since they generally take more than 5
   seconds to run. 
